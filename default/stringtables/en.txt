@@ -11,6 +11,9 @@ English
 #    Common     #
 #################
 
+FREEORION_DEVELOPERS
+Криворукие долбоебы
+
 APPNAME
 FreeOrion
 
