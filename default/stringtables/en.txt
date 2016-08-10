@@ -11,8 +11,8 @@ English
 #    Common     #
 #################
 
-FREEORION_DEVELOPERS
-Криворукие долбоебы
+TEST
+хуй
 
 APPNAME
 FreeOrion
@@ -12201,30 +12201,30 @@ Psi
 Omega'''
 
 STAR_GROUP_CHARS
-'''α
-β
-γ
-δ
-ε
-ζ
-η
-θ
-ι
-κ
-λ
-μ
-ν
-ξ
-ο
-π
-ρ
-σ
-τ
-υ
-φ
-χ
-ψ
-ω'''
+'''а
+б
+в
+г
+д
+е
+ё
+ж
+з
+и
+к
+л
+м
+н
+о
+п
+р
+с
+т
+у
+ф
+х
+ц
+ч'''
 
 STAR_GROUP_NAMES
 Centauri
