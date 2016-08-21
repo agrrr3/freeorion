@@ -20,9 +20,6 @@ English
 ## Common phrases
 ##
 
-FREEORION_DEVELOPERS
-Криворукие долбоебы
-
 OHUENNOST_STAT
 Охуенность
 
