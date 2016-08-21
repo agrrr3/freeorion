@@ -1123,6 +1123,9 @@ COMMAND_LINE_DEFAULT
 OPTIONS_DB_HELP
 Print this help message.
 
+OPTIONS_DB_VERSION
+Print version and exit.
+
 OPTIONS_DB_SINGLEPLAYER
 Start server in single player host mode. This only allows clients on localhost to connect.
 
@@ -4562,9 +4565,9 @@ A Homeworld focused on Growth only helps other planets of the same species.
 MINING_FOCUS_TITLE
 Mining Focus
 
+# Old: The Mining Focus is only available on planets with certain rare specials. Focusing on Mining provides a production bonus.
 MINING_FOCUS_TEXT
 Mining Focus is currently disabled.
-#The Mining Focus is only available on planets with certain rare specials. Focusing on Mining provides a production bonus.
 
 TRADE_FOCUS_TITLE
 Trade Focus
