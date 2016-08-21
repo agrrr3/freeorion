@@ -2521,7 +2521,8 @@ std::set<int> FleetDetailPanel::SelectedShipIDs() const {
     {
         std::list<GG::ListBox::Row*>::iterator starRow_it = *sel_it;
         bool hasRow = false;
-        for (std::list<GG::ListBox::Row*>::iterator lb_it = m_ships_lb->begin(); lb_it != m_ships_lb->end(); lb_it++) {
+        for (std::list<GG::ListBox::Row*>::iterator lb_it = m_ships_lb->begin(); lb_it != m_ships_lb->end(); ++lb_it)
+        {
             if (lb_it == starRow_it) {
                 hasRow=true;
                 break;
@@ -3491,6 +3492,7 @@ void FleetWnd::FleetRightClicked(GG::ListBox::iterator it, const GG::Pt& pt, con
         }
 
         case 4: {   // split
+            ScopedTimer split_fleet_timer("FleetWnd::SplitFleet", true);
             // remove first ship from set, so it stays in its existing fleet
             std::set<int>::iterator it = ship_ids_set.begin();
             ship_ids_set.erase(it);

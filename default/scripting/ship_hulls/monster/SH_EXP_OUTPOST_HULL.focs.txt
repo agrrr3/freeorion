@@ -12,6 +12,7 @@ Hull
     buildcost = 1
     buildtime = 1
     Unproducible
+    tags = [ "CAN_ALTER_STARLANES" ]
     location = All
     effectsgroups = [
         EffectsGroup
@@ -54,7 +55,7 @@ Hull
             ]
     ]
     icon = ""
-    graphic = ""
+    graphic = "icons/monsters/experiment0.png"
 
 #include "monster.macros"
 
