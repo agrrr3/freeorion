@@ -71,12 +71,12 @@ protected:
     void        MouseHere_(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys);
     void        MouseLeave_();
 
-    virtual const std::vector<GG::Font::LineData>&  GetLineData() const = 0;
-    virtual const boost::shared_ptr<GG::Font>&      GetFont() const = 0;
-    virtual GG::Pt                                  TextUpperLeft() const = 0;
-    virtual GG::Pt                                  TextLowerRight() const = 0;
-    virtual void                                    SetLinkedText(const std::string& str) = 0;
-    virtual const std::string&                      RawText() const = 0;      ///< returns text being displayed before any link formatting is added
+    virtual const std::vector<GG::Font::LineData>&  GetLineData() const;
+    virtual const boost::shared_ptr<GG::Font>&      GetFont() const;
+    virtual GG::Pt                                  TextUpperLeft() const;
+    virtual GG::Pt                                  TextLowerRight() const;
+    virtual void                                    SetLinkedText(const std::string& str);
+    virtual const std::string&                      RawText() const;      ///< returns text being displayed before any link formatting is added
 
     void        FindLinks();                        ///< finds the links in the text, with which to populate m_links.
     void        LocateLinks();                      ///< calculates the physical locations of the links in m_links
