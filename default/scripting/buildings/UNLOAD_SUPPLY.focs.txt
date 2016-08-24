@@ -1,0 +1,14 @@
+BuildingType
+    name = "BLD_UNLOAD_SUPPLY"
+    description = "BLD_UNLOAD_SUPPLY_DESC"
+    buildcost = 1
+    buildtime = 1
+    location = And [
+        Planet
+        Not Contains Building name = "BLD_UNLOAD_SUPPLY"
+        OwnedBy empire = Source.Owner
+    ]
+    EnqueueLocation = [[ENQUEUE_BUILD_ONE_PER_PLANET]]
+    icon = ""
+
+#include "/scripting/common/enqueue.macros"
