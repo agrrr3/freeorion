@@ -5,7 +5,10 @@ Tech
     category = "PRODUCTION_CATEGORY"
     researchcost = 1
     researchturns = 1
-    unlock = Item type = Building name = "BLD_UNLOAD_SUPPLY"
+    unlock = [
+        Item type = Building name = "BLD_UNLOAD_SUPPLY"
+        Item type = ShipPart name = "CO_SUPPLIES_030"
+    ]
     graphic = "icons/tech/microgravity_manufacturing.png"
 
 #include "/scripting/common/base_prod.macros"
