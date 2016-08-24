@@ -1,0 +1,15 @@
+Tech
+    name = "PRO_GEN_SUPPLY_SHIPMENT"
+    description = "PRO_GEN_SUPPLY_SHIPMENT_DESC"
+    short_description = "BUILDING_UNLOCK_SHORT_DESC"
+    category = "PRODUCTION_CATEGORY"
+    researchcost = 1
+    researchturns = 1
+    unlock = [
+        Item type = Building name = "BLD_UNLOAD_SUPPLY"
+        Item type = ShipPart name = "CO_SUPPLIES_010"
+        Item type = ShipPart name = "CO_SUPPLIES_030"
+    ]
+    graphic = "icons/tech/microgravity_manufacturing.png"
+
+#include "/scripting/common/base_prod.macros"

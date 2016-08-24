@@ -653,6 +653,36 @@ Comsat
 SD_BASE_DECOY_DESC
 Unarmed satellite that can trigger planetary defenses even against passive enemies, but otherwise does nothing except get in the way of enemy fire. Can be built at any planet colonized by a shipbuilding species, does not require a [[buildingtype BLD_SHIPYARD_BASE]].
 
+SD_SUPPLY_DROP
+ (10) Supply Drop
+
+SD_SUPPLY_DROP_DESC
+Carries 10 units of industrial supplies for usage in the same system. Gets dismantled in the unload process, one use only. Will get unloaded when entering/staying in systems with [[buildingtype BLD_UNLOAD_SUPPLY]].
+
+SD_SUPPLY_E_SMALL
+ (10) Small Supplies Ship
+
+SD_SUPPLY_E_SMALL_DESC
+Carries 10 units of industrial supplies for helping industry in supply disconnected regions.  Gets dismantled in the unload process, one use only. Will get unloaded when entering/staying in systems with [[buildingtype BLD_UNLOAD_SUPPLY]].
+
+SD_SUPPLY_F_MARK_1
+ (70) Medium Supplies Ship
+
+SD_SUPPLY_F_MARK_1_DESC
+Carries 70 units of industrial supplies for helping industry in supply disconnected regions.  Gets dismantled in the unload process, one use only. Will get unloaded when entering/staying in systems with [[buildingtype BLD_UNLOAD_SUPPLY]].
+
+SD_SUPPLY_FLUX
+ (60) Fast Supplies Ship
+
+SD_SUPPLY_FLUX_DESC
+Carries 60 units of industrial supplies for helping industry in supply disconnected regions.  Gets dismantled in the unload process, one use only. Will get unloaded when entering/staying in systems with [[buildingtype BLD_UNLOAD_SUPPLY]]. Can only be built at a colony with a [[buildingtype BLD_SHIPYARD_BASE]] and an [[buildingtype BLD_SHIPYARD_ORG_ORB_INC]].
+
+SD_SUPPLY_ORGANIC
+(100) Organic Supplies Ship
+
+SD_SUPPLY_ORGANIC_DESC
+Carries 100 units of industrial supplies for helping industry in supply disconnected regions.  Gets dismantled in the unload process, one use only. Will get unloaded when entering/staying in systems with [[buildingtype BLD_UNLOAD_SUPPLY]]. Can only be built at a colony with a [[buildingtype BLD_SHIPYARD_BASE]] and an [[buildingtype BLD_SHIPYARD_ORG_ORB_INC]].
+
 SD_TROOP_DROP
 Troop Drop
 
@@ -5613,6 +5643,24 @@ At %planet%: [[tech LRN_SPATIAL_DISTORT_GEN]] moved %fleet% back into %system%. 
 EFFECT_FLEET_MOVED_TO_LABEL
 Fleet Moved Into
 
+EFFECT_SUPPLY_SCRAP_EMPTY_SHIP
+Scrapping supply ship %ship% on %system% after unloading %rawtext% units of industrial supplies.
+
+EFFECT_SUPPLY_SCRAP_EMPTY_SHIP_LABEL
+Empty Supply Ship Scrapped
+
+EFFECT_SUPPLY_USAGE
+Industry uses %rawtext% Generic Supplies on %planet%.
+
+EFFECT_SUPPLY_USAGE_LABEL
+Industrial Usage Of Supply Stockpile
+
+EFFECT_UNLOADING_SUPPLIES_STOCKPILE_EMPTY
+Industry boost on %planet% finished as stockpile of Generic Supplies is exhausted. 
+
+EFFECT_UNLOADING_SUPPLIES_STOCKPILE_EMPTY_LABEL
+Generic Supply Stockpile Exhausted
+
 HEAD_ON_A_SPIKE_MESSAGE
 The capital of the %empire% empire has fallen.
 
@@ -6771,6 +6819,12 @@ RESONANT_MOON_SPECIAL_DESC
 '''[[encyclopedia STEALTH_TITLE]] of buildings on the planet and controlled ships in the same system is increased by 10.
 
 This planet has a natural satellite, the orbital period of which is in 1:1 resonance with its rotational period, causing there to be a "dark side" which is constantly facing away from the planet. This "dark side" is a perfect site for clandestine facilities. The space between the planet and the moon can be used to hide buildings and fleets from other empires.'''
+
+UNLOADING_SUPPLIES_SPECIAL
+Stockpile of Generic Supplies
+
+UNLOADING_SUPPLIES_SPECIAL_DESC
+Unloaded supplies increase [[encyclopedia INDUSTRY_TITLE]] by +5 until they are used up. One point capacity of stockpile yields one point of industry.
 
 COMPUTRONIUM_SPECIAL
 Computronium Moon
@@ -8864,6 +8918,18 @@ While transforming an entire population into beings of pure energy would be impr
 
 The ultimate stage of physical development is to transcend the physical altogether. Without bodies, individuals and society may move, grow and exist freely, unhindered by unnecessary physical limitations and inefficient metabolic processes that waste energy supporting homeostasis.'''
 
+PRO_GEN_SUPPLY_SHIPMENT
+Generic Industrial Supplies
+
+PRO_GEN_SUPPLY_SHIPMENT_DESC
+'''Unloaded supplies increase [[encyclopedia INDUSTRY_TITLE]] by +5 until they are used up.
+
+By carefully choosing supply chains, materials, and designs, Generic Supplies are created which can easily be decomposited and reused for most industrial products.
+
+Generic Supplies can be created a long time before the demand occurs. Supply packages usually include bootstrap devices which reconstruct the facilities for reconstructing new products from the Generic Supplies. Reaching this state of sophistication, Generic Supplies can be used to construct new technology products which where not available at the time the supplies were produced. 
+
+For going to the places where commerce won't go, military and lifeformian aid uses supply ships. The ships' cargo rooms get filled and huge loads are strapped on the externals. Supply ships get unloaded in systems with [[buildingtype BLD_UNLOAD_SUPPLY]].'''
+
 PRO_MICROGRAV_MAN
 Microgravity Industry
 
@@ -10220,6 +10286,16 @@ BLD_CULTURE_LIBRARY_DESC
 
 Stores the accumulated knowledge from thousands of years of life on this planet, giving a bonuses to research. This building will be destroyed when the population of the high tech natives reaches zero.'''
 
+BLD_UNLOAD_SUPPLY
+Supply Ship Beacon
+
+BLD_UNLOAD_SUPPLY_DESC
+'''Acts as a beacon for the usually remote controlled supply ships which get automatically unloaded and dismantled here.
+Can be built on any planet where supply ships should be unloaded. 
+
+The ship carrying the supply parts gets dismantled and the supplies are added to the local stockpile. Unloaded supplies increase [[encyclopedia INDUSTRY_TITLE]] by +5 until they are used up.'''
+
+
 BLD_AUTO_HISTORY_ANALYSER
 Automated History Analyser
 
@@ -11355,6 +11431,17 @@ Outpost Module
 
 CO_OUTPOST_POD_DESC
 [[encyclopedia OUTPOSTS_TITLE]] modules allow you to establish unmanned station. These may be place on uninhabitable planets. They have no population, and normally produce no resources. But they provide vision create [[encyclopedia SUPPLY_TITLE]] lines when the right tech is researched. Outposts can be upgraded to colonies. The cost of this part increases as the empire expands to reflect the upkeep costs of a large empire.
+
+CO_SUPPLIES_010
+Supply Package Pod (10 units)
+
+CO_SUPPLIES_030
+Supply Package Strapon (30 units)
+
+CO_SUPPLIES_DESC
+'''Contains Generic Industrial Supplies. Internal cargo hold contains 10 units. External strapped on package contains 30 units.
+
+Ships having this ship part get automatically dismantled in systems with [[buildingtype BLD_UNLOAD_SUPPLY]]. The unloaded supplies get distributed evenly between all planets with [[buildingtype BLD_UNLOAD_SUPPLY]].'''
 
 GT_TROOP_POD
 Ground Troop Pod

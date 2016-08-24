@@ -1,0 +1,10 @@
+ShipDesign
+    name = "SD_SUPPLY_F_MARK_1"
+    description = "SD_SUPPLY_F_MARK_1_DESC"
+    hull = "SH_BASIC_MEDIUM"
+    parts = [
+        "CO_SUPPLIES_030"
+        "CO_SUPPLIES_030"
+        "CO_SUPPLIES_010"
+    ]
+    model = "supply070"

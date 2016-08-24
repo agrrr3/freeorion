@@ -1,0 +1,8 @@
+ShipDesign
+    name = "SD_SUPPLY_E_SMALL"
+    description = "SD_SUPPLY_E_SMALL_DESC"
+    hull = "SH_BASIC_SMALL"
+    parts = [
+        "CO_SUPPLIES_010"
+    ]
+    model = "supply010"
