@@ -1,0 +1,107 @@
+Special
+    // redundant code : https://github.com/freeorion/freeorion/blob/master/universe/Ship.cpp#L727
+    // meters should become OO with two types (simple and paired)
+	// dont understand how not generic part meters are added (https://github.com/freeorion/freeorion/blob/master/universe/Ship.cpp#L81)
+    // Idea: a special is a good place for bookkeeping,
+    //    1) it is not accessible to user interaction (cant be removed at will like a building)
+    //    2) it is one-to-one to a planet
+    //  a special has the following properties:	
+    //     capacity = <<DOUBLE>>
+    //     <<CONDITION>>: HasSpecialCapacity name = <<STRING>> low = <<DOUBLE>> high = <<DOUBLE>>
+    //     <<CONDITION>>: SetSpecialCapacity name = <<STRING>> capacity = <<FLOAT>>   // will also change HasSpecialSinceTurn
+    //     <<CONDITION>>: HasSpecialSinceTurn name = "" 
+    //     EFFECT AddSpecial name = <<STRING>> capacity = 0.0f
+    //     EFFECT RemoveSpecial
+    //     ??ThisSpecial??
+    //  ... I don't think there's actually a way to get the value of a particular part's capacity or max capacity on a particular ship to use in a calculation (eg. multiplying it by something and adding something).
+    //  ... a ship part is not an object itself
+    //     <<CONDITION>> Source.ShipPartMeter part = <<STRING>> Capacity low = <<DOUBLE>> high = <<DOUBLE>>
+    //     ship meters:
+    //       "paired meters" refers to meters which have a max meter as well
+    //       a meter is identified by a pair: its type METER_CAPACITY/METER_MAX_CAPACITY/METER_SECONDARY_STAT/METER_MAX_SECONDARY_STAT and a name
+    //       https://github.com/freeorion/freeorion/blob/master/universe/Ship.cpp#L75
+    //  so this doesnt work: activation = (Source.Age >= 10)
+    // this should (HasSpecialSinceTurn)  > 1 )
+    // https://github.com/freeorion/freeorion/blob/master/universe/UniverseObject.h (AddSpecial, RemoveSpecial, SetSpecialCapacity, HasSpecial, SpecialCapacity, SpecialAddedOnTurn)
+    // https://github.com/freeorion/freeorion/blob/master/parse/ConditionParser3.cpp
+    // hmmmm, but there is a present-since attribute...
+    name = "UNLOADING_SUPPLIES_SPECIAL"
+    description = "UNLOADING_SUPPLIES_SPECIAL_DESC"
+    spawnrate = 0.0
+    effectsgroups = [
+        EffectsGroup
+            // Source is actually the planet, probably creationturn is far in the past
+            scope = Source
+            activation = HasSpecialCapacity name = "UNLOADING_SUPPLIES_SPECIAL" low = 0.1
+            effects = [
+                //SetSpecialCapacity name = "UNLOADING_SUPPLIES_SPECIAL" value = 5.0 // Value - 5.0
+                //SetTargetIndustry value = Value + 5.0
+                GenerateSitRepMessage
+                    message = "Unloading generic supplies on %planet% still %capacity%"
+                    icon = "icons/ship_parts/death-spore.png"
+                    parameters = [
+                        tag = "planet" data = Target.ID
+                        tag = "capacity" data = "unknown"
+                        tag = "shippart" data = "CO_SUPPLIES_030"
+                    ]
+            ]
+        EffectsGroup
+            // Source is actually the planet, probably creationturn is far in the past
+            scope = Source
+            activation = And [
+                // e.g. turn 33; Ship and building are there
+                //               HasSpecial does not trigger; unload was triggered ; add special with capacity; destroy ship
+                //      turn 34; ship destroyed, special and capacity added to the planet
+                //               HasSpecial does trigger, 1 <= since turn (33) > currentturn (34) - 2 ; add industry
+                //      turn 35; boosted industry; increased max industry
+                //               HasSpecial does trigger, 1 <= since turn (33) <= currentturn (35) - 2 
+                //      turn 36; 
+                //               HasSpecial does trigger, 1 <= since turn (33) <= currentturn (36) - 2 
+                //   when finishing turn 34, HasSpecialCapacity triggers
+                Not HasSpecialSinceTurn name = "UNLOADING_SUPPLIES_SPECIAL" low = 1 high = CurrentTurn - 2
+                HasSpecialCapacity name = "UNLOADING_SUPPLIES_SPECIAL" low = 0.01
+            ]
+            effects = [
+                SetIndustry value = max(4, Value + 1000) // 5 == number which is decreased from the pile every round	
+                GenerateSitRepMessage
+                    message = "XXX %planet% not has special high current-2 (%rawtext%). Boost industry "
+                    icon = "icons/ship_parts/death-spore.png"
+                    parameters = [
+                        tag = "planet" data = Target.ID
+                        tag = "capacity" data = "unknown"
+                        tag = "shippart" data = "CO_SUPPLIES_030"
+                        tag = "rawtext" data = CurrentTurn -2
+                    ]
+            ]
+        EffectsGroup
+            // Source is actually the planet, probably creationturn is far in the past
+            scope = Source
+            activation = And [
+                HasSpecialSinceTurn name = "UNLOADING_SUPPLIES_SPECIAL" low = 33 high = 33
+                HasSpecialCapacity name = "UNLOADING_SUPPLIES_SPECIAL" low = 0.1
+            ]
+            effects = [
+                GenerateSitRepMessage
+                    message = "XXX has special 33-33 %rawtext%"
+                    icon = "icons/ship_parts/death-spore.png"
+                    parameters = [
+                        tag = "planet" data = Target.ID
+                        tag = "rawtext" data = CurrentTurn
+                        tag = "shippart" data = "CO_SUPPLIES_030"
+                    ]
+            ]
+        EffectsGroup
+            scope = Source
+            activation = HasSpecialCapacity name = "UNLOADING_SUPPLIES_SPECIAL" high = 0.0
+            effects = [
+                RemoveSpecial name = "UNLOADING_SUPPLIES_SPECIAL"
+                GenerateSitRepMessage
+                    message = "Finished unloading supplies on %planet%." // "EFFECT_UNLOADING_SUPPLIES_CAP_EMPTY"
+                    icon = "icons/ship_parts/death-spore.png"
+                    parameters = [
+                        tag = "planet" data = Target.ID
+                    ]
+            ]
+    ]
+    graphic = "icons/building/concentration-camp.png"
+

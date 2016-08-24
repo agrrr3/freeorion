@@ -1,0 +1,137 @@
+// File freeorion/scripting/ship_parts/CO_SUPPLIES.focs.txt
+Part
+    name = "CO_SUPPLIES_030"
+    //  Implementation notes: chooses randomly one of the eligible planets to unload. Better would be to evenly distribute the supplies; complicated; not worth it.
+    //  Part which unloads and scraps the ship at planets with BLD_UNLOAD_SUPPLY
+    //  Given a ship with a ship part CO_SUPPLIES_030
+    //  orGiven two ships with a ship part CO_SUPPLIES_030
+    //  orGiven a ship with two (or many) ship parts CO_SUPPLIES_030
+    //  when entering a system with a planet with BLD_UNLOAD_SUPPLY	
+    //  orWhen staying in a system with a planet with BLD_UNLOAD_SUPPLY	
+    //  orWhen entering a system with two (or many) planets with BLD_UNLOAD_SUPPLY	
+    //  then it is scrapped
+    //  Given a ship with a ship part CO_SUPPLIES_030
+    //  when entering a system without a planet with BLD_UNLOAD_SUPPLY
+    //  orWhen being outside of a system and but a planet with BLD_UNLOAD_SUPPLY exists
+    //  *orWhen staying in a system without a planet with BLD_UNLOAD_SUPPLY but a planet with BLD_UNLOAD_SUPPLY exists
+    //  orWhen staying in a system with a planet with BLD_UNLOAD_SUPPLY but the building is destroyed
+    //  orWhen staying in a system with a planet with BLD_UNLOAD_SUPPLY but different owner
+    //  then none of the CO_SUPPLIES_030 effects is triggered
+    //  ship is unloaded in other system -> capacity doesnt change
+    //  ATM all planets with the building are triggered
+    //  ATM unloading of multiple ships/parts is bonked
+    //  ATM *destroying the building when the ship is there in order to stop the effect doesnt work  
+    description = "CO_SUPPLIES_DESC" 
+    class = General
+    capacity = 30
+    mountableSlotTypes = [External Internal] // Internal 10 External 30 Core 0
+    buildcost = 30
+    buildtime = 1
+    location = OwnedBy empire = Source.Owner
+    effectsgroups = [
+        EffectsGroup
+            scope = NumberOf number = 1 condition = Planet
+            stackinggroup = "STACKING_VERSION_INFORMATION_ONCE_PER_TURN"
+            effects = [ 
+                GenerateSitRepMessage
+                    message = "This is version %rawtext% . Lucky winner is %planet%"
+                    icon = "icons/waiting.png"
+                    parameters = [
+                        tag = "planet" data = Target.ID
+                        tag = "rawtext" data = "20160716_0945"
+                    ]
+                    empire = Source.Owner
+            ]
+        EffectsGroup // production on planets where unloading starts this turn
+            scope = And [
+                Planet
+                [[CONDITION_PLANET_IN_SYSTEM_READY_FOR_UNLOAD(Source.SystemID)]]
+                // Not HasSpecial name = "UNLOADING_SUPPLIES_SPECIAL"
+            ]
+            // activation = InSystem
+            stackinggroup = "STACKING_BOOST_INDUSTRY_ONCE_PER_PLANET"
+            effects = [
+                // SetIndustry value = max(4, Value + 5) // 5 == number which is decreased from the pile every round
+                // SetTargetIndustry and SetIndustry dont seem to work on outposts
+                // and ATM SetIndustry also doesnt seem to work when unloading
+                // SetIndustry value = max(4, Value + 5) // 5 == number which is decreased from the pile every round
+                GenerateSitRepMessage
+                    message = "Unloading on %planet% started. Got a %rawtext% industry boost."
+                    icon = "icons/waiting.png"
+                    parameters = [
+                        tag = "planet" data = Target.ID
+                        tag = "rawtext" data = "0"
+                    ]
+                    empire = Source.Owner
+            ]
+
+        EffectsGroup // unload to all eligible planets   
+            scope = And [
+                Planet
+                [[CONDITION_PLANET_IN_SYSTEM_READY_FOR_UNLOAD(Source.SystemID)]]
+            ]
+            activation = InSystem
+            // stackinggroup stacks probably for the scope (guess every object in scope gets tagged with the stackinggroup)
+            effects = [
+                AddSpecial name = "UNLOADING_SUPPLIES_SPECIAL"
+                SetSpecialCapacity name = "UNLOADING_SUPPLIES_SPECIAL" 
+                    capacity = Value + ( PartCapacity name = "CO_SUPPLIES_030" / [[COUNT_PLANETS_WITH_UNLOAD_BUILDING(Source.SystemID)]] )
+            ]
+        EffectsGroup    // remove empty ship
+            scope = And [
+                Source
+                InSystem
+            ]
+            activation = And [ 
+                InSystem
+                Number low = 1 condition = [[CONDITION_PLANET_IN_SYSTEM_READY_FOR_UNLOAD(Source.SystemID)]]
+            ]
+            stackinggroup = "STACKING_SCRAP_EMPTY_SHIP"
+            effects = [
+                GenerateSitRepMessage
+                    message = "Scrapping supply ship %ship% on %system% after unloading %rawtext% units of industrial supplies." // "EFFECT_UNLOADED_SHIP_SCRAPPED"
+                    icon = "icons/meter/supply.png"
+                    parameters = [
+                        tag = "system" data = Target.SystemID
+                        tag = "rawtext" data = [[SUM_OF_SHIP_SUPPLIES]]
+                        tag = "ship" data = Source.ID
+                    ]
+                    empire = Target.Owner
+                Destroy
+            ]
+    ]
+    icon = "icons/meter/supply.png"
+
+SUM_OF_SHIP_SUPPLIES
+'''[[SUM_OF_SHIP_SUPPLIES_FOR_PART(CO_SUPPLIES_030)]]'''
+
+SUM_OF_SHIP_SUPPLIES_FOR_PART
+'''(PartCapacity name = "@1@") * (PartsInShipDesign Name = "@1@" design = Source.DesignID)'''
+
+PART_CAP
+'''PartCapacity name = "@1@"'''
+//'''30.0'''
+//'''LocalCandidate.PartCapacity name = "@1@"'''
+
+COUNT_PLANETS_WITH_UNLOAD_BUILDING
+'''( Count condition = And [
+                        Planet
+                        InSystem id = @1@ 
+                        Contains Building name = "BLD_UNLOAD_SUPPLY"
+                        ] )'''
+
+CONDITION_PLANET_IN_SYSTEM_READY_FOR_UNLOAD
+'''
+And [
+InSystem id = @1@
+Contains Building name = "BLD_UNLOAD_SUPPLY"
+OwnedBy empire = Source.Owner
+]
+'''
+
+CONDITION_BUILDING_IN_SYSTEM_READY_FOR_UNLOAD
+'''
+InSystem id = @1@
+Building name = "BLD_UNLOAD_SUPPLY"
+OwnedBy empire = Source.Owner
+'''

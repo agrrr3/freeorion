@@ -1,0 +1,8 @@
+ShipDesign
+    name = "SD_SUPPLY_DROP"
+    description = "SD_SUPPLY_DROP_DESC"
+    hull = "SH_COLONY_BASE"
+    parts = [
+        "CO_SUPPLIES_030"
+    ]
+    model = "supply030"
