@@ -29,19 +29,6 @@ Part
     buildtime = 1
     location = OwnedBy empire = Source.Owner
     effectsgroups = [
-        EffectsGroup
-            scope = NumberOf number = 1 condition = Planet
-            stackinggroup = "STACKING_VERSION_INFORMATION_ONCE_PER_TURN"
-            effects = [ 
-                GenerateSitRepMessage
-                    message = "This is version %rawtext% . Lucky winner is %planet%"
-                    icon = "icons/waiting.png"
-                    parameters = [
-                        tag = "planet" data = Target.ID
-                        tag = "rawtext" data = "20160716_0945"
-                    ]
-                    empire = Source.Owner
-            ]
         EffectsGroup // production on planets where unloading starts this turn
             scope = And [
                 Planet
@@ -51,16 +38,14 @@ Part
             // activation = InSystem
             stackinggroup = "STACKING_BOOST_INDUSTRY_ONCE_PER_PLANET"
             effects = [
-                // SetIndustry value = max(4, Value + 5) // 5 == number which is decreased from the pile every round
-                // SetTargetIndustry and SetIndustry dont seem to work on outposts
-                // and ATM SetIndustry also doesnt seem to work when unloading
-                // SetIndustry value = max(4, Value + 5) // 5 == number which is decreased from the pile every round
+                // SetIndustry value = max(4, Value + 100) // 5 == number which is decreased from the pile every round
+                // SetTargetIndustry and SetIndustry dont seem to work on outposts ( gets reset later if population is zero )
                 GenerateSitRepMessage
                     message = "Unloading on %planet% started. Got a %rawtext% industry boost."
                     icon = "icons/waiting.png"
                     parameters = [
                         tag = "planet" data = Target.ID
-                        tag = "rawtext" data = "0"
+                        tag = "rawtext" data = "100"
                     ]
                     empire = Source.Owner
             ]
