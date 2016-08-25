@@ -36,7 +36,7 @@ class DiplomaticCorp(object):
         if message.type == fo.diplomaticMessageType.peaceProposal:
             foAI.foAIstate.log_peace_request(message.sender, message.recipient)
             proposal_sender_player = fo.empirePlayerID(message.sender)
-            attitude = self.evaluate_diplomatic_attitude(message.sender)
+            attitude = -5
             possible_acknowledgments = []
             if foAI.foAIstate.aggression <= fo.aggression.typical:
                 possible_acknowledgments = UserStringList("AI_PEACE_PROPOSAL_ACKNOWLEDGEMENTS_MILD_LIST")
