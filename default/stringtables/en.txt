@@ -128,6 +128,15 @@ Back
 LAST
 Last
 
+PAUSE
+Pause
+
+PAUSED
+Paused
+
+RESUME
+Resume
+
 # Name for a newly created general purpose fleet.
 # %1% represents a unique number.
 NEW_FLEET_NAME
@@ -812,6 +821,12 @@ SM_KRAKEN_3_DESC
 
 Favored Environment: Gas Giants. Kraken nests are normally found in the orbit of [[PT_GASGIANT]] planets, and Kraken can mature into larger forms in systems with Gas Giants.'''
 
+SM_WHITE_KRAKEN
+White Kraken
+
+SM_WHITE_KRAKEN_DESC
+The White Kraken is a white-colored prehistoric ancestor of the Kraken Space Monster.
+
 SM_BLACK_KRAKEN
 Black Kraken
 
@@ -951,13 +966,13 @@ FLD_ION_STORM
 Ion Storm
 
 FLD_ION_STORM_DESC
-Magnetic vortex of relativistic charged particles that can interfere with sensors and obscures all objects within it.
+Magnetic vortex of relativistic charged particles that can interfere with sensors and obscures all objects within it. All objects inside the storm receive an increase to [[encyclopedia STEALTH_TITLE]] of 40, but a decrease to [[encyclopedia DETECTION_RANGE_TITLE]] of 40.
 
 FLD_MOLECULAR_CLOUD
 Molecular Cloud
 
 FLD_MOLECULAR_CLOUD_DESC
-Diffuse cloud of complex molecules that disrupts ship shielding.
+Diffuse cloud of complex molecules that disrupts ship shielding. All ships have their [[encyclopedia SHIELDS_TITLE]] decreased by 15. 
 
 FLD_NEBULA_1
 Nebula
@@ -4433,7 +4448,11 @@ Each [[encyclopedia ENC_SPECIES]] has its own environmental preferences, which d
 
 The planet suitability report can be displayed by right-cliking on a planet in the system sidepanel. A green number following the suitability data indicates the max population value if the species colonizes the planet, whereas a red number indicates that the population will stay idle or will decrease, to finally perish if the species attempts to colonize the planet.
 
-When terraforming a planet (by [[encyclopedia RESEARCH_TITLE]] or if the planet has the [[special GAIA_SPECIAL]] special) in order to better suit the species environmental preferences, the planet's original environment is modified by stages, until it finally reaches the [[PE_GOOD]] suitability for the species who wants to live on the planet. The terraforming stages can be checked on the suitability wheel displayed in the Planet Suitability report.'''
+When terraforming a planet (by [[encyclopedia RESEARCH_TITLE]] or if the planet has the [[special GAIA_SPECIAL]] special) in order to better suit the species environmental preferences, the planet's original environment is modified by stages, until it finally reaches the [[PE_GOOD]] suitability for the species who wants to live on the planet. The terraforming stages can be checked on the suitability wheel displayed below.
+
+Clockwise from top: [[PT_TERRAN]], [[PT_OCEAN]], [[PT_SWAMP]], [[PT_TOXIC]], [[PT_INFERNO]], [[PT_RADIATED]], [[PT_BARREN]], [[PT_TUNDRA]], [[PT_DESERT]] 
+
+<img src="encyclopedia/EP_wheel.png"></img>'''
 
 ORGANIC_SPECIES_TITLE
 Organic Metabolism
@@ -5086,7 +5105,7 @@ SITREP_COMBAT_SYSTEM_ENEMY
 At %system%: there was %combat% with %empire%.
 
 SITREP_COMBAT_SYSTEM_ENEMY_LABEL
-Combat at System
+Combat at System - Single Empire
 
 COMBAT
 Combat
@@ -5191,7 +5210,7 @@ SITREP_GROUND_BATTLE_ENEMY
 On %planet%: there was a ground battle with %empire%.
 
 SITREP_GROUND_BATTLE_ENEMY_LABEL
-Ground Battle
+Ground Battle - Single Empire
 
 SITREP_PLANET_CAPTURED
 %planet% was captured by %empire%.
@@ -5331,17 +5350,35 @@ On %planet%: Ancient Ruins were excavated, but only tantalizing hints of ancient
 EFFECT_ANCIENT_RUINS_EMPTY_LABEL
 Ancient Ruins Empty Excavation
 
+EFFECT_ANCIENT_GUARDIANS_CAPTURED
+On %planet%: The [[species SP_ANCIENT_GUARDIANS]] self-destructed when the planet was captured!
+
+EFFECT_ANCIENT_GUARDIANS_CAPTURED_LABEL
+Ancient Guardians self destruct
+
 EFFECT_CONC_CAMP_COMLETE
 At %planet%: depopulation is complete.
 
 EFFECT_CONC_CAMP_COMLETE_LABEL
 Ethnic Cleansing
 
-SITREP_SHIP_REPAIR_DOCK
-Orbital Dock Ship Repairs
+SITREP_SHIP_REPAIR_DOCK_NONE
+Orbital Drydock Repairs - None
+
+SITREP_SHIP_REPAIR_DOCK_NOPOP
+Orbital Drydock Repairs - No population
+
+SITREP_SHIP_REPAIR_DOCK_PARTIAL
+Orbital Drydock Repairs - Partial
+
+SITREP_SHIP_REPAIR_DOCK_COMPLETE
+Orbital Drydock Repairs - Complete
 
 EFFECT_DRYDOCK_SHIP_REPAIR_NONE
 On %planet%: The %building% could not start repairs on %ship%, due to low [[encyclopedia HAPPINESS_TITLE]].
+
+EFFECT_DRYDOCK_SHIP_REPAIR_NOPOP
+On %planet%: the %building% is abandoned, there is no one left to assist in repairs of the ship %ship%.
 
 EFFECT_DRYDOCK_SHIP_REPAIR_PARTIAL
 On %planet%: the %building% performed partial repairs on the %ship%.
@@ -5408,6 +5445,12 @@ At %planet%: a %predefinedshipdesign% is ready for service.
 
 EFFECT_SENTRY_CREATED_LABEL
 Sentry Created
+
+EFFECT_WHITE_KRAKEN_RESURRECTED
+At %planet%: a [[predefinedshipdesign SM_WHITE_KRAKEN]] has been resurrected and is ready for service.
+
+EFFECT_WHITE_KRAKEN_RESURRECTED_LABEL
+Monster Resurrected
 
 EFFECT_GATEWAY_VOID_DESTROY
 The %buildingtype% at %planet% destroyed the %fleet% fleet.
@@ -5618,7 +5661,9 @@ All random game hints:
 
 [[BEGINNER_HINT_20]]
 
-[[BEGINNER_HINT_21]]'''
+[[BEGINNER_HINT_21]]
+
+[[BEGINNER_HINT_22]]'''
 
 RANDOM_BEGINNER_HINT
 Hint #%rawtext%
@@ -5686,6 +5731,8 @@ BEGINNER_HINT_20
 BEGINNER_HINT_21
 21: You can set a destination for a ship that is still in the production queue. With the production screen open: click on the target system in the galaxy map, then right click on the ship in the production queue. When a menu of choices for that ship pops up choose 'Rally to ' and it should have the name of the selected system where you want the ship to automatically go once construction completes.
 
+BEGINNER_HINT_22
+22: Selecting a system and pressing ALT-C gives a range circle for the system, zoom in or out to compare the distance by looking at the size of the distance meter.
 
 ##
 ## Species
@@ -6467,6 +6514,18 @@ SP_EXOBOT_DESC
 '''While not as efficient as fully self-directed citizens, Exobots can colonize otherwise inhospitable planets, and build more Exobots.
 '''
 
+SP_ANCIENT_GUARDIANS
+Ancient Guardians
+SP_ANCIENT_GUARDIANS_GAMEPLAY_DESC
+'''Guardian Robots constructed by a Precursor civilization aeons ago
+[[encyclopedia ROBOTIC_SPECIES_TITLE]]
+Will self-destruct when conquered
+'''
+
+SP_ANCIENT_GUARDIANS_DESC
+'''Constructed by precusor technology, these ancient machines can adapt to and fight in any kind of environment. With unwavering loyalty and commitment, they have protected the planet from any invaders, never wasting time to repair and improve the fortifications. Upon being captured, every Guardian Robot will automatically self-destruct.
+'''
+
 SP_EXPERIMENTOR
 Experimentor
 
@@ -6690,6 +6749,14 @@ Juggernaut Nest
 
 JUGGERNAUT_NEST_SPECIAL_DESC
 At some point young juggernauts will rise from this place.  With knowledge of [[tech SHP_DOMESTIC_MONSTER]], these mega-fauna could be domesticated.
+
+KRAKEN_IN_THE_ICE_SPECIAL
+Kraken in the Ice
+
+KRAKEN_IN_THE_ICE_SPECIAL_DESC
+'''With the knowledge of the technologies [[tech SHP_DOMESTIC_MONSTER]] and [[tech LRN_XENOARCH]], the [[predefinedshipdesign SM_WHITE_KRAKEN]] can be resurrected and controlled by building a [[buildingtype BLD_XENORESURRECTION_LAB]] on this planet.
+
+Deep below the icy crust of this planet lies a white-colored prehistoric ancestor of the Kraken Space Monster.'''
 
 HEAD_ON_A_SPIKE_SPECIAL
 Head on a Spike
@@ -9508,7 +9575,7 @@ SHP_ADV_DAM_CONT
 Advanced Damage Control
 
 SHP_ADV_DAM_CONT_DESC
-Repairs damaged ships by 10% of [[encyclopedia STRUCTURE_TITLE]] per turn if they are stationary and have not been in combat that turn. This is cumulative with [[tech SHP_BASIC_DAM_CONT]] and [[tech SHP_FLEET_REPAIR]].
+Repairs damaged ships by 10% of [[encyclopedia STRUCTURE_TITLE]] per turn if they are stationary and have not been in combat that turn. This is cumulative with [[tech SHP_BASIC_DAM_CONT]] and [[tech SHP_FLEET_REPAIR]] and works even out of [[encyclopedia SUPPLY_TITLE]].
 
 SHP_ROOT_AGGRESSION
 Aggression
@@ -10081,6 +10148,14 @@ BLD_CULTURE_LIBRARY_DESC
 '''Increases target [[encyclopedia RESEARCH_TITLE]] by 5.
 
 Stores the accumulated knowledge from thousands of years of life on this planet, giving a bonuses to research. This building will be destroyed when the population of the high tech natives reaches zero.'''
+
+BLD_AUTO_HISTORY_ANALYSER
+Automated History Analyser
+
+BLD_AUTO_HISTORY_ANALYSER_DESC
+'''The Automated History Analyser can only be built on a planet with [[buildingtype BLD_CULTURE_ARCHIVES]]. Increases target [[encyclopedia RESEARCH_TITLE]] by 5.
+
+An automated research center with enormous computing power that scours the digitalised cultural archieves to come up with patterns, interdisciplinary parallels and lost or unfinished insights.'''
 
 BLD_IMPERIAL_PALACE
 Imperial Palace
@@ -11850,6 +11925,12 @@ Great Kraken Body
 SH_KRAKEN_3_BODY_DESC
 A formidable heavy-weight space monster.
 
+SH_WHITE_KRAKEN_BODY
+White Kraken Body
+
+SH_WHITE_KRAKEN_BODY_DESC
+A white-colored prehistoric ancestor of the Kraken Space Monster.
+
 SH_BLACK_KRAKEN_BODY
 Black Kraken Body
 
@@ -12040,6 +12121,9 @@ GREAT_DEFENSE_TROOPS_DESC
 ULTIMATE_DEFENSE_TROOPS_DESC
 +++	Ultimate Defensive Ground [[encyclopedia TROOP_TITLE]]: 300%
 
+ANCIENT_DEFENSE_TROOPS_DESC
++++	Ancient Defensive Ground [[encyclopedia TROOP_TITLE]]: 10 per population
+
 NO_OFFENSE_TROOPS_DESC
 −−−	No Offensive Ground [[encyclopedia TROOP_TITLE]]
 
@@ -12123,6 +12207,9 @@ GOOD_SHIP_SHIELD_DESC
 
 GOOD_PLANETARY_SHIELD_DESC
 +	Good planetary [[encyclopedia SHIELDS_TITLE]]: +5
+
+ANCIENT_PLANETARY_SHIELD_DESC
++++	Ancient planetary [[encyclopedia SHIELDS_TITLE]]: +500
 
 GOOD_PLANETARY_DEFENSE_DESC
 +	Good planetary [[encyclopedia DEFENSE_TITLE]]: +5

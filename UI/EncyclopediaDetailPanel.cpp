@@ -62,6 +62,11 @@ namespace {
     const std::string PLANET_SUITABILITY_REPORT = "planet suitability report";
     const std::string GRAPH = "data graph";
     const std::string TEXT_SEARCH_RESULTS = "dynamic generated text";
+
+    /** @content_tag{CTRL_ALWAYS_REPORT} Always display a species on a planet suitability report. **/
+    const std::string TAG_ALWAYS_REPORT = "CTRL_ALWAYS_REPORT";
+    /** @content_tag{CTRL_EXTINCT} Added to both a species and their colony building.  Handles display in planet suitability report. **/
+    const std::string TAG_EXTINCT = "CTRL_EXTINCT";
 }
 
 namespace {
@@ -877,10 +882,16 @@ void EncyclopediaDetailPanel::HandleSearchTextEntered() {
     std::string match_report;
     std::set<std::pair<std::string, std::string> > already_listed_results;  // pair of category / article name
 
-    // assemble link text to all pedia entrys, indexed by name
-    const std::vector<std::string>& dir_names = GetSearchTextDirNames();
+    // assemble link text to all pedia entries, indexed by name
+    std::vector<std::string> dir_names = GetSearchTextDirNames();
+    const std::map<std::string, std::vector<EncyclopediaArticle> >& articles = GetEncyclopedia().articles;
+    for (std::map<std::string, std::vector<EncyclopediaArticle> >::const_iterator art_it = articles.begin();
+         art_it != articles.end(); ++art_it)
+    {
+        dir_names.push_back(art_it->first);
+    }
 
-    // map from human-readable-name to (link-text, category nam
+    // map from human-readable-name to (link-text, category name)
     std::multimap<std::string, std::pair<std::string, std::string> > all_pedia_entries_list;
 
 
@@ -1354,9 +1365,9 @@ namespace {
         }
         if (GetOptionsDB().Get<bool>("UI.dump-effects-descriptions")) {
             if (!building_type->ProductionCostTimeLocationInvariant()) {
-                if (building_type->Cost() && !ValueRef::ConstantExpr(building_type->Cost()))
+                if (building_type->Cost() && !building_type->Cost()->ConstantExpr())
                     detailed_description += "\n" + building_type->Cost()->Dump();
-                if (building_type->Time() && !ValueRef::ConstantExpr(building_type->Time()))
+                if (building_type->Time() && !building_type->Time()->ConstantExpr())
                     detailed_description += "\n" + building_type->Time()->Dump();
             }
             if (building_type->Location())
@@ -2323,21 +2334,21 @@ namespace {
                 continue;
             const std::string& species_str = it->first;
             const std::set<std::string>& species_tags = it->second->Tags();
-            if (species_tags.find("CTRL_ALWAYS_REPORT") != species_tags.end()) {
+            if (species_tags.find(TAG_ALWAYS_REPORT) != species_tags.end()) {
                 species_names.insert(species_str);
                 continue;
             }
             // Add extinct species if their (extinct) colony building is available
             // Extinct species should have an EXTINCT tag
             // The colony building should have an EXTINCT tag unless it is a starting unlock
-            if (species_tags.find("CTRL_EXTINCT") != species_tags.end()) {
+            if (species_tags.find(TAG_EXTINCT) != species_tags.end()) {
                 const BuildingTypeManager& building_type_manager = GetBuildingTypeManager();
                 for (BuildingTypeManager::iterator bld_it = building_type_manager.begin();
                      bld_it != building_type_manager.end(); ++bld_it)
                 {
                     const std::set<std::string>& bld_tags = bld_it->second->Tags();
                     // check if building matches tag requirements
-                    if ((bld_tags.find("CTRL_EXTINCT") != bld_tags.end()) &&
+                    if ((bld_tags.find(TAG_EXTINCT) != bld_tags.end()) &&
                         (bld_tags.find(species_str) != bld_tags.end()))
                     {
                         const std::string& bld_str = bld_it->first;

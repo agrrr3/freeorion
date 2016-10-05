@@ -1,6 +1,6 @@
 import freeOrionAIInterface as fo  # pylint: disable=import-error
 from common.print_utils import Table, Text, Sequence, Bool
-
+import sys
 import AIDependencies
 import universe_object
 import AIstate
@@ -10,16 +10,13 @@ import PlanetUtilsAI
 import ProductionAI
 import TechsListsAI
 import MilitaryAI
-import sys
 from turn_state import state
 from EnumsAI import MissionType, FocusType, EmpireProductionTypes, ShipRoleType, PriorityType
 from freeorion_tools import dict_from_map, tech_is_complete, get_ai_tag_grade, cache_by_turn, Timer
 
 colonization_timer = Timer('getColonyFleets()')
 
-empire_species = {}
-empire_species_by_planet = {}
-empire_species_systems = {}  # TODO: as currently used, is duplicative with combo of foAI.foAIstate.popCtrSystemIDs and foAI.foAIstate.colonizedSystems
+
 empire_colonizers = {}
 empire_ship_builders = {}
 empire_shipyards = {}
@@ -156,29 +153,23 @@ def get_supply_tech_range():
 
 
 def check_supply():
-    # get suppliable systems and planets
-    colonization_timer.start('Getting Empire Supply Info')
+    print "\n", 10 * "=", "Supply calculations", 10 * "=", "\n"
     universe = fo.getUniverse()
     empire = fo.getEmpire()
-    colonization_timer.start('Determining Annexable Systems')
 
-    annexable_system_ids.clear()  # TODO: distinguish colony-annexable systems and outpost-annexable systems
+    colonization_timer.start('Getting Empire Supply Info')
     systems_by_supply_tier.clear()
     system_supply.clear()
+    system_supply.update(empire.supplyProjections())  # number of jumps away from fleet-supplied system (0 = in supply)
+    for sys_id, supply_val in system_supply.items():
+        systems_by_supply_tier.setdefault(min(0, supply_val), []).append(sys_id)
 
-    print "Supply Calc:"
     print "Known Systems:", list(universe.systemIDs)
     print "Base Supply:", dict_from_map(empire.systemSupplyRanges)
-    # Note: empire.supplyProjections supply returns the number of jumps each system is from a fleet-supplied system for that empire (0 if a system is in supply)
-    system_supply.update(empire.supplyProjections())
-    for sys_id, supply_val in system_supply.items():
-        # print PlanetUtilsAI.sys_name_ids([sys_id]), ' -- ', supply_val
-        systems_by_supply_tier.setdefault(min(0, supply_val), []).append(sys_id)
     print "Supply connected systems: ", ', '.join(PlanetUtilsAI.sys_name_ids(systems_by_supply_tier.get(0, [])))
-    print "First Ring of annexable systems: ", ', '.join(PlanetUtilsAI.sys_name_ids(systems_by_supply_tier.get(-1, [])))
-    print "Second Ring of annexable systems: ", ', '.join(PlanetUtilsAI.sys_name_ids(systems_by_supply_tier.get(-2, [])))
-    print "Third Ring of annexable systems: ", ', '.join(PlanetUtilsAI.sys_name_ids(systems_by_supply_tier.get(-3, [])))
-    # print "new supply calc took ", new_time-supp_timing[0][-1]
+    print
+
+    colonization_timer.start('Determining Annexable Systems')
     annexable_system_ids.clear()  # TODO: distinguish colony-annexable systems and outpost-annexable systems
     annexable_ring1.clear()
     annexable_ring2.clear()
@@ -186,7 +177,10 @@ def check_supply():
     annexable_ring1.update(systems_by_supply_tier.get(-1, []))
     annexable_ring2.update(systems_by_supply_tier.get(-2, []))
     annexable_ring3.update(systems_by_supply_tier.get(-3, []))
-    # annexableSystemIDs.update(systems_by_supply_tier.get(0, []), annexableRing1, annexableRing2, annexableRing3)
+
+    print "First Ring of annexable systems: ", ', '.join(PlanetUtilsAI.sys_name_ids(systems_by_supply_tier.get(-1, [])))
+    print "Second Ring of annexable systems: ", ', '.join(PlanetUtilsAI.sys_name_ids(systems_by_supply_tier.get(-2, [])))
+    print "Third Ring of annexable systems: ", ', '.join(PlanetUtilsAI.sys_name_ids(systems_by_supply_tier.get(-3, [])))
 
     supply_distance = get_supply_tech_range()
     # extra potential supply contributions:
@@ -195,9 +189,7 @@ def check_supply():
     # 1 for World Tree
     # TODO: +3 to consider capturing planets with Elevators
     # TODO consider that this should not be more then maximal value in empire.systemSupplyRanges
-    supply_distance += 6  # should not be more then max value in supplyProjections
-    # if foAI.foAIstate.aggression >= fo.aggression.aggressive:
-    # supply_distance += 1
+    supply_distance += 6  # should not be more than max value in supplyProjections
 
     # we should not rely on constant here, for sys, supply in supplyProjections need to add systems in supply range
     for jumps in range(-supply_distance, 1):  # [-supply_distance, ..., -2, -1, 0]
@@ -222,12 +214,6 @@ def survey_universe():
     print "Explored PlanetIDs: %s" % PlanetUtilsAI.get_planets_in__systems_ids(explored_system_ids)
     print
 
-    # visibleSystemIDs = foAI.foAIstate.visInteriorSystemIDs.keys() + foAI.foAIstate. visBorderSystemIDs.keys()
-    # visiblePlanetIDs = PlanetUtilsAI.get_planets_in__systems_ids(visibleSystemIDs)
-    # print "VisiblePlanets: %s "%[ (pid, (universe.getPlanet(pid) and universe.getPlanet(pid).name) or "unknown") for pid in visiblePlanetIDs]
-    # accessibleSystemIDs = [sysID for sysID in visibleSystemIDs if universe.systemsConnected(sysID, homeSystemID, empireID) ]
-    # acessiblePlanetIDs = PlanetUtilsAI.get_planets_in__systems_ids(accessibleSystemIDs)
-
     # set up / reset various variables; the 'if' is purely for code folding convenience
     if True:
         colony_status['colonies_under_attack'] = []
@@ -236,8 +222,6 @@ def survey_universe():
         empire_status.update({'industrialists': 0, 'researchers': 0})
         AIstate.empireStars.clear()
         empire_outpost_ids.clear()
-        empire_species.clear()
-        empire_species_by_planet.clear()
         empire_colonizers.clear()
         empire_ship_builders.clear()
         empire_shipyards.clear()
@@ -247,7 +231,6 @@ def survey_universe():
         active_growth_specials.clear()
         if tech_is_complete(TechsListsAI.EXOBOT_TECH_NAME):
             empire_colonizers["SP_EXOBOT"] = []  # get it into colonizer list even if no colony yet
-        empire_species_systems.clear()
         AIstate.popCtrIDs[:] = []
         AIstate.popCtrSystemIDs[:] = []
         AIstate.outpostIDs[:] = []
@@ -257,7 +240,7 @@ def survey_universe():
         unowned_empty_planet_ids.clear()
         facilities_by_species_grade.clear()
         system_facilities.clear()
-        state.cleanup()
+        state.update()
 
     # var setup done
 
@@ -300,10 +283,7 @@ def survey_universe():
                 elif this_spec:
                     empire_has_qualifying_planet = True
                     AIstate.popCtrIDs.append(pid)
-                    empire_species_systems.setdefault(sys_id, {}).setdefault('pids', []).append(pid)
                     empire_has_pop_ctr_in_sys = True
-                    empire_species_by_planet[pid] = spec_name
-                    empire_species.setdefault(spec_name, []).append(pid)
                     for metab in [tag for tag in this_spec.tags if tag in AIDependencies.metabolismBoostMap]:
                         empire_metabolisms[metab] = empire_metabolisms.get(metab, 0.0) + planet.size
                     if this_spec.canProduceShips:
@@ -386,22 +366,7 @@ def survey_universe():
             if sys_status.get('neighborThreat', 0) > 0:
                 colony_status['colonies_under_threat'].append(sys_id)
 
-    # system_facilities[''] = {'systems': set().union(sys_id for key, val in system_facilities.items()
-    #                                                for sys_id in val.get('systems', {}))}
-
-    species_table = Table(
-        [Text('species'), Sequence('planets'), Bool('can colonize'),
-         Text('ship yards count'), Sequence('tags')],
-        table_name="Empire species roster"
-    )
-
-    for spec_name in empire_species:
-        this_spec = fo.getSpecies(spec_name)
-        species_table.add_row(
-            (spec_name, empire_species[spec_name], spec_name in empire_colonizers,
-             len(empire_ship_builders.get(spec_name, [])), list(this_spec.tags))
-        )
-    species_table.print_table()
+    _print_empire_species_roster()
 
     if len(pilot_ratings) != 0:
         rating_list = sorted(pilot_ratings.values(), reverse=True)
@@ -425,60 +390,45 @@ def survey_universe():
 
 def get_colony_fleets():
     """examines known planets, collects various colonization data, to be later used to send colony fleets"""
-    colonization_timer.start("Getting best milship rating")
-    colonization_timer.start('Getting avail colony fleets')
-
-    all_colony_fleet_ids = FleetUtilsAI.get_empire_fleet_ids_by_role(MissionType.COLONISATION)
-    AIstate.colonyFleetIDs[:] = FleetUtilsAI.extract_fleet_ids_without_mission_types(all_colony_fleet_ids)
-
-    # get suppliable systems and planets
     universe = fo.getUniverse()
     empire = fo.getEmpire()
+
+    colonization_timer.start('Getting avail colony fleets')
+    all_colony_fleet_ids = FleetUtilsAI.get_empire_fleet_ids_by_role(MissionType.COLONISATION)
+
     colonization_timer.start('Identify Existing colony/outpost targets')
-
-    # export colony targeted systems for other AI modules
-    colony_targeted_planet_ids = FleetUtilsAI.get_targeted_planet_ids(universe.planetIDs,
-                                                                      MissionType.COLONISATION)
+    colony_targeted_planet_ids = FleetUtilsAI.get_targeted_planet_ids(universe.planetIDs, MissionType.COLONISATION)
     all_colony_targeted_system_ids = PlanetUtilsAI.get_systems(colony_targeted_planet_ids)
-    AIstate.colonyTargetedSystemIDs = all_colony_targeted_system_ids
-    print
-    print "Colony Targeted SystemIDs: %s" % AIstate.colonyTargetedSystemIDs
-    print "Colony Targeted PlanetIDs: %s" % colony_targeted_planet_ids
-
     colony_fleet_ids = FleetUtilsAI.get_empire_fleet_ids_by_role(MissionType.COLONISATION)
-    if not colony_fleet_ids:
-        print "Available Colony Fleets: 0"
-    else:
-        print "Colony FleetIDs: " % FleetUtilsAI.get_empire_fleet_ids_by_role(
-            MissionType.COLONISATION)
-
     num_colony_fleets = len(FleetUtilsAI.extract_fleet_ids_without_mission_types(colony_fleet_ids))
-    print "Colony Fleets Without Missions: %s" % num_colony_fleets
-    outpost_targeted_planet_ids = FleetUtilsAI.get_targeted_planet_ids(universe.planetIDs,
-                                                                       MissionType.OUTPOST)
-    outpost_targeted_planet_ids.extend(
-        FleetUtilsAI.get_targeted_planet_ids(universe.planetIDs, MissionType.ORBITAL_OUTPOST))
+
+    outpost_targeted_planet_ids = FleetUtilsAI.get_targeted_planet_ids(universe.planetIDs, MissionType.OUTPOST)
+    outpost_targeted_planet_ids.extend(FleetUtilsAI.get_targeted_planet_ids(universe.planetIDs,
+                                                                            MissionType.ORBITAL_OUTPOST))
     all_outpost_targeted_system_ids = PlanetUtilsAI.get_systems(outpost_targeted_planet_ids)
-
-    # export outpost targeted systems for other AI modules
-    AIstate.outpostTargetedSystemIDs = all_outpost_targeted_system_ids
-    print
-    print "Outpost Targeted SystemIDs: " + str(AIstate.outpostTargetedSystemIDs)
-    print "Outpost Targeted PlanetIDs: " + str(outpost_targeted_planet_ids)
-
     outpost_fleet_ids = FleetUtilsAI.get_empire_fleet_ids_by_role(MissionType.OUTPOST)
-    if not outpost_fleet_ids:
-        print "Available Outpost Fleets: 0"
-    else:
-        print "Outpost FleetIDs: %s" % FleetUtilsAI.get_empire_fleet_ids_by_role(
-            MissionType.OUTPOST)
-
     num_outpost_fleets = len(FleetUtilsAI.extract_fleet_ids_without_mission_types(outpost_fleet_ids))
-    print "Outpost Fleets Without Missions: %s" % num_outpost_fleets
-    colonization_timer.start('Identify colony base targets')
 
-    available_pp = dict([(tuple(el.key()), el.data()) for el in
-                         empire.planetsWithAvailablePP])  # keys are sets of ints; data is doubles
+    print "Colony Targeted SystemIDs: %s" % all_colony_targeted_system_ids
+    print "Colony Targeted PlanetIDs: %s" % colony_targeted_planet_ids
+    print colony_fleet_ids and "Colony Fleet IDs: %s" % colony_fleet_ids or "Available Colony Fleets: 0"
+    print "Colony Fleets Without Missions: %s" % num_colony_fleets
+    print
+    print "Outpost Targeted SystemIDs:", all_outpost_targeted_system_ids
+    print "Outpost Targeted PlanetIDs:", outpost_targeted_planet_ids
+    print outpost_fleet_ids and "Outpost Fleet IDs: %s" % outpost_fleet_ids or "Available Outpost Fleets: 0"
+    print "Outpost Fleets Without Missions: %s" % num_outpost_fleets
+    print
+
+    # export targeted systems for other AI modules
+    AIstate.colonyTargetedSystemIDs = all_colony_targeted_system_ids
+    AIstate.outpostTargetedSystemIDs = all_outpost_targeted_system_ids
+    AIstate.colonyFleetIDs[:] = FleetUtilsAI.extract_fleet_ids_without_mission_types(all_colony_fleet_ids)
+
+    colonization_timer.start('Identify colony base targets')
+    # keys are sets of ints; data is doubles
+    available_pp = {tuple(el.key()): el.data() for el in empire.planetsWithAvailablePP}
+
     avail_pp_by_sys = {}
     for p_set in available_pp:
         avail_pp_by_sys.update([(sys_id, available_pp[p_set]) for sys_id in set(PlanetUtilsAI.get_systems(p_set))])
@@ -509,7 +459,7 @@ def get_colony_fleets():
         if not planet:
             continue
         sys_id = planet.systemID
-        for pid2 in empire_species_systems.get(sys_id, {}).get('pids', []):
+        for pid2 in state.get_empire_inhabited_planets_by_system().get(sys_id, []):
             planet2 = universe.getPlanet(pid2)
             if not (planet2 and planet2.speciesName in empire_colonizers):
                 continue
@@ -522,14 +472,14 @@ def get_colony_fleets():
                 # TODO: enable actual building, remove from outpostbases, check other local colonizers for better score
                 foAI.foAIstate.qualifyingColonyBaseTargets.setdefault(pid, [pid2, -1])
 
-    # print "Evaluated Colony PlanetIDs: " + str(evaluated_colony_planet_ids)
     colonization_timer.start('Initiate outpost base construction')
 
     reserved_outpost_base_targets = foAI.foAIstate.qualifyingOutpostBaseTargets.keys()
     max_queued_outpost_bases = max(1, int(2 * empire.productionPoints / outpost_cost))
-    print "Considering possible outpost bases at %s" % reserved_outpost_base_targets
-    if tech_is_complete(AIDependencies.OUTPOSTING_TECH):
-        for pid in (set(reserved_outpost_base_targets) - set(outpost_targeted_planet_ids)):
+    considered_outpost_base_targets = (set(reserved_outpost_base_targets) - set(outpost_targeted_planet_ids))
+    if tech_is_complete(AIDependencies.OUTPOSTING_TECH) and considered_outpost_base_targets:
+        print "Considering to build outpost bases for %s" % reserved_outpost_base_targets
+        for pid in considered_outpost_base_targets:
             if len(queued_outpost_bases) >= max_queued_outpost_bases:
                 print "Too many queued outpost bases to build any more now"
                 break
@@ -539,6 +489,8 @@ def get_colony_fleets():
                 continue  # already building for here
             loc = foAI.foAIstate.qualifyingOutpostBaseTargets[pid][0]
             this_score = evaluate_planet(pid, MissionType.OUTPOST, None, empire, [])
+            for species in empire_colonizers:
+                this_score = max(this_score, evaluate_planet(pid, MissionType.COLONISATION, species, empire, []))
             planet = universe.getPlanet(pid)
             if this_score == 0:
                 # print "Potential outpost base (rejected) for %s to be built at planet id(%d); outpost score %.1f" % ( ((planet and planet.name) or "unknown"), loc, this_score)
@@ -559,7 +511,6 @@ def get_colony_fleets():
                     best_ship = outpost_base_design_ids.pop()
                 else:
                     continue
-            # print "selecting ", PlanetUtilsAI.planet_name_ids([pid]), " to build Orbital Defenses"
             retval = fo.issueEnqueueShipProductionOrder(best_ship, loc)
             print "Enqueueing Outpost Base at %s for %s with result %s" % (
                 PlanetUtilsAI.planet_name_ids([loc]), PlanetUtilsAI.planet_name_ids([pid]), retval)
@@ -572,8 +523,6 @@ def get_colony_fleets():
     evaluated_outpost_planet_ids = list(
         unowned_empty_planet_ids - set(outpost_targeted_planet_ids) - set(colony_targeted_planet_ids) - set(
             reserved_outpost_base_targets))
-
-    # print "Evaluated Outpost PlanetIDs: " + str(evaluated_outpost_planet_ids)
 
     evaluated_colony_planets = assign_colonisation_values(evaluated_colony_planet_ids,
                                                           MissionType.COLONISATION, None, empire)
@@ -588,25 +537,7 @@ def get_colony_fleets():
     sorted_planets = evaluated_colony_planets.items()
     sorted_planets.sort(lambda x, y: cmp(x[1], y[1]), reverse=True)
 
-    show_detail = False
-    if show_detail:
-        print
-        print "Settleable Colony Planets (score,species) | ID | Name | Detail + Specials:"
-        for planet_id, (score, spec, detail) in sorted_planets:
-            if score > 0.5:
-                print "   %15s | %5s | %s | %s " % (
-                    (score, spec), planet_id, universe.getPlanet(planet_id).name, detail +
-                    list(universe.getPlanet(planet_id).specials))
-        print
-    else:
-        print
-        print "Settleable Colony Planets (score,species) | ID | Name | Specials:"
-        for planet_id, (score, spec, detail) in sorted_planets:
-            if score > 0.5:
-                print "   %15s | %5s | %s | %s " % (
-                    (score, spec), planet_id, universe.getPlanet(planet_id).name,
-                    list(universe.getPlanet(planet_id).specials))
-        print
+    _print_colony_candidate_table(sorted_planets)
 
     sorted_planets = [(planet_id, score[:2]) for planet_id, score in sorted_planets if score[0] > 0]
     # export planets for other AI modules
@@ -630,12 +561,7 @@ def get_colony_fleets():
     sorted_outposts = evaluated_outpost_planets.items()
     sorted_outposts.sort(lambda x, y: cmp(x[1], y[1]), reverse=True)
 
-    print "Settleable Outpost PlanetIDs:"
-    for planet_id, score in sorted_outposts:
-        if score > 0.5:
-            print "   %5s | %5s | %s | %s " % (
-                score, planet_id, universe.getPlanet(planet_id).name, list(universe.getPlanet(planet_id).specials))
-    print
+    _print_outpost_candidate_table(sorted_outposts)
 
     sorted_outposts = [(planet_id, score[:2]) for planet_id, score in sorted_outposts if score[0] > 0]
     # export outposts for other AI modules
@@ -822,7 +748,8 @@ def evaluate_planet(planet_id, mission_type, spec_name, empire, detail=None):
     # TODO: consider neighboring sytems for smaller contribution, and bigger contributions for
     # local colonies versus local outposts
     locally_owned_planets = [lpid for lpid in AIstate.colonizedSystems.get(this_sysid, []) if lpid != planet_id]
-    locally_owned_pop_ctrs = [lpid for lpid in locally_owned_planets if lpid in empire_species_by_planet]
+    planets_with_species = state.get_inhabited_planets()
+    locally_owned_pop_ctrs = [lpid for lpid in locally_owned_planets if lpid in planets_with_species]
     # triple count pop_ctrs
     existing_presence = len(locally_owned_planets) + 2 * len(locally_owned_pop_ctrs)
     system = universe.getSystem(this_sysid)
@@ -884,7 +811,7 @@ def evaluate_planet(planet_id, mission_type, spec_name, empire, detail=None):
 
     if planet_partial_vis_turn < sys_partial_vis_turn:
         # last time we had partial vis of the system, the planet was stealthed to us
-        print "Colonization AI couldn't get current info on planet id %d (was stealthed at last sighting)" % planet_id
+        # print "Colonization AI couldn't get current info on planet id %d (was stealthed at last sighting)" % planet_id
         return 0  # TODO: track detection strength, order new scouting when it goes up
 
     star_bonus = 0
@@ -1007,8 +934,10 @@ def evaluate_planet(planet_id, mission_type, spec_name, empire, detail=None):
             ast_val = 0
             if tech_is_complete("PRO_MICROGRAV_MAN"):
                 per_ast = 5
-            else:
+            elif fo.currentTurn() > 40:
                 per_ast = 2.5
+            else:
+                per_ast = 0.1
             if system:
                 for pid in system.planetIDs:
                     other_planet = universe.getPlanet(pid)
@@ -1027,9 +956,9 @@ def evaluate_planet(planet_id, mission_type, spec_name, empire, detail=None):
             if tech_is_complete("SHP_ASTEROID_HULLS"):
                 per_ast = 20
             elif tech_is_complete("CON_ORBITAL_CON"):
-                per_ast = 10
-            else:
                 per_ast = 5
+            else:
+                per_ast = 0.1
             if system:
                 for pid in system.planetIDs:
                     other_planet = universe.getPlanet(pid)
@@ -1103,11 +1032,11 @@ def evaluate_planet(planet_id, mission_type, spec_name, empire, detail=None):
 
         if sys_supply <= 0:
             if sys_supply + planet_supply >= 0:
-                supply_val = 100 * (planet_supply - max(-3, sys_supply))
+                supply_val = 40 * (planet_supply - max(-3, sys_supply))
             else:
                 supply_val = 200 * (planet_supply + sys_supply)  # a penalty
         elif planet_supply > sys_supply == 1:  # TODO: check min neighbor supply
-            supply_val = 50 * (planet_supply - sys_supply)
+            supply_val = 20 * (planet_supply - sys_supply)
         detail.append("sys_supply: %d, planet_supply: %d, supply_val: %.0f" % (sys_supply, planet_supply, supply_val))
 
         # if AITags != "":
@@ -1336,7 +1265,7 @@ def assign_colony_fleets_to_colonise():
             foAI.foAIstate.qualifyingOutpostBaseTargets[target_id][1] = -1  # TODO: should probably delete
             ai_target = universe_object.Planet(target_id)
             ai_fleet_mission = foAI.foAIstate.get_fleet_mission(fid)
-            ai_fleet_mission.add_target(MissionType.ORBITAL_OUTPOST, ai_target)
+            ai_fleet_mission.set_target(MissionType.ORBITAL_OUTPOST, ai_target)
 
     # assign fleet targets to colonisable planets
     send_colony_ships(AIstate.colonyFleetIDs, foAI.foAIstate.colonisablePlanetIDs.items(),
@@ -1427,4 +1356,68 @@ def send_colony_ships(colony_fleet_ids, evaluated_planets, mission_type):
         fleet_id = this_fleet_list[0]
         already_targeted.append(planet_id)
         ai_target = universe_object.Planet(planet_id)
-        foAI.foAIstate.get_fleet_mission(fleet_id).add_target(mission_type, ai_target)
+        foAI.foAIstate.get_fleet_mission(fleet_id).set_target(mission_type, ai_target)
+
+
+def _print_empire_species_roster():
+    """Print empire species roster in table format to log."""
+    grade_map = {"ULTIMATE": "+++", "GREAT": "++", "GOOD": "+", "AVERAGE": "o", "BAD": "-", "NO": "---"}
+    grade_tags = {'INDUSTRY': "Ind.", 'RESEARCH': "Res.", 'POPULATION': "Pop.",
+                  'SUPPLY': "Supply", 'WEAPONS': "Pilots", 'ATTACKTROOPS': "Troops"}
+    header = [Text('species'), Sequence('Planets'), Bool('Colonizer'), Text('Shipyards')]
+    header.extend(Text(v) for v in grade_tags.values())
+    header.append(Sequence('Tags'))
+    species_table = Table(header, table_name="Empire species roster Turn %d" % fo.currentTurn())
+    for species_name, planet_ids in state.get_empire_planets_by_species().items():
+        species_tags = fo.getSpecies(species_name).tags
+        grade_symbol = lambda x: grade_map.get(get_ai_tag_grade(species_tags, x).upper(), "o")
+        is_colonizer = species_name in empire_colonizers
+        number_of_shipyards = len(empire_ship_builders.get(species_name, []))
+        this_row = [species_name, planet_ids, is_colonizer, number_of_shipyards]
+        this_row.extend(grade_symbol(tag) for tag in grade_tags)
+        this_row.append([tag for tag in species_tags if not any(s in tag for s in grade_tags)])
+        species_table.add_row(this_row)
+    print
+    species_table.print_table()
+
+
+def _print_outpost_candidate_table(candidates):
+    """Print a summary for the outpost candidates in a table format to log.
+
+    :param candidates: list of (planet_id, (score, species, details)) tuples
+    """
+    __print_candidate_table(candidates, mission='Outposts')
+
+
+def _print_colony_candidate_table(candidates):
+    """Print a summary for the colony candidates in a table format to log.
+
+    :param candidates: list of (planet_id, (score, species, details)) tuples
+    """
+    __print_candidate_table(candidates, mission='Colonization')
+
+
+def __print_candidate_table(candidates, mission):
+    universe = fo.getUniverse()
+    if mission == 'Colonization':
+        col1 = Text('(Score, Species)')
+        col1_value = lambda x: (x[0], x[1])
+    elif mission == 'Outposts':
+        col1 = Text('Score')
+        col1_value = lambda x: x[0]
+    else:
+        print >> sys.stderr, "__print_candidate_table(%s, %s): Invalid mission type" % (candidates, mission)
+        return
+    candidate_table = Table([col1, Text('Planet'), Text('System'), Sequence('Specials')],
+                            table_name='Potential Targets for %s in Turn %d' % (mission, fo.currentTurn()))
+    for planet_id, score_tuple in candidates:
+        if score_tuple[0] > 0.5:
+            planet = universe.getPlanet(planet_id)
+            candidate_table.add_row([
+                col1_value(score_tuple),
+                planet,
+                universe.getSystem(planet.systemID),
+                planet.specials,
+            ])
+    print
+    candidate_table.print_table()
