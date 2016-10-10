@@ -19,6 +19,7 @@ BuildingType
                 Destroy
                 GenerateSitRepMessage
                     message = "EFFECT_GATEWAY_VOID_DESTROY"
+                    label = "EFFECT_GATEWAY_VOID_DESTROY_LABEL"
                     parameters = [
                         tag = "buildingtype" data = "BLD_GATEWAY_VOID"
                         tag = "planet" data = Source.PlanetID
@@ -36,6 +37,8 @@ BuildingType
             effects = [
                 SetTargetPopulation value = min(Value, 0)
                 SetPopulation value = min(Value, 0)
+                SetMaxSupply value = 0
+                SetSupply value = 0
                 ]
 
         EffectsGroup

@@ -84,7 +84,7 @@ namespace {
         TemporaryPtr<const System> dest_sys = GetSystem(fleet->FinalDestinationID());
         TemporaryPtr<const System> cur_sys = GetSystem(fleet->SystemID());
         bool returning_to_current_system = (dest_sys == cur_sys) && !fleet->TravelRoute().empty();
-        if (dest_sys && dest_sys != cur_sys || returning_to_current_system) {
+        if (dest_sys && (dest_sys != cur_sys || returning_to_current_system)) {
             std::pair<int, int> eta = fleet->ETA();       // .first is turns to final destination.  .second is turns to next system on route
 
             // name of final destination
@@ -3659,7 +3659,6 @@ void FleetWnd::ShipSelectionChanged(const GG::ListBox::SelectionSet& rows)
 
 void FleetWnd::UniverseObjectDeleted(TemporaryPtr<const UniverseObject> obj) {
     DebugLogger() << "FleetWnd::UniverseObjectDeleted";
-    DebugLogger().flush();
 
     // check if deleted object was a fleet.  if not, abort.
     TemporaryPtr<const Fleet> deleted_fleet = boost::dynamic_pointer_cast<const Fleet>(obj);
@@ -3681,7 +3680,6 @@ void FleetWnd::UniverseObjectDeleted(TemporaryPtr<const UniverseObject> obj) {
         }
     }
     DebugLogger() << "FleetWnd::UniverseObjectDeleted done";
-    DebugLogger().flush();
 }
 
 void FleetWnd::SystemChangedSlot() {

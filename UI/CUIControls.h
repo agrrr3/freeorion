@@ -48,8 +48,6 @@ public:
     /** \name Structors */ //@{
     CUIButton(const std::string& str); ///< basic ctor
 
-    CUIButton(const std::string& str, GG::Clr background, GG::Clr border);
-
     CUIButton(const GG::SubTexture& unpressed, const GG::SubTexture& pressed, const GG::SubTexture& rollover);
     //@}
 
@@ -61,7 +59,6 @@ public:
 
     /** \name Mutators */ //@{
     virtual void MouseHere(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys);
-    void         SetCheck(bool b = true);
     //@}
 
 protected:
@@ -70,11 +67,6 @@ protected:
     virtual void RenderRollover();
     virtual void RenderUnpressed();
     //@}
-
-private:
-    GG::Clr m_border_color;
-    int     m_border_thick;
-    bool    m_checked;     ///< true when this button in a checked, active state
 };
 
 class SettableInWindowCUIButton : public CUIButton {
@@ -124,6 +116,8 @@ class CUICheckBoxRepresenter : public GG::StateButtonRepresenter {
 public:
     virtual void Render(const GG::StateButton& button) const;
 
+    virtual void OnChanged(const GG::StateButton& button, GG::StateButton::ButtonState prev_state) const;
+
     virtual void OnChecked(bool checked) const;
 };
 
@@ -131,6 +125,8 @@ public:
 class CUIRadioRepresenter : public GG::StateButtonRepresenter {
 public:
     virtual void Render(const GG::StateButton& button) const;
+
+    virtual void OnChanged(const GG::StateButton& button, GG::StateButton::ButtonState prev_state) const;
 
     virtual void OnChecked(bool checked) const;
 };
@@ -140,10 +136,54 @@ class CUITabRepresenter : public GG::StateButtonRepresenter {
 public:
     virtual void Render(const GG::StateButton& button) const;
 
+    virtual void OnChanged(const GG::StateButton& button, GG::StateButton::ButtonState prev_state) const;
+
     virtual void OnChecked(bool checked) const;
 
     virtual GG::Pt MinUsableSize(const GG::StateButton& button) const;
 };
+
+/** @brief A FreeOrion styled label toggle button. */
+class CUILabelButtonRepresenter : public GG::StateButtonRepresenter {
+public:
+    virtual void Render(const GG::StateButton& button) const;
+
+    virtual void OnChanged(const GG::StateButton& button, GG::StateButton::ButtonState prev_state) const;
+
+    virtual void OnChecked(bool checked) const;
+};
+
+
+/** @brief A FreeOrion styled icon toggle button.
+ *
+ * Renders a SubTexture depending on the checked state of the CUIToggleButton.
+ * When the @a button has single texture and is unchecked, it renders the same
+ * icon recolored towards grey.  If a second SubTexture is assigned to the
+ * @a button, it will render the appropriate SubTexture.  When a mouse pointer
+ * hovers over this button, the opposing SubTexture and color are used and
+ * highlighted.
+ */
+class CUIIconButtonRepresenter : public GG::StateButtonRepresenter {
+public:
+    CUIIconButtonRepresenter(boost::shared_ptr<GG::SubTexture> icon,
+                             const GG::Clr& highlight_clr);
+
+    CUIIconButtonRepresenter(boost::shared_ptr<GG::SubTexture> unchecked_icon,
+                             const GG::Clr& unchecked_clr,
+                             boost::shared_ptr<GG::SubTexture> checked_icon,
+                             const GG::Clr& checked_clr);
+
+    virtual void Render(const GG::StateButton& button) const;
+
+    virtual void OnChecked(bool checked) const;
+
+private:
+    boost::shared_ptr<GG::SubTexture>   m_unchecked_icon;
+    boost::shared_ptr<GG::SubTexture>   m_checked_icon;
+    GG::Clr                             m_unchecked_color;
+    GG::Clr                             m_checked_color;
+};
+
 
 /** a FreeOrion StateButton control */
 class CUIStateButton : public GG::StateButton {
@@ -385,8 +425,7 @@ private:
 class SpeciesSelector : public CUIDropDownList {
 public:
     /** \name Structors */ //@{
-    SpeciesSelector(GG::X w, GG::Y h);                                                  ///< populates with all species in SpeciesManager
-    SpeciesSelector(GG::X w, GG::Y h, const std::vector<std::string>& species_names);   ///< populates with the species in \a species_names
+    SpeciesSelector(GG::X w, GG::Y h);                          ///< populates with all species in SpeciesManager
     //@}
 
     /** \name Accessors */ //@{
@@ -396,7 +435,6 @@ public:
 
     /** \name Mutators */ //@{
     void SelectSpecies(const std::string& species_name);
-    void SetSpecies(const std::vector<std::string>& species_names);         ///< sets the species that can be selected
     //@}
 
     mutable boost::signals2::signal<void (const std::string&)> SpeciesChangedSignal;
@@ -594,33 +632,6 @@ public:
 private:
     float   m_rpm;
     float   m_phase_offset;
-};
-
-/** \brief Represents a CUIToggleButton
- * 
- * Renders a SubTexture depending on the checked state of the CUIToggleButton.
- * When the \a button has single texture and is unchecked, it renders the same icon recolored towards grey.
- * If a second SubTexture is assigned to the \a button, it will render the appropriate SubTexture.
- * When a mouse pointer hovers over this button, the opposing SubTexture and color are used and highlighted
- */
-class CUIToggleRepresenter : public GG::StateButtonRepresenter {
-public:
-    /** \name Structors */ //@{
-    CUIToggleRepresenter(boost::shared_ptr<GG::SubTexture> icon, const GG::Clr& highlight_clr); ///< ctor
-    CUIToggleRepresenter(boost::shared_ptr<GG::SubTexture> unchecked_icon, const GG::Clr& unchecked_clr,
-                         boost::shared_ptr<GG::SubTexture> checked_icon, const GG::Clr& checked_clr); ///< ctor
-    //@}
-
-    /** \name Mutators */ //@{
-    virtual void                        OnChecked(bool checked) const;
-    virtual void                        Render(const GG::StateButton& button) const;
-    //@}
-
-private:
-    boost::shared_ptr<GG::SubTexture>   m_unchecked_icon;
-    boost::shared_ptr<GG::SubTexture>   m_checked_icon;
-    GG::Clr                             m_unchecked_color;
-    GG::Clr                             m_checked_color;
 };
 
 /** Renders scanlines over its area. */
