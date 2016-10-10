@@ -170,17 +170,22 @@ Bomberflotte %1%
 NEW_BATTLE_FLEET_NAME
 Kriegsflotte %1%
 
-# Name for a newly created asteroid belt.
-# %1% name of the system this asteroid belt is created in.
-# %2% orbit number where this asteroid belt is created on.
-NEW_ASTEROIDS_NAME
-Überreste von %1% %2%
-
-# Name for a newly created planet. When creating a new planet it is assumed this
-# planet is the first one within the system.
+# Name for a newly created planet.
+# Suffix bears some explanation:
+#  - Planets are grouped for asteroids and non-asteroids.
+#  - Suffix is a roman numeral, with additional rules for asteroids.
+#  - The roman numeral is a rank for proximity to the center of the system,
+#      in relation to other planets in the same group.
+#  - For asteroids, the suffix starts with a localized NEW_ASTEROIDS_SUFFIX.
+#      If any other asteroids are in the system, the roman numeral is appended.
 # %1% name of the system this planet is created in.
-#NEW_PLANET_NAME
-#%1% I
+# %2% suffix for this planet
+# NEW_PLANET_NAME
+# %1% %2%
+
+# The label pre-pended to a new asteroids naming suffix
+# NEW_ASTEROIDS_SUFFIX
+# [[PT_ASTEROIDS]]
 
 EMPTY_SPACE
 Tiefe des Alls
@@ -1118,8 +1123,8 @@ Speichert ob die OpenGL Version des Systems überprüft wurde. Wenn nicht, werde
 OPTIONS_DB_RESET_FSSIZE
 Speichert ob der Vollbildmodus zu den gespeicherten Wert zurückgesetzt werden soll. Wenn nicht gesetzt, wird die gespeicherte Auflösung genutzt, ansonsten wird die höchste Auflösung genutzt, welche unterstützt wird.
 
-OPTIONS_DB_AUTO_EFFECT_DESC
-Entscheidet ob automatisch erzeugte Texte in die Beschreibung von Technologien, Gebäuden und Schiffsteilen eingefügt werden.
+OPTIONS_DB_DUMP_EFFECTS_GROUPS_DESC
+Entscheidet ob ein Abbild der Effektgruppen in die Beschreibung von Technologien, Gebäuden und Schiffsteilen eingefügt werden.
 
 OPTIONS_DB_VERBOSE_LOGGING_DESC
 Schaltet die ausführliche Protokollierung der Inhalte des Universums und Effektberechnung.
@@ -1901,8 +1906,8 @@ Musikdateien
 OPTIONS_SOUND_FILE
 Klangdateien
 
-OPTIONS_AUTO_EFFECT_DESC
-Automatisch generierte Effektbeschreibungen
+OPTIONS_DUMP_EFFECTS_GROUPS_DESC
+Effektgruppenbeschreibungen anzeigen
 
 OPTIONS_VERBOSE_LOGGING_DESC
 Ausführliche Protokollierung zur Fehlersuche
@@ -2833,41 +2838,6 @@ FP
 # %3% turns to complete requested item or technology.
 ENC_COST_AND_TURNS_STR
 %1% %2% und %3% Rnd
-
-# auto-generated location condition description
-ENC_LOCATION_CONDITION_STR
-'''
-
-<u>Standortbedingungen</u>
-
-Ein Objekt%1%'''
-
-# Title for auto-generated effects description in encyclopedia.
-# %1% textual representation of the effects applied.
-ENC_EFFECTS_STR
-'''
-
-<u>Effekte</u>
-
-%1%'''
-
-# Title for auto-generated production cost description in encyclopedia.
-# %1% textual representation of the production costs.
-ENC_AUTO_COST_STR
-'''
-
-<u>Kosten</u>
-
-%1%'''
-
-# Title for auto-generated production time description in encyclopedia.
-# %1% textual representation of the production time required to build the item.
-ENC_AUTO_TIME_STR
-'''
-
-<u>Zeit</u>
-
-%1%'''
 
 # FIXME
 # Displays the ship design properties inside a Pedia article in detail.
@@ -4594,132 +4564,6 @@ DESC_VALUE_REF_MULTIPART_VARIABLE1
 
 
 ##
-## FOCS effect descriptions
-##
-
-# %1% textual description of the scope of this effect.
-DESC_EFFECTS_GROUP_SCOPE
-Betroffene Objekte: Jedes Objekt%1%
-
-DESC_EFFECTS_GROUP_SELF_SCOPE
-Betroffene Objekte: nur das Quell-Objekt
-
-# %1% textual description of the activation clause that enables the effect.
-DESC_EFFECTS_GROUP_ACTIVATION
-Effekt ist aktiv, wenn die Quelle ein Objekt ist%1%
-
-# %1% textual description of the effect group.
-#DESC_EFFECTS_GROUP_EFFECTS_GROUP_DESC
-#'''%1%
-#'''
-
-# %1% index of the effect group.
-# %2% textual description of the effect group.
-DESC_EFFECTS_GROUP_NUMBERED_EFFECTS_GROUP_DESC
-'''Effektgruppe %1%:
-%2%
-'''
-
-
-##
-## FOCS meter setter
-##
-
-# %1% name of the meter modified.
-# %2% operator used to apply the value to the meter (+, -, /, *, ...).
-# %3% constant number applied to the to the meter.
-#DESC_SIMPLE_SET_METER
-#%1% %2%%3%
-
-# %1% name of the meter modified.
-# %2% textual description of the value applied to the meter.
-DESC_COMPLEX_SET_METER
-Setze %1% auf %2%
-
-# %1% name of the meter modified.
-# %2% name of the ship part where this parameter is applied to.
-# %3% textual description of the value applied to the meter.
-DESC_SET_SHIP_PART_METER
-Setze %1% für %2% auf %3%
-
-# %1% either name of the empire or a description of empire the meter will
-#     modify.
-# %2% name of the meter modified.
-# %3% textual description of the value applied to the meter.
-DESC_SET_EMPIRE_METER
-Setze %2% des %1% Imperiums auf %3%
-
-
-##
-## FOCS other setters
-##
-
-# %1% name of the stockpile resource set
-# %2% textual description of the value applied to the stockpile.
-# %3% name of the empire that owns the stockpile
-DESC_SET_EMPIRE_STOCKPILE
-Ändert das Lager des Objekteigentümers von %1%  auf %2%
-
-# %1% name of the empire which should change their capital planet.
-DESC_SET_EMPIRE_CAPITAL
-Macht den Planeten zum Hauptplaneten des %1% Imperiums
-
-# %1% planet type the target planet should change to.
-DESC_SET_PLANET_TYPE
-Ändert die Klasse des Planeten auf %1%
-
-# %1% planet size the target planet should change to.
-DESC_SET_PLANET_SIZE
-Ändert die Größe des Planeten auf %1%
-
-DESC_DESTROY
-Objekt zerstören
-
-# %1% name of the special which should be attached to the object.
-# %2% capacity of the special, which should be attached to the object.
-DESC_ADD_SPECIAL
-Fügt die Besonderheit %1% dem Objekt hinzu
-
-# %1% name of the special which should be dettached to the object.
-DESC_REMOVE_SPECIAL
-Entfernt die Besonderheit %1% vom Objekt
-
-# %1% star type the target star system should change to.
-DESC_SET_STAR_TYPE
-Ändert die Sternenklasse auf %1%
-
-# %1% textual description of the location this object should be moved to.
-DESC_MOVE_TO
-Bewegt das Objekt zum Ort des Objekts %1%
-
-DESC_VICTORY
-Macht den Objekteigentümer zum Gewinner des Spiels
-
-
-##
-## FOCS object creation
-##
-
-# %1% planet type the new planet should be created with.
-# %2% planet size the new planet should be created with.
-DESC_CREATE_PLANET
-Erschafft einen neuen Planeten der Klasse %1% und der Größe %2%
-
-# %1% building type that should be created.
-DESC_CREATE_BUILDING
-Erzeugt ein neues %1% Gebäude
-
-# %1% shipdesign to use as a template for the newly created ship.
-# %2% name of the empire which should own the newly created ship.
-# %3% name of the species which should crew the newly created ship.
-DESC_CREATE_SHIP
-Erzeugt ein neues Schiff mit dem Entwurf %1% durch das Imperium %2% bemannt mit %3%
-
-DESC_CREATE_SYSTEM
-Ein neues System erschaffen
-
-
-##
 ## FOCS condition descriptions
 ##
 
@@ -6031,9 +5875,6 @@ Bioterror Angriffsbasis
 BLD_LIGHTHOUSE
 Interstellarer Leuchtturm
 
-BLD_HEAVY_MINE_PROCESSOR
-Verarbeitungsstation für Massenbergbau
-
 BLD_INDUSTRY_CENTER
 Industriezentrum
 
@@ -6455,95 +6296,95 @@ Schwarzkrakenkörper
 ## Species picks
 ##
 
-NO_INDUSTRY
+NO_INDUSTRY_DESC
 −−−	Keine [[encyclopedia INDUSTRY_TITLE]]
 
-BAD_INDUSTRY
-−	Schlechte [[encyclopedia INDUSTRY_TITLE]]: -50%
+BAD_INDUSTRY_DESC
+−	Schlechte [[encyclopedia INDUSTRY_TITLE]]: 75%
 
-AVERAGE_INDUSTRY
+AVERAGE_INDUSTRY_DESC
 '''	Mittelmässige [[encyclopedia INDUSTRY_TITLE]]: 100%'''
 
-GOOD_INDUSTRY
+GOOD_INDUSTRY_DESC
 +	Gute [[encyclopedia INDUSTRY_TITLE]]: 150%
 
-GREAT_INDUSTRY
-++	Große [[encyclopedia INDUSTRY_TITLE]]: 200%
+GREAT_INDUSTRY_DESC
+++	Hervorragende [[encyclopedia INDUSTRY_TITLE]]: 200%
 
-ULTIMATE_INDUSTRY
-+++	Perfekte [[encyclopedia INDUSTRY_TITLE]]: 400%
+ULTIMATE_INDUSTRY_DESC
++++	Perfekte [[encyclopedia INDUSTRY_TITLE]]: 300%
 
-NO_RESEARCH
+NO_RESEARCH_DESC
 −−−	Keine [[encyclopedia RESEARCH_TITLE]]
 
-BAD_RESEARCH
-−	Schlechte [[encyclopedia RESEARCH_TITLE]]: -50%
+BAD_RESEARCH_DESC
+−	Schlechte [[encyclopedia RESEARCH_TITLE]]: 75%
 
-AVERAGE_RESEARCH
+AVERAGE_RESEARCH_DESC
 '''	Mittelmässige [[encyclopedia RESEARCH_TITLE]]: 100%'''
 
-GOOD_RESEARCH
+GOOD_RESEARCH_DESC
 +	Gute [[encyclopedia RESEARCH_TITLE]]: 150%
 
-GREAT_RESEARCH
-++	Große [[encyclopedia RESEARCH_TITLE]]: 200%
+GREAT_RESEARCH_DESC
+++	Hervorragende [[encyclopedia RESEARCH_TITLE]]: 200%
 
-ULTIMATE_RESEARCH
-+++	Perfekte [[encyclopedia RESEARCH_TITLE]]: 400%
+ULTIMATE_RESEARCH_DESC
++++	Perfekte [[encyclopedia RESEARCH_TITLE]]: 300%
 
-NO_DEFENSE_TROOPS
+NO_DEFENSE_TROOPS_DESC
 −−−	Keine Boden[[encyclopedia TROOP_TITLE]]
 
-BAD_DEFENSE_TROOPS
-−	Schlechte Boden[[encyclopedia TROOP_TITLE]]: -50%
+BAD_DEFENSE_TROOPS_DESC
+−	Schlechte Boden[[encyclopedia TROOP_TITLE]]: 50%
 
-AVERAGE_DEFENSE_TROOPS
+AVERAGE_DEFENSE_TROOPS_DESC
 '''	Mittelmäßige Boden[[encyclopedia TROOP_TITLE]]: 100%'''
 
-GOOD_DEFENSE_TROOPS
+GOOD_DEFENSE_TROOPS_DESC
 +	Gute Boden[[encyclopedia TROOP_TITLE]]: 150%.
 
-GREAT_DEFENSE_TROOPS
-++	Große Boden[[encyclopedia TROOP_TITLE]]: 200%.
+GREAT_DEFENSE_TROOPS_DESC
+++	Hervorragende Boden[[encyclopedia TROOP_TITLE]]: 200%.
 
-ULTIMATE_DEFENSE_TROOPS
+ULTIMATE_DEFENSE_TROOPS_DESC
 +++	Perfekte Boden[[encyclopedia TROOP_TITLE]]: 300%.
 
-BAD_DETECTION
+BAD_DETECTION_DESC
 −	Schlechte [[encyclopedia DETECTION_RANGE_TITLE]]: −20 Malus.
 
-GOOD_DETECTION
+GOOD_DETECTION_DESC
 +	Gute [[encyclopedia DETECTION_RANGE_TITLE]]: +25 Bonus.
 
-GREAT_DETECTION
-++	Große [[encyclopedia DETECTION_RANGE_TITLE]]: +50 Bonus.
+GREAT_DETECTION_DESC
+++	Hervorragende [[encyclopedia DETECTION_RANGE_TITLE]]: +50 Bonus.
 
-ULTIMATE_DETECTION
+ULTIMATE_DETECTION_DESC
 +++	Perfekte [[encyclopedia DETECTION_RANGE_TITLE]]: +100 Bonus.
 
-BAD_STEALTH
-−	Schlechte [[encyclopedia STEALTH_TITLE]]: −15 Malus.
+BAD_STEALTH_DESC
+−	Schlechte [[encyclopedia STEALTH_TITLE]]: −20 Malus.
 
-AVERAGE_STEALTH
+AVERAGE_STEALTH_DESC
 '''	Mittelmäßige [[encyclopedia STEALTH_TITLE]].'''
 
-GOOD_STEALTH
-+	Gute [[encyclopedia STEALTH_TITLE]]: +15 Bonus.
+GOOD_STEALTH_DESC
++	Gute [[encyclopedia STEALTH_TITLE]]: +20 Bonus.
 
-GREAT_STEALTH
-++	Grosse [[encyclopedia STEALTH_TITLE]]: +40 Bonus.
+GREAT_STEALTH_DESC
+++	Hervorragende [[encyclopedia STEALTH_TITLE]]: +40 Bonus.
 
-ULTIMATE_STEALTH
+ULTIMATE_STEALTH_DESC
 +++	Perfekte [[encyclopedia STEALTH_TITLE]]: +60 Bonus.
 
-BAD_POPULATION
-−	Arme Bevölkerung 75%
+BAD_POPULATION_DESC
+−	Niedrige Bevölkerung 75%
 
-AVERAGE_POPULATION
-'''	Mittelmäßige Bevölkerung'''
+AVERAGE_POPULATION_DESC
+'''	Normale Bevölkerung'''
 
-GOOD_POPULATION
-+	Gesunde Bevölkerung 125%
+GOOD_POPULATION_DESC
++	Hohe Bevölkerung 125%
 
 
 ##
@@ -6556,19 +6397,19 @@ STANDARD_CONSTRUCTION_LABEL
 
 # %1% FIXME
 GOOD_ENVIRONMENT_LABEL
-%1% Gute Umgebung
+%1% Gute Umweltbedingungen
 
 # %1% FIXME
 ADEQUATE_ENVIRONMENT_LABEL
-%1% Passende Umgebung
+%1% Ausreichende Umweltbedingungen
 
 # %1% FIXME
 POOR_ENVIRONMENT_LABEL
-%1% Arme Umgebung
+%1% Schlechte Umweltbedingungen
 
 # %1% FIXME
 HOSTILE_ENVIRONMENT_LABEL
-%1% Feindliche Umgebung
+%1% Feindliche Umweltbedingungen
 
 HOMEWORLD_LABEL
 Heimatwelt

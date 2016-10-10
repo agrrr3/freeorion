@@ -93,7 +93,7 @@ def assign_scouts_to_explore_systems():
         fleet_mission = foAI.foAIstate.get_fleet_mission(fleet_id)
         target = universe_object.System(this_sys_id)
         if len(MoveUtilsAI.can_travel_to_system_and_return_to_resupply(fleet_id, fleet_mission.get_location_target(), target)) > 0:
-            fleet_mission.add_target(MissionType.EXPLORATION, target)
+            fleet_mission.set_target(MissionType.EXPLORATION, target)
             sent_list.append(this_sys_id)
         else:  # system too far out, skip it, but can add scout back to available pool
             print "sys_id %d too far out for fleet ( ID %d ) to reach" % (this_sys_id, fleet_id)
@@ -148,7 +148,7 @@ def follow_vis_system_connections(start_system_id, home_system_id):
             visibility_turn_list = sorted(universe.getVisibilityTurnsMap(cur_system_id, empire_id).items(),
                                           key=lambda x: x[0].numerator)
             visibility_info = ', '.join('%s: %s' % (vis.name, turn) for vis, turn in visibility_turn_list)
-            print "%s previously %s, new visibility turns info: %s " % (system_header, pre_vis, visibility_info)
+            print "%s previously %s. Visibility per turn: %s " % (system_header, pre_vis, visibility_info)
             status_info = []
         else:
             status_info = [system_header]
@@ -166,7 +166,7 @@ def follow_vis_system_connections(start_system_id, home_system_id):
             sys_status.setdefault('neighbors', set()).update(neighbors)
             sys_planets = sys_status.setdefault('planets', {})
             if fo.currentTurn() < 50:
-                print "    previously knew planets: %s" % sys_planets.keys()
+                print "    previously known planets: %s" % sys_planets.keys()
             if system:
                 for planet_id in system.planetIDs:
                     sys_planets.setdefault(planet_id, {}).setdefault(TARGET_POP, 0)

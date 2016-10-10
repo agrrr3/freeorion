@@ -124,6 +124,15 @@ Back
 LAST
 Last
 
+PAUSE
+Pause
+
+PAUSED
+Paused
+
+RESUME
+Resume
+
 # Name for a newly created general purpose fleet.
 # %1% represents a unique number.
 NEW_FLEET_NAME
@@ -165,17 +174,22 @@ Bomber Fleet %1%
 NEW_BATTLE_FLEET_NAME
 Battle Fleet %1%
 
-# Name for a newly created asteroid belt.
-# %1% name of the system this asteroid belt is created in.
-# %2% orbit number where this asteroid belt is created on.
-NEW_ASTEROIDS_NAME
-%1% %2% remnants
-
-# Name for a newly created planet. When creating a new planet it is assumed this
-# planet is the first one within the system.
+# Name for a newly created planet.
+# Suffix bears some explanation:
+#  - Planets are grouped for asteroids and non-asteroids.
+#  - Suffix is a roman numeral, with additional rules for asteroids.
+#  - The roman numeral is a rank for proximity to the center of the system,
+#      in relation to other planets in the same group.
+#  - For asteroids, the suffix starts with a localized NEW_ASTEROIDS_SUFFIX.
+#      If any other asteroids are in the system, the roman numeral is appended.
 # %1% name of the system this planet is created in.
+# %2% suffix for this planet
 NEW_PLANET_NAME
-%1% I
+%1% %2%
+
+# The label pre-pended to a new asteroids naming suffix
+NEW_ASTEROIDS_SUFFIX
+[[PT_ASTEROIDS]]
 
 EMPTY_SPACE
 Deep Space
@@ -803,6 +817,12 @@ SM_KRAKEN_3_DESC
 
 Favored Environment: Gas Giants. Kraken nests are normally found in the orbit of [[PT_GASGIANT]] planets, and Kraken can mature into larger forms in systems with Gas Giants.'''
 
+SM_WHITE_KRAKEN
+White Kraken
+
+SM_WHITE_KRAKEN_DESC
+The White Kraken is a white-colored prehistoric ancestor of the Kraken Space Monster.
+
 SM_BLACK_KRAKEN
 Black Kraken
 
@@ -942,13 +962,13 @@ FLD_ION_STORM
 Ion Storm
 
 FLD_ION_STORM_DESC
-Magnetic vortex of relativistic charged particles that can interfere with sensors and obscures all objects within it.
+Magnetic vortex of relativistic charged particles that can interfere with sensors and obscures all objects within it. All objects inside the storm receive an increase to [[encyclopedia STEALTH_TITLE]] of 40, but a decrease to [[encyclopedia DETECTION_RANGE_TITLE]] of 40.
 
 FLD_MOLECULAR_CLOUD
 Molecular Cloud
 
 FLD_MOLECULAR_CLOUD_DESC
-Diffuse cloud of complex molecules that disrupts ship shielding.
+Diffuse cloud of complex molecules that disrupts ship shielding. All ships have their [[encyclopedia SHIELDS_TITLE]] decreased by 15. 
 
 FLD_NEBULA_1
 Nebula
@@ -1410,6 +1430,9 @@ Sets size of system icons below which the fixed-size tiny icons will be shown.
 OPTIONS_DB_UI_TOOLTIP_DELAY
 Sets UI tooltip pop-up delay, in ms.
 
+OPTIONS_DB_UI_ENC_SEARCH_ARTICLE
+When searching the pedia, check for matches in article contents.
+
 OPTIONS_DB_KEYPRESS_REPEAT_DELAY
 Sets delay between holding a key and repeat keypresses being generated
 
@@ -1588,8 +1611,8 @@ Stores whether the OpenGL version of this system has been checked. If false, sev
 OPTIONS_DB_RESET_FSSIZE
 Stores whether to reset the stored fullscreen resolution. If false, the stored values are used, but if true, the values are reset to the max the rendering system supports.
 
-OPTIONS_DB_AUTO_EFFECT_DESC
-Toggles inclusion of auto-generated text in tech, building or ship part descriptions.
+OPTIONS_DB_DUMP_EFFECTS_GROUPS_DESC
+Toggles dump of effects groups in tech, building or ship part descriptions.
 
 OPTIONS_DB_VERBOSE_LOGGING_DESC
 Toggles verbose logging of universe contents and effect evaluation.
@@ -1605,9 +1628,6 @@ Toggles effect accounting tabulation when updating after gamestate changes.
 
 OPTIONS_DB_UI_SITREP_ICONSIZE
 Sets the sitrep icon width and height; default 16 (min 12, max 64).
-
-OPTIONS_DB_UI_SITREP_FONTSIZE
-Sets the sitrep text size; default 12 (min 10, max 48).
 
 OPTIONS_DB_LOAD
 Loads the specified single-player save game.
@@ -2597,7 +2617,7 @@ Music files
 OPTIONS_SOUND_FILE
 Sound files
 
-OPTIONS_AUTO_EFFECT_DESC
+OPTIONS_DUMP_EFFECTS_GROUPS_DESC
 Auto-generated effect descriptions
 
 OPTIONS_VERBOSE_LOGGING_DESC
@@ -3874,6 +3894,9 @@ Word Title Matches
 ENC_SEARCH_PARTIAL_MATCHES
 Partial-Word Title Matches
 
+ENC_SEARCH_ARTICLE_MATCHES
+Article Content Matches
+
 ENC_SEARCH_NOTHING_FOUND
 No Matches Found
 
@@ -3897,23 +3920,6 @@ RP
 # %3% turns to complete requested item or technology.
 ENC_COST_AND_TURNS_STR
 %1% %2% and %3% Turns
-
-# auto-generated location condition description
-ENC_LOCATION_CONDITION_STR
-'''
-
-<u>Location Requirement</u>
-
-An object%1%'''
-
-# Title for auto-generated effects description in encyclopedia.
-# %1% textual representation of the effects applied.
-ENC_EFFECTS_STR
-'''
-
-<u>Effects</u>
-
-%1%'''
 
 ENC_VERB_PRODUCE_STR
 produce
@@ -3944,24 +3950,6 @@ ENC_AUTO_TIME_COST_VARIABLE_DETAIL_STR
 '''
 At location %1% the cost and time are %2% %3% over %4% turns.'''
 
-# Title for auto-generated production cost description in encyclopedia.
-# %1% textual representation of the production costs.
-ENC_AUTO_COST_STR
-'''
-
-<u>Cost</u>
-
-%1%'''
-
-# Title for auto-generated production time description in encyclopedia.
-# %1% textual representation of the production time required to build the item.
-ENC_AUTO_TIME_STR
-'''
-
-<u>Time</u>
-
-%1%'''
-
 # FIXME
 # Displays the ship design properties inside a Pedia article in detail.
 # %1% description.
@@ -3988,7 +3976,7 @@ ENC_SHIP_DESIGN_DESCRIPTION_STR
 Hull: %2%
 Parts: %3%
 
-Total Attack: %17%    [[encyclopedia STRUCTURE_TITLE]]: %8%    [[encyclopedia SHIELDS_TITLE]]: %9%
+Total [[encyclopedia DAMAGE_TITLE]]: %17%    [[encyclopedia STRUCTURE_TITLE]]: %8%    [[encyclopedia SHIELDS_TITLE]]: %9%
 [[encyclopedia STARLANE_SPEED_TITLE]]: %13%    [[encyclopedia FUEL_TITLE]] Capacity: %14%
 [[encyclopedia DETECTION_RANGE_TITLE]]: %10%    [[encyclopedia STEALTH_TITLE]]: %11%
 Colonization Capacity: %15%    [[encyclopedia TROOP_TITLE]]: %16%
@@ -4014,7 +4002,7 @@ Parts: %3%
 ENC_SHIP_DESIGN_DESCRIPTION_STATS_STR
 '''
 For species: %18%
-Total Attack: %17%    [[encyclopedia STRUCTURE_TITLE]]: %8%    [[encyclopedia SHIELDS_TITLE]]: %9%
+Total [[encyclopedia DAMAGE_TITLE]]: %17%    [[encyclopedia STRUCTURE_TITLE]]: %8%    [[encyclopedia SHIELDS_TITLE]]: %9%
 [[encyclopedia STARLANE_SPEED_TITLE]]: %13%    [[encyclopedia FUEL_TITLE]] Capacity: %14%
 [[encyclopedia DETECTION_RANGE_TITLE]]: %10%    [[encyclopedia STEALTH_TITLE]]: %11%
 Colonization Capacity: %15%    [[encyclopedia TROOP_TITLE]]: %16%
@@ -4462,7 +4450,11 @@ Each [[encyclopedia ENC_SPECIES]] has its own environmental preferences, which d
 
 The planet suitability report can be displayed by right-cliking on a planet in the system sidepanel. A green number following the suitability data indicates the max population value if the species colonizes the planet, whereas a red number indicates that the population will stay idle or will decrease, to finally perish if the species attempts to colonize the planet.
 
-When terraforming a planet (by [[encyclopedia RESEARCH_TITLE]] or if the planet has the [[special GAIA_SPECIAL]] special) in order to better suit the species environmental preferences, the planet's original environment is modified by stages, until it finally reaches the [[PE_GOOD]] suitability for the species who wants to live on the planet. The terraforming stages can be checked on the suitability wheel displayed in the Planet Suitability report.'''
+When terraforming a planet (by [[encyclopedia RESEARCH_TITLE]] or if the planet has the [[special GAIA_SPECIAL]] special) in order to better suit the species environmental preferences, the planet's original environment is modified by stages, until it finally reaches the [[PE_GOOD]] suitability for the species who wants to live on the planet. The terraforming stages can be checked on the suitability wheel displayed below.
+
+Clockwise from top: [[PT_TERRAN]], [[PT_OCEAN]], [[PT_SWAMP]], [[PT_TOXIC]], [[PT_INFERNO]], [[PT_RADIATED]], [[PT_BARREN]], [[PT_TUNDRA]], [[PT_DESERT]] 
+
+<img src="encyclopedia/EP_wheel.png"></img>'''
 
 ORGANIC_SPECIES_TITLE
 Organic Metabolism
@@ -4489,10 +4481,15 @@ PHOTOTROPHIC_SPECIES_TEXT
 '''Phototrophic species live mainly or entirely on sunlight. These species' max population is greatly influenced by the brightness of the local star and the planet size - the brighter or bigger, the better. Growth specials do not benefit them.
 
 Population changes:
+
 * [[STAR_BLUE]] star: ([[SZ_TINY]] +3) ([[SZ_SMALL]] +6) ([[SZ_MEDIUM]] +9) ([[SZ_LARGE]] +12) ([[SZ_HUGE]] +15)
+
 * [[STAR_WHITE]] star: ([[SZ_TINY]] +1.5) ([[SZ_SMALL]] +3) ([[SZ_MEDIUM]] +4.5) ([[SZ_LARGE]] +6) ([[SZ_HUGE]] +7.5)
+
 * [[STAR_YELLOW]] star, [[STAR_ORANGE]] star: (No changes)
+
 * [[STAR_RED]] star, [[STAR_NEUTRON]] star: ([[SZ_TINY]] -1) ([[SZ_SMALL]] -2) ([[SZ_MEDIUM]] -3) ([[SZ_LARGE]] -4) ([[SZ_HUGE]] -5)
+
 * [[STAR_BLACK]], [[STAR_NONE]]: ([[SZ_TINY]] -10) ([[SZ_SMALL]] -20) ([[SZ_MEDIUM]] -30) ([[SZ_LARGE]] -40) ([[SZ_HUGE]] -50)'''
 
 SELF_SUSTAINING_SPECIES_TITLE
@@ -5110,7 +5107,7 @@ SITREP_COMBAT_SYSTEM_ENEMY
 At %system%: there was %combat% with %empire%.
 
 SITREP_COMBAT_SYSTEM_ENEMY_LABEL
-Combat at System
+Combat at System - Single Empire
 
 COMBAT
 Combat
@@ -5215,7 +5212,7 @@ SITREP_GROUND_BATTLE_ENEMY
 On %planet%: there was a ground battle with %empire%.
 
 SITREP_GROUND_BATTLE_ENEMY_LABEL
-Ground Battle
+Ground Battle - Single Empire
 
 SITREP_PLANET_CAPTURED
 %planet% was captured by %empire%.
@@ -5355,17 +5352,35 @@ On %planet%: Ancient Ruins were excavated, but only tantalizing hints of ancient
 EFFECT_ANCIENT_RUINS_EMPTY_LABEL
 Ancient Ruins Empty Excavation
 
+EFFECT_ANCIENT_GUARDIANS_CAPTURED
+On %planet%: The [[species SP_ANCIENT_GUARDIANS]] self-destructed when the planet was captured!
+
+EFFECT_ANCIENT_GUARDIANS_CAPTURED_LABEL
+Ancient Guardians self destruct
+
 EFFECT_CONC_CAMP_COMLETE
 At %planet%: depopulation is complete.
 
 EFFECT_CONC_CAMP_COMLETE_LABEL
 Ethnic Cleansing
 
-SITREP_SHIP_REPAIR_DOCK
-Orbital Dock Ship Repairs
+SITREP_SHIP_REPAIR_DOCK_NONE
+Orbital Drydock Repairs - None
+
+SITREP_SHIP_REPAIR_DOCK_NOPOP
+Orbital Drydock Repairs - No population
+
+SITREP_SHIP_REPAIR_DOCK_PARTIAL
+Orbital Drydock Repairs - Partial
+
+SITREP_SHIP_REPAIR_DOCK_COMPLETE
+Orbital Drydock Repairs - Complete
 
 EFFECT_DRYDOCK_SHIP_REPAIR_NONE
 On %planet%: The %building% could not start repairs on %ship%, due to low [[encyclopedia HAPPINESS_TITLE]].
+
+EFFECT_DRYDOCK_SHIP_REPAIR_NOPOP
+On %planet%: the %building% is abandoned, there is no one left to assist in repairs of the ship %ship%.
 
 EFFECT_DRYDOCK_SHIP_REPAIR_PARTIAL
 On %planet%: the %building% performed partial repairs on the %ship%.
@@ -5433,6 +5448,12 @@ At %planet%: a %predefinedshipdesign% is ready for service.
 EFFECT_SENTRY_CREATED_LABEL
 Sentry Created
 
+EFFECT_WHITE_KRAKEN_RESURRECTED
+At %planet%: a [[predefinedshipdesign SM_WHITE_KRAKEN]] has been resurrected and is ready for service.
+
+EFFECT_WHITE_KRAKEN_RESURRECTED_LABEL
+Monster Resurrected
+
 EFFECT_GATEWAY_VOID_DESTROY
 The %buildingtype% at %planet% destroyed the %fleet% fleet.
 
@@ -5488,13 +5509,13 @@ EFFECT_STARGATE_LABEL
 Stargate Use
 
 EFFECT_PLANET_DRIVE
-At %system%: the planet %planet% has arrived by use of its [[encyclopedia BLD_PLANET_DRIVE]].
+At %system%: the planet %planet% has arrived by use of its [[buildingtype BLD_PLANET_DRIVE]].
 
 EFFECT_PLANET_DRIVE_LABEL
 Planetary Starlane Drive Engaged
 
 SITREP_PLANET_DRIVE_FAILURE
-At %system%: Due to a lack of guidance by a nearby [[encyclopedia SPY_LIGHTHOUSE]], the [[encyclopedia BLD_PLANET_DRIVE]] of %planet% suffered catastrophic failure upon arrival, destroying the entire planet!
+At %system%: Due to a lack of guidance by a nearby [[buildingtype BLD_LIGHTHOUSE]], the [[buildingtype BLD_PLANET_DRIVE]] of %planet% suffered catastrophic failure upon arrival, destroying the entire planet!
 
 SITREP_PLANET_DRIVE_FAILURE_LABEL
 Planetary Starlane Drive Failure
@@ -5642,7 +5663,9 @@ All random game hints:
 
 [[BEGINNER_HINT_20]]
 
-[[BEGINNER_HINT_21]]'''
+[[BEGINNER_HINT_21]]
+
+[[BEGINNER_HINT_22]]'''
 
 RANDOM_BEGINNER_HINT
 Hint #%rawtext%
@@ -5710,6 +5733,8 @@ BEGINNER_HINT_20
 BEGINNER_HINT_21
 21: You can set a destination for a ship that is still in the production queue. With the production screen open: click on the target system in the galaxy map, then right click on the ship in the production queue. When a menu of choices for that ship pops up choose 'Rally to ' and it should have the name of the selected system where you want the ship to automatically go once construction completes.
 
+BEGINNER_HINT_22
+22: Selecting a system and pressing ALT-C gives a range circle for the system, zoom in or out to compare the distance by looking at the size of the distance meter.
 
 ##
 ## Species
@@ -6491,6 +6516,18 @@ SP_EXOBOT_DESC
 '''While not as efficient as fully self-directed citizens, Exobots can colonize otherwise inhospitable planets, and build more Exobots.
 '''
 
+SP_ANCIENT_GUARDIANS
+Ancient Guardians
+SP_ANCIENT_GUARDIANS_GAMEPLAY_DESC
+'''Guardian Robots constructed by a Precursor civilization aeons ago
+[[encyclopedia ROBOTIC_SPECIES_TITLE]]
+Will self-destruct when conquered
+'''
+
+SP_ANCIENT_GUARDIANS_DESC
+'''Constructed by precusor technology, these ancient machines can adapt to and fight in any kind of environment. With unwavering loyalty and commitment, they have protected the planet from any invaders, never wasting time to repair and improve the fortifications. Upon being captured, every Guardian Robot will automatically self-destruct.
+'''
+
 SP_EXPERIMENTOR
 Experimentor
 
@@ -6714,6 +6751,14 @@ Juggernaut Nest
 
 JUGGERNAUT_NEST_SPECIAL_DESC
 At some point young juggernauts will rise from this place.  With knowledge of [[tech SHP_DOMESTIC_MONSTER]], these mega-fauna could be domesticated.
+
+KRAKEN_IN_THE_ICE_SPECIAL
+Kraken in the Ice
+
+KRAKEN_IN_THE_ICE_SPECIAL_DESC
+'''With the knowledge of the technologies [[tech SHP_DOMESTIC_MONSTER]] and [[tech LRN_XENOARCH]], the [[predefinedshipdesign SM_WHITE_KRAKEN]] can be resurrected and controlled by building a [[buildingtype BLD_XENORESURRECTION_LAB]] on this planet.
+
+Deep below the icy crust of this planet lies a white-colored prehistoric ancestor of the Kraken Space Monster.'''
 
 HEAD_ON_A_SPIKE_SPECIAL
 Head on a Spike
@@ -7834,282 +7879,6 @@ DESC_VALUE_REF_MULTIPART_VARIABLE6
 # %7% fifth dependent property referenced by the FOCS variable.
 DESC_VALUE_REF_MULTIPART_VARIABLEMANY
 %1%'s %2%'s %3%'s %4%'s %5%'s %6%'s %7%'s ...
-
-
-##
-## FOCS effect descriptions
-##
-
-# %1% textual description of the scope of this effect.
-DESC_EFFECTS_GROUP_SCOPE
-Objects affected: Any object%1%
-
-DESC_EFFECTS_GROUP_SELF_SCOPE
-Objects affected: Source object only
-
-# %1% textual description of the activation clause that enables the effect.
-DESC_EFFECTS_GROUP_ACTIVATION
-Effect is active if the source is an object%1%
-
-# %1% textual description of the effect group.
-DESC_EFFECTS_GROUP_EFFECTS_GROUP_DESC
-'''%1%
-'''
-
-# %1% index of the effect group.
-# %2% textual description of the effect group.
-DESC_EFFECTS_GROUP_NUMBERED_EFFECTS_GROUP_DESC
-'''Effects group %1%:
-%2%
-'''
-
-
-##
-## FOCS meter setter
-##
-
-# %1% name of the meter modified.
-# %2% operator used to apply the value to the meter (+, -, /, *, ...).
-# %3% constant number applied to the to the meter.
-DESC_SIMPLE_SET_METER
-%1% %2%%3%
-
-# %1% name of the meter modified.
-# %2% textual description of the value applied to the meter.
-DESC_COMPLEX_SET_METER
-Set %1% to %2%
-
-# %1% name of the meter modified.
-# %2% name of the ship part where this parameter is applied to.
-# %3% textual description of the value applied to the meter.
-DESC_SET_SHIP_PART_METER
-Set %1% for %2% to %3%
-
-# %1% either name of the empire or a description of empire the meter will
-#     modify.
-# %2% name of the meter modified.
-# %3% textual description of the value applied to the meter.
-DESC_SET_EMPIRE_METER
-Set %2% of the %1% empire to %3%
-
-
-##
-## FOCS other setters
-##
-
-# %1% name of the stockpile resource set
-# %2% textual description of the value applied to the stockpile.
-# %3% name of the empire that owns the stockpile
-DESC_SET_EMPIRE_STOCKPILE
-Sets the stockpile of %1% of the %3% empire to %2%
-
-# %1% name of the empire which should change their capital planet.
-DESC_SET_EMPIRE_CAPITAL
-Makes the object the capital planet of the %1% empire
-
-# %1% planet type the target planet should change to.
-DESC_SET_PLANET_TYPE
-Changes the planet's type to %1%
-
-# %1% planet size the target planet should change to.
-DESC_SET_PLANET_SIZE
-Changes the planet's size to %1%
-
-# %1% name of the species which should colonize/own this object.
-DESC_SET_SPECIES
-Changes the object's species to %1%
-
-# %1% name of the empire which should own this object.
-DESC_SET_OWNER
-Sets %1% as the owner of object
-
-DESC_DESTROY
-Destroys object
-
-# %1% name of the special which should be attached to the object.
-# %2% capacity of the special, which should be attached to the object.
-DESC_ADD_SPECIAL
-Attaches %1% special to object
-
-# %1% name of the special which should be dettached to the object.
-DESC_REMOVE_SPECIAL
-Removes %1% special from object
-
-# %1% textual description of starlane endpoints.
-DESC_ADD_STARLANES
-Creates starlanes between the target system and the system of objects%1%
-
-# %1% textual description of starlane endpoints.
-DESC_REMOVE_STARLANES
-Removes starlanes between the target system and the system of objects%1%
-
-# %1% star type the target star system should change to.
-DESC_SET_STAR_TYPE
-Changes the star's type to %1%
-
-# %1% textual description of the location this object should be moved to.
-DESC_MOVE_TO
-Moves the object to the location of an object%1%
-
-# %1% textual description of the object, which acts as pivot point.
-# %2% textual description of the angular speed.
-DESC_MOVE_IN_ORBIT_OF_OBJECT
-Moves the object in orbit of an object%1% at speed %2%
-
-# %1% textual description of the x coordinate, which acts together with y as
-#     pivot point.
-# %2% textual description of the y coordinate, which acts together with x as
-#     pivot point.
-# %3% textual description of the angular speed.
-DESC_MOVE_IN_ORBIT_OF_XY
-Moves the object in orbit of an object located at %1% and %2% at speed %3%
-
-# %1% textual description of the object, which acts as move destination.
-# %2% textual description of the linear speed in uu.
-DESC_MOVE_TOWARDS_OBJECT
-Moves the object toward an object%1% at speed %2%
-
-# %1% textual description of the x coordinate, which acts together with y as
-#     move destination.
-# %2% textual description of the y coordinate, which acts together with x as
-#     move destination.
-# %3% textual description of the linear speed in uu.
-DESC_MOVE_TOWARDS_XY
-Moves the object toward an object located at %1% and %2% at speed %3%
-
-# %1% textual description of the fleet destination.
-DESC_SET_DESTINATION
-Sets the destination of the object to an object%1%
-
-DESC_VICTORY
-Causes the object's owner to win the game
-
-# %1% name of the empire, which should recieve the situation report.
-# %2% textual description of the condition when the situation report should be
-#     generated.
-DESC_GENERATE_SITREP
-Generates a SitRep message for empire %1%
-
-# %1% name of the empire, which should recieve the situation report.
-# %2% textual description of the condition when the situation report should be
-#     generated.
-DESC_GENERATE_SITREP_ALLIES
-Generates a SitRep message for allies of empire %1%
-
-# %1% name of the empire, which should recieve the situation report.
-# %2% textual description of the condition when the situation report should be
-#     generated.
-DESC_GENERATE_SITREP_ENEMIES
-Generates a SitRep message for enemies of empire %1%
-
-# %1% name of the empire, which should recieve the situation report.
-# %2% textual description of the condition when the situation report should be
-#     generated.
-DESC_GENERATE_SITREP_ALL
-Generates a SitRep message for all empires
-
-# %1% name of the empire, which should recieve the situation report.
-# %2% textual description of the condition when the situation report should be
-#     generated.
-DESC_GENERATE_SITREP_NONE
-Generates a SitRep message for no recipients
-
-# %1% name of the empire, which should recieve the situation report.
-# %2% textual description of the condition when the situation report should be
-#     generated.
-DESC_GENERATE_SITREP_CAN_SEE
-Generates a SitRep message for empires that can detect an object %2%
-
-# %1% name of the empire, which should recieve the situation report.
-# %2% textual description of the condition when the situation report should be
-#     generated.
-DESC_GENERATE_SITREP_HUMAN
-Generates a SitRep message for human-controlled empires
-
-# %1% name of the technology currently researched.
-# %2% textual representation of the research progress.
-# %3% name of the empire researching the technology.
-DESC_SET_EMPIRE_TECH_PROGRESS
-Sets the research progress of tech %1% to %2% for empire %3%
-
-# %1% name of the technology that should be given.
-# %2% name of the empire recieving the technology.
-DESC_GIVE_EMPIRE_TECH
-Gives tech %1% to empire %2%
-
-DESC_SET_OVERLAY_TEXTURE
-Modifies the appearance of the object
-
-DESC_SET_TEXTURE
-Modifies the appearance of the object
-
-# %1% textual representation of the visibility of an object for an empire.
-# %2% name of the empire that will percieve the object.
-DESC_SET_VIS_ALLIES
-Sets the visibility of the object to %1% for allies of empire %2%
-
-# %1% textual representation of the visibility of an object for an empire.
-# %2% name of the empire that will percieve the object.
-DESC_SET_VIS_ENEMIES
-Sets the visibility of the object to %1% for enemies of empire %2%
-
-# %1% textual representation of the visibility of an object for an empire.
-# %2% name of the empire that will percieve the object.
-DESC_SET_VIS_NONE
-Sets the visibility of the object for no empires
-
-# %1% textual representation of the visibility of an object for an empire.
-# %2% name of the empire that will percieve the object.
-DESC_SET_VIS_ALL
-Sets the visibility of the object to %1% for all empires
-
-# %1% textual representation of the visibility of an object for an empire.
-# %2% name of the empire that will percieve the object.
-DESC_SET_VIS
-Sets the visibility of the object to %1% for empire %2%
-
-# %1% textual description the condition required to apply effects.
-DESC_CONDITIONAL
-Applies various effects depending on whether or not the target is an object %1%
-
-##
-## FOCS object creation
-##
-
-# %1% planet type the new planet should be created with.
-# %2% planet size the new planet should be created with.
-DESC_CREATE_PLANET
-Creates a new planet of type %1% and size %2%
-
-# %1% building type that should be created.
-DESC_CREATE_BUILDING
-Creates a new %1% building
-
-# %1% shipdesign to use as a template for the newly created ship.
-# %2% name of the empire which should own the newly created ship.
-# %3% name of the species which should crew the newly created ship.
-DESC_CREATE_SHIP
-Creates a new ship of design %1% owned by the %2% empire crewed by %3%
-
-# %1% shipdesign to use as a template for the newly created ship.
-DESC_CREATE_SHIP_SIMPLE
-Creates a new ship of design %1% with no owner and no species
-
-# %1% field type the new field should be created with.
-# %2% field size the new field should be created with.
-DESC_CREATE_FIELD_SIZE
-Creates a new field of type %1% with radius %2%
-
-# %1% field type the new field should be created with.
-DESC_CREATE_FIELD
-Creates a new field of type %1%
-
-# %1% star type the new system should be created with.
-DESC_CREATE_SYSTEM_TYPE
-Creates a new system of star type %1%
-
-DESC_CREATE_SYSTEM
-Creates a new system
 
 
 ##
@@ -9808,7 +9577,7 @@ SHP_ADV_DAM_CONT
 Advanced Damage Control
 
 SHP_ADV_DAM_CONT_DESC
-Repairs damaged ships by 10% of [[encyclopedia STRUCTURE_TITLE]] per turn if they are stationary and have not been in combat that turn. This is cumulative with [[tech SHP_BASIC_DAM_CONT]] and [[tech SHP_FLEET_REPAIR]].
+Repairs damaged ships by 10% of [[encyclopedia STRUCTURE_TITLE]] per turn if they are stationary and have not been in combat that turn. This is cumulative with [[tech SHP_BASIC_DAM_CONT]] and [[tech SHP_FLEET_REPAIR]] and works even out of [[encyclopedia SUPPLY_TITLE]].
 
 SHP_ROOT_AGGRESSION
 Aggression
@@ -10382,11 +10151,19 @@ BLD_CULTURE_LIBRARY_DESC
 
 Stores the accumulated knowledge from thousands of years of life on this planet, giving a bonuses to research. This building will be destroyed when the population of the high tech natives reaches zero.'''
 
+BLD_AUTO_HISTORY_ANALYSER
+Automated History Analyser
+
+BLD_AUTO_HISTORY_ANALYSER_DESC
+'''The Automated History Analyser can only be built on a planet with [[buildingtype BLD_CULTURE_ARCHIVES]]. Increases target [[encyclopedia RESEARCH_TITLE]] by 5.
+
+An automated research center with enormous computing power that scours the digitalised cultural archieves to come up with patterns, interdisciplinary parallels and lost or unfinished insights.'''
+
 BLD_IMPERIAL_PALACE
 Imperial Palace
 
 BLD_IMPERIAL_PALACE_DESC
-'''Increases [[encyclopedia SUPPLY_TITLE]] line range by 1, [[encyclopedia INFRASTRUCTURE_TITLE]] by 20, [[encyclopedia DEFENSE_TITLE]] by 5, and [[encyclopedia TROOP_TITLE]] by 6. Also sets the owner's Capital for the empire.
+'''Increases [[encyclopedia SUPPLY_TITLE]] line range by 2, [[encyclopedia INFRASTRUCTURE_TITLE]] by 20, [[encyclopedia DEFENSE_TITLE]] by 5, and [[encyclopedia TROOP_TITLE]] by 6. Also sets the owner's Capital for the empire.
 
 Represents imperial power and prestige and functions as a center of control for the empire's holdings.'''
 
@@ -10513,12 +10290,6 @@ BLD_SCANNING_FACILITY_DESC
 '''Increases [[encyclopedia DETECTION_RANGE_TITLE]] of the planet by 75.
 
 A combination of long-range scanning devices and great computing power to analyze the data allows a larger area of space to be scanned for any objects.'''
-
-BLD_HEAVY_MINE_PROCESSOR
-Heavy Mining Processor
-
-BLD_HEAVY_MINE_PROCESSOR_DESC
-Gives all colonies in the empire access to the Heavy Mining focus.
 
 BLD_INDUSTRY_CENTER
 Industrial Center
@@ -12156,6 +11927,12 @@ Great Kraken Body
 SH_KRAKEN_3_BODY_DESC
 A formidable heavy-weight space monster.
 
+SH_WHITE_KRAKEN_BODY
+White Kraken Body
+
+SH_WHITE_KRAKEN_BODY_DESC
+A white-colored prehistoric ancestor of the Kraken Space Monster.
+
 SH_BLACK_KRAKEN_BODY
 Black Kraken Body
 
@@ -12292,169 +12069,175 @@ GROWTH_SPECIALS_ENTRY_LIST
 ## Species picks
 ##
 
-NO_INDUSTRY
+NO_INDUSTRY_DESC
 −−−	No [[encyclopedia INDUSTRY_TITLE]]
 
-BAD_INDUSTRY
-−	Bad [[encyclopedia INDUSTRY_TITLE]]: -25%
+BAD_INDUSTRY_DESC
+−	Bad [[encyclopedia INDUSTRY_TITLE]]: 75%
 
-AVERAGE_INDUSTRY
+AVERAGE_INDUSTRY_DESC
 '''	Average [[encyclopedia INDUSTRY_TITLE]]: 100%'''
 
-GOOD_INDUSTRY
+GOOD_INDUSTRY_DESC
 +	Good [[encyclopedia INDUSTRY_TITLE]]: 150%
 
-GREAT_INDUSTRY
+GREAT_INDUSTRY_DESC
 ++	Great [[encyclopedia INDUSTRY_TITLE]]: 200%
 
-ULTIMATE_INDUSTRY
+ULTIMATE_INDUSTRY_DESC
 +++	Ultimate [[encyclopedia INDUSTRY_TITLE]]: 300%
 
-NO_RESEARCH
+NO_RESEARCH_DESC
 −−−	No [[encyclopedia RESEARCH_TITLE]]
 
-BAD_RESEARCH
-−	Bad [[encyclopedia RESEARCH_TITLE]]: -25%
+BAD_RESEARCH_DESC
+−	Bad [[encyclopedia RESEARCH_TITLE]]: 75%
 
-AVERAGE_RESEARCH
+AVERAGE_RESEARCH_DESC
 '''	Average [[encyclopedia RESEARCH_TITLE]]: 100%'''
 
-GOOD_RESEARCH
+GOOD_RESEARCH_DESC
 +	Good [[encyclopedia RESEARCH_TITLE]]: 150%
 
-GREAT_RESEARCH
+GREAT_RESEARCH_DESC
 ++	Great [[encyclopedia RESEARCH_TITLE]]: 200%
 
-ULTIMATE_RESEARCH
+ULTIMATE_RESEARCH_DESC
 +++	Ultimate [[encyclopedia RESEARCH_TITLE]]: 300%
 
-NO_DEFENSE_TROOPS
+NO_DEFENSE_TROOPS_DESC
 −−−	No Defensive Ground [[encyclopedia TROOP_TITLE]]
 
-BAD_DEFENSE_TROOPS
-−	Bad Defensive Ground [[encyclopedia TROOP_TITLE]]: -50%
+BAD_DEFENSE_TROOPS_DESC
+−	Bad Defensive Ground [[encyclopedia TROOP_TITLE]]: 50%
 
-AVERAGE_DEFENSE_TROOPS
+AVERAGE_DEFENSE_TROOPS_DESC
 '''	Average Defensive Ground [[encyclopedia TROOP_TITLE]]: 100%'''
 
-GOOD_DEFENSE_TROOPS
+GOOD_DEFENSE_TROOPS_DESC
 +	Good Defensive Ground [[encyclopedia TROOP_TITLE]]: 150%
 
-GREAT_DEFENSE_TROOPS
+GREAT_DEFENSE_TROOPS_DESC
 ++	Great Defensive Ground [[encyclopedia TROOP_TITLE]]: 200%
 
-ULTIMATE_DEFENSE_TROOPS
+ULTIMATE_DEFENSE_TROOPS_DESC
 +++	Ultimate Defensive Ground [[encyclopedia TROOP_TITLE]]: 300%
 
-NO_OFFENSE_TROOPS
+ANCIENT_DEFENSE_TROOPS_DESC
++++	Ancient Defensive Ground [[encyclopedia TROOP_TITLE]]: 10 per population
+
+NO_OFFENSE_TROOPS_DESC
 −−−	No Offensive Ground [[encyclopedia TROOP_TITLE]]
 
-BAD_OFFENSE_TROOPS
-−	Bad Offensive Ground [[encyclopedia TROOP_TITLE]]: -50%
+BAD_OFFENSE_TROOPS_DESC
+−	Bad Offensive Ground [[encyclopedia TROOP_TITLE]]: 50%
 
-AVERAGE_OFFENSE_TROOPS
+AVERAGE_OFFENSE_TROOPS_DESC
 '''	Average Offensive Ground [[encyclopedia TROOP_TITLE]]: 100%'''
 
-GOOD_OFFENSE_TROOPS
+GOOD_OFFENSE_TROOPS_DESC
 +	Good Offensive Ground [[encyclopedia TROOP_TITLE]]: 150%
 
-GREAT_OFFENSE_TROOPS
+GREAT_OFFENSE_TROOPS_DESC
 ++	Great Offensive Ground [[encyclopedia TROOP_TITLE]]: 200%
 
-ULTIMATE_OFFENSE_TROOPS
+ULTIMATE_OFFENSE_TROOPS_DESC
 +++	Ultimate Offensive Ground [[encyclopedia TROOP_TITLE]]: 300%
 
-BAD_DETECTION
+BAD_DETECTION_DESC
 −	Bad [[encyclopedia DETECTION_RANGE_TITLE]]: −20 malus
 
-GOOD_DETECTION
+GOOD_DETECTION_DESC
 +	Good [[encyclopedia DETECTION_RANGE_TITLE]]: +25 bonus
 
-GREAT_DETECTION
+GREAT_DETECTION_DESC
 ++	Great [[encyclopedia DETECTION_RANGE_TITLE]]: +50 bonus
 
-ULTIMATE_DETECTION
+ULTIMATE_DETECTION_DESC
 +++	Ultimate [[encyclopedia DETECTION_RANGE_TITLE]]: +100 bonus
 
-BAD_STEALTH
+BAD_STEALTH_DESC
 −	Bad Planetary [[encyclopedia STEALTH_TITLE]]: −20 malus
 
-AVERAGE_STEALTH
+AVERAGE_STEALTH_DESC
 '''	Average Planetary [[encyclopedia STEALTH_TITLE]]'''
 
-GOOD_STEALTH
+GOOD_STEALTH_DESC
 +	Good Planetary [[encyclopedia STEALTH_TITLE]]: +20 bonus
 
-GREAT_STEALTH
+GREAT_STEALTH_DESC
 ++	Great Planetary [[encyclopedia STEALTH_TITLE]]: +40 bonus
 
-ULTIMATE_STEALTH
+ULTIMATE_STEALTH_DESC
 +++	Ultimate Planetary [[encyclopedia STEALTH_TITLE]]: +60 bonus
 
-BAD_WEAPONS
+BAD_WEAPONS_DESC
 −	Bad Pilots: Base damage per ship weapon reduced by one level.
 
-GOOD_WEAPONS
+GOOD_WEAPONS_DESC
 +	Good Pilots: Base damage per ship weapon increased by one level.
 
-GREAT_WEAPONS
+GREAT_WEAPONS_DESC
 ++	Great Pilots: Base damage per ship weapon increased by two levels.
 
-ULTIMATE_WEAPONS
+ULTIMATE_WEAPONS_DESC
 +++	Ultimate Pilots: Base damage per ship weapon increased by three levels.
 
-BAD_POPULATION
+BAD_POPULATION_DESC
 −	Bad Population 75%
 
-AVERAGE_POPULATION
+AVERAGE_POPULATION_DESC
 '''	Average Population'''
 
-GOOD_POPULATION
+GOOD_POPULATION_DESC
 +	Good Population 125%
 
-BAD_SUPPLY
+BAD_SUPPLY_DESC
 −	Bad [[encyclopedia SUPPLY_TITLE]]: no bonus
 
-AVERAGE_SUPPLY
+AVERAGE_SUPPLY_DESC
 '''	Average [[encyclopedia SUPPLY_TITLE]]: +1'''
 
-GREAT_SUPPLY
+GREAT_SUPPLY_DESC
 +	Great [[encyclopedia SUPPLY_TITLE]]: +2
 
-ULTIMATE_SUPPLY
+ULTIMATE_SUPPLY_DESC
 ++	Ultimate [[encyclopedia SUPPLY_TITLE]]: +3
 
-GOOD_SHIP_SHIELD
+GOOD_SHIP_SHIELD_DESC
 +	Good ship [[encyclopedia SHIELDS_TITLE]]: +1
 
-GOOD_PLANETARY_SHIELD
+GOOD_PLANETARY_SHIELD_DESC
 +	Good planetary [[encyclopedia SHIELDS_TITLE]]: +5
 
-GOOD_PLANETARY_DEFENSE
+ANCIENT_PLANETARY_SHIELD_DESC
++++	Ancient planetary [[encyclopedia SHIELDS_TITLE]]: +500
+
+GOOD_PLANETARY_DEFENSE_DESC
 +	Good planetary [[encyclopedia DEFENSE_TITLE]]: +5
 
-BROAD_EP
+BROAD_EP_DESC
 ++	Broad Planet Tolerance: can tolerate more types.
 
-NARROW_EP
+NARROW_EP_DESC
 −	Narrow Planet Tolerance: flourishes on fewer types.
 
-FAST_COLONIZATION
+FAST_COLONIZATION_DESC
 +	Fast Colonization: -25% time to build colonies
 
-SLOW_COLONIZATION
+SLOW_COLONIZATION_DESC
 −	Slow Colonization: +20% time to build colonies
 
-BAD_FUEL
+BAD_FUEL_DESC
 −	Bad maximum [[encyclopedia FUEL_TITLE]]: - 1
 
-GREAT_ASTEROID_INDUSTRY
+GREAT_ASTEROID_INDUSTRY_DESC
 +	Good Asteroid Miners: + 0.2 [[encyclopedia INDUSTRY_TITLE]] per population when Industry Focused in systems with owned asteroid belts.
 
-LIGHT_SENSITIVE
+LIGHT_SENSITIVE_DESC
 −	Light Sensitive: Population is reduced in systems with [[STAR_BLUE]] and to a lesser extend [[STAR_WHITE]] stars.
 
-TELEPATHIC_DETECTION
+TELEPATHIC_DETECTION_DESC
 +	Telepathic Detection: can sense nearby populated planets.
 
 
@@ -14447,7 +14230,7 @@ Taonoui
 Tarak
 Tarazed
 Targ
-Tàuṛa̋ṛȍ
+Tauraro
 Tauri
 Taygeta
 Taylor

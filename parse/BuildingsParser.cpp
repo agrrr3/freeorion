@@ -22,13 +22,7 @@ namespace std {
 
 namespace {
     struct insert_ {
-#if BOOST_VERSION < 105600
-        template <typename Arg1, typename Arg2> // Phoenix v2
-        struct result
-        { typedef void type; };
-#else
         typedef void result_type;
-#endif
 
         void operator()(std::map<std::string, BuildingType*>& building_types, BuildingType* building_type) const {
             if (!building_types.insert(std::make_pair(building_type->Name(), building_type)).second) {
@@ -42,9 +36,6 @@ namespace {
     struct rules {
         rules() {
             const parse::lexer& tok = parse::lexer::instance();
-
-            const parse::value_ref_parser_rule<double>::type& double_value_ref =    parse::value_ref_parser<double>();
-            const parse::value_ref_parser_rule< int >::type& flexible_int_ref =     parse::value_ref_parser_flexible_int();
 
             qi::_1_type _1;
             qi::_2_type _2;
