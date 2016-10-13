@@ -1,0 +1,21 @@
+BuildingType
+    name = "BLD_SUPPLY_ISOLATOR"
+    description = "BLD_SUPPLY_ISOLATOR_DESC"
+    buildcost = 1
+    buildtime = 1
+    location = And [
+        Planet
+        Not Contains Building name = "BLD_SUPPLY_ISOLATOR"
+        OwnedBy empire = Source.Owner
+        TargetPopulation low = 1
+    ]
+    EnqueueLocation = [[ENQUEUE_BUILD_ONE_PER_PLANET]]
+    effectsgroups = [
+        EffectsGroup
+            scope = Object id = Source.PlanetID
+            activation = Source
+            effects = SetMaxSupply value = 0
+    ]
+    icon = ""
+
+#include "/scripting/common/enqueue.macros"
