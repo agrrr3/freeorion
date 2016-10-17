@@ -1,8 +1,11 @@
 // File freeorion/scripting/ship_parts/CO_SUPPLIES.focs.txt
 Part
     name = "CO_SUPPLIES_030"
-    //  Implementation notes: chooses randomly one of the eligible planets to unload. Better would be to evenly distribute the supplies; complicated; not worth it.
     //  Part which unloads and scraps the ship at planets with BLD_UNLOAD_SUPPLY
+    //  Implementation notes: distributes the supplies evenly between all planets with BLD_UNLOAD_SUPPLY.
+    //  Different capacities according to slot type: Internal 10 External 30 
+    //       Calculated so cheapest hull equipped with supply parts has about 10% extra cost
+    //
     //  Given a ship with a ship part CO_SUPPLIES_030
     //  orGiven two ships with a ship part CO_SUPPLIES_030
     //  orGiven a ship with two (or many) ship parts CO_SUPPLIES_030
@@ -18,39 +21,16 @@ Part
     //  orWhen staying in a system with a planet with BLD_UNLOAD_SUPPLY but different owner
     //  then none of the CO_SUPPLIES_030 effects is triggered
     //  ship is unloaded in other system -> capacity doesnt change
-    //  ATM all planets with the building are triggered
-    //  ATM unloading of multiple ships/parts is bonked
     //  ATM *destroying the building when the ship is there in order to stop the effect doesnt work  
     description = "CO_SUPPLIES_DESC" 
     class = General
     capacity = 30
-    mountableSlotTypes = [External Internal] // Internal 10 External 30 Core 0
+    mountableSlotTypes = [External Internal]
     buildcost = 30
     buildtime = 1
     location = OwnedBy empire = Source.Owner
     effectsgroups = [
-        EffectsGroup // production on planets where unloading starts this turn
-            scope = And [
-                Planet
-                [[CONDITION_PLANET_IN_SYSTEM_READY_FOR_UNLOAD(Source.SystemID)]]
-                // Not HasSpecial name = "UNLOADING_SUPPLIES_SPECIAL"
-            ]
-            // activation = InSystem
-            stackinggroup = "STACKING_BOOST_INDUSTRY_ONCE_PER_PLANET"
-            effects = [
-                // SetIndustry value = max(4, Value + 100) // 5 == number which is decreased from the pile every round
-                // SetTargetIndustry and SetIndustry dont seem to work on outposts ( gets reset later if population is zero )
-                GenerateSitRepMessage
-                    message = "Unloading on %planet% started. Got a %rawtext% industry boost."
-                    icon = "icons/waiting.png"
-                    parameters = [
-                        tag = "planet" data = Target.ID
-                        tag = "rawtext" data = "100"
-                    ]
-                    empire = Source.Owner
-            ]
-
-        EffectsGroup // unload to all eligible planets   
+        EffectsGroup // for unloading supplies to all eligible planets   
             scope = And [
                 Planet
                 [[CONDITION_PLANET_IN_SYSTEM_READY_FOR_UNLOAD(Source.SystemID)]]
@@ -62,7 +42,7 @@ Part
                 SetSpecialCapacity name = "UNLOADING_SUPPLIES_SPECIAL" 
                     capacity = Value + ( PartCapacity name = "CO_SUPPLIES_030" / [[COUNT_PLANETS_WITH_UNLOAD_BUILDING(Source.SystemID)]] )
             ]
-        EffectsGroup    // remove empty ship
+        EffectsGroup // for removing empty ship
             scope = And [
                 Source
                 InSystem
@@ -74,7 +54,8 @@ Part
             stackinggroup = "STACKING_SCRAP_EMPTY_SHIP"
             effects = [
                 GenerateSitRepMessage
-                    message = "Scrapping supply ship %ship% on %system% after unloading %rawtext% units of industrial supplies." // "EFFECT_UNLOADED_SHIP_SCRAPPED"
+                    message = "Scrapping supply ship %ship% on %system% after unloading %rawtext% units of industrial supplies."
+                    label = "EFFECT_SUPPLY_SCRAP_EMPTY_SHIP_LABEL"
                     icon = "icons/meter/supply.png"
                     parameters = [
                         tag = "system" data = Target.SystemID

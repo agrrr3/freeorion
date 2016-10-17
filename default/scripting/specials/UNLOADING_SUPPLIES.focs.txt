@@ -1,7 +1,7 @@
 Special
     // redundant code : https://github.com/freeorion/freeorion/blob/master/universe/Ship.cpp#L727
     // meters should become OO with two types (simple and paired)
-	// dont understand how not generic part meters are added (https://github.com/freeorion/freeorion/blob/master/universe/Ship.cpp#L81)
+    // dont understand how not generic part meters are added (https://github.com/freeorion/freeorion/blob/master/universe/Ship.cpp#L81)
     // Idea: a special is a good place for bookkeeping,
     //    1) it is not accessible to user interaction (cant be removed at will like a building)
     //    2) it is one-to-one to a planet
@@ -22,21 +22,21 @@ Special
     //       https://github.com/freeorion/freeorion/blob/master/universe/Ship.cpp#L75
     // https://github.com/freeorion/freeorion/blob/master/universe/UniverseObject.h (AddSpecial, RemoveSpecial, SetSpecialCapacity, HasSpecial, SpecialCapacity, SpecialAddedOnTurn)
     // https://github.com/freeorion/freeorion/blob/master/parse/ConditionParser3.cpp
-    // hmmmm, but there is a present-since attribute...
     name = "UNLOADING_SUPPLIES_SPECIAL"
     description = "UNLOADING_SUPPLIES_SPECIAL_DESC"
     spawnrate = 0.0
     effectsgroups = [
-        EffectsGroup
+        EffectsGroup // Transfer capacity from the supply pile to planet's industry by raising the maximum value.
             scope = Source // is the special's planet
             activation = HasSpecialCapacity name = "UNLOADING_SUPPLIES_SPECIAL" low = 0.01
-            accountinglabel = "SUPPLIES_LABEL"
+            accountinglabel = "SUPPLY_USAGE_LABEL"
             effects = [
                 SetSpecialCapacity name = "UNLOADING_SUPPLIES_SPECIAL" value = Value - [[SUPPLY_SHIP_INDUSTRY_BOOST]]
                 SetTargetIndustry value = max([[SUPPLY_SHIP_INDUSTRY_BOOST]], Value + [[SUPPLY_SHIP_INDUSTRY_BOOST]])
                 GenerateSitRepMessage
                     message = "Unloading generic supplies on %planet% still %capacity%"
-                    icon = "icons/ship_parts/death-spore.png"
+                    label = "EFFECT_SUPPLY_USAGE_LABEL"
+                    icon = "icons/focus/supply.png"
                     parameters = [
                         tag = "planet" data = Target.ID
                         tag = "capacity" data = "unknown"
@@ -62,52 +62,20 @@ Special
             ]
             accountinglabel = "UNLOADING_SUPPLIES_FROM_SPECIAL_1_LABEL"
             effects = [
+                // should use max or not? 
                 SetIndustry value = max([[SUPPLY_SHIP_INDUSTRY_BOOST]], Value + [[SUPPLY_SHIP_INDUSTRY_BOOST]])
             ]
-        EffectsGroup
-            scope = Source // is the special's planet
-            activation = And [
-                Not HasSpecialSinceTurn name = "UNLOADING_SUPPLIES_SPECIAL" low = 1 high = CurrentTurn - 2
-                HasSpecialCapacity name = "UNLOADING_SUPPLIES_SPECIAL" low = 0.01
-            ]
-            accountinglabel = "UNLOADING_SUPPLIES_FROM_SPECIAL_2_LABEL"
-	    effects = [
-                GenerateSitRepMessage
-                    message = "XXX %planet% not has special high current-2 (%rawtext%). Boost industry "
-                    icon = "icons/ship_parts/death-spore.png"
-                    parameters = [
-                        tag = "planet" data = Target.ID
-                        tag = "capacity" data = "unknown"
-                        tag = "shippart" data = "CO_SUPPLIES_030"
-                        tag = "rawtext" data = CurrentTurn -2
-                    ]
-            ]
-        EffectsGroup
-            scope = Source // is the special's planet
-            activation = And [
-                HasSpecialSinceTurn name = "UNLOADING_SUPPLIES_SPECIAL" low = 33 high = 33
-                HasSpecialCapacity name = "UNLOADING_SUPPLIES_SPECIAL" low = 0.1
-            ]
-            effects = [
-                GenerateSitRepMessage
-                    message = "XXX has special 33-33 %rawtext%"
-                    icon = "icons/ship_parts/death-spore.png"
-                    parameters = [
-                        tag = "planet" data = Target.ID
-                        tag = "rawtext" data = CurrentTurn
-                        tag = "shippart" data = "CO_SUPPLIES_030"
-                    ]
-            ]
-        EffectsGroup
+        EffectsGroup // for removing the special (and the industry boost) when the supply pile is empty 
             scope = Source // is the special's planet
             activation = HasSpecialCapacity name = "UNLOADING_SUPPLIES_SPECIAL" high = 0.0
             effects = [
                 RemoveSpecial name = "UNLOADING_SUPPLIES_SPECIAL"
                 // should use max or not? industry may be intermittently less than zero?
-                SetIndustry value = max(0, Value - [[SUPPLY_SHIP_INDUSTRY_BOOST]])
+                SetIndustry value = max(min(0, Value), Value - [[SUPPLY_SHIP_INDUSTRY_BOOST]])
                 GenerateSitRepMessage
-                    message = "Finished unloading supplies on %planet%." // "EFFECT_UNLOADING_SUPPLIES_CAP_EMPTY"
-                    icon = "icons/ship_parts/death-spore.png"
+                    message = "Finished unloading supplies on %planet%." 
+                    label = "EFFECT_UNLOADING_SUPPLIES_CAP_EMPTY"
+                    icon = "icons/meter/capacity.png"
                     parameters = [
                         tag = "planet" data = Target.ID
                     ]
