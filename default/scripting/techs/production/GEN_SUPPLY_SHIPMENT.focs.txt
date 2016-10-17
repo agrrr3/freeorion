@@ -7,6 +7,7 @@ Tech
     researchturns = 1
     unlock = [
         Item type = Building name = "BLD_UNLOAD_SUPPLY"
+        Item type = ShipPart name = "CO_SUPPLIES_010"
         Item type = ShipPart name = "CO_SUPPLIES_030"
     ]
     graphic = "icons/tech/microgravity_manufacturing.png"

@@ -1,11 +1,16 @@
 // File freeorion/scripting/ship_parts/CO_SUPPLIES.focs.txt
-Part
-    name = "CO_SUPPLIES_030"
+
     //  Part which unloads and scraps the ship at planets with BLD_UNLOAD_SUPPLY
     //  Implementation notes: distributes the supplies evenly between all planets with BLD_UNLOAD_SUPPLY.
     //  Different capacities according to slot type: Internal 10 External 30 
     //       Calculated so cheapest hull equipped with supply parts has about 10% extra cost
-    //
+
+[[PART_CO_SUPPLIES_FOR_GIVEN_CAPACITY_AND_SLOT_TYPES(010,Internal)]]
+
+[[PART_CO_SUPPLIES_FOR_GIVEN_CAPACITY_AND_SLOT_TYPES(030,External)]]
+
+    // BDD style Matrixtests:
+    //  == UNLOADED_SUPPLY_SHIPS_GET_SCRAPPED ==
     //  Given a ship with a ship part CO_SUPPLIES_030
     //  orGiven two ships with a ship part CO_SUPPLIES_030
     //  orGiven a ship with two (or many) ship parts CO_SUPPLIES_030
@@ -13,23 +18,36 @@ Part
     //  orWhen staying in a system with a planet with BLD_UNLOAD_SUPPLY	
     //  orWhen entering a system with two (or many) planets with BLD_UNLOAD_SUPPLY	
     //  then it is scrapped
+    //
+    //  == SUPPLY_SHIPS_ONLY_GET_UNLOADED_WITH_BLD_UNLOAD_SUPPLY ==
     //  Given a ship with a ship part CO_SUPPLIES_030
     //  when entering a system without a planet with BLD_UNLOAD_SUPPLY
     //  orWhen being outside of a system and but a planet with BLD_UNLOAD_SUPPLY exists
-    //  *orWhen staying in a system without a planet with BLD_UNLOAD_SUPPLY but a planet with BLD_UNLOAD_SUPPLY exists
-    //  orWhen staying in a system with a planet with BLD_UNLOAD_SUPPLY but the building is destroyed
+    //  orWhen staying in a system without a planet with BLD_UNLOAD_SUPPLY but a planet with BLD_UNLOAD_SUPPLY exists
+    //  *orWhen staying in a system with a planet with BLD_UNLOAD_SUPPLY but the building is destroyed
     //  orWhen staying in a system with a planet with BLD_UNLOAD_SUPPLY but different owner
     //  then none of the CO_SUPPLIES_030 effects is triggered
+    //
     //  ship is unloaded in other system -> capacity doesnt change
     //  ATM *destroying the building when the ship is there in order to stop the effect doesnt work  
+
+PART_CO_SUPPLIES_FOR_GIVEN_CAPACITY_AND_SLOT_TYPES
+'''
+Part
+    name = "CO_SUPPLIES_@1@"
     description = "CO_SUPPLIES_DESC" 
     class = General
-    capacity = 30
-    mountableSlotTypes = [External Internal]
-    buildcost = 30
+    capacity = @1@
+    mountableSlotTypes = @2@
+    buildcost = @1@
     buildtime = 1
     location = OwnedBy empire = Source.Owner
-    effectsgroups = [
+    effectsgroups = [ [[EFFECTSGROUPS_CO_SUPPLIES_FOR_GIVEN_CAPACITY(010)]] ]
+    icon = "icons/meter/supply.png"
+'''
+
+EFFECTSGROUPS_CO_SUPPLIES_FOR_GIVEN_CAPACITY
+'''
         EffectsGroup // for unloading supplies to all eligible planets   
             scope = And [
                 Planet
@@ -40,7 +58,7 @@ Part
             effects = [
                 AddSpecial name = "UNLOADING_SUPPLIES_SPECIAL"
                 SetSpecialCapacity name = "UNLOADING_SUPPLIES_SPECIAL" 
-                    capacity = Value + ( PartCapacity name = "CO_SUPPLIES_030" / [[COUNT_PLANETS_WITH_UNLOAD_BUILDING(Source.SystemID)]] )
+                    capacity = Value + ( PartCapacity name = "CO_SUPPLIES_@1@" / [[COUNT_PLANETS_WITH_UNLOAD_BUILDING(Source.SystemID)]] )
             ]
         EffectsGroup // for removing empty ship
             scope = And [
@@ -65,8 +83,9 @@ Part
                     empire = Target.Owner
                 Destroy
             ]
-    ]
-    icon = "icons/meter/supply.png"
+'''
+
+
 
 SUM_OF_SHIP_SUPPLIES
 '''[[SUM_OF_SHIP_SUPPLIES_FOR_PART(CO_SUPPLIES_030)]]'''

@@ -3,6 +3,6 @@ ShipDesign
     description = "SD_SUPPLY_DROP_DESC"
     hull = "SH_COLONY_BASE"
     parts = [
-        "CO_SUPPLIES_030"
+        "CO_SUPPLIES_010"
     ]
-    model = "supply030"
+    model = "supply010"
