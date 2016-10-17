@@ -3,6 +3,7 @@
 #include "i18n.h"
 #include "Logger.h"
 #include "OptionValidators.h"
+#include "XMLDoc.h"
 
 #include "util/Directories.h"
 
@@ -11,6 +12,7 @@
 #include <string>
 
 #include <boost/spirit/include/classic.hpp>
+#include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/erase.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/filesystem/fstream.hpp>
@@ -148,7 +150,9 @@ void OptionsDB::Commit()
         return;
     boost::filesystem::ofstream ofs(GetConfigPath());
     if (ofs) {
-        GetOptionsDB().GetXML().WriteDoc(ofs);
+        XMLDoc doc;
+        GetOptionsDB().GetXML(doc);
+        doc.WriteDoc(ofs);
         m_dirty = false;
     } else {
         std::cerr << UserString("UNABLE_TO_WRITE_CONFIG_XML") << std::endl;
@@ -256,8 +260,8 @@ void OptionsDB::GetUsage(std::ostream& os, const std::string& command_line/* = "
     }
 }
 
-XMLDoc OptionsDB::GetXML() const {
-    XMLDoc doc;
+void OptionsDB::GetXML(XMLDoc& doc) const {
+    doc = XMLDoc();
 
     std::vector<XMLElement*> elem_stack;
     elem_stack.push_back(&doc.root_node);
@@ -303,8 +307,6 @@ XMLDoc OptionsDB::GetXML() const {
         elem_stack.back()->AppendChild(temp);
         elem_stack.push_back(&elem_stack.back()->Child(temp.Tag()));
     }
-
-    return doc;
 }
 
 OptionsDB::OptionChangedSignalType& OptionsDB::OptionChangedSignal(const std::string& option) {

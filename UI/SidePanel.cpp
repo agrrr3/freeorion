@@ -1868,8 +1868,7 @@ void SidePanel::PlanetPanel::RClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_
     }
 
 
-    GG::PopupMenu popup(pt.x, pt.y, ClientUI::GetFont(), menu_contents, ClientUI::TextColor(),
-                        ClientUI::WndOuterBorderColor(), ClientUI::WndColor(), ClientUI::EditHiliteColor());
+    CUIPopupMenu popup(pt.x, pt.y, menu_contents);
 
     if (popup.Run()) {
         switch (popup.MenuID()) {
@@ -2830,6 +2829,8 @@ void SidePanel::RefreshImpl() {
             rows.push_back(new SystemRow(sys_id));
         }
         m_system_name->Insert(rows, false);
+
+        // select in the list the currently-selected system
         for (GG::DropDownList::iterator it = m_system_name->begin();
              it != m_system_name->end(); ++it)
         {

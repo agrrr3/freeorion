@@ -39,6 +39,7 @@
 #include <boost/xpressive/xpressive.hpp>
 #include <boost/xpressive/regex_actions.hpp>
 #include <boost/assign/list_of.hpp>
+#include <boost/unordered_set.hpp>
 
 #include <cmath>
 #include <cctype>
@@ -67,6 +68,10 @@ namespace {
     const boost::uint32_t WIDE_FF = '\f';
     const boost::uint32_t WIDE_TAB = '\t';
 
+    const std::string ITALIC_TAG = "i";
+    const std::string SHADOW_TAG = "s";
+    const std::string UNDERLINE_TAG = "u";
+    const std::string RGBA_TAG = "rgba";
     const std::string ALIGN_LEFT_TAG = "left";
     const std::string ALIGN_CENTER_TAG = "center";
     const std::string ALIGN_RIGHT_TAG = "right";
@@ -212,60 +217,20 @@ namespace {
         FT_Library m_library;
     } g_library;
 
-    struct MatchesKnownTag
-    {
-        MatchesKnownTag(const std::set<std::string>& known_tags,
-                        bool& ignore_tags) :
-            m_known_tags(known_tags),
-            m_ignore_tags(ignore_tags)
-        {}
-        bool operator()(const boost::xpressive::ssub_match& sub) const
-        { return m_ignore_tags ? false : m_known_tags.find(sub.str()) != m_known_tags.end(); }
-        const std::set<std::string>& m_known_tags;
-        bool& m_ignore_tags;
-    };
-
-    struct PushSubmatchOntoStack
+    struct PushSubmatchOntoStackP
     {
         typedef void result_type;
-        void operator()(const std::string& str,
+        void operator()(const std::string* str,
                         std::stack<Font::Substring>& tag_stack,
                         bool& ignore_tags,
                         const boost::xpressive::ssub_match& sub) const
         {
-            tag_stack.push(Font::Substring(str, sub));
+            tag_stack.push(Font::Substring(*str, sub));
             if (tag_stack.top() == PRE_TAG)
                 ignore_tags = true;
         }
     };
-    const boost::xpressive::function<PushSubmatchOntoStack>::type Push = {{}};
-
-    bool operator==(const Font::Substring& lhs, const boost::xpressive::ssub_match& rhs)
-    {
-        return lhs.size() == static_cast<std::size_t>(rhs.length()) &&
-            !std::memcmp(&*lhs.begin(), &*rhs.first, lhs.size());
-    }
-
-    struct MatchesTopOfStack
-    {
-        MatchesTopOfStack(std::stack<Font::Substring>& tag_stack,
-                          bool& ignore_tags) :
-            m_tag_stack(tag_stack),
-            m_ignore_tags(ignore_tags)
-        {}
-        bool operator()(const boost::xpressive::ssub_match& sub) const
-        {
-            bool retval = m_tag_stack.empty() ? false : m_tag_stack.top() == sub;
-            if (retval) {
-                m_tag_stack.pop();
-                if (m_tag_stack.empty() || m_tag_stack.top() != PRE_TAG)
-                    m_ignore_tags = false;
-            }
-            return retval;
-        }
-        std::stack<Font::Substring>& m_tag_stack;
-        bool& m_ignore_tags;
-    };
+    const boost::xpressive::function<PushSubmatchOntoStackP>::type PushP = {{}};
 
     void SetJustification(bool& last_line_of_curr_just, Font::LineData& line_data, Alignment orig_just, Alignment prev_just)
     {
@@ -685,33 +650,167 @@ Font::Glyph::Glyph(const boost::shared_ptr<Texture>& texture, const Pt& ul, cons
 {}
 
 namespace {
-    // Global set of tags requiring action fron Font. Wrapped in a function for deterministic static initialization order.
-    std::set<std::string>& ActionTags()
-    {
-        static std::set<std::string> action_tags;
-        return action_tags;
-    }
+    namespace xpr = boost::xpressive;
+
+    /** CompiledRegex maintains a compiled boost::xpressive regular
+        expression that includes a tag stack which can be cleared and
+        provided to callers without the overhead of recompiling the
+        regular expression.*/
+    class CompiledRegex {
+        public:
+        CompiledRegex(const boost::unordered_set<std::string>& known_tags, bool strip_unpaired_tags) :
+            m_text(0), m_known_tags(&known_tags), m_ignore_tags(false), m_tag_stack(),
+            m_EVERYTHING()
+        {
+            // Synonyms for s1 thru s5 sub matches
+            xpr::mark_tag tag_name_tag(1);
+            xpr::mark_tag open_bracket_tag(2);
+            xpr::mark_tag close_bracket_tag(3);
+            xpr::mark_tag whitespace_tag(4);
+            xpr::mark_tag text_tag(5);
+
+            // The comments before each regex are intended to clarify the mapping from xpressive
+            // notation to the more typical regex notation.  If you read xpressive or don't read
+            // regex then ignore them.
+
+            // -+ 'non-greedy',   ~ 'not',   set[|] 'set',    _s 'space' = 'anything but space or <'
+            const xpr::sregex TAG_PARAM =
+                -+~xpr::set[xpr::_s | '<'];
+
+            //+_w one or more greed word chars,  () group no capture,  [] semantic operation
+            const xpr::sregex OPEN_TAG_NAME =
+                (+xpr::_w)[xpr::check(boost::bind(&CompiledRegex::MatchesKnownTag, this, _1))];
+
+            // (+_w) one or more greedy word check matches stack
+            const xpr::sregex CLOSE_TAG_NAME =
+                (+xpr::_w)[xpr::check(boost::bind(&CompiledRegex::MatchesTopOfStack, this, _1))];
+
+            // *blank  'zero or more greedy whitespace',   >> 'followed by',    _ln 'newline',
+            // (set = 'a', 'b') is '[ab]',    +blank 'one or more greedy blank'
+            const xpr::sregex WHITESPACE =
+                (*xpr::blank >> (xpr::_ln | (xpr::set = '\n', '\r', '\f'))) | +xpr::blank;
+
+            // < followed by not space or <   or one or more not space or <
+            const xpr::sregex TEXT =
+                ('<' >> *~xpr::set[xpr::_s | '<']) | (+~xpr::set[xpr::_s | '<']);
+
+            if (!strip_unpaired_tags) {
+                m_EVERYTHING =
+                    ('<' >> (tag_name_tag = OPEN_TAG_NAME)           // < followed by TAG_NAME
+                     >> xpr::repeat<0, 9>(+xpr::blank >> TAG_PARAM)  // repeat 0 to 9 a single blank followed
+                                                                     // by TAG_PARAM
+                     >> (open_bracket_tag.proto_base() = '>'))       // s1. close tag and push operation
+                    [PushP(xpr::ref(m_text), xpr::ref(m_tag_stack), xpr::ref(m_ignore_tags), tag_name_tag)] |
+                    ("</" >> (tag_name_tag = CLOSE_TAG_NAME) >> (close_bracket_tag.proto_base() = '>')) |
+                    (whitespace_tag = WHITESPACE) |
+                    (text_tag = TEXT);
+            } else {
+                // don't care about matching with tag stack when
+                // matching close tags, or updating the stack when
+                // matching open tags
+                m_EVERYTHING =
+                    ('<' >> OPEN_TAG_NAME >> xpr::repeat<0, 9>(+xpr::blank >> TAG_PARAM) >> '>') |
+                    ("</" >> OPEN_TAG_NAME >> '>') |
+                    (whitespace_tag = WHITESPACE) |
+                    (text_tag = TEXT);
+            }
+        }
+
+        xpr::sregex& BindRegexToText(const std::string& new_text, bool ignore_tags) {
+            if (!m_tag_stack.empty()) {
+                std::stack<Font::Substring> empty_stack;
+                std::swap(m_tag_stack, empty_stack);
+            }
+            m_text = &new_text;
+            m_ignore_tags = ignore_tags;
+            return m_EVERYTHING;
+        }
+
+        private:
+
+        bool MatchesKnownTag(const boost::xpressive::ssub_match& sub) {
+            return m_ignore_tags ? false : m_known_tags->count(sub.str()) != 0;
+        }
+
+        bool MatchesTopOfStack(const boost::xpressive::ssub_match& sub) {
+            bool retval = m_tag_stack.empty() ? false : m_tag_stack.top() == sub;
+            if (retval) {
+                m_tag_stack.pop();
+                if (m_tag_stack.empty() || m_tag_stack.top() != PRE_TAG)
+                    m_ignore_tags = false;
+            }
+            return retval;
+        }
+
+        const std::string* m_text;
+        const boost::unordered_set<std::string>* m_known_tags;
+        bool m_ignore_tags;
+
+        // m_tag_stack is used to track XML opening/closing tags.
+        std::stack<Font::Substring> m_tag_stack;
+
+        // The combined regular expression.
+        xpr::sregex m_EVERYTHING;
+    };
+
+    class TagHandler {
+        public:
+        TagHandler() :
+            m_known_tags(),
+            m_regex_w_tags(m_known_tags, false),
+            m_regex_w_tags_skipping_unmatched(m_known_tags, true)
+        {}
+
+        void Insert(const std::string& tag) {
+            m_known_tags.insert(tag);
+        }
+
+        void Erase(const std::string& tag) {
+            m_known_tags.erase(tag);
+        }
+
+        void Clear() {
+            m_known_tags.clear();
+        }
+
+        // Return a regex bound to \p text using the currently known
+        // tags possible \p ignore_tags and/or \p strip_unpaired_tags
+        xpr::sregex & Regex(const std::string& text, bool ignore_tags, bool strip_unpaired_tags = false) {
+            if (!strip_unpaired_tags)
+                return m_regex_w_tags.BindRegexToText(text, ignore_tags);
+            else
+                return m_regex_w_tags_skipping_unmatched.BindRegexToText(text, ignore_tags);
+        }
+
+        private:
+        // set of tags known to the handler
+        boost::unordered_set<std::string> m_known_tags;
+
+        // Compiled regular expression including tag stack
+        CompiledRegex m_regex_w_tags;
+
+        // Compiled regular expression using tags but skipping unmatched tags.
+        CompiledRegex m_regex_w_tags_skipping_unmatched;
+    };
+
 
     // Global set of known tags. Wrapped in a function for deterministic static initialization order.
-    std::set<std::string>& KnownTags()
+    TagHandler& StaticTagHandler()
     {
-        static std::set<std::string> known_tags;
-        return known_tags;
+        static TagHandler tag_handler;
+        return tag_handler;
     }
 
     // Registers the default action and known tags.
     int RegisterDefaultTags() {
-        ActionTags().insert("i");
-        ActionTags().insert("s");
-        ActionTags().insert("u");
-        ActionTags().insert("rgba");
-        ActionTags().insert(ALIGN_LEFT_TAG);
-        ActionTags().insert(ALIGN_CENTER_TAG);
-        ActionTags().insert(ALIGN_RIGHT_TAG);
-        ActionTags().insert(PRE_TAG);
-
-        // Always know the action tags.
-        KnownTags().insert(ActionTags().begin(), ActionTags().end());
+        StaticTagHandler().Insert(ITALIC_TAG);
+        StaticTagHandler().Insert(SHADOW_TAG);
+        StaticTagHandler().Insert(UNDERLINE_TAG);
+        StaticTagHandler().Insert(RGBA_TAG);
+        StaticTagHandler().Insert(ALIGN_LEFT_TAG);
+        StaticTagHandler().Insert(ALIGN_CENTER_TAG);
+        StaticTagHandler().Insert(ALIGN_RIGHT_TAG);
+        StaticTagHandler().Insert(PRE_TAG);
 
         // Must have return value to call at static initialization time.
         return 0;
@@ -1010,50 +1109,31 @@ std::string Font::StripTags(const std::string& text, bool strip_unpaired_tags)
 {
     using namespace boost::xpressive;
 
-    bool temp_bool = false;
-    std::stack<Substring> tag_stack;
-    MatchesKnownTag matches_known_tag(KnownTags(), temp_bool);
-    MatchesTopOfStack matches_tag_stack(tag_stack, temp_bool);
+    sregex & regex = StaticTagHandler().Regex(text, false, strip_unpaired_tags);
 
     mark_tag tag_name_tag(1);
     mark_tag open_bracket_tag(2);
     mark_tag close_bracket_tag(3);
-    mark_tag printable_text_tag(4);
+    mark_tag whitespace_tag(4);
+    mark_tag text_tag(5);
 
-    const sregex TAG_PARAM =
-    -+~set[_s | '<'];
-    const sregex OPEN_TAG_NAME =
-        (+_w)[check(matches_known_tag)];
-    const sregex CLOSE_TAG_NAME =
-        (+_w)[check(matches_tag_stack)];
-    const sregex WHITESPACE =
-        (*blank >> (_ln | (set = '\n', '\r', '\f'))) | +blank;
-    const sregex TEXT =
-        ('<' >> *~set[_s | '<']) | (+~set[_s | '<']);
-    const sregex PRINTABLE_TEXT = WHITESPACE | TEXT;
-    sregex EVERYTHING;
-    if (!strip_unpaired_tags)
-        EVERYTHING =    // push open tag matches to the tag stack, and make sure close tags match the top open tag on the stack
-            ('<' >> (tag_name_tag = OPEN_TAG_NAME) >> repeat<0, 9>(+blank >> TAG_PARAM) >> (open_bracket_tag.proto_base() = '>'))
-            [Push(boost::xpressive::ref(text), boost::xpressive::ref(tag_stack), ref(temp_bool), tag_name_tag)] |
-            ("</" >> (tag_name_tag = CLOSE_TAG_NAME) >> (close_bracket_tag.proto_base() = '>')) |
-            (printable_text_tag = PRINTABLE_TEXT);
-    else
-        EVERYTHING =    // don't care about matching with tag stack when matching close tags, or updating the stack when matching open tags
-            ('<' >> OPEN_TAG_NAME >> repeat<0, 9>(+blank >> TAG_PARAM) >> '>') |
-            ("</" >> OPEN_TAG_NAME >> '>') |
-            (printable_text_tag = PRINTABLE_TEXT);
-
-    std::string retval;
+    std::stringstream retval;
 
     // scan through matched markup and text, saving only the non-tag-text
-    sregex_iterator it(text.begin(), text.end(), EVERYTHING);
+    sregex_iterator it(text.begin(), text.end(), regex);
     sregex_iterator end_it;
     for (; it != end_it; ++it) {
-        retval += Substring(text, (*it)[printable_text_tag]);
+        sub_match<std::string::const_iterator> const* text_match;
+        sub_match<std::string::const_iterator> const* whitespace_match;
+
+        if ((text_match = &(*it)[text_tag]) && (text_match->matched))
+            retval << Substring(text, *text_match);
+
+        else if ((whitespace_match = &(*it)[whitespace_tag]) && whitespace_match->matched)
+            retval << Substring(text, *whitespace_match);
     }
 
-    return retval;
+    return retval.str();
 }
 
 Pt Font::TextExtent(const std::string& text, Flags<TextFormat> format/* = FORMAT_NONE*/, X box_width/* = X0*/) const
@@ -1074,18 +1154,14 @@ Pt Font::TextExtent(const std::string& text, const std::vector<LineData>& line_d
 }
 
 void Font::RegisterKnownTag(const std::string& tag)
-{ KnownTags().insert(tag); }
+{ StaticTagHandler().Insert(tag); }
 
 void Font::RemoveKnownTag(const std::string& tag)
-{
-    if (KnownTags().find(tag) == KnownTags().end())
-        KnownTags().erase(tag);
-}
+{ StaticTagHandler().Erase(tag); }
 
 void Font::ClearKnownTags()
 {
-    // Clear known tags.
-    KnownTags().clear();
+    StaticTagHandler().Clear();
 
     // Always know the default tags.
     RegisterDefaultTags();
@@ -1097,79 +1173,137 @@ void Font::ThrowBadGlyph(const std::string& format_str, boost::uint32_t c)
     throw BadGlyph(boost::io::str(boost::format(format_str) % boost::io::str(format % c)));
 }
 
-Pt Font::DetermineLinesImpl(const std::string& text,
-                            Flags<TextFormat>& format,
-                            X box_width,
-                            std::vector<LineData>& line_data,
-                            std::vector<boost::shared_ptr<TextElement> >* text_elements_ptr) const
+namespace DebugOutput {
+    void PrintParseResults(const std::vector<boost::shared_ptr<Font::TextElement> >& text_elements) {
+        std::cout << "results of parse:\n";
+        for (std::size_t i = 0; i < text_elements.size(); ++i) {
+            if (boost::shared_ptr<Font::FormattingTag> tag_elem = boost::dynamic_pointer_cast<Font::FormattingTag>(text_elements[i])) {
+                std::cout << "FormattingTag\n    text=\"" << tag_elem->text << "\" (@ "
+                          << static_cast<const void*>(&*tag_elem->text.begin()) << ")\n    widths=";
+                for (std::size_t j = 0; j < tag_elem->widths.size(); ++j) {
+                    std::cout << tag_elem->widths[j] << " ";
+                }
+                std::cout << "\n    whitespace=" << tag_elem->whitespace << "\n    newline=" << tag_elem->newline << "\n    params=\n";
+                for (std::size_t j = 0; j < tag_elem->params.size(); ++j) {
+                    std::cout << "        \"" << tag_elem->params[j] << "\"\n";
+                }
+                std::cout << "    tag_name=\"" << tag_elem->tag_name << "\"\n    close_tag=" << tag_elem->close_tag << "\n";
+            } else {
+                boost::shared_ptr<Font::TextElement> elem = text_elements[i];
+                std::cout << "TextElement\n    text=\"" << elem->text << "\" (@ "
+                          << static_cast<const void*>(&*elem->text.begin()) << ")\n    widths=";
+                for (std::size_t j = 0; j < elem->widths.size(); ++j) {
+                    std::cout << elem->widths[j] << " ";
+                }
+                std::cout << "\n    whitespace=" << elem->whitespace << "\n    newline=" << elem->newline << "\n";
+            }
+            std::cout << "    string_size=" << text_elements[i]->StringSize() << "\n";
+            std::cout << "\n";
+        }
+        std::cout << std::endl;
+    }
+
+    void PrintLineBreakdown(const std::string& text,
+                            const Flags<TextFormat>& format,
+                            const X box_width,
+                            const std::vector<Font::LineData>& line_data)
+    {
+        std::cout << "Font::DetermineLines(text=\"" << text << "\" (@ "
+                  << static_cast<const void*>(&*text.begin()) << ") format="
+                  << format << " box_width=" << box_width << ")" << std::endl;
+
+        std::cout << "Line breakdown:\n";
+        for (std::size_t i = 0; i < line_data.size(); ++i) {
+            std::cout << "Line " << i << ":\n    extents=";
+            for (std::size_t j = 0; j < line_data[i].char_data.size(); ++j) {
+                std::cout << line_data[i].char_data[j].extent << " ";
+            }
+            std::cout << "\n    string indices=";
+            for (std::size_t j = 0; j < line_data[i].char_data.size(); ++j) {
+                std::cout << line_data[i].char_data[j].string_index << " ";
+            }
+            std::cout << "\n    code point indices=";
+            for (std::size_t j = 0; j < line_data[i].char_data.size(); ++j) {
+                std::cout << line_data[i].char_data[j].code_point_index << " ";
+            }
+            std::cout << "\n    chars on line: \"";
+            for (std::size_t j = 0; j < line_data[i].char_data.size(); ++j) {
+                std::cout << text[Value(line_data[i].char_data[j].string_index)];
+            }
+            std::cout << "\"" << std::endl;
+            for (std::size_t j = 0; j < line_data[i].char_data.size(); ++j) {
+                for (std::size_t k = 0; k < line_data[i].char_data[j].tags.size(); ++k) {
+                    if (boost::shared_ptr<Font::FormattingTag> tag_elem = line_data[i].char_data[j].tags[k]) {
+                        std::cout << "FormattingTag @" << j << "\n    text=\"" << tag_elem->text << "\"\n    widths=";
+                        for (std::size_t j = 0; j < tag_elem->widths.size(); ++j) {
+                            std::cout << tag_elem->widths[j] << " ";
+                        }
+                        std::cout << "\n    whitespace=" << tag_elem->whitespace
+                                  << "\n    newline=" << tag_elem->newline << "\n    params=\n";
+                        for (std::size_t l = 0; l < tag_elem->params.size(); ++l) {
+                            std::cout << "        \"" << tag_elem->params[l] << "\"\n";
+                        }
+                        std::cout << "    tag_name=\"" << tag_elem->tag_name << "\"\n    close_tag="
+                                  << tag_elem->close_tag << std::endl;
+                    }
+                }
+            }
+            std::cout << "    justification=" << line_data[i].justification << "\n" << std::endl;
+        }
+    }
+}
+
+void Font::FillTextElements(const std::string& text,
+                            bool ignore_tags,
+                            std::vector<boost::shared_ptr<TextElement> >& text_elements) const
 {
-    ValidateFormat(format);
-
-#if DEBUG_DETERMINELINES
-    std::cout << "Font::DetermineLines(text=\"" << text << "\" (@ "
-              << static_cast<const void*>(&*text.begin()) << ") format="
-              << format << " box_width=" << box_width << ")" << std::endl;
-#endif
-
-    std::vector<boost::shared_ptr<TextElement> > local_text_elements;
-
-    std::vector<boost::shared_ptr<TextElement> >& text_elements =
-        text_elements_ptr ? *text_elements_ptr : local_text_elements;
-
     if (text_elements.empty()) {
         using namespace boost::xpressive;
 
-        std::stack<Substring> tag_stack;
-        bool ignore_tags = format & FORMAT_IGNORETAGS;
-        MatchesKnownTag matches_known_tag(KnownTags(), ignore_tags);
-        MatchesTopOfStack matches_tag_stack(tag_stack, ignore_tags);
+        if (text.empty())
+            return;
 
+        // Fetch and use the regular expression from the TagHandler which parses all the known XML tags.
+        sregex& regex = StaticTagHandler().Regex(text, ignore_tags);
+        sregex_iterator it(text.begin(), text.end(), regex);
+
+        // These are the types found by the regular expression: XML open/close tags, text and
+        // whitespace.  Each type will correspond to a type of TextElement.
         mark_tag tag_name_tag(1);
         mark_tag open_bracket_tag(2);
         mark_tag close_bracket_tag(3);
         mark_tag whitespace_tag(4);
         mark_tag text_tag(5);
 
-        const sregex TAG_PARAM =
-            -+~set[_s | '<'];
-        const sregex OPEN_TAG_NAME =
-            (+_w)[check(matches_known_tag)];
-        const sregex CLOSE_TAG_NAME =
-            (+_w)[check(matches_tag_stack)];
-        const sregex WHITESPACE =
-            (*blank >> (_ln | (set = '\n', '\r', '\f'))) | +blank;
-        const sregex TEXT =
-            ('<' >> *~set[_s | '<']) | (+~set[_s | '<']);
-        const sregex EVERYTHING =
-            ('<' >> (tag_name_tag = OPEN_TAG_NAME) >> repeat<0, 9>(+blank >> TAG_PARAM) >> (open_bracket_tag.proto_base() = '>'))
-            [Push(boost::xpressive::ref(text), boost::xpressive::ref(tag_stack), ref(ignore_tags), tag_name_tag)] |
-            ("</" >> (tag_name_tag = CLOSE_TAG_NAME) >> (close_bracket_tag.proto_base() = '>')) |
-            (whitespace_tag = WHITESPACE) |
-            (text_tag = TEXT);
-
-        sregex_iterator it(text.begin(), text.end(), EVERYTHING);
         sregex_iterator end_it;
         while (it != end_it)
         {
-            // consolidate adjacent blocks of text
-            bool need_increment = false;
+            // Consolidate adjacent blocks of text.  If adjacent found substrings are all text, merge
+            // them into a single Substring.
+            bool need_increment = true;
             Substring combined_text;
-            if ((*it)[text_tag].matched) {
-                while (it != end_it && (*it)[text_tag].matched) {
-                    if (combined_text.empty())
-                        combined_text = Substring(text, (*it)[text_tag]);
-                    else
-                        combined_text += (*it)[text_tag];
-                    ++it;
-                }
-            } else {
-                need_increment = true;
+            sub_match<std::string::const_iterator> const* text_match;
+            while (it != end_it
+                   && (text_match = &(*it)[text_tag])
+                   && text_match->matched) {
+                need_increment = false;
+                if (combined_text.empty())
+                    combined_text = Substring(text, *text_match);
+                else
+                    combined_text += *text_match;
+                ++it;
             }
 
+            // If the element is not a text element then it must be an open tag, a close tag or whitespace.
             if (combined_text.empty()) {
+
+                // Open XML tag.
                 if ((*it)[open_bracket_tag].matched) {
                     boost::shared_ptr<Font::FormattingTag> element(new Font::FormattingTag(false));
                     element->text = Substring(text, (*it)[0]);
+
+                    // Check open tags for submatches which are parameters.  For example a Color tag
+                    // might have RGB parameters.
                     if (1 < (*it).nested_results().size()) {
                         element->params.reserve((*it).nested_results().size() - 1);
                         for (smatch::nested_results_type::const_iterator nested_it =
@@ -1182,17 +1316,25 @@ Pt Font::DetermineLinesImpl(const std::string& text,
                     }
                     element->tag_name = Substring(text, (*it)[tag_name_tag]);
                     text_elements.push_back(element);
+
+                // Close XML tag
                 } else if ((*it)[close_bracket_tag].matched) {
                     boost::shared_ptr<Font::FormattingTag> element(new Font::FormattingTag(true));
                     element->text = Substring(text, (*it)[0]);
                     element->tag_name = Substring(text, (*it)[tag_name_tag]);
                     text_elements.push_back(element);
+
+                // Whitespace element
                 } else if ((*it)[whitespace_tag].matched) {
                     boost::shared_ptr<Font::TextElement> element(new Font::TextElement(true, false));
                     element->text = Substring(text, (*it)[whitespace_tag]);
                     text_elements.push_back(element);
+
+                    // If the last character of a whitespace element is a line ending then create a
+                    // newline TextElement.
                     char last_char = *boost::prior(element->text.end());
                     if (last_char == '\n' || last_char == '\f' || last_char == '\r') {
+                        // Basic text element.
                         boost::shared_ptr<Font::TextElement> element(new Font::TextElement(false, true));
                         text_elements.push_back(element);
                     }
@@ -1208,7 +1350,6 @@ Pt Font::DetermineLinesImpl(const std::string& text,
         }
 
         // fill in the widths of code points in each TextElement
-        const GlyphMap::const_iterator WIDE_SPACE_IT = m_glyphs.find(WIDE_SPACE);
         for (std::size_t i = 0; i < text_elements.size(); ++i) {
             std::string::const_iterator it = text_elements[i]->text.begin();
             std::string::const_iterator end_it = text_elements[i]->text.end();
@@ -1219,42 +1360,32 @@ Pt Font::DetermineLinesImpl(const std::string& text,
                     GlyphMap::const_iterator it = m_glyphs.find(c);
                     // use a space when an unrendered glyph is requested (the
                     // space chararacter is always renderable)
-                    if (it == m_glyphs.end())
-                        it = WIDE_SPACE_IT;
-                    text_elements[i]->widths.back() = it->second.advance;
+                    text_elements[i]->widths.back() = (it != m_glyphs.end()) ? it->second.advance : m_space_width;
                 }
             }
         }
 
 #if DEBUG_DETERMINELINES
-        std::cout << "results of parse:\n";
-        for (std::size_t i = 0; i < text_elements.size(); ++i) {
-            if (boost::shared_ptr<FormattingTag> tag_elem = boost::dynamic_pointer_cast<FormattingTag>(text_elements[i])) {
-                std::cout << "FormattingTag\n    text=\"" << tag_elem->text << "\" (@ "
-                          << static_cast<const void*>(&*tag_elem->text.begin()) << ")\n    widths=";
-                for (std::size_t j = 0; j < tag_elem->widths.size(); ++j) {
-                    std::cout << tag_elem->widths[j] << " ";
-                }
-                std::cout << "\n    whitespace=" << tag_elem->whitespace << "\n    newline=" << tag_elem->newline << "\n    params=\n";
-                for (std::size_t j = 0; j < tag_elem->params.size(); ++j) {
-                    std::cout << "        \"" << tag_elem->params[j] << "\"\n";
-                }
-                std::cout << "    tag_name=\"" << tag_elem->tag_name << "\"\n    close_tag=" << tag_elem->close_tag << "\n";
-            } else {
-                boost::shared_ptr<TextElement> elem = text_elements[i];
-                std::cout << "TextElement\n    text=\"" << elem->text << "\" (@ "
-                          << static_cast<const void*>(&*elem->text.begin()) << ")\n    widths=";
-                for (std::size_t j = 0; j < elem->widths.size(); ++j) {
-                    std::cout << elem->widths[j] << " ";
-                }
-                std::cout << "\n    whitespace=" << elem->whitespace << "\n    newline=" << elem->newline << "\n";
-            }
-            std::cout << "    string_size=" << text_elements[i]->StringSize() << "\n";
-            std::cout << "\n";
-        }
-        std::cout << std::endl;
+        DebugOutput::PrintParseResults(text_elements);
 #endif
     }
+}
+
+Pt Font::DetermineLinesImpl(const std::string& text,
+                            Flags<TextFormat>& format,
+                            X box_width,
+                            std::vector<LineData>& line_data,
+                            std::vector<boost::shared_ptr<TextElement> >* text_elements_ptr) const
+{
+    ValidateFormat(format);
+
+    std::vector<boost::shared_ptr<TextElement> > local_text_elements;
+
+    std::vector<boost::shared_ptr<TextElement> >& text_elements =
+        text_elements_ptr ? *text_elements_ptr : local_text_elements;
+
+    bool ignore_tags = format & FORMAT_IGNORETAGS;
+    FillTextElements(text, ignore_tags, text_elements);
 
     RenderState render_state;
     int tab_width = 8; // default tab width
@@ -1447,44 +1578,7 @@ Pt Font::DetermineLinesImpl(const std::string& text,
     // end of the text, and so it cannot have any effect
 
 #if DEBUG_DETERMINELINES
-    std::cout << "Line breakdown:\n";
-    for (std::size_t i = 0; i < line_data.size(); ++i) {
-        std::cout << "Line " << i << ":\n    extents=";
-        for (std::size_t j = 0; j < line_data[i].char_data.size(); ++j) {
-            std::cout << line_data[i].char_data[j].extent << " ";
-        }
-        std::cout << "\n    string indices=";
-        for (std::size_t j = 0; j < line_data[i].char_data.size(); ++j) {
-            std::cout << line_data[i].char_data[j].string_index << " ";
-        }
-        std::cout << "\n    code point indices=";
-        for (std::size_t j = 0; j < line_data[i].char_data.size(); ++j) {
-            std::cout << line_data[i].char_data[j].code_point_index << " ";
-        }
-        std::cout << "\n    chars on line: \"";
-        for (std::size_t j = 0; j < line_data[i].char_data.size(); ++j) {
-            std::cout << text[Value(line_data[i].char_data[j].string_index)];
-        }
-        std::cout << "\"" << std::endl;
-        for (std::size_t j = 0; j < line_data[i].char_data.size(); ++j) {
-            for (std::size_t k = 0; k < line_data[i].char_data[j].tags.size(); ++k) {
-                if (boost::shared_ptr<FormattingTag> tag_elem = line_data[i].char_data[j].tags[k]) {
-                    std::cout << "FormattingTag @" << j << "\n    text=\"" << tag_elem->text << "\"\n    widths=";
-                    for (std::size_t j = 0; j < tag_elem->widths.size(); ++j) {
-                        std::cout << tag_elem->widths[j] << " ";
-                    }
-                    std::cout << "\n    whitespace=" << tag_elem->whitespace
-                              << "\n    newline=" << tag_elem->newline << "\n    params=\n";
-                    for (std::size_t l = 0; l < tag_elem->params.size(); ++l) {
-                        std::cout << "        \"" << tag_elem->params[l] << "\"\n";
-                    }
-                    std::cout << "    tag_name=\"" << tag_elem->tag_name << "\"\n    close_tag="
-                              << tag_elem->close_tag << std::endl;
-                }
-            }
-        }
-        std::cout << "    justification=" << line_data[i].justification << "\n" << std::endl;
-    }
+    DebugOutput::PrintLineBreakdown(text, format, box_width, line_data);
 #endif
 
     return TextExtent(text, line_data);
@@ -1776,7 +1870,7 @@ X Font::StoreGlyph(const Pt& pt, const Glyph& glyph, const Font::RenderState* re
 void Font::HandleTag(const boost::shared_ptr<FormattingTag>& tag, double* orig_color,
                      RenderState& render_state) const
 {
-    if (tag->tag_name == "i") {
+    if (tag->tag_name == ITALIC_TAG) {
         if (tag->close_tag) {
             if (render_state.use_italics) {
                 --render_state.use_italics;
@@ -1784,7 +1878,7 @@ void Font::HandleTag(const boost::shared_ptr<FormattingTag>& tag, double* orig_c
         } else {
             ++render_state.use_italics;
         }
-    } else if (tag->tag_name == "u") {
+    } else if (tag->tag_name == UNDERLINE_TAG) {
         if (tag->close_tag) {
             if (render_state.draw_underline) {
                 --render_state.draw_underline;
@@ -1792,7 +1886,7 @@ void Font::HandleTag(const boost::shared_ptr<FormattingTag>& tag, double* orig_c
         } else {
             ++render_state.draw_underline;
         }
-    } else if (tag->tag_name == "s") {
+    } else if (tag->tag_name == SHADOW_TAG) {
         if (tag->close_tag) {
             if (render_state.use_shadow) {
                 --render_state.use_shadow;
@@ -1800,7 +1894,7 @@ void Font::HandleTag(const boost::shared_ptr<FormattingTag>& tag, double* orig_c
         } else {
             ++render_state.use_shadow;
         }
-    } else if (tag->tag_name == "rgba") {
+    } else if (tag->tag_name == RGBA_TAG) {
         if (tag->close_tag) {
             // Popping is ok also for an empty color stack.
             render_state.PopColor();

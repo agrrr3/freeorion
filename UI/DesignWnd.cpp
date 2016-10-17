@@ -1033,13 +1033,6 @@ void DesignWnd::PartPalette::DoLayout() {
         ++col;
     }
 
-    // place parts list.  note: assuming at least as many rows of class buttons
-    //                          as availability buttons, as should be the case
-    //                          given how num_non_class_buttons_per_row is determined
-    m_parts_list->SizeMove(GG::Pt(GG::X0, BUTTON_EDGE_PAD + ROW_OFFSET*(row + 1)),
-                           ClientSize() - GG::Pt(GG::X(2*BUTTON_SEPARATION), GG::Y(2*BUTTON_SEPARATION)));
-
-
     // place parts list.  note: assuming at least as many rows of class buttons as availability buttons, as should
     //                          be the case given how num_non_class_buttons_per_row is determined
     m_parts_list->SizeMove(GG::Pt(GG::X0, BUTTON_EDGE_PAD + ROW_OFFSET*(row + 1)), ClientSize() - GG::Pt(GG::X(BUTTON_SEPARATION), GG::Y(BUTTON_SEPARATION)));
@@ -1856,8 +1849,7 @@ void BasesListBox::BaseRightClicked(GG::ListBox::iterator it, const GG::Pt& pt, 
 
         menu_contents.next_level.push_back(GG::MenuItem(UserString("DESIGN_SAVE"),       3, false, false));
 
-        GG::PopupMenu popup(pt.x, pt.y, ClientUI::GetFont(), menu_contents, ClientUI::TextColor(),
-                            ClientUI::WndOuterBorderColor(), ClientUI::WndColor(), ClientUI::EditHiliteColor());
+        CUIPopupMenu popup(pt.x, pt.y, menu_contents);
 
         if (popup.Run()) {
             switch (popup.MenuID()) {
@@ -1911,8 +1903,7 @@ void BasesListBox::BaseRightClicked(GG::ListBox::iterator it, const GG::Pt& pt, 
         menu_contents.next_level.push_back(GG::MenuItem(UserString("DESIGN_ADD"),       1, false, false));
         menu_contents.next_level.push_back(GG::MenuItem(UserString("DESIGN_ADD_ALL"),   2, false, false));
 
-        GG::PopupMenu popup(pt.x, pt.y, ClientUI::GetFont(), menu_contents, ClientUI::TextColor(),
-                            ClientUI::WndOuterBorderColor(), ClientUI::WndColor(), ClientUI::EditHiliteColor());
+        CUIPopupMenu popup(pt.x, pt.y, menu_contents);
 
         if (popup.Run()) {
             switch (popup.MenuID()) {
