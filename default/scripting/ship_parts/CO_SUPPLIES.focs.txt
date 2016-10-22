@@ -68,7 +68,7 @@ EFFECTSGROUPS_CO_SUPPLIES_FOR_GIVEN_CAPACITY
 //                    empire = Target.Owner
                 AddSpecial name = "UNLOADING_SUPPLIES_SPECIAL"
                 SetSpecialCapacity name = "UNLOADING_SUPPLIES_SPECIAL" 
-                    capacity = ( [[PART_SUPPLY(CO_SUPPLIES_@1@)]] / [[COUNT_PLANETS_WITH_UNLOAD_BUILDING(Source.SystemID)]] ) + Value
+                    capacity = Value + ( (PartCapacity name = "CO_SUPPLIES_@1@") / [[COUNT_PLANETS_WITH_UNLOAD_BUILDING(Source.SystemID)]] )
             ]
         EffectsGroup // for removing empty ship
             scope = And [
@@ -94,9 +94,6 @@ EFFECTSGROUPS_CO_SUPPLIES_FOR_GIVEN_CAPACITY
                 Destroy
             ]
 '''
-
-PART_SUPPLY
-'''(PartCapacity name = "@1@") * 1'''
 
 SUM_OF_SHIP_SUPPLIES
 '''[[SUM_OF_SHIP_SUPPLIES_FOR_PART(CO_SUPPLIES_010)]] + [[SUM_OF_SHIP_SUPPLIES_FOR_PART(CO_SUPPLIES_030)]]'''
