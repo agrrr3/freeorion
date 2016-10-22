@@ -42,7 +42,7 @@ Part
     buildcost = @1@
     buildtime = 1
     location = OwnedBy empire = Source.Owner
-    effectsgroups = [ [[EFFECTSGROUPS_CO_SUPPLIES_FOR_GIVEN_CAPACITY(010)]] ]
+    effectsgroups = [ [[EFFECTSGROUPS_CO_SUPPLIES_FOR_GIVEN_CAPACITY(@1@)]] ]
     icon = "icons/meter/supply.png"
 '''
 
@@ -54,11 +54,21 @@ EFFECTSGROUPS_CO_SUPPLIES_FOR_GIVEN_CAPACITY
                 [[CONDITION_PLANET_IN_SYSTEM_READY_FOR_UNLOAD(Source.SystemID)]]
             ]
             activation = InSystem
-            // stackinggroup stacks probably for the scope (guess every object in scope gets tagged with the stackinggroup)
             effects = [
+//                // Message for testing
+//                GenerateSitRepMessage
+//                    message = "EFFECT_SUPPLY_UNLOAD_PART CO_SUPPLIES_@1@: %rawtext% supplies from %ship% at %system%."
+//                    label = "EFFECT_SUPPLY_UNLOAD_PART_LABEL"
+//                    icon = "icons/meter/supply.png"
+//                    parameters = [
+//                        tag = "system" data = Target.SystemID
+//                        tag = "rawtext" data = (PartCapacity name = "CO_SUPPLIES_@1@")
+//                        tag = "ship" data = Source.ID
+//                    ]
+//                    empire = Target.Owner
                 AddSpecial name = "UNLOADING_SUPPLIES_SPECIAL"
                 SetSpecialCapacity name = "UNLOADING_SUPPLIES_SPECIAL" 
-                    capacity = Value + ( PartCapacity name = "CO_SUPPLIES_@1@" / [[COUNT_PLANETS_WITH_UNLOAD_BUILDING(Source.SystemID)]] )
+                    capacity = ( [[PART_SUPPLY(CO_SUPPLIES_@1@)]] / [[COUNT_PLANETS_WITH_UNLOAD_BUILDING(Source.SystemID)]] ) + Value
             ]
         EffectsGroup // for removing empty ship
             scope = And [
@@ -72,7 +82,7 @@ EFFECTSGROUPS_CO_SUPPLIES_FOR_GIVEN_CAPACITY
             stackinggroup = "STACKING_SCRAP_EMPTY_SHIP"
             effects = [
                 GenerateSitRepMessage
-                    message = "Scrapping supply ship %ship% on %system% after unloading %rawtext% units of industrial supplies."
+                    message = "EFFECT_SUPPLY_SCRAP_EMPTY_SHIP"
                     label = "EFFECT_SUPPLY_SCRAP_EMPTY_SHIP_LABEL"
                     icon = "icons/meter/supply.png"
                     parameters = [
@@ -85,18 +95,14 @@ EFFECTSGROUPS_CO_SUPPLIES_FOR_GIVEN_CAPACITY
             ]
 '''
 
-
+PART_SUPPLY
+'''(PartCapacity name = "@1@") * 1'''
 
 SUM_OF_SHIP_SUPPLIES
-'''[[SUM_OF_SHIP_SUPPLIES_FOR_PART(CO_SUPPLIES_030)]]'''
+'''[[SUM_OF_SHIP_SUPPLIES_FOR_PART(CO_SUPPLIES_010)]] + [[SUM_OF_SHIP_SUPPLIES_FOR_PART(CO_SUPPLIES_030)]]'''
 
 SUM_OF_SHIP_SUPPLIES_FOR_PART
 '''(PartCapacity name = "@1@") * (PartsInShipDesign Name = "@1@" design = Source.DesignID)'''
-
-PART_CAP
-'''PartCapacity name = "@1@"'''
-//'''30.0'''
-//'''LocalCandidate.PartCapacity name = "@1@"'''
 
 COUNT_PLANETS_WITH_UNLOAD_BUILDING
 '''( Count condition = And [
@@ -112,11 +118,4 @@ InSystem id = @1@
 Contains Building name = "BLD_UNLOAD_SUPPLY"
 OwnedBy empire = Source.Owner
 ]
-'''
-
-CONDITION_BUILDING_IN_SYSTEM_READY_FOR_UNLOAD
-'''
-InSystem id = @1@
-Building name = "BLD_UNLOAD_SUPPLY"
-OwnedBy empire = Source.Owner
 '''

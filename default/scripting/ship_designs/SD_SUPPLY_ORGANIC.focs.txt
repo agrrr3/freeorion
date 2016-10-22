@@ -3,9 +3,9 @@ ShipDesign
     description = "SD_SUPPLY_ORGANIC_DESC"
     hull = "SH_ORGANIC"
     parts = [
-        "CO_SUPPLIES_010"
-        "CO_SUPPLIES_010"
-        "CO_SUPPLIES_010"
         "CO_SUPPLIES_030"
+        "CO_SUPPLIES_030"
+        "CO_SUPPLIES_030"
+        "CO_SUPPLIES_010"
     ]
-    model = "supply060"
+    model = "supply100"

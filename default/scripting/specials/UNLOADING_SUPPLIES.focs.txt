@@ -34,13 +34,12 @@ Special
                 SetSpecialCapacity name = "UNLOADING_SUPPLIES_SPECIAL" value = Value - [[SUPPLY_SHIP_INDUSTRY_BOOST]]
                 SetTargetIndustry value = max([[SUPPLY_SHIP_INDUSTRY_BOOST]], Value + [[SUPPLY_SHIP_INDUSTRY_BOOST]])
                 GenerateSitRepMessage
-                    message = "Unloading generic supplies on %planet% still %capacity%"
+                    message = "EFFECT_SUPPLY_USAGE"
                     label = "EFFECT_SUPPLY_USAGE_LABEL"
                     icon = "icons/focus/supply.png"
                     parameters = [
                         tag = "planet" data = Target.ID
-                        tag = "capacity" data = "unknown"
-                        tag = "shippart" data = "CO_SUPPLIES_030"
+                        tag = "rawtext" data = "[[SUPPLY_SHIP_INDUSTRY_BOOST]] (/??)"
                     ]
             ]
         EffectsGroup
@@ -60,7 +59,7 @@ Special
                 Not HasSpecialSinceTurn name = "UNLOADING_SUPPLIES_SPECIAL" low = 1 high = CurrentTurn - 1
                 HasSpecialCapacity name = "UNLOADING_SUPPLIES_SPECIAL" low = 0.01
             ]
-            accountinglabel = "UNLOADING_SUPPLIES_FROM_SPECIAL_1_LABEL"
+            accountinglabel = "UNLOADING_SUPPLIES_FROM_SPECIAL_LABEL"
             effects = [
                 // should use max or not? 
                 SetIndustry value = max([[SUPPLY_SHIP_INDUSTRY_BOOST]], Value + [[SUPPLY_SHIP_INDUSTRY_BOOST]])
@@ -73,8 +72,8 @@ Special
                 // should use max or not? industry may be intermittently less than zero?
                 SetIndustry value = max(min(0, Value), Value - [[SUPPLY_SHIP_INDUSTRY_BOOST]])
                 GenerateSitRepMessage
-                    message = "Finished unloading supplies on %planet%." 
-                    label = "EFFECT_UNLOADING_SUPPLIES_CAP_EMPTY"
+                    message = "EFFECT_UNLOADING_SUPPLIES_STOCKPILE_EMPTY"
+                    label = "EFFECT_UNLOADING_SUPPLIES_STOCKPILE_EMPTY_LABEL"
                     icon = "icons/meter/capacity.png"
                     parameters = [
                         tag = "planet" data = Target.ID

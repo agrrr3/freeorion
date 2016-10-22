@@ -660,10 +660,16 @@ SD_SUPPLY_DROP_DESC
 Carries 10 units of industrial supplies for usage in the same system. Gets dismantled in the unload process, one use only. Will get unloaded when entering/staying in systems with [[buildingtype BLD_UNLOAD_SUPPLY]].
 
 SD_SUPPLY_E_SMALL
- (10) Small Supplies Ship 
+ (10) Small Supplies Ship
 
 SD_SUPPLY_E_SMALL_DESC
 Carries 10 units of industrial supplies for helping industry in supply disconnected regions.  Gets dismantled in the unload process, one use only. Will get unloaded when entering/staying in systems with [[buildingtype BLD_UNLOAD_SUPPLY]].
+
+SD_SUPPLY_F_MARK_1
+ (70) Medium Supplies Ship
+
+SD_SUPPLY_F_MARK_1_DESC
+Carries 70 units of industrial supplies for helping industry in supply disconnected regions.  Gets dismantled in the unload process, one use only. Will get unloaded when entering/staying in systems with [[buildingtype BLD_UNLOAD_SUPPLY]].
 
 SD_SUPPLY_FLUX
  (60) Fast Supplies Ship
@@ -5585,6 +5591,24 @@ At %planet%: [[tech LRN_SPATIAL_DISTORT_GEN]] moved %fleet% back into %system%. 
 
 EFFECT_FLEET_MOVED_TO_LABEL
 Fleet Moved Into
+
+EFFECT_SUPPLY_SCRAP_EMPTY_SHIP
+Scrapping supply ship %ship% on %system% after unloading %rawtext% units of industrial supplies.
+
+EFFECT_SUPPLY_SCRAP_EMPTY_SHIP_LABEL
+Empty Supply Ship Scrapped
+
+EFFECT_SUPPLY_USAGE
+Industry uses %rawtext% Generic Supplies on %planet%.
+
+EFFECT_SUPPLY_USAGE_LABEL
+Industrial Usage Of Supply Stockpile
+
+EFFECT_UNLOADING_SUPPLIES_STOCKPILE_EMPTY
+Industry boost on %planet% finished as stockpile of Generic Supplies is exhausted. 
+
+EFFECT_UNLOADING_SUPPLIES_STOCKPILE_EMPTY_LABEL
+Generic Supply Stockpile Exhausted
 
 HEAD_ON_A_SPIKE_MESSAGE
 The capital of the %empire% empire has fallen.
@@ -11340,10 +11364,10 @@ Outpost Module
 CO_OUTPOST_POD_DESC
 [[encyclopedia OUTPOSTS_TITLE]] modules allow you to establish unmanned station. These may be place on uninhabitable planets. They have no population, and normally produce no resources. But they provide vision create [[encyclopedia SUPPLY_TITLE]] lines when the right tech is researched. Outposts can be upgraded to colonies. The cost of this part increases as the empire expands to reflect the upkeep costs of a large empire.
 
-CO_SUPPLIES_10
+CO_SUPPLIES_010
 Supply Package Pod (10 units)
 
-CO_SUPPLIES_30
+CO_SUPPLIES_030
 Supply Package Strapon (30 units)
 
 CO_SUPPLIES_DESC
