@@ -97,7 +97,7 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;FREEORION_WIN32;_DLL;BOOST_ALL_DYN_LINK;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_DEPRECATE;LOG4CPP_STLPORT_AND_BOOST_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;FREEORION_WIN32;_DLL;BOOST_ALL_DYN_LINK;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_DEPRECATE;_WIN32_WINNT=0x0501;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>../../../include/;../../../Boost/include/;../../GG/;../../;../../../include/freetype/;../../../include/zlib/;../../../include/png/</AdditionalIncludeDirectories>
       <CompileAsManaged>false</CompileAsManaged>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -135,7 +135,7 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;FREEORION_WIN32;_DLL;BOOST_ALL_DYN_LINK;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_DEPRECATE;LOG4CPP_STLPORT_AND_BOOST_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;FREEORION_WIN32;_DLL;BOOST_ALL_DYN_LINK;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_DEPRECATE;_WIN32_WINNT=0x0501;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>../../../include/;../../../Boost/include/;../../GG/;../../;../../../include/freetype/;../../../include/zlib/;../../../include/png/</AdditionalIncludeDirectories>
       <CompileAsManaged>false</CompileAsManaged>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -270,7 +270,6 @@
     <ClCompile Include="..\..\network\MessageQueue.cpp" />
     <ClCompile Include="..\..\network\Networking.cpp" />
     <ClCompile Include="..\..\universe\Fighter.cpp" />
-    <ClCompile Include="..\..\util\DependencyVersions.cpp" />
     <ClCompile Include="..\..\util\EnumText.cpp" />
     <ClCompile Include="..\..\util\SaveGamePreviewUtils.cpp" />
     <ClCompile Include="..\..\util\ScopedTimer.cpp" />
