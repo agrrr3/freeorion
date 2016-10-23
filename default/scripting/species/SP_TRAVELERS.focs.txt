@@ -1,0 +1,53 @@
+Species
+    name = "SP_TRAVELERS"
+    description = "SP_TRAVELERS_DESC"
+    gameplay_description = "SP_TRAVELERS_GAMEPLAY_DESC"
+    Playable
+    CanProduceShips
+    CanColonize
+
+    // growth specials only help with supply lines --> self sustaining
+    // bad supply --> disconnected; seriously hampers exploration as well, must be offset using 
+    // telepathic detection, great detection --> 
+    // XENOPHOBIC_SELF ... schlecht mit anderen?? ... aber nur im eigenen imperium ??
+    tags = [ "SELF_SUSTAINING" "GOOD_RESEARCH" "TELEPATHIC" "BAD_INDUSTRY" "BAD_SUPPLY" "GREAT_DETECTION" "GOOD_STEALTH" ]
+
+    foci = [
+        [[HAS_INDUSTRY_FOCUS]]
+        [[HAS_RESEARCH_FOCUS]]
+        [[HAS_GROWTH_FOCUS]]
+        [[HAS_ADVANCED_FOCI]]
+    ]
+
+    preferredfocus = "FOCUS_RESEARCH"
+
+    effectsgroups = [
+        [[BAD_INDUSTRY]]
+        [[GOOD_RESEARCH]]
+
+        [[AVERAGE_POPULATION]]
+        [[AVERAGE_HAPPINESS]]
+        [[BAD_SUPPLY]]
+        [[BAD_OFFENSE_TROOPS]]
+        [[GOOD_DEFENSE_TROOPS]]
+
+        [[GREAT_DETECTION]]
+        [[GOOD_STEALTH]]
+        [[XENOPHOBIC_SELF]]
+        [[TELEPATHIC_DETECTION(5)]]
+
+        // not for description
+        [[AVERAGE_PLANETARY_SHIELDS]]
+        [[AVERAGE_PLANETARY_DEFENSE]]
+        [[LARGE_PLANET]]
+        [[NARROW_EP]]
+
+    ]
+
+//todo
+    [[DESERT_NARROW_EP]]
+    graphic = "icons/species/aerial-07.png"
+
+#include "common/*.macros"
+
+#include "/scripting/common/*.macros"
