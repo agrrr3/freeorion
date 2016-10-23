@@ -5644,19 +5644,19 @@ EFFECT_FLEET_MOVED_TO_LABEL
 Fleet Moved Into
 
 EFFECT_SUPPLY_SCRAP_EMPTY_SHIP
-Scrapping supply ship %ship% on %system% after unloading %rawtext% units of industrial supplies.
+In %system%: Scrapped %ship% after unloading %rawtext% units of Generic industrial Supplies.
 
 EFFECT_SUPPLY_SCRAP_EMPTY_SHIP_LABEL
 Empty Supply Ship Scrapped
 
 EFFECT_SUPPLY_USAGE
-Industry uses %rawtext% Generic Supplies on %planet%.
+At %planet%: Industry uses %rawtext% Generic Supplies.
 
 EFFECT_SUPPLY_USAGE_LABEL
 Industrial Usage Of Supply Stockpile
 
 EFFECT_UNLOADING_SUPPLIES_STOCKPILE_EMPTY
-Industry boost on %planet% finished as stockpile of Generic Supplies is exhausted. 
+At %planet%: Industry boost finished as stockpile of Generic Supplies is exhausted. 
 
 EFFECT_UNLOADING_SUPPLIES_STOCKPILE_EMPTY_LABEL
 Generic Supply Stockpile Exhausted
