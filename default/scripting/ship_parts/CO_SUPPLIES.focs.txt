@@ -9,6 +9,28 @@
 
 [[PART_CO_SUPPLIES_FOR_GIVEN_CAPACITY_AND_SLOT_TYPES(030,External)]]
 
+    // BDD style Matrixtests:
+    //  == UNLOADED_SUPPLY_SHIPS_GET_SCRAPPED ==
+    //  Given a ship with a ship part CO_SUPPLIES_030
+    //  orGiven two ships with a ship part CO_SUPPLIES_030
+    //  orGiven a ship with two (or many) ship parts CO_SUPPLIES_030
+    //  when entering a system with a planet with BLD_UNLOAD_SUPPLY	
+    //  orWhen staying in a system with a planet with BLD_UNLOAD_SUPPLY	
+    //  orWhen entering a system with two (or many) planets with BLD_UNLOAD_SUPPLY	
+    //  then it is scrapped
+    //
+    //  == SUPPLY_SHIPS_ONLY_GET_UNLOADED_WITH_BLD_UNLOAD_SUPPLY ==
+    //  Given a ship with a ship part CO_SUPPLIES_030
+    //  when entering a system without a planet with BLD_UNLOAD_SUPPLY
+    //  orWhen being outside of a system and but a planet with BLD_UNLOAD_SUPPLY exists
+    //  orWhen staying in a system without a planet with BLD_UNLOAD_SUPPLY but a planet with BLD_UNLOAD_SUPPLY exists
+    //  *orWhen staying in a system with a planet with BLD_UNLOAD_SUPPLY but the building is destroyed
+    //  orWhen staying in a system with a planet with BLD_UNLOAD_SUPPLY but different owner
+    //  then none of the CO_SUPPLIES_030 effects is triggered
+    //
+    //  ship is unloaded in other system -> capacity doesnt change
+    //  ATM *destroying the building when the ship is there in order to stop the effect doesnt work  
+
 PART_CO_SUPPLIES_FOR_GIVEN_CAPACITY_AND_SLOT_TYPES
 '''
 Part
@@ -33,6 +55,17 @@ EFFECTSGROUPS_CO_SUPPLIES_FOR_GIVEN_CAPACITY
             ]
             activation = InSystem
             effects = [
+                // Message for testing
+                GenerateSitRepMessage
+                    message = "EFFECT_SUPPLY_UNLOAD_PART CO_SUPPLIES_@1@: %rawtext% supplies from %ship% at %system%."
+                    label = "EFFECT_SUPPLY_UNLOAD_PART_LABEL"
+                    icon = "icons/meter/supply.png"
+                    parameters = [
+                        tag = "system" data = Target.SystemID
+                        tag = "rawtext" data = (PartCapacity name = "CO_SUPPLIES_@1@")
+                        tag = "ship" data = Source.ID
+                    ]
+                    empire = Target.Owner
                 AddSpecial name = "UNLOADING_SUPPLIES_SPECIAL"
                 SetSpecialCapacity name = "UNLOADING_SUPPLIES_SPECIAL" 
                     capacity = Value + ( (PartCapacity name = "CO_SUPPLIES_@1@") / [[COUNT_PLANETS_WITH_UNLOAD_BUILDING(Source.SystemID)]] )
