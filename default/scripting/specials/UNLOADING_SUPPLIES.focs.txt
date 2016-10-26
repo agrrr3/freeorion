@@ -9,7 +9,7 @@ Special // for keeping a stockpile of supplies used up for industry
             accountinglabel = "SUPPLY_USAGE_LABEL"
             effects = [
                 SetSpecialCapacity name = "UNLOADING_SUPPLIES_SPECIAL" value = Value - [[SUPPLY_SHIP_INDUSTRY_BOOST]]
-                SetTargetIndustry value = max([[SUPPLY_SHIP_INDUSTRY_BOOST]], Value + [[SUPPLY_SHIP_INDUSTRY_BOOST]])
+                SetTargetIndustry value = Value + [[SUPPLY_SHIP_INDUSTRY_BOOST]]
                 GenerateSitRepMessage
                     message = "EFFECT_SUPPLY_USAGE"
                     label = "EFFECT_SUPPLY_USAGE_LABEL"
@@ -27,16 +27,14 @@ Special // for keeping a stockpile of supplies used up for industry
             ]
             accountinglabel = "UNLOADING_SUPPLIES_FROM_SPECIAL_LABEL"
             effects = [
-                // XXX should use max or not? 
-                SetIndustry value = max([[SUPPLY_SHIP_INDUSTRY_BOOST]], Value + [[SUPPLY_SHIP_INDUSTRY_BOOST]])
+                SetIndustry value = Value + [[SUPPLY_SHIP_INDUSTRY_BOOST]]
             ]
         EffectsGroup // Remove the special (and the industry boost) when the supply pile is empty 
             scope = Source // is the special's planet
             activation = HasSpecialCapacity name = "UNLOADING_SUPPLIES_SPECIAL" high = 0.0
             effects = [
                 RemoveSpecial name = "UNLOADING_SUPPLIES_SPECIAL"
-                // XXX should use max or not? industry may be intermittently less than zero?
-                SetIndustry value = max(min(0, Value), Value - [[SUPPLY_SHIP_INDUSTRY_BOOST]])
+                SetIndustry value = Value - [[SUPPLY_SHIP_INDUSTRY_BOOST]]
                 GenerateSitRepMessage
                     message = "EFFECT_UNLOADING_SUPPLIES_STOCKPILE_EMPTY"
                     label = "EFFECT_UNLOADING_SUPPLIES_STOCKPILE_EMPTY_LABEL"
@@ -48,8 +46,8 @@ Special // for keeping a stockpile of supplies used up for industry
     ]
     graphic = "icons/building/concentration-camp.png"
 
-// adding industry and max industry boosts when adding the special
-// both boosts get removed when removing the special when the capacity is zero
+// Following sets the amount of industry and target industry boosts when adding the special.
+// Both boosts are removed when removing the special (i.e. when the capacity is zero).
 SUPPLY_SHIP_INDUSTRY_BOOST
 '''5.0'''
 
