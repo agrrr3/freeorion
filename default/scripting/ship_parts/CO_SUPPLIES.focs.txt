@@ -33,17 +33,6 @@ EFFECTSGROUPS_CO_SUPPLIES_FOR_GIVEN_CAPACITY
             ]
             activation = InSystem
             effects = [
-//                // Message for testing
-//                GenerateSitRepMessage
-//                    message = "EFFECT_SUPPLY_UNLOAD_PART CO_SUPPLIES_@1@: %rawtext% supplies from %ship% at %system%."
-//                    label = "EFFECT_SUPPLY_UNLOAD_PART_LABEL"
-//                    icon = "icons/meter/supply.png"
-//                    parameters = [
-//                        tag = "system" data = Target.SystemID
-//                        tag = "rawtext" data = (PartCapacity name = "CO_SUPPLIES_@1@")
-//                        tag = "ship" data = Source.ID
-//                    ]
-//                    empire = Target.Owner
                 AddSpecial name = "UNLOADING_SUPPLIES_SPECIAL"
                 SetSpecialCapacity name = "UNLOADING_SUPPLIES_SPECIAL" 
                     capacity = Value + ( (PartCapacity name = "CO_SUPPLIES_@1@") / [[COUNT_PLANETS_WITH_UNLOAD_BUILDING(Source.SystemID)]] )
