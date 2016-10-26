@@ -46,7 +46,6 @@ Species
         [[NARROW_EP]]
     ]
 
-//todo
     [[RADIATED_NARROW_EP]]
     graphic = "icons/species/aerial-07.png"
 
