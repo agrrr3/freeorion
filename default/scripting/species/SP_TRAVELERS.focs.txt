@@ -6,11 +6,13 @@ Species
     CanProduceShips
     CanColonize
 
-    // growth specials only help with supply lines --> self sustaining
-    // bad supply --> disconnected; seriously hampers exploration as well, must be offset using 
+    // growth specials only help with supply lines --> self sustaining ; needed nerf via small homeworld and bad population
+    // bad supply --> disconnected; seriously hampers exploration as well, maybe use supply ships :) 
     // telepathic detection, great detection --> 
-    // XENOPHOBIC_SELF ... schlecht mit anderen?? ... aber nur im eigenen imperium ??
-    tags = [ "SELF_SUSTAINING" "GOOD_RESEARCH" "TELEPATHIC" "BAD_INDUSTRY" "BAD_SUPPLY" "GREAT_DETECTION" "GOOD_STEALTH" ]
+    // XENOPHOBIC_OTHER ... seen it all, doesn't like others.. discourage multispecies 
+    // no XENOPHOBIC_SELF - the others are too stupid to even see that you are there
+    // should be able to silently co-exist between most species --> RADIATED_NARROW_EP
+    tags = [ "SELF_SUSTAINING" "GOOD_RESEARCH" "TELEPATHIC" "BAD_POPULATION" "BAD_INDUSTRY" "BAD_SUPPLY" "GREAT_DETECTION" "GOOD_STEALTH" ]
 
     foci = [
         [[HAS_INDUSTRY_FOCUS]]
@@ -24,8 +26,8 @@ Species
     effectsgroups = [
         [[BAD_INDUSTRY]]
         [[GOOD_RESEARCH]]
-
-        [[AVERAGE_POPULATION]]
+        
+        [[BAD_POPULATION]]
         [[AVERAGE_HAPPINESS]]
         [[BAD_SUPPLY]]
         [[BAD_OFFENSE_TROOPS]]
@@ -33,19 +35,19 @@ Species
 
         [[GREAT_DETECTION]]
         [[GOOD_STEALTH]]
-        [[XENOPHOBIC_SELF]]
+        //XENOPHOBIC_SELF]]
+        [[XENOPHOBIC_OTHER(TRAVELERS)]]
         [[TELEPATHIC_DETECTION(5)]]
 
         // not for description
         [[AVERAGE_PLANETARY_SHIELDS]]
         [[AVERAGE_PLANETARY_DEFENSE]]
-        [[LARGE_PLANET]]
+        [[SMALL_PLANET]]
         [[NARROW_EP]]
-
     ]
 
 //todo
-    [[DESERT_NARROW_EP]]
+    [[RADIATED_NARROW_EP]]
     graphic = "icons/species/aerial-07.png"
 
 #include "common/*.macros"
