@@ -169,7 +169,7 @@ void MultiEdit::Render()
     Font::RenderState state(text_color_to_use);
     std::size_t first_visible_row = FirstVisibleRow();
     std::size_t last_visible_row = LastVisibleRow();
-    Flags<TextFormat> text_format = TextFormat() & ~(FORMAT_TOP | FORMAT_BOTTOM) | FORMAT_VCENTER;
+    Flags<TextFormat> text_format = (TextFormat() & ~(FORMAT_TOP | FORMAT_BOTTOM)) | FORMAT_VCENTER;
     const std::vector<Font::LineData>& lines = GetLineData();
     GetFont()->ProcessTagsBefore(lines, state, first_visible_row, CP0);
 
@@ -302,8 +302,9 @@ void MultiEdit::SetText(const std::string& str)
         if (m_max_lines_history == ALL_LINES) {
             TextControl::SetText(str);
         } else {
-            std::vector<Font::LineData> lines;
-            GetFont()->DetermineLines(str, format, cl_sz.x, lines);
+            std::vector<boost::shared_ptr<Font::TextElement> > text_elements
+                = GetFont()->ExpensiveParseFromTextToTextElements(str, format);
+            std::vector<Font::LineData> lines = GetFont()->DetermineLines(str, format, cl_sz.x, text_elements);
             if (m_max_lines_history < lines.size()) {
                 std::size_t first_line = 0;
                 std::size_t last_line = m_max_lines_history - 1;
@@ -357,7 +358,7 @@ void MultiEdit::SetText(const std::string& str)
         CPSize cursor_pos = CharIndexOf(m_cursor_end.first, m_cursor_end.second);
         this->m_cursor_pos = std::make_pair(cursor_pos, cursor_pos);
 
-        m_contents_sz = GetFont()->TextExtent(Text(), GetLineData());
+        m_contents_sz = GetFont()->TextExtent(GetLineData());
 
         AdjustScrolls();
         AdjustView();

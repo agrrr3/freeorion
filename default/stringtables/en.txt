@@ -1266,6 +1266,12 @@ The sound file played when a button is clicked.
 OPTIONS_DB_UI_SOUND_TURN_BUTTON_CLICK
 The sound file played when the turn button is clicked.
 
+OPTIONS_DB_UI_SOUND_NEWTURN_TOGGLE
+Toggle to play a sound on the start of a new turn
+
+OPTIONS_DB_UI_SOUND_NEWTURN_FILE
+The sound file played at start of a new turn, if enabled.
+
 OPTIONS_DB_UI_SOUND_LIST_SELECT
 The sound file played when a listbox or drop-down list item is selected.
 
@@ -2479,6 +2485,15 @@ Window Sounds
 
 OPTIONS_SOUND_BUTTON
 Button Sounds
+
+OPTIONS_SOUND_NEWTURN
+New Turn
+
+OPTIONS_SOUND_NEWTURN_TOGGLE
+Enabled
+
+OPTIONS_SOUND_NEWTURN_FILE
+Sound File
 
 OPTIONS_SOUND_ALERT
 Alert
@@ -11457,7 +11472,7 @@ SP_SOLAR_CONCENTRATOR
 Solar Concentrator
 
 SP_SOLAR_CONCENTRATOR_DESC
-The Solar Concentrator uses the phototropic effect of [[tech SHP_ORG_HULL]]s to increase the strength of [[tech SHP_WEAPON_2_1]]. The effectness depends on the brightness of the star at the current location. It is expected to increase the weapons strength between 1.5 and 4.5. The research of [[tech SHP_SOLAR_CONNECTION]] suggest to increase the collecting surface to maximize the effect.
+The Solar Concentrator uses the phototropic effect of [[tech SHP_ORG_HULL]]s to increase the strength of [[tech SHP_WEAPON_2_1]]. The effectiveness depends on the brightness of the star at the current location. It is expected to increase the weapons strength between 1.5 and 4.5. The research of [[tech SHP_SOLAR_CONNECTION]] suggest to increase the collecting surface to maximize the effect.
 
 SHP_SOLAR_CONNECTION
 Solarweb
@@ -12303,6 +12318,17 @@ TELEPATHIC_DETECTION_DESC
 
 
 ##
+## Fuel regeneration
+##
+
+AVERAGE_BASE_FUEL_REGEN_DESC
+'''	Average stationary [[encyclopedia FUEL_TITLE]] recovery: + 0.1'''
+
+LIVING_HULL_BASE_FUEL_REGEN_DESC
+'''	Living Organic Hull stationary [[encyclopedia FUEL_TITLE]] recovery: + 0.3'''
+
+
+##
 ## Accounting labels
 ##
 
@@ -12580,6 +12606,9 @@ Cloak Cross-Interference
 
 TRANSPATIAL_CLOAK_INTERACTION
 Transpatial Drive - Cloak Interaction
+
+BASE_FUEL_REGEN_LABEL
+Stationary Fuel Regen
 
 
 ##

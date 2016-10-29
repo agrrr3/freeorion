@@ -325,6 +325,7 @@
 		CE13B48F1C8CB0CF0085A4DC /* CommonParamsParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CE13B48E1C8CB0CF0085A4DC /* CommonParamsParser.cpp */; };
 		CE2C454D1C65036F0085A4DC /* ResourceBrowseWnd.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CE2C454B1C65036F0085A4DC /* ResourceBrowseWnd.cpp */; };
 		CE2C454E1C6503990085A4DC /* libz.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 822E325B19BEED6C00A7B707 /* libz.a */; };
+		CE3102B61DBFD0730085A4DC /* DeferredLayout.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CE3102B51DBFD0730085A4DC /* DeferredLayout.cpp */; };
 		CE5C92C91B81FE9C002346C0 /* main.xib in Sources */ = {isa = PBXBuildFile; fileRef = 34ACA40C0FFFABE600500F40 /* main.xib */; };
 		CE6183A61BB80D2E00952BEA /* BlockControl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CE61839D1BB80D2E00952BEA /* BlockControl.cpp */; };
 		CE6183A71BB80D2E00952BEA /* ImageBlock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CE61839E1BB80D2E00952BEA /* ImageBlock.cpp */; };
@@ -335,8 +336,10 @@
 		CE6183AE1BB80D4900952BEA /* CUILinkTextBlock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CE6183AC1BB80D4900952BEA /* CUILinkTextBlock.cpp */; };
 		CE6730B01BC29F23004179D1 /* CommonFramework.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CEC4ADC21BC15195000DFA9B /* CommonFramework.cpp */; };
 		CE6730B11BC29F25004179D1 /* CommonFramework.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CEC4ADC21BC15195000DFA9B /* CommonFramework.cpp */; };
+		CE71ED7A1DADAB120085A4DC /* DependencyVersions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CE97F70A1BC7D74D0002988B /* DependencyVersions.cpp */; };
+		CE71ED7B1DADAB130085A4DC /* DependencyVersions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CE97F70A1BC7D74D0002988B /* DependencyVersions.cpp */; };
+		CE71ED7C1DADAB140085A4DC /* DependencyVersions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CE97F70A1BC7D74D0002988B /* DependencyVersions.cpp */; };
 		CE76B9CF1CBD7ACC0085A4DC /* ChangeLog.md in Resources */ = {isa = PBXBuildFile; fileRef = CE76B9CD1CBD7A990085A4DC /* ChangeLog.md */; };
-		CE97F70B1BC7D7670002988B /* DependencyVersions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CE97F70A1BC7D74D0002988B /* DependencyVersions.cpp */; };
 		CEC4ADC11BC13741000DFA9B /* AIFramework.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CEC4ADBF1BC13741000DFA9B /* AIFramework.cpp */; };
 		CED6E5521C6DDC0F0085A4DC /* Fighter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CED6E5501C6DDC0F0085A4DC /* Fighter.cpp */; };
 		CEDABCF01C688D050085A4DC /* libboost_locale.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CEDABCEF1C688D050085A4DC /* libboost_locale.a */; };
@@ -596,7 +599,6 @@
 		471023510CEF3AAB00A7DF2B /* Flags.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Flags.h; sourceTree = "<group>"; };
 		471023520CEF3AAB00A7DF2B /* Font.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Font.h; sourceTree = "<group>"; };
 		471023530CEF3AAB00A7DF2B /* gen_signals.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = gen_signals.py; sourceTree = "<group>"; };
-		471023540CEF3AAB00A7DF2B /* glext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = glext.h; sourceTree = "<group>"; };
 		471023550CEF3AAB00A7DF2B /* GUI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI.h; sourceTree = "<group>"; };
 		471023560CEF3AAB00A7DF2B /* Layout.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Layout.h; sourceTree = "<group>"; };
 		471023570CEF3AAB00A7DF2B /* ListBox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ListBox.h; sourceTree = "<group>"; };
@@ -1090,6 +1092,8 @@
 		CE13B48E1C8CB0CF0085A4DC /* CommonParamsParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CommonParamsParser.cpp; sourceTree = "<group>"; };
 		CE2C454B1C65036F0085A4DC /* ResourceBrowseWnd.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ResourceBrowseWnd.cpp; sourceTree = "<group>"; };
 		CE2C454C1C65036F0085A4DC /* ResourceBrowseWnd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResourceBrowseWnd.h; sourceTree = "<group>"; };
+		CE3102B41DBFD05B0085A4DC /* DeferredLayout.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DeferredLayout.h; sourceTree = "<group>"; };
+		CE3102B51DBFD0730085A4DC /* DeferredLayout.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DeferredLayout.cpp; sourceTree = "<group>"; };
 		CE594BA51CB2D1360085A4DC /* algorithm.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = algorithm.hpp; sourceTree = "<group>"; };
 		CE594BA61CB2D1360085A4DC /* bit_aligned_pixel_iterator.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = bit_aligned_pixel_iterator.hpp; sourceTree = "<group>"; };
 		CE594BA71CB2D1360085A4DC /* bit_aligned_pixel_reference.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = bit_aligned_pixel_reference.hpp; sourceTree = "<group>"; };
@@ -1369,6 +1373,7 @@
 				34C9B34711DA2ECA003695F4 /* ClrConstants.h */,
 				471023440CEF3AAB00A7DF2B /* Control.h */,
 				471023450CEF3AAB00A7DF2B /* Cursor.h */,
+				CE3102B41DBFD05B0085A4DC /* DeferredLayout.h */,
 				471023460CEF3AAB00A7DF2B /* dialogs */,
 				4710234A0CEF3AAB00A7DF2B /* DrawUtil.h */,
 				4710234B0CEF3AAB00A7DF2B /* DropDownList.h */,
@@ -1384,7 +1389,6 @@
 				471023530CEF3AAB00A7DF2B /* gen_signals.py */,
 				CE6183961BB80D1300952BEA /* GGFwd.h */,
 				8257A8D91A90BA8C0006777D /* GLClientAndServerBuffer.h */,
-				471023540CEF3AAB00A7DF2B /* glext.h */,
 				2F60966C12EEAF2C00F58913 /* GroupBox.h */,
 				471023550CEF3AAB00A7DF2B /* GUI.h */,
 				471023560CEF3AAB00A7DF2B /* Layout.h */,
@@ -1455,6 +1459,7 @@
 				471023970CEF3AAC00A7DF2B /* Control.cpp */,
 				471023980CEF3AAC00A7DF2B /* Cursor.cpp */,
 				34BAB0BE0FC5CD7300EF792E /* DefaultFont.h */,
+				CE3102B51DBFD0730085A4DC /* DeferredLayout.cpp */,
 				471023990CEF3AAC00A7DF2B /* dialogs */,
 				4710239E0CEF3AAC00A7DF2B /* DrawUtil.cpp */,
 				4710239F0CEF3AAC00A7DF2B /* DropDownList.cpp */,
@@ -2618,7 +2623,6 @@
 				47103C100CF04E5900A7DF2B /* UniverseObject.cpp in Sources */,
 				47103C110CF04E5900A7DF2B /* ValueRef.cpp in Sources */,
 				47103C150CF04E5900A7DF2B /* Message.cpp in Sources */,
-				CE97F70B1BC7D7670002988B /* DependencyVersions.cpp in Sources */,
 				47103C160CF04E5900A7DF2B /* Empire.cpp in Sources */,
 				47103C170CF04E5900A7DF2B /* EmpireManager.cpp in Sources */,
 				47103C180CF04E5900A7DF2B /* ResourcePool.cpp in Sources */,
@@ -2684,6 +2688,7 @@
 				CE6183A91BB80D2E00952BEA /* TagParser.cpp in Sources */,
 				4710242E0CEF3AAC00A7DF2B /* Texture.cpp in Sources */,
 				4710242F0CEF3AAC00A7DF2B /* Timer.cpp in Sources */,
+				CE3102B61DBFD0730085A4DC /* DeferredLayout.cpp in Sources */,
 				471024300CEF3AAC00A7DF2B /* Wnd.cpp in Sources */,
 				471024320CEF3AAC00A7DF2B /* WndEvent.cpp in Sources */,
 				CE6183A61BB80D2E00952BEA /* BlockControl.cpp in Sources */,
@@ -2705,6 +2710,7 @@
 				471032600CEF6D0D00A7DF2B /* ServerFSM.cpp in Sources */,
 				2F60967E12EEB1AE00F58913 /* MessageQueue.cpp in Sources */,
 				2F6096CE12EF046500F58913 /* ClientApp.cpp in Sources */,
+				CE71ED7A1DADAB120085A4DC /* DependencyVersions.cpp in Sources */,
 				2F6096CF12EF046B00F58913 /* ClientNetworking.cpp in Sources */,
 				82B4313414A74E07003EEE42 /* UniverseGenerator.cpp in Sources */,
 				82655A401716D9240007EEDD /* CombatSystem.cpp in Sources */,
@@ -2720,6 +2726,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CE71ED7C1DADAB140085A4DC /* DependencyVersions.cpp in Sources */,
 				471FEFDE0A9A631C00C36AA3 /* AIClientApp.cpp in Sources */,
 				CE6730B11BC29F25004179D1 /* CommonFramework.cpp in Sources */,
 				CEC4ADC11BC13741000DFA9B /* AIFramework.cpp in Sources */,
@@ -2837,6 +2844,7 @@
 				8275F3FC1AD31381003568FF /* IconTextBrowseWnd.cpp in Sources */,
 				470DF9A10A9CE53500A88AD6 /* HumanClientApp.cpp in Sources */,
 				8275F3FF1AD31381003568FF /* MultiIconValueIndicator.cpp in Sources */,
+				CE71ED7B1DADAB130085A4DC /* DependencyVersions.cpp in Sources */,
 				471031390CEF618C00A7DF2B /* HumanClientFSM.cpp in Sources */,
 				8275F4021AD31381003568FF /* ResourcePanel.cpp in Sources */,
 				8275F3FE1AD31381003568FF /* MilitaryPanel.cpp in Sources */,
@@ -3013,7 +3021,6 @@
 				HEADER_SEARCH_PATHS = (
 					"\"$(SOURCE_ROOT)/dep/include\"",
 					"\"$(SOURCE_ROOT)/../GG\"",
-					"\"$(SOURCE_ROOT)/../log4cpp\"",
 					"\"$(SOURCE_ROOT)/../network\"",
 					"\"$(SOURCE_ROOT)/dep/Frameworks/Python.framework/Headers\"",
 					"\"$(SOURCE_ROOT)/dep/Frameworks/SDL2.framework/Headers\"",
@@ -3138,7 +3145,6 @@
 				HEADER_SEARCH_PATHS = (
 					"\"$(SOURCE_ROOT)/dep/include\"",
 					"\"$(SOURCE_ROOT)/../GG\"",
-					"\"$(SOURCE_ROOT)/../log4cpp\"",
 					"\"$(SOURCE_ROOT)/../network\"",
 					"\"$(SOURCE_ROOT)/dep/Frameworks/Python.framework/Headers\"",
 					"\"$(SOURCE_ROOT)/dep/Frameworks/SDL2.framework/Headers\"",
@@ -3294,7 +3300,6 @@
 				HEADER_SEARCH_PATHS = (
 					"\"$(SOURCE_ROOT)/dep/include\"",
 					"\"$(SOURCE_ROOT)/../GG\"",
-					"\"$(SOURCE_ROOT)/../log4cpp\"",
 					"\"$(SOURCE_ROOT)/../network\"",
 					"\"$(SOURCE_ROOT)/dep/Frameworks/Python.framework/Headers\"",
 					"\"$(SOURCE_ROOT)/dep/Frameworks/SDL2.framework/Headers\"",

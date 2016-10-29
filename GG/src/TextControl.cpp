@@ -66,14 +66,19 @@ Pt TextControl::MinUsableSize() const
 
 Pt TextControl::MinUsableSize(X width) const
 {
+    // If the requested width is within one space width of the cached width
+    // don't recalculate the size
     X min_delta = m_font->SpaceWidth();
     X abs_delta_w = X(std::abs(Value(m_cached_minusable_size_width - width)));
-    if ( m_cached_minusable_size_width != X0 &&  abs_delta_w < min_delta)
+    if (m_cached_minusable_size_width != X0 &&  abs_delta_w < min_delta)
         return m_cached_minusable_size;
 
-    std::vector<Font::LineData> dummy_line_data;
+    // Calculate and cache the minimum usable size when m_cached_minusable_size is equal to width.
+    // Create dummy line data with line breaks added so that lines are not wider than width.
     Flags<TextFormat> dummy_format(m_format);
-    m_cached_minusable_size = m_font->DetermineLines(m_text, dummy_format, width, dummy_line_data)
+    std::vector<Font::LineData> dummy_line_data =
+        m_font->DetermineLines(m_text, dummy_format, width, m_text_elements);
+    m_cached_minusable_size = m_font->TextExtent(dummy_line_data)
         + (ClientUpperLeft() - UpperLeft()) + (LowerRight() - ClientLowerRight());
     m_cached_minusable_size_width = width;
     return m_cached_minusable_size;
@@ -162,7 +167,7 @@ void TextControl::RefreshCache() {
     PurgeCache();
     m_render_cache = new Font::RenderCache();
     if (m_font)
-        m_font->PreRenderText(Pt(X0, Y0), Size(), m_text, m_format, *m_render_cache, &m_line_data);
+        m_font->PreRenderText(Pt(X0, Y0), Size(), m_text, m_format, *m_render_cache, m_line_data);
 }
 
 void TextControl::PurgeCache()
@@ -183,9 +188,9 @@ void TextControl::SetText(const std::string& str)
         return;
 
     m_code_points = CPSize(utf8::distance(str.begin(), str.end()));
-    m_text_elements.clear();
-    Pt text_sz =
-        m_font->DetermineLines(m_text, m_format, ClientSize().x, m_line_data, m_text_elements);
+    m_text_elements = m_font->ExpensiveParseFromTextToTextElements(m_text, m_format);
+    m_line_data = m_font->DetermineLines(m_text, m_format, ClientSize().x, m_text_elements);
+    Pt text_sz = m_font->TextExtent(m_line_data);
     m_text_ul = Pt();
     m_text_lr = text_sz;
     AdjustMinimumSize();
@@ -232,14 +237,10 @@ void TextControl::SizeMove(const Pt& ul, const Pt& lr)
     }
 
     if (redo_determine_lines) {
-        Pt text_sz;
-        if (m_text_elements.empty()) {
-            text_sz =
-                m_font->DetermineLines(m_text, m_format, client_width, m_line_data, m_text_elements);
-        } else {
-            text_sz =
-                m_font->DetermineLines(m_text, m_format, client_width, m_text_elements, m_line_data);
-        }
+        if (m_text_elements.empty())
+            m_text_elements = m_font->ExpensiveParseFromTextToTextElements(m_text, m_format);
+        m_line_data = m_font->DetermineLines(m_text, m_format, client_width, m_text_elements);
+        Pt text_sz = m_font->TextExtent(m_line_data);
         m_text_ul = Pt();
         m_text_lr = text_sz;
         AdjustMinimumSize();

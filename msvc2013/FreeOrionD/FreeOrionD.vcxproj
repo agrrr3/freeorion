@@ -85,8 +85,8 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0501;FREEORION_BUILD_SERVER;FREEORION_WIN32;GiGi_EXPORTS;_DLL;BOOST_ALL_DYN_LINK;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_DEPRECATE;LOG4CPP_STLPORT_AND_BOOST_BUILD</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../../../include/;../../../Boost/include/;../../GG/;../../../include/python2.7/</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0501;FREEORION_BUILD_SERVER;FREEORION_WIN32;GiGi_EXPORTS;_DLL;BOOST_ALL_DYN_LINK;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_DEPRECATE</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../../../include/;../../../Boost/include/;../../GG/;../../../include/python2.7/;../../../include/zlib/</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>
@@ -118,8 +118,8 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0501;FREEORION_BUILD_SERVER;FREEORION_WIN32;GiGi_EXPORTS;_DLL;BOOST_ALL_DYN_LINK;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_DEPRECATE;LOG4CPP_STLPORT_AND_BOOST_BUILD</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../../../include/;../../../Boost/include/;../../GG/;../../../include/python2.7/</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0501;FREEORION_BUILD_SERVER;FREEORION_WIN32;GiGi_EXPORTS;_DLL;BOOST_ALL_DYN_LINK;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_DEPRECATE</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../../../include/;../../../Boost/include/;../../GG/;../../../include/python2.7/;../../../include/zlib/</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>
@@ -217,6 +217,7 @@
     <ClCompile Include="..\..\server\ServerFSM.cpp" />
     <ClCompile Include="..\..\universe\UniverseGenerator.cpp" />
     <ClCompile Include="..\..\util\Process.cpp" />
+    <ClCompile Include="..\..\util\DependencyVersions.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

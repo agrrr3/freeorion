@@ -166,7 +166,7 @@ if(${Boost_VERSION} LESS "105600")
     )
 endif()
 
-if(${Boost_VERSION} EQUAL "106100")
+if(${Boost_VERSION} EQUAL "106100" OR ${Boost_VERSION} GREATER "106100")
     # with boost 1.61 some boost::optional internals were changed. However
     # boost::spirit relies on some API the old implementation provided.  This
     # define enables the usage of the old boost::optional implementation.
@@ -291,7 +291,6 @@ set (freeorioncommon_SOURCE
     universe/UniverseObject.cpp
     universe/ValueRef.cpp
     util/AppInterface.cpp
-    util/DependencyVersions.cpp
     util/Directories.cpp
     util/EnumText.cpp
     util/i18n.cpp

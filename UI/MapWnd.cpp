@@ -2045,7 +2045,11 @@ void MapWnd::RenderMovementLineETAIndicators(const MapWnd::MovementLineData& mov
         // render ETA number in white with black shadows
         std::string text = "<s>" + boost::lexical_cast<std::string>(vert.eta) + "</s>";
         glColor(GG::CLR_WHITE);
-        font->RenderText(ul, lr, text, flags);
+        // TODO cache the text_elements
+        std::vector<boost::shared_ptr<GG::Font::TextElement> > text_elements = font->ExpensiveParseFromTextToTextElements(text, flags);
+        std::vector<GG::Font::LineData> lines =
+            font->DetermineLines(text, flags, lr.x - ul.x, text_elements);
+        font->RenderText(ul, lr, text, flags, lines);
     }
     glPopMatrix();
 }
@@ -2470,6 +2474,9 @@ void MapWnd::InitTurn() {
         m_btn_auto_turn->Disable(false);
         m_btn_auto_turn->Show();
     }
+
+    if (GetOptionsDB().Get<bool>("UI.sound.new-turn.toggle"))
+        Sound::GetSound().PlaySound(GetOptionsDB().Get<std::string>("UI.sound.new-turn.sound-file"), true);
 }
 
 void MapWnd::MidTurnUpdate() {
