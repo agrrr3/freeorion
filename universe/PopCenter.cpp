@@ -117,21 +117,24 @@ void PopCenter::PopCenterResetTargetMaxUnpairedMeters() {
 }
 
 void PopCenter::PopCenterPopGrowthProductionResearchPhase() {
-    float cur_pop = CurrentMeterValue(METER_POPULATION);
-    float pop_growth = NextTurnPopGrowth(); // may be negative
-    float new_pop = cur_pop + pop_growth;
+	if (IsPopulated()) {
+		float cur_pop = CurrentMeterValue(METER_POPULATION);
+		float pop_growth = NextTurnPopGrowth(); // may be negative
+		float new_pop = cur_pop + pop_growth;
 
-    //if (cur_pop > 0.0)
-    //    DebugLogger() << "Planet Pop: " << cur_pop << " growth: " << pop_growth;
+		//if (cur_pop > 0.0)
+		//    DebugLogger() << "Planet Pop: " << cur_pop << " growth: " << pop_growth;
 
-    if (new_pop >= MINIMUM_POP_CENTER_POPULATION) {
-        GetMeter(METER_POPULATION)->SetCurrent(new_pop);
-    } else {
-        // if population falls below threshold, kill off the remainder
-        Depopulate();
-    }
+		if (new_pop >= MINIMUM_POP_CENTER_POPULATION) {
+			GetMeter(METER_POPULATION)->SetCurrent(new_pop);
+		}
+		else {
+			// if population falls below threshold, kill off the remainder
+			Depopulate();
+		}
 
-    GetMeter(METER_HAPPINESS)->SetCurrent(PopCenterNextTurnMeterValue(METER_HAPPINESS));
+		GetMeter(METER_HAPPINESS)->SetCurrent(PopCenterNextTurnMeterValue(METER_HAPPINESS));
+	}
 }
 
 void PopCenter::PopCenterClampMeters()
@@ -143,6 +146,10 @@ void PopCenter::Reset() {
     GetMeter(METER_HAPPINESS)->Reset();
     GetMeter(METER_TARGET_HAPPINESS)->Reset();
     m_species_name.clear();
+}
+
+bool PopCenter::IsPopulated() {
+	return (!m_species_name.empty() ) ;
 }
 
 void PopCenter::Depopulate() {
