@@ -38,7 +38,7 @@ Special
                 Planet
                 Not Source
                 OwnedBy affiliation = TheEmpire empire = Source.Owner
-                Population low = 0.0001
+                [[CONDITION_POPULATED]]
             ]
             effects = SetTargetHappiness value = Value + 1
     ]
