@@ -14,7 +14,7 @@ BuildingType
     effectsgroups = [
         EffectsGroup
             scope = And [
-                PopulationCenter
+                [[CONDITION_POPULATED]]
                 Focus type = "FOCUS_INDUSTRY"
                 OwnedBy empire = Source.Owner
                 ResourceSupplyConnected empire = Source.Owner condition = Source
