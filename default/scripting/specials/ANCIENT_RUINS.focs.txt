@@ -44,6 +44,7 @@ Special
         EffectsGroup
             scope = And [
                 Source
+                [[CONDITION_POPULATED]]
                 Focus type = "FOCUS_RESEARCH"
             ]
             priority = [[EARLY_PRIORITY]]
