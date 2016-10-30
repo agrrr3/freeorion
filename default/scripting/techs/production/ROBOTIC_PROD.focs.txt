@@ -8,7 +8,7 @@ Tech
     effectsgroups = [
         EffectsGroup
             scope = And [
-                ProductionCenter
+                [[CONDITION_POPULATED]]
                 OwnedBy empire = Source.Owner
                 Focus type = "FOCUS_INDUSTRY"
             ]
