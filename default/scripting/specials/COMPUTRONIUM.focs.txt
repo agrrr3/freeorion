@@ -22,7 +22,7 @@ Special
     effectsgroups = [
         EffectsGroup
             scope = And [
-                Planet
+                [[CONDITION_POPULATED]]
                 Focus type = "FOCUS_RESEARCH"
                 OwnedBy empire = Source.Owner
             ]
