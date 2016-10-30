@@ -34,7 +34,7 @@ Special
 
         EffectsGroup
             scope = And [
-                Planet
+                [[CONDITION_POPULATED]]
 //                Focus type = "FOCUS_RESEARCH" // Does not require focus
                 InSystem id = Source.SystemID
             ]
