@@ -13,7 +13,7 @@ BuildingType
     effectsgroups = [
         EffectsGroup
             scope = And [
-                PopulationCenter
+                [[CONDITION_POPULATED]]
                 OwnedBy empire = Source.Owner
                 ResourceSupplyConnected empire = Source.Owner condition = Source
                 Focus type = "FOCUS_INDUSTRY"
@@ -28,7 +28,7 @@ BuildingType
 
         EffectsGroup
             scope = And [
-                PopulationCenter
+                [[CONDITION_POPULATED]]
                 OwnedBy empire = Source.Owner
                 ResourceSupplyConnected empire = Source.Owner condition = Source
                 Focus type = "FOCUS_INDUSTRY"
@@ -43,7 +43,7 @@ BuildingType
 
         EffectsGroup
             scope = And [
-                PopulationCenter
+                [[CONDITION_POPULATED]]
                 OwnedBy empire = Source.Owner
                 ResourceSupplyConnected empire = Source.Owner condition = Source
                 Focus type = "FOCUS_INDUSTRY"

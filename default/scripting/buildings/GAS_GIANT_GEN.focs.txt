@@ -17,7 +17,7 @@ BuildingType
                 Planet
                 InSystem id = Source.SystemID
                 Focus type = "FOCUS_INDUSTRY"
-                NOT Population high = 0
+                [[CONDITION_POPULATED]]
                 OwnedBy empire = Source.Owner
             ]
             stackinggroup = "GAS_GIANT_GEN_STACK"
@@ -30,5 +30,6 @@ BuildingType
     ]
     icon = "icons/building/gas-giant-generator.png"
 
+#include "/scripting/common/base_prod.macros"
 #include "/scripting/common/enqueue.macros"
 #include "/scripting/common/priorities.macros"

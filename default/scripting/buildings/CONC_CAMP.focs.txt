@@ -16,7 +16,7 @@ BuildingType
                 Planet
             ]
             activation = ContainedBy And [
-                PopulationCenter
+                [[CONDITION_POPULATED]]
                 OwnedBy empire = Source.Owner
             ]
             priority = [[LATE_PRIORITY]]
@@ -27,9 +27,8 @@ BuildingType
                 Planet
             ]
             activation = ContainedBy And [
-                PopulationCenter
+                [[CONDITION_POPULATED]]
                 OwnedBy empire = Source.Owner
-                Population low = 0.0001
                 Not HasSpecial name = "CONC_CAMP_MASTER_SPECIAL"
             ]
             effects = AddSpecial name = "CONC_CAMP_MASTER_SPECIAL"
@@ -54,7 +53,7 @@ BuildingType
                 Planet
             ]
             activation = ContainedBy And [
-                PopulationCenter
+                [[CONDITION_POPULATED]]
                 OwnedBy empire = Source.Owner
                 HasSpecial name = "CONC_CAMP_MASTER_SPECIAL"
             ]
