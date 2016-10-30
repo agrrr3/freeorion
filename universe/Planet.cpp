@@ -662,6 +662,20 @@ void Planet::Depopulate() {
     GetMeter(METER_TRADE)->Reset();
     GetMeter(METER_CONSTRUCTION)->Reset();
 
+    if (Empire* empire = GetEmpire(this->Owner())) {
+        empire->AddSitRepEntry(CreatePlanetDepopulatedSitRep(this->ID()));
+
+        // record depopulation of planet with species while owned by this empire
+        std::map<std::string, int>::iterator species_it = empire->SpeciesPlanetsDepoped().find(SpeciesName());
+        if (species_it == empire->SpeciesPlanetsDepoped().end())
+            empire->SpeciesPlanetsDepoped()[SpeciesName()] = 1;
+        else
+            species_it->second++;
+    }
+
+    // remove species
+    SetSpecies("");
+
     ClearFocus();
 }
 
@@ -853,22 +867,6 @@ void Planet::PopGrowthProductionResearchPhase() {
         ResourceCenterPopGrowthProductionResearchPhase();
 
     PopCenterPopGrowthProductionResearchPhase();
-
-    // check for colonies without positive population, and change to outposts
-    if (!SpeciesName().empty() && GetMeter(METER_POPULATION)->Current() <= 0.0f) {
-        if (Empire* empire = GetEmpire(this->Owner())) {
-            empire->AddSitRepEntry(CreatePlanetDepopulatedSitRep(this->ID()));
-
-            // record depopulation of planet with species while owned by this empire
-            std::map<std::string, int>::iterator species_it = empire->SpeciesPlanetsDepoped().find(SpeciesName());
-            if (species_it == empire->SpeciesPlanetsDepoped().end())
-                empire->SpeciesPlanetsDepoped()[SpeciesName()] = 1;
-            else
-                species_it->second++;
-        }
-        // remove species
-        SetSpecies("");
-    }
 
     if (!just_conquered) {
         GetMeter(METER_SHIELD)->SetCurrent(Planet::NextTurnCurrentMeterValue(METER_SHIELD));

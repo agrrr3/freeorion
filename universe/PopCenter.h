@@ -42,6 +42,7 @@ public:
     void                Copy(TemporaryPtr<const PopCenter> copied_object, Visibility vis = VIS_FULL_VISIBILITY);
     void                SetSpecies(const std::string& species_name);        ///< sets the species of the population to \a species_name
     virtual void        Reset();                                            ///< sets all meters to 0, clears race name
+    virtual bool        IsPopulated();                                      ///< return if a species lives on this population center
     virtual void        Depopulate();                                       ///< removes population
     //@}
 
