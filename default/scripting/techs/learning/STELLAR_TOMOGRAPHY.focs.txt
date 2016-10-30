@@ -9,7 +9,7 @@ Tech
     effectsgroups = [
         EffectsGroup
             scope = And [
-                ProductionCenter
+                [[CONDITION_POPULATED]]
                 OwnedBy empire = Source.Owner
                 Star type = BlackHole
                 Focus type = "FOCUS_RESEARCH"
@@ -19,7 +19,7 @@ Tech
 
         EffectsGroup
             scope = And [
-                ProductionCenter
+                [[CONDITION_POPULATED]]
                 OwnedBy empire = Source.Owner
                 Star type = Neutron
                 Focus type = "FOCUS_RESEARCH"
@@ -29,7 +29,7 @@ Tech
 
         EffectsGroup
             scope = And [
-                ProductionCenter
+                [[CONDITION_POPULATED]]
                 OwnedBy empire = Source.Owner
                 Star type = [Blue White]
                 Focus type = "FOCUS_RESEARCH"
@@ -39,7 +39,7 @@ Tech
 
         EffectsGroup
             scope = And [
-                ProductionCenter
+                [[CONDITION_POPULATED]]
                 OwnedBy empire = Source.Owner
                 Star type = [Red Orange Yellow]
                 Focus type = "FOCUS_RESEARCH"
