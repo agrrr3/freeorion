@@ -12,13 +12,12 @@ XENOPHOBIC_SELF
             activation = And [
                 PopulationCenter
                 Number low = 1 condition = And [
-                    PopulationCenter
+                    [[CONDITION_POPULATED]]
                     OwnedBy empire = Source.Owner
                     Not OR [ 
                         Species name = Source.Species
                         Species name = "SP_EXOBOT"
                     ]
-                    Not Population high = 0
                     Not Contains Building name = "BLD_CONC_CAMP"
                     WithinStarlaneJumps jumps = 5 condition = Source
                 ]
@@ -31,13 +30,12 @@ XENOPHOBIC_SELF
                 SetTargetResearch value = Value * 0.9
                 SetTargetHappiness value = Value - (
                     Count condition = And [
-                        PopulationCenter
+                        [[CONDITION_POPULATED]]
                         OwnedBy empire = Source.Owner
                         Not OR [ 
                             Species name = Source.Species
                             Species name = "SP_EXOBOT"
                         ]
-                        Not Population high = 0
                         Not Contains Building name = "BLD_CONC_CAMP"
                         WithinStarlaneJumps jumps = 5 condition = Source
                     ]
@@ -63,12 +61,11 @@ XENOPHOBIC_SELF
 XENOPHOBIC_SELFSUSTAINING_QUALIFYING_PLANET_COUNT
 '''
 Count condition = And [
-                    PopulationCenter
+                    [[CONDITION_POPULATED]]
                     Not OR [
                         Species name = Source.Species
                         Species name = "SP_EXOBOT"
                     ]
-                    Not Population high = 0
                     WithinStarlaneJumps jumps = 5 condition = Source
                     WithinStarlaneJumps
                                   jumps = 2
@@ -81,13 +78,12 @@ Count condition = And [
 XENOPHOBIC_OTHER
 '''     EffectsGroup 
             scope = And [
-                PopulationCenter
+                [[CONDITION_POPULATED]]
                 OwnedBy empire = Source.Owner
                 Not OR [ 
                     Species name = Source.Species
                     Species name = "SP_EXOBOT"
                 ]
-                Not Population high = 0
                 Not Contains Building name = "BLD_CONC_CAMP"
                 WithinStarlaneJumps jumps = 5 condition = Source
             ]
