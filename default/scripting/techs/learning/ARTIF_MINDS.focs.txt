@@ -9,9 +9,8 @@ Tech
     effectsgroups = [
         EffectsGroup
             scope = And [
-                ProductionCenter
+                [[CONDITION_POPULATED]]
                 OwnedBy empire = Source.Owner
-                NOT TargetPopulation low = 0 high = 0
             ]
             priority = [[VERY_LATE_PRIORITY]]
             effects = SetTargetResearch value = Value + 10 * [[RESEARCH_PER_POP]]
