@@ -5908,6 +5908,23 @@ Social Structure:
 In Chato'matou society, age is the most important factor as they are nearly immortal. Every command the elders issue is obeyed at once and to disobey an elder is the greatest crime in Chato'matou society. They developed a system to transmit signals without delay throughout an entire colony, enabling them to converse with near the speed of light. This greatly enhanced the species mental capabilities, as all new ideas and theories could be instantly processed throughout the colony. The Gormoshk are valued as mounts and well cared for under normal circumstances, however they are also seen mostly as animals.
 '''
 
+SP_TRAVELERS
+Travelers
+
+SP_TRAVELERS_GAMEPLAY_DESC
+'''Conceited radiating lurkers.
+Prefer [[PT_RADIATED]] planets. Not afraid of other species, but harass them anyway. 
+[[encyclopedia SELF_SUSTAINING_SPECIES_TITLE]], [[encyclopedia TELEPATHIC_TITLE]], [[encyclopedia XENOPHOBIC_SPECIES_TITLE]]
+'''
+
+SP_TRAVELERS_DESC
+'''Description:
+The Travelers came from a different galaxy, the reason lost in the centuries. Their shape resembles that of a manta ray, and they are able to float gracefully through space. Travelers do not need anything to sustain themselves but occasional radiation, so it is possible that they came to our galaxy without spaceships. They are able to modulate incoming electromagnetic energy by will to appear in any coloration, which they intensely use to hide themselves. Their mating rituals which happen in a twelve year cycle are most spectacular and can make the whole colony glow in fantastic colors. Invading travelers' places can be most horrifying, when suddenly a part of the wall, the ceiling, or floor starts moving in order to grab you and end your life.
+
+Social Structure:
+While slowly growing, unrest started in the colony. More and more feel the urge to travel and see the galaxy, maybe find the species' original source. While there is curiosity towards the other species, travelers are extremely arrogant and won't show themselves to the 'lesser' species. Their tendency to hide undetected in the middle of other civilisations unnerves those who know of it to the brink of paranoia. Also the radiation pulses travelers release when feeling intense emotional moments are for many species a health hazard.
+'''
+
 SP_TRITH
 Trith
 
@@ -10842,6 +10859,12 @@ Tae Ghirus Colony
 BLD_COL_TAEGHIRUS_DESC
 [[BLD_COL_PART_1]] [[species SP_TAEGHIRUS]] colony. [[BLD_COL_PART_2]] Tae Ghirus colony [[BLD_COL_PART_3]].
 
+BLD_COL_TRAVELERS
+Travelers Colony
+
+BLD_COL_TRAVELERS_DESC
+[[BLD_COL_PART_1]] [[species SP_TRITH]] colony. [[BLD_COL_PART_2]] Travelers colony [[BLD_COL_PART_3]].
+
 BLD_COL_TRITH
 Trith Colony
 
@@ -12555,6 +12578,9 @@ Protection Focus
 
 XENOPHOBIC_LABEL_SELF
 Xenophobic Frenzy (other species nearby)
+
+XENOPHOBIC_LABEL_TRAVELERS_OTHER
+Xenophobic Harassment: Travelers
 
 XENOPHOBIC_LABEL_TRITH_OTHER
 Xenophobic Harassment: Trith
