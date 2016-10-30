@@ -1,5 +1,11 @@
-// Production Boosters based on population should be calculate based on these.
+// Definition of a colony
+CONDITION_POPULATED
+'''
+PopulationCenter
+Not Population high = 0
+'''
 
+// Production Boosters based on population should be calculate based on these.
 INDUSTRY_PER_POP
 '''0.2'''
 
