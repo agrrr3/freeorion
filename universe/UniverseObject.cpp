@@ -147,6 +147,10 @@ int UniverseObject::AgeInTurns() const {
     return CurrentTurn() - m_created_on_turn;
 }
 
+bool UniverseObject::CanProduceResources() const {
+    return false; // usually not
+}
+
 int UniverseObject::Owner() const
 { return m_owner_empire_id; }
 

@@ -99,6 +99,8 @@ public:
     int                         CreationTurn() const;               ///< returns game turn on which object was created
     int                         AgeInTurns() const;                 ///< returns elapsed number of turns between turn object was created and current game turn
 
+    virtual bool                CanProduceResources() const;        ///< returns true if this object could produce resources
+
     mutable StateChangedSignalType StateChangedSignal;              ///< emitted when the UniverseObject is altered in any way
     //@}
 

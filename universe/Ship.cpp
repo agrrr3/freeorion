@@ -212,6 +212,11 @@ bool Ship::HasTag(const std::string& name) const {
 UniverseObjectType Ship::ObjectType() const
 { return OBJ_SHIP; }
 
+bool Ship::CanProduceResources() const {
+    const ShipDesign* design = GetShipDesign(m_design_id);
+    return design && design->IndustryGeneration() > 0.0f;
+}
+
 bool Ship::ContainedBy(int object_id) const {
     return object_id != INVALID_OBJECT_ID
         && (    object_id == m_fleet_id
@@ -396,6 +401,7 @@ float Ship::NextTurnCurrentMeterValue(MeterType type) const {
     case METER_TARGET_INDUSTRY:
     case METER_TARGET_RESEARCH:
     case METER_TARGET_TRADE:
+        DebugLogger() << "Calc Ship::NextTurnCurrentMeterValue(" << type << ") - returning target meter " << current_meter_value;
         return current_meter_value;
         break;
     case METER_INDUSTRY:    target_meter_type = METER_TARGET_INDUSTRY;      break;
@@ -409,6 +415,7 @@ float Ship::NextTurnCurrentMeterValue(MeterType type) const {
     if (!target_meter)
         throw std::runtime_error("Ship::NextTurnCurrentMeterValue dealing with invalid meter type: " + boost::lexical_cast<std::string>(type));
     float target_meter_value = target_meter->Current();
+    DebugLogger() << "Calc Ship::NextTurnCurrentMeterValue(" << type << ") - current " << current_meter_value << " target is " << target_meter_value;
 
     // meter growth or decay towards target is one per turn.
     if (target_meter_value > current_meter_value)

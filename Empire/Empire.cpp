@@ -3331,8 +3331,13 @@ void Empire::InitResourcePools() {
     for (std::map<int, TemporaryPtr<UniverseObject> >::iterator it = Objects().ExistingShipsBegin();
          it != Objects().ExistingShipsEnd(); ++it)
     {
-        if (!it->second->OwnedBy(m_id))
+        DebugLogger() << "Checking ship: " << it->first << " name: " << it->second->Name();
+        DebugLogger() << "             : ownerships " << it->second->OwnedBy(m_id) << " := " << it->second->Owner() << " =?= " << m_id;
+        DebugLogger() << "             : CanProduceResources " << it->second->CanProduceResources();
+
+        if ( !(it->second->OwnedBy(m_id) && it->second->CanProduceResources()) )
             continue;
+        DebugLogger() << "Adding ship: " << it->first << " name: " << it->second->PublicName(m_id);
         res_centers.push_back(it->first);
     }
     m_resource_pools[RE_RESEARCH]->SetObjects(res_centers);

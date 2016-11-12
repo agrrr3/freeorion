@@ -65,6 +65,10 @@ void ResourceCenter::Init() {
     m_last_turn_focus_changed_turn_initial = INVALID_GAME_TURN;
 }
 
+bool ResourceCenter::CanProduceResources() const {
+    return true;
+}
+
 const std::string& ResourceCenter::Focus() const
 { return m_focus; }
 

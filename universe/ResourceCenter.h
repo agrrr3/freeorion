@@ -35,6 +35,8 @@ public:
     virtual std::vector<std::string>AvailableFoci() const;                          ///< focus settings available to this ResourceCenter
     virtual const std::string&      FocusIcon(const std::string& focus_name) const; ///< icon representing focus with name \a focus_name for this ResourceCenter
 
+    virtual bool    CanProduceResources() const;      ///< returns true as resource centers can produce resources
+
     std::string     Dump() const;
 
     virtual float   InitialMeterValue(MeterType type) const = 0;            ///< implementation should return the initial value of the specified meter \a type
