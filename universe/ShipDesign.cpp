@@ -262,6 +262,9 @@ std::string PartType::CapacityDescription() const {
     case PC_TROOPS:
     case PC_COLONY:
     case PC_FIGHTER_BAY:
+    case PC_INDUSTRY:
+    case PC_RESEARCH:
+    case PC_TRADE:
         desc_string += str(FlexibleFormat(UserString("PART_DESC_CAPACITY")) % main_stat);
         break;
     case PC_DIRECT_WEAPON:
