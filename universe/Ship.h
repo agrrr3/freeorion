@@ -35,6 +35,7 @@ public:
 
     bool                        IsMonster() const;
     bool                        IsArmed() const;
+    bool                        HasFighters() const;
     bool                        CanColonize() const;
     bool                        HasTroops() const;
     bool                        CanHaveTroops() const;
@@ -61,6 +62,7 @@ public:
     float                       InitialPartMeterValue(MeterType type, const std::string& part_name) const;  ///< returns this turn's initial value for the speicified part meter \a type for the specified part name
 
     float                       TotalWeaponsDamage(float shield_DR = 0.0f, bool include_fighters = true) const; ///< versus an enemy with a given shields DR
+    float                       FighterCount() const;
     std::vector<float>          AllWeaponsDamage(float shield_DR = 0.0f, bool include_fighters = true) const;   ///< any nonzero weapons strengths after adjustment versus an enemy with a given shields DR
     std::vector<float>          AllWeaponsMaxDamage(float shield_DR = 0.0f, bool include_fighters = true) const;///< any nonzero weapons strengths, assuming the shpi has been refueled recently, after adjustment versus an enemy with a given shields DR
     //@}

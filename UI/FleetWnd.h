@@ -45,10 +45,6 @@ public:
                                 int selected_fleet_id = INVALID_OBJECT_ID,
                                 GG::Flags<GG::WndFlag> flags = GG::INTERACTIVE | GG::DRAGABLE | GG::ONTOP | CLOSABLE | GG::RESIZABLE);
 
-    FleetWnd*       NewFleetWnd(int system_id, int empire_id,
-                                int selected_fleet_id = INVALID_OBJECT_ID,
-                                GG::Flags<GG::WndFlag> flags = GG::INTERACTIVE | GG::DRAGABLE | GG::ONTOP | CLOSABLE | GG::RESIZABLE);
-
     void            CullEmptyWnds();
     void            SetActiveFleetWnd(FleetWnd* fleet_wnd);
     bool            CloseAll();
@@ -109,11 +105,11 @@ public:
     //@}
 
     //! \name Mutators //@{
+    virtual void            PreRender();
     void                    SelectFleet(int fleet_id);                          ///< deselects any selected fleets, and selects the indicated fleet, bringing it into the fleet detail window
     void                    SetSelectedFleets(const std::set<int>& fleet_ids);  ///< deselects any selected fleets, and selects the fleets with the indicated ids
     void                    SetSelectedShips(const std::set<int>& ship_ids);    ///< deselected any selected ships, and selects the ships with the indicated ids if they are in the selected fleet.
     virtual void            SizeMove(const GG::Pt& ul, const GG::Pt& lr);
-    void                    Refresh();                          ///< regenerates contents
 
     /** Enables, or disables if \a enable is false, issuing orders via this FleetWnd. */
     void                    EnableOrderIssuing(bool enable = true);
@@ -138,14 +134,10 @@ private:
              int selected_fleet_id = INVALID_OBJECT_ID,
              GG::Flags<GG::WndFlag> flags = GG::INTERACTIVE | GG::DRAGABLE | GG::ONTOP | CLOSABLE | GG::RESIZABLE,
              const std::string& config_name = "");
-
-    FleetWnd(int system_id, int empire_id, bool order_issuing_enabled,
-             int selected_fleet_id = INVALID_OBJECT_ID,
-             GG::Flags<GG::WndFlag> flags = GG::INTERACTIVE | GG::DRAGABLE | GG::ONTOP | CLOSABLE | GG::RESIZABLE,
-             const std::string& config_name = "");
     //@}
 
     void            Init(int selected_fleet_id);
+    void            Refresh();                          ///< regenerates contents
     void            RefreshStateChangedSignals();
 
     void            AddFleet(int fleet_id);     ///< adds a new fleet row to this FleetWnd's ListBox of FleetRows and updates internal fleets bookkeeping

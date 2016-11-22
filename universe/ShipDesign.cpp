@@ -9,6 +9,7 @@
 #include "Condition.h"
 #include "Effect.h"
 #include "Planet.h"
+#include "Ship.h"
 #include "Predicates.h"
 #include "Species.h"
 #include "Universe.h"
@@ -21,9 +22,8 @@ using boost::io::str;
 
 namespace {
     const bool CHEAP_AND_FAST_SHIP_PRODUCTION = false;    // makes all ships cost 1 PP and take 1 turn to build
-}
+    const std::string EMPTY_STRING;
 
-namespace {
     boost::shared_ptr<Effect::EffectsGroup>
     IncreaseMeter(MeterType meter_type, float increase) {
         typedef boost::shared_ptr<Effect::EffectsGroup> EffectsGroupPtr;
@@ -505,6 +505,7 @@ ShipDesign::ShipDesign() :
     m_3D_model(),
     m_name_desc_in_stringtable(false),
     m_is_armed(false),
+    m_has_fighters(false),
     m_can_bombard(false),
     m_detection(0.0),
     m_colony_capacity(0.0),
@@ -538,6 +539,7 @@ ShipDesign::ShipDesign(const std::string& name, const std::string& description,
     m_3D_model(model),
     m_name_desc_in_stringtable(name_desc_in_stringtable),
     m_is_armed(false),
+    m_has_fighters(false),
     m_can_bombard(false),
     m_detection(0.0),
     m_colony_capacity(0.0),
@@ -748,40 +750,36 @@ std::vector<std::string> ShipDesign::Weapons() const {
 }
 
 bool ShipDesign::ProductionLocation(int empire_id, int location_id) const {
-    TemporaryPtr<const UniverseObject> location = GetUniverseObject(location_id);
-    if (!location)
-        return false;
-
-    // currently ships can only be built at planets, and by species that are
-    // not planetbound
-    TemporaryPtr<const Planet> planet = boost::dynamic_pointer_cast<const Planet>(location);
-    if (!planet)
-        return false;
-    const std::string& species_name = planet->SpeciesName();
-    if (species_name.empty())
-        return false;
-    const Species* species = GetSpecies(species_name);
-    if (!species)
-        return false;
-    if (!species->CanProduceShips())
-        return false;
-    // also, species that can't colonize can't produce colony ships
-    if (this->CanColonize() && !species->CanColonize())
-        return false;
-
     Empire* empire = GetEmpire(empire_id);
     if (!empire) {
         DebugLogger() << "ShipDesign::ProductionLocation: Unable to get pointer to empire " << empire_id;
         return false;
     }
 
-    // get a source object, which is owned by the empire with the passed-in
-    // empire id.  this is used in conditions to reference which empire is
-    // doing the producing.  Ideally this will be the capital, but any object
-    // owned by the empire will work.
-    TemporaryPtr<const UniverseObject> source = SourceForEmpire(empire_id);
-    // if this empire doesn't own ANYTHING, then how is it producing anyway?
-    if (!source)
+    // must own the production location...
+    TemporaryPtr<const UniverseObject> location = GetUniverseObject(location_id);
+    if (!location->OwnedBy(empire_id))
+        return false;
+
+    TemporaryPtr<const Planet> planet = boost::dynamic_pointer_cast<const Planet>(location);
+    TemporaryPtr<const Ship> ship;
+    if (!planet)
+        ship = boost::dynamic_pointer_cast<const Ship>(location);
+    if (!planet && !ship)
+        return false;
+
+    // ships can only be produced by species that are not planetbound
+    const std::string& species_name = planet ? planet->SpeciesName() : (ship ? ship->SpeciesName() : EMPTY_STRING);
+    if (species_name.empty())
+        return false;
+    const Species* species = GetSpecies(species_name);
+    if (!species)
+        return false;
+
+    if (!species->CanProduceShips())
+        return false;
+    // also, species that can't colonize can't produce colony ships
+    if (this->CanColonize() && !species->CanColonize())
         return false;
 
     // apply hull location conditions to potential location
@@ -790,7 +788,9 @@ bool ShipDesign::ProductionLocation(int empire_id, int location_id) const {
         ErrorLogger() << "ShipDesign::ProductionLocation  ShipDesign couldn't get its own hull with name " << m_hull;
         return false;
     }
-    if (!hull->Location()->Eval(ScriptingContext(source), location))
+    // evaluate using location as the source, as it should be an object owned by this empire.
+    ScriptingContext location_as_source_context(location);
+    if (!hull->Location()->Eval(location_as_source_context, location))
         return false;
 
     // apply external and internal parts' location conditions to potential location
@@ -804,7 +804,7 @@ bool ShipDesign::ProductionLocation(int empire_id, int location_id) const {
             ErrorLogger() << "ShipDesign::ProductionLocation  ShipDesign couldn't get part with name " << part_name;
             return false;
         }
-        if (!part->Location()->Eval(ScriptingContext(source), location))
+        if (!part->Location()->Eval(location_as_source_context, location))
             return false;
     }
     // location matched all hull and part conditions, so is a valid build location
@@ -910,10 +910,12 @@ void ShipDesign::BuildStatCaches() {
 
         switch (part->Class()) {
         case PC_DIRECT_WEAPON:
-        case PC_FIGHTER_BAY: {
             m_is_armed = true;
             break;
-        }
+        case PC_FIGHTER_BAY:
+        case PC_FIGHTER_HANGAR:
+            m_has_fighters = true;
+            break;
         case PC_COLONY:
             m_colony_capacity += part->Capacity();
             break;
@@ -950,7 +952,7 @@ void ShipDesign::BuildStatCaches() {
         case PC_TRADE:
             m_trade_generation += part->Capacity();
             break;
-        case PC_PRODICTION_LOCATION:
+        case PC_PRODUCTION_LOCATION:
             m_is_production_location = true;
             break;
         default:

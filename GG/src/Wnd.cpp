@@ -419,7 +419,7 @@ WndRegion Wnd::WindowRegion(const Pt& pt) const
     return (Resizable() ? WndRegion(x_pos + 3 * y_pos) : WR_NONE);
 }
 
-void Wnd::CorrectPositionOfSizeMove(Pt& ul, Pt& lr) const
+void Wnd::ClampRectWithMinAndMaxSize(Pt& ul, Pt& lr) const
 {
     Pt min_sz = MinSize();
     Pt max_sz = MaxSize();
@@ -519,9 +519,9 @@ void Wnd::SizeMove(const Pt& ul_, const Pt& lr_)
 {
     Pt ul = ul_, lr = lr_;
     Pt original_sz = Size();
-    bool resized = (original_sz.x != (lr.x - ul.x)) || (original_sz.y != (lr.y - ul.y));
+    bool resized = (original_sz != (lr - ul));
     if (resized)
-        CorrectPositionOfSizeMove(ul, lr);
+        ClampRectWithMinAndMaxSize(ul, lr);
 
     m_upperleft = ul;
     m_lowerright = lr;

@@ -44,6 +44,7 @@ public:
     //@}
 
     /** \name Mutators */ //@{
+    virtual void        PreRender();
     virtual void        Render();
     virtual void        SizeMove(const GG::Pt& ul, const GG::Pt& lr);
 
@@ -51,8 +52,9 @@ public:
       * that object pointers are still valid.  All SidePanels' are updated */
     static void         Update();
 
-    /** Fully refreshes sidepanel and contents, recreating all contents from
-      * stored system id.  All SidePanels' are refreshed. */
+    /** Make refresh of sidepanel and contents happen during
+        pre-render. PreRender() Will recreate all contents from the stored
+        system id. All SidePanels are refreshed. */
     static void         Refresh();
 
     /** Selects the planet with id \a planet_id within the current system, if
@@ -104,6 +106,11 @@ private:
     void                DoLayout();
 
     void                UpdateImpl();                   ///< updates contents quickly.  to be used when meters or other objects' data changes
+
+    /** Fully refreshes sidepanel and contents, recreating all contents from
+      * stored system id.  All SidePanels are refreshed. */
+    void                RefreshInPreRender();
+
     void                RefreshImpl();                  ///< fully refreshes contents.  to be used when objects are created, destroyed or added to system
     void                SelectPlanetImpl(int planet_id);///< sets selected planet in this sidepanel
 
@@ -117,7 +124,8 @@ private:
     static void         FleetsRemoved(const std::vector<TemporaryPtr<Fleet> >& fleets);     ///< responds to removal fleets from system during a turn.  may update colonize buttons
     static void         FleetStateChanged();            ///< responds to fleet state changes during a turn, which may include issueing or cancelling move orders.  may update colonize buttons
 
-    CUIDropDownList*            m_system_name;
+    class SystemNameDropDownList;
+    SystemNameDropDownList*     m_system_name;
     GG::TextControl*            m_star_type_text;
     GG::Button*                 m_button_prev;
     GG::Button*                 m_button_next;
@@ -129,6 +137,9 @@ private:
     MultiIconValueIndicator*    m_system_resource_summary;
 
     bool                        m_selection_enabled;
+
+    static bool                 s_needs_update;
+    static bool                 s_needs_refresh;
 
     static int                  s_system_id;
 

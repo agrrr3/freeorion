@@ -351,7 +351,7 @@ namespace {
                 DebugLogger() << "COMBAT: Ship " << attacker->Name() << " (" << attacker->ID() << ") does " << damage << " damage to Ship " << target->Name() << " (" << target->ID() << ")";
         }
 
-        combat_event->AddEvent(round, target->ID(), weapon.part_type_name, power, shield, damage);
+        combat_event->AddEvent(round, target->ID(), target->Owner(), weapon.part_type_name, power, shield, damage);
 
         attacker->SetLastTurnActiveInCombat(CurrentTurn());
         target->SetLastTurnActiveInCombat(CurrentTurn());
@@ -428,7 +428,7 @@ namespace {
 
         //TODO report the planet damage details more clearly
         float total_damage = shield_damage + defense_damage + construction_damage;
-        combat_event->AddEvent(round, target->ID(), weapon.part_type_name, power, 0.0f, total_damage);
+        combat_event->AddEvent(round, target->ID(), target->Owner(), weapon.part_type_name, power, 0.0f, total_damage);
 
         attacker->SetLastTurnActiveInCombat(CurrentTurn());
         target->SetLastTurnAttackedByShip(CurrentTurn());
@@ -445,10 +445,7 @@ namespace {
             // any damage is enough to kill any fighter
             target->SetDestroyed();
         }
-        combat_event->AddEvent(round, target->ID(), weapon.part_type_name, power, 0.0f, 1.0f);
-        CombatEventPtr attack_event = boost::make_shared<FighterAttackedEvent>(
-            bout, round, attacker->ID(), attacker->Owner(), target->Owner());
-        attacks_event->AddEvent(attack_event);
+        combat_event->AddEvent(round, target->ID(), target->Owner(), weapon.part_type_name, power, 0.0f, 1.0f);
         attacker->SetLastTurnActiveInCombat(CurrentTurn());
     }
 
@@ -490,7 +487,7 @@ namespace {
                 DebugLogger() << "COMBAT: Planet " << attacker->Name() << " (" << attacker->ID() << ") does " << damage << " damage to Ship " << target->Name() << " (" << target->ID() << ")";
         }
 
-        combat_event->AddEvent(round, target->ID(), weapon.part_type_name, power, shield, damage);
+        combat_event->AddEvent(round, target->ID(), target->Owner(), weapon.part_type_name, power, shield, damage);
 
         target->SetLastTurnActiveInCombat(CurrentTurn());
     }
@@ -512,10 +509,7 @@ namespace {
             target->SetDestroyed();
         }
 
-        combat_event->AddEvent(round, target->ID(), weapon.part_type_name, power, 0.0f, 1.0f);
-        CombatEventPtr attack_event = boost::make_shared<FighterAttackedEvent>(
-            bout, round, attacker->ID(), attacker->Owner(), target->Owner());
-        attacks_event->AddEvent(attack_event);
+        combat_event->AddEvent(round, target->ID(), target->Owner(), weapon.part_type_name, power, 0.0f, 1.0f);
     }
 
     void AttackFighterShip(TemporaryPtr<Fighter> attacker, const PartAttackInfo& weapon, TemporaryPtr<Ship> target,
@@ -553,8 +547,11 @@ namespace {
                 DebugLogger() << "COMBAT: Fighter of empire " << attacker->Owner() << " (" << attacker->ID() << ") does " << damage << " damage to Ship " << target->Name() << " (" << target->ID() << ")";
         }
 
+        float pierced_shield_value(-1.0);
         CombatEventPtr attack_event = boost::make_shared<WeaponFireEvent>(
-            bout, round, attacker->ID(), target->ID(), weapon.part_type_name, power, shield, damage, attacker->Owner());
+            bout, round, attacker->ID(), target->ID(), weapon.part_type_name,
+            boost::tie(power, pierced_shield_value, damage),
+            attacker->Owner(), target->Owner());
         attacks_event->AddEvent(attack_event);
         target->SetLastTurnActiveInCombat(CurrentTurn());
     }
@@ -704,7 +701,7 @@ namespace {
 
     bool ObjectCanAttack(TemporaryPtr<const UniverseObject> obj) {
         if (TemporaryPtr<const Ship> ship = boost::dynamic_pointer_cast<const Ship>(obj)) {
-            return ship->IsArmed(); // has direct fire weapons or fighter bays
+            return ship->IsArmed() || ship->HasFighters();
         } else if (TemporaryPtr<const Planet> planet = boost::dynamic_pointer_cast<const Planet>(obj)) {
             return planet->CurrentMeterValue(METER_DEFENSE) > 0.0f;
         } else if (TemporaryPtr<const Fighter> fighter = boost::dynamic_pointer_cast<const Fighter>(obj)) {

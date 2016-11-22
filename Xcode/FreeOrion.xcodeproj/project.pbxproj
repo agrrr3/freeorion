@@ -2990,7 +2990,10 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/dep/lib",
 				);
-				OTHER_LDFLAGS = "-fvisibility=hidden";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-fvisibility=hidden"
+				);
 				PRODUCT_NAME = FreeOrion;
 				ZERO_LINK = NO;
 			};
@@ -3020,6 +3023,7 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				HEADER_SEARCH_PATHS = (
 					"\"$(SOURCE_ROOT)/dep/include\"",
+					"\"$(SOURCE_ROOT)/dep/include/freetype\"",
 					"\"$(SOURCE_ROOT)/../GG\"",
 					"\"$(SOURCE_ROOT)/../network\"",
 					"\"$(SOURCE_ROOT)/dep/Frameworks/Python.framework/Headers\"",
@@ -3027,6 +3031,7 @@
 					"\"$(SOURCE_ROOT)/..\"",
 				);
 				LD_GENERATE_MAP_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../Frameworks";
 				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/dep/lib\"";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				ONLY_ACTIVE_ARCH = YES;
@@ -3062,6 +3067,7 @@
 					"$(PROJECT_DIR)/dep/lib",
 				);
 				OTHER_LDFLAGS = (
+					"$(inherited)",
 					"-fvisibility=hidden",
 					"-undefined",
 					dynamic_lookup,
@@ -3090,7 +3096,10 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/dep/lib",
 				);
-				OTHER_LDFLAGS = "-fvisibility=hidden";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-fvisibility=hidden",
+				);
 				PRODUCT_NAME = freeoriond;
 				ZERO_LINK = NO;
 			};
@@ -3107,7 +3116,10 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/dep/lib",
 				);
-				OTHER_LDFLAGS = "-fvisibility=hidden";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-fvisibility=hidden"
+				);
 				PRODUCT_NAME = freeorionca;
 				ZERO_LINK = NO;
 			};
@@ -3144,12 +3156,14 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				HEADER_SEARCH_PATHS = (
 					"\"$(SOURCE_ROOT)/dep/include\"",
+					"\"$(SOURCE_ROOT)/dep/include/freetype\"",
 					"\"$(SOURCE_ROOT)/../GG\"",
 					"\"$(SOURCE_ROOT)/../network\"",
 					"\"$(SOURCE_ROOT)/dep/Frameworks/Python.framework/Headers\"",
 					"\"$(SOURCE_ROOT)/dep/Frameworks/SDL2.framework/Headers\"",
 					"\"$(SOURCE_ROOT)/..\"",
 				);
+				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../Frameworks";
 				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/dep/lib\"";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				ONLY_ACTIVE_ARCH = YES;
@@ -3181,6 +3195,11 @@
 					"$(OTHER_CFLAGS)",
 					"-fvisibility=hidden",
 				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-undefined",
+					dynamic_lookup,
+				);
 				PRODUCT_NAME = freeorionparse;
 				ZERO_LINK = NO;
 			};
@@ -3195,6 +3214,7 @@
 					"$(PROJECT_DIR)/dep/lib",
 				);
 				OTHER_LDFLAGS = (
+					"$(inherited)",
 					"-fvisibility=hidden",
 					"-undefined",
 					dynamic_lookup,
@@ -3223,7 +3243,10 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/dep/lib",
 				);
-				OTHER_LDFLAGS = "-fvisibility=hidden";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-fvisibility=hidden",
+				);
 				PRODUCT_NAME = freeoriond;
 				ZERO_LINK = NO;
 			};
@@ -3240,7 +3263,10 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/dep/lib",
 				);
-				OTHER_LDFLAGS = "-fvisibility=hidden";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-fvisibility=hidden"
+				);
 				PRODUCT_NAME = FreeOrion;
 				ZERO_LINK = NO;
 			};
@@ -3257,7 +3283,10 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/dep/lib",
 				);
-				OTHER_LDFLAGS = "-fvisibility=hidden";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-fvisibility=hidden"
+				);
 				PRODUCT_NAME = freeorionca;
 				ZERO_LINK = NO;
 			};
@@ -3299,12 +3328,14 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				HEADER_SEARCH_PATHS = (
 					"\"$(SOURCE_ROOT)/dep/include\"",
+					"\"$(SOURCE_ROOT)/dep/include/freetype\"",
 					"\"$(SOURCE_ROOT)/../GG\"",
 					"\"$(SOURCE_ROOT)/../network\"",
 					"\"$(SOURCE_ROOT)/dep/Frameworks/Python.framework/Headers\"",
 					"\"$(SOURCE_ROOT)/dep/Frameworks/SDL2.framework/Headers\"",
 					"\"$(SOURCE_ROOT)/..\"",
 				);
+				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../Frameworks";
 				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/dep/lib\"";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				ONLY_ACTIVE_ARCH = YES;
@@ -3336,6 +3367,11 @@
 					"$(OTHER_CFLAGS)",
 					"-fvisibility=hidden",
 				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-undefined",
+					dynamic_lookup,
+				);
 				PRODUCT_NAME = freeorionparse;
 				ZERO_LINK = NO;
 			};
@@ -3350,6 +3386,7 @@
 					"$(PROJECT_DIR)/dep/lib",
 				);
 				OTHER_LDFLAGS = (
+					"$(inherited)",
 					"-fvisibility=hidden",
 					"-undefined",
 					dynamic_lookup,
@@ -3378,7 +3415,10 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/dep/lib",
 				);
-				OTHER_LDFLAGS = "-fvisibility=hidden";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-fvisibility=hidden",
+				);
 				PRODUCT_NAME = freeoriond;
 				ZERO_LINK = NO;
 			};
@@ -3395,7 +3435,10 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/dep/lib",
 				);
-				OTHER_LDFLAGS = "-fvisibility=hidden";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-fvisibility=hidden"
+				);
 				PRODUCT_NAME = FreeOrion;
 				ZERO_LINK = NO;
 			};
@@ -3412,7 +3455,10 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/dep/lib",
 				);
-				OTHER_LDFLAGS = "-fvisibility=hidden";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-fvisibility=hidden"
+				);
 				PRODUCT_NAME = freeorionca;
 				ZERO_LINK = NO;
 			};
@@ -3462,6 +3508,11 @@
 					"$(inherited)",
 					"$(OTHER_CFLAGS)",
 					"-fvisibility=hidden",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-undefined",
+					dynamic_lookup,
 				);
 				PRODUCT_NAME = freeorionparse;
 				ZERO_LINK = NO;

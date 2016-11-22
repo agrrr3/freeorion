@@ -304,6 +304,9 @@ HumanClientApp::HumanClientApp(int width, int height, bool calculate_fps, const 
     if (inform_user_sound_failed)
         ClientUI::MessageBox(UserString("ERROR_SOUND_INITIALIZATION_FAILED"), false);
 
+    // Register LinkText tags with GG::Font
+    RegisterLinkTags();
+
     m_fsm->initiate();
 }
 
@@ -1108,14 +1111,8 @@ void HumanClientApp::Autosave() {
     }
 }
 
-std::string HumanClientApp::SelectLoadFile(){
+std::string HumanClientApp::SelectLoadFile() {
     SaveFileDialog sfd(true);
-    sfd.Run();
-    return sfd.Result();
-}
-
-std::string HumanClientApp::SelectSaveFile() {
-    SaveFileDialog sfd(false);
     sfd.Run();
     return sfd.Result();
 }

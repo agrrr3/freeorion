@@ -960,30 +960,31 @@ MapWnd::MapWnd() :
     // resources
     const GG::X ICON_DUAL_WIDTH(100);
     const GG::X ICON_WIDTH(24);
-    m_population = new StatisticIcon(ClientUI::MeterIcon(METER_POPULATION), 0, 3, false);
-    m_population->Resize(GG::Pt(ICON_DUAL_WIDTH, m_btn_turn->Height()));
+    m_population = new StatisticIcon(ClientUI::MeterIcon(METER_POPULATION), 0, 3, false,
+                                     GG::X0, GG::Y0, ICON_DUAL_WIDTH, m_btn_turn->Height());
     m_population->SetName("Population StatisticIcon");
 
-    m_industry = new StatisticIcon(ClientUI::MeterIcon(METER_INDUSTRY), 0, 3, false);
-    m_industry->Resize(GG::Pt(ICON_DUAL_WIDTH, m_btn_turn->Height()));
+    m_industry = new StatisticIcon(ClientUI::MeterIcon(METER_INDUSTRY), 0, 3, false,
+                                   GG::X0, GG::Y0, ICON_DUAL_WIDTH, m_btn_turn->Height());
     m_industry->SetName("Industry StatisticIcon");
     GG::Connect(m_industry->LeftClickedSignal, boost::bind(&MapWnd::ToggleProduction, this));
 
-    m_research = new StatisticIcon(ClientUI::MeterIcon(METER_RESEARCH), 0, 3, false);
-    m_research->Resize(GG::Pt(ICON_DUAL_WIDTH, m_btn_turn->Height()));
+    m_research = new StatisticIcon(ClientUI::MeterIcon(METER_RESEARCH), 0, 3, false,
+                                   GG::X0, GG::Y0, ICON_DUAL_WIDTH, m_btn_turn->Height());
     m_research->SetName("Research StatisticIcon");
     GG::Connect(m_research->LeftClickedSignal, boost::bind(&MapWnd::ToggleResearch, this));
 
-    m_trade = new StatisticIcon(ClientUI::MeterIcon(METER_TRADE), 0, 3, false);
-    m_trade->Resize(GG::Pt(ICON_DUAL_WIDTH, m_btn_turn->Height()));
+    m_trade = new StatisticIcon(ClientUI::MeterIcon(METER_TRADE), 0, 3, false,
+                                GG::X0, GG::Y0, ICON_DUAL_WIDTH, m_btn_turn->Height());
     m_trade->SetName("Trade StatisticIcon");
 
-    m_fleet = new StatisticIcon(ClientUI::GetTexture(ClientUI::ArtDir() / "icons" / "sitrep" / "fleet_arrived.png"), 0, 3, false);
-    m_fleet->Resize(GG::Pt(ICON_DUAL_WIDTH, m_btn_turn->Height()));
+    m_fleet = new StatisticIcon(ClientUI::GetTexture(ClientUI::ArtDir() / "icons" / "sitrep" / "fleet_arrived.png"),
+                                0, 3, false,
+                                GG::X0, GG::Y0, ICON_DUAL_WIDTH, m_btn_turn->Height());
     m_fleet->SetName("Fleet StatisticIcon");
 
-    m_detection = new StatisticIcon(ClientUI::MeterIcon(METER_DETECTION), 0, 3, false);
-    m_detection->Resize(GG::Pt(ICON_DUAL_WIDTH, m_btn_turn->Height()));
+    m_detection = new StatisticIcon(ClientUI::MeterIcon(METER_DETECTION), 0, 3, false,
+                                    GG::X0, GG::Y0, ICON_DUAL_WIDTH, m_btn_turn->Height());
     m_detection->SetName("Detection StatisticIcon");
 
     GG::SubTexture wasted_ressource_subtexture = GG::SubTexture(ClientUI::GetTexture(button_texture_dir /
@@ -1400,19 +1401,30 @@ ModeratorActionSetting MapWnd::GetModeratorActionSetting() const
 bool MapWnd::AutoEndTurnEnabled() const
 { return m_auto_end_turn; }
 
+void MapWnd::PreRender() {
+    GG::Wnd::PreRender();
+    // Save CPU / GPU activity by skipping rendering when it's not needed
+    // As of this writing, the design and research screens have fully opaque backgrounds.
+    if (m_design_wnd->Visible())
+        return;
+    if (m_research_wnd->Visible())
+        return;
+
+    DeferredRefreshFleetButtons();
+}
+
 void MapWnd::Render() {
     // HACK! This is placed here so we can be sure it is executed frequently
     // (every time we render), and before we render any of the
     // FleetWnds.  It doesn't necessarily belong in MapWnd at all.
     FleetUIManager::GetFleetUIManager().CullEmptyWnds();
 
-    // save CPU / GPU activity by skipping rendering when it's not needed
+    // Save CPU / GPU activity by skipping rendering when it's not needed
+    // As of this writing, the design and research screens have fully opaque backgrounds.
     if (m_design_wnd->Visible())
-        return; // as of this writing, the design screen has a fully opaque background
+        return;
     if (m_research_wnd->Visible())
         return;
-
-    DeferredRefreshFleetButtons();
 
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
@@ -3836,6 +3848,11 @@ void MapWnd::ShowEmpire(int empire_id) {
     }
 }
 
+void MapWnd::ShowMeterTypeArticle(const std::string& meter_string) {
+    ShowPedia();
+    m_pedia_panel->SetMeterType(meter_string);
+}
+
 void MapWnd::ShowEncyclopediaEntry(const std::string& str) {
     if (!m_pedia_panel->Visible())
         TogglePedia();
@@ -3989,24 +4006,15 @@ void MapWnd::SelectFleet(TemporaryPtr<Fleet> fleet) {
 
     // if there isn't a FleetWnd for this fleet open, need to open one
     if (!fleet_wnd) {
-        //std::cout << "SelectFleet couldn't find fleetwnd for fleet " << std::endl;
-        TemporaryPtr<System> system = GetSystem(fleet->SystemID());
-
-        // create fleetwnd to show fleet to be selected (actual selection occurs below).
-        if (system) {
-            fleet_wnd = manager.NewFleetWnd(system->ID(), fleet->Owner());
-        } else {
-            // get all (moving) fleets represented by fleet button for this fleet
-            boost::unordered_map<int, FleetButton*>::iterator it = m_fleet_buttons.find(fleet->ID());
-            if (it == m_fleet_buttons.end()) {
-                ErrorLogger() << "Couldn't find a FleetButton for fleet in MapWnd::SelectFleet";
-                return;
-            }
-            const std::vector<int>& wnd_fleet_ids = it->second->Fleets();
-            // create new fleetwnd in which to show selected fleet
-            fleet_wnd = manager.NewFleetWnd(wnd_fleet_ids);
+        // get all (moving) fleets represented by fleet button for this fleet
+        boost::unordered_map<int, FleetButton*>::iterator it = m_fleet_buttons.find(fleet->ID());
+        if (it == m_fleet_buttons.end()) {
+            ErrorLogger() << "Couldn't find a FleetButton for fleet in MapWnd::SelectFleet";
+            return;
         }
-
+        const std::vector<int>& wnd_fleet_ids = it->second->Fleets();
+        // create new fleetwnd in which to show selected fleet
+        fleet_wnd = manager.NewFleetWnd(wnd_fleet_ids);
 
         // opened a new FleetWnd, so play sound
         FleetButton::PlayFleetButtonOpenSound();
@@ -4350,11 +4358,12 @@ namespace {
     }
 }
 
-void MapWnd::RefreshFleetButtons()
-{ m_deferred_refresh_fleet_buttons = true; }
+void MapWnd::RefreshFleetButtons() {
+    RequirePreRender();
+    m_deferred_refresh_fleet_buttons = true;
+}
 
 void MapWnd::DeferredRefreshFleetButtons() {
-
     if (!m_deferred_refresh_fleet_buttons)
         return;
     m_deferred_refresh_fleet_buttons = false;
@@ -4401,6 +4410,7 @@ void MapWnd::DeferredRefreshFleetButtons() {
     }
 
     DeleteFleetButtons();
+
     // create new fleet buttons for fleets...
     const FleetButton::SizeType FLEETBUTTON_SIZE = FleetButtonSizeType();
     CreateFleetButtonsOfType(m_departing_fleet_buttons,  departing_fleets, FLEETBUTTON_SIZE);

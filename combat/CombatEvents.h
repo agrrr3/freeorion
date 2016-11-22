@@ -2,6 +2,7 @@
 #define COMBATEVENTS_H
 
 #include <set>
+#include <boost/tuple/tuple.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
@@ -179,8 +180,19 @@ struct FO_COMMON_API WeaponFireEvent : public CombatEvent {
     typedef boost::shared_ptr<const WeaponFireEvent> ConstWeaponFireEventPtr;
 
     WeaponFireEvent();
-    WeaponFireEvent(int bout, int round, int attacker_id, int target_id, const std::string &weapon_name
-                    , float power_, float shield_, float damage_, int attacker_owner_id_);
+
+    /** WeaponFireEvent encodes a single attack in \p bout, \p round by \p
+        attacker_id owned by \p attacker_owner_id on \p target_id with \p
+        weapon_name of \p power against \p shield doing \p damage.
+
+        If \p shield is negative that implies the weapon is shield piercing.
+
+        The use of tuple in the constructor is to keep the number of parameters below 10 which
+        is the maximum that some compilers that emulate variadic templates support.
+     */
+    WeaponFireEvent(int bout, int round, int attacker_id, int target_id, const std::string &weapon_name,
+                    const boost::tuple<float, float, float> &power_shield_damage,
+                    int attacker_owner_id_, int target_owner_id_);
 
     virtual ~WeaponFireEvent() {}
 
@@ -200,6 +212,7 @@ struct FO_COMMON_API WeaponFireEvent : public CombatEvent {
     float   shield;
     float   damage;
     int     attacker_owner_id;
+    int     target_owner_id;
 
 private:
     friend class boost::serialization::access;
@@ -286,7 +299,7 @@ struct FO_COMMON_API WeaponsPlatformEvent : public CombatEvent {
 
     virtual ~WeaponsPlatformEvent() {}
 
-    void AddEvent(int round, int target_id, std::string const & weapon_name_,
+    void AddEvent(int round, int target_id, int target_owner_id_, std::string const & weapon_name_,
                   float power_, float shield_, float damage_);
 
     virtual std::string DebugString() const;

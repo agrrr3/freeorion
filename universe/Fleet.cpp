@@ -658,6 +658,18 @@ bool Fleet::HasArmedShips() const {
     return false;
 }
 
+bool Fleet::HasFighterShips() const {
+    std::vector<TemporaryPtr<const Ship> > ships = Objects().FindObjects<const Ship>(m_ships);
+    for (std::vector<TemporaryPtr<const Ship> >::const_iterator ship_it = ships.begin();
+         ship_it != ships.end(); ++ship_it)
+    {
+        TemporaryPtr<const Ship> ship = *ship_it;
+        if (ship->HasFighters())
+            return true;
+    }
+    return false;
+}
+
 bool Fleet::HasColonyShips() const {
     std::vector<TemporaryPtr<const Ship> > ships = Objects().FindObjects<const Ship>(m_ships);
     for (std::vector<TemporaryPtr<const Ship> >::const_iterator ship_it = ships.begin();
@@ -722,9 +734,27 @@ bool Fleet::HasShipsWithoutScrapOrders() const {
     return false;
 }
 
-bool Fleet::UnknownRoute() const {
-    return m_travel_route.size() == 1 && m_travel_route.front() == INVALID_OBJECT_ID;
+float Fleet::ResourceOutput(ResourceType type) const {
+    float output = 0.0f;
+    if (NumShips() < 1)
+        return output;
+    MeterType meter_type = ResourceToMeter(type);
+    if (meter_type == INVALID_METER_TYPE)
+        return output;
+
+    // determine resource output of each ship in this fleet
+    std::vector<TemporaryPtr<const Ship> > ships = Objects().FindObjects<const Ship>(m_ships);
+    for (std::vector<TemporaryPtr<const Ship> >::const_iterator ship_it = ships.begin();
+         ship_it != ships.end(); ++ship_it)
+    {
+        TemporaryPtr<const Ship> ship = *ship_it;
+        output += ship->CurrentMeterValue(meter_type);
+    }
+    return output;
 }
+
+bool Fleet::UnknownRoute() const
+{ return m_travel_route.size() == 1 && m_travel_route.front() == INVALID_OBJECT_ID; }
 
 TemporaryPtr<UniverseObject> Fleet::Accept(const UniverseObjectVisitor& visitor) const
 { return visitor.Visit(boost::const_pointer_cast<Fleet>(boost::static_pointer_cast<const Fleet>(TemporaryFromThis()))); }
@@ -1271,7 +1301,7 @@ bool Fleet::BlockadedAtSystem(int start_system_id, int dest_system_id) const {
                       Empires().GetDiplomaticStatus(this->Owner(), fleet->Owner()) == DIPLO_WAR;
         bool aggressive = (fleet->Aggressive() || fleet->Unowned());
 
-        if (aggressive && fleet->HasArmedShips() && at_war && can_see && (unrestricted || not_yet_in_system))
+        if (aggressive && (fleet->HasArmedShips() || fleet->HasFighterShips()) && at_war && can_see && (unrestricted || not_yet_in_system))
             can_be_blockaded = true; // don't exit early here, because blockade may yet be thwarted by ownership & presence check above
     }
     if (can_be_blockaded) {
@@ -1436,7 +1466,7 @@ std::string Fleet::GenerateFleetName() {
     bool all_non_coms(true);
     it = ships.begin();
     while (it != ships.end()) {
-        if ((*it)->IsArmed() || (*it)->CanHaveTroops() || (*it)->CanBombard()) {
+        if ((*it)->IsArmed() || (*it)->HasFighters() || (*it)->CanHaveTroops() || (*it)->CanBombard()) {
             all_non_coms = false;
             break;
         }
@@ -1475,7 +1505,7 @@ std::string Fleet::GenerateFleetName() {
     bool mixed_combat(true);
     it = ships.begin();
     while (it != ships.end()) {
-        if (!((*it)->IsArmed() || (*it)->CanHaveTroops() || (*it)->CanBombard())) {
+        if (!((*it)->IsArmed() || (*it)->HasFighters() || (*it)->CanHaveTroops() || (*it)->CanBombard())) {
             mixed_combat = false;
             break;
         }

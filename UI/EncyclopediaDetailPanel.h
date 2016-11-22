@@ -4,6 +4,7 @@
 #include <GG/GGFwd.h>
 
 #include "CUIWnd.h"
+#include "../universe/Enums.h"
 
 class Planet;
 class Tech;
@@ -32,6 +33,7 @@ public:
 
     /** \name Mutators */ //@{
     virtual void    SizeMove(const GG::Pt& ul, const GG::Pt& lr);
+    virtual void    PreRender();
     virtual void    Render();
 
     /** Need to redefine this so that icons and name can be put at the top of
@@ -70,6 +72,8 @@ public:
     void            SetDesign(const std::string& design_id);
     void            SetItem(const ShipDesign* design);
     void            SetIncompleteDesign(boost::weak_ptr<const ShipDesign> incomplete_design);
+    void            SetMeterType(const std::string& meter_string);
+    void            SetItem(const MeterType& meter_type);
     void            SetGraph(const std::string& graph_id);
     void            SetIndex();
 
@@ -86,6 +90,7 @@ protected:
 
 private:
     void            DoLayout();
+    void            RefreshImpl();
 
     virtual void    CloseClicked();
 
@@ -110,6 +115,7 @@ private:
     GG::Edit*           m_search_edit;      // box to type to search
 
     GraphControl*       m_graph;
+    bool                m_needs_refresh;    ///< Indicates that data is stale.
 };
 
 

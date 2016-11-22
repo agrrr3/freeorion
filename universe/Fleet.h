@@ -71,6 +71,7 @@ public:
     bool                                CanChangeDirectionEnRoute() const   { return false; }           ///< Returns true iff this fleet can change its direction while in interstellar space.
     bool                                HasMonsters() const;                ///< returns true iff this fleet contains monster ships.
     bool                                HasArmedShips() const;              ///< Returns true if there is at least one armed ship in the fleet.
+    bool                                HasFighterShips() const;            ///< Returns true if there is at least one ship with fighters in the fleet.
     bool                                HasColonyShips() const;             ///< Returns true if there is at least one colony ship with nonzero capacity in the fleet.
     bool                                HasOutpostShips() const;            ///< Returns true if there is at least one colony ship with zero capacity in the fleet
     bool                                HasTroopShips() const;              ///< Returns true if there is at least one troop ship in the fleet.
@@ -78,6 +79,7 @@ public:
     bool                                HasShipsWithoutScrapOrders() const; ///< Returns true if there is at least one ship without any scrap orders in the fleet.
     int                                 NumShips() const                    { return m_ships.size(); }  ///< Returns number of ships in fleet.
     bool                                Empty() const                       { return m_ships.empty(); } ///< Returns true if fleet contains no ships, false otherwise.
+    float                               ResourceOutput(ResourceType type) const;
 
     /** Returns true iff this fleet is moving, but the route is unknown.  This
       * is usually the case when a foreign player A's fleet is represented on
