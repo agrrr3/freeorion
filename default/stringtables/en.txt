@@ -4881,6 +4881,12 @@ Interstellar Fields
 FIELDS_TEXT
 There are several [[encyclopedia ENC_FIELD_TYPE]]s.  They each have a distinctive, somewhat diffuse, appearance.  Right-clicking on them in the [[encyclopedia MAP_WINDOW_ARTICLE_TITLE]] brings up a small popup menu identifying their type and providing an option to look up their details.
 
+METABOLISM_TITLE
+Metabolism
+
+METABOLISM_TEXT
+'''The metabolism of species in the galaxy fall into one of the types listed here.'''
+
 
 ##
 ## Guides

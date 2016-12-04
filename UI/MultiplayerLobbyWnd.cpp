@@ -332,7 +332,8 @@ namespace {
             m_color_selector->SelectColor(m_player_data.m_empire_color);
 
             // set previous player name indication
-            boost::polymorphic_downcast<GG::Label*>(operator[](4))->SetText(it->second.m_player_name);
+            if (size() >= 5)
+                boost::polymorphic_downcast<GG::Label*>(at(4))->SetText(it->second.m_player_name);
 
             DataChangedSignal();
         }
@@ -764,7 +765,7 @@ bool MultiPlayerLobbyWnd::PopulatePlayerList() {
         }
     }
 
-    // on host, add extra empty row, which the hose can use to select
+    // on host, add extra empty row, which the host can use to select
     // "Add AI" to add an AI to the game.  This row's details are treated
     // specially when sending a lobby update to the server.
     if (ThisClientIsHost()) {

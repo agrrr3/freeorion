@@ -11,7 +11,8 @@ const Encyclopedia& GetEncyclopedia() {
 }
 
 Encyclopedia::Encyclopedia() :
-    articles()
+    articles(),
+    empty_article()
 {
     try {
         parse::encyclopedia_articles(*this);
@@ -29,7 +30,7 @@ Encyclopedia::Encyclopedia() :
             const std::vector<EncyclopediaArticle>& article_vec = category_it->second;
             for (std::vector<EncyclopediaArticle>::const_iterator article_it = article_vec.begin();
                  article_it != article_vec.end(); ++article_it)
-            { DebugLogger() << "(" << UserString(category) << ") : " << UserString(article_it->name); }
+            { DebugLogger() << "(" << category << ") : " << article_it->name; }
         }
     }
 }

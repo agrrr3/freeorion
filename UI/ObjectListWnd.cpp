@@ -1025,7 +1025,7 @@ private:
 
             m_filters_layout->SetColumnStretch(col, 1.0);
 
-            label = new CUIButton(" " + UserString(EnumToString(uot)) + " ");
+            label = new CUIButton(" " + UserString(boost::lexical_cast<std::string>(uot)) + " ");
             m_filters_layout->Add(label, 0, col, GG::ALIGN_CENTER | GG::ALIGN_VCENTER);
             GG::Connect(label->LeftClickedSignal,
                         boost::bind(&FilterDialog::UpdateVisFiltersFromObjectTypeButton, this, uot));
@@ -1259,7 +1259,7 @@ public:
 
     void                ResourceCenterChanged() {
         RefreshCache();
-        Refresh();
+        RequirePreRender();
     }
 
     std::string         SortKey(std::size_t column) const {
@@ -1271,6 +1271,11 @@ public:
     }
 
     int                 ObjectID() const { return m_object_id; }
+
+    virtual void PreRender() {
+        GG::Control::PreRender();
+        RefreshLayout();
+    }
 
     virtual void        Render() {
         if (!m_initialized)
@@ -1296,7 +1301,7 @@ public:
             DoLayout();
     }
 
-    void                Refresh() {
+    void                RefreshLayout() {
         if (!m_initialized)
             return;
         GG::Flags<GG::GraphicStyle> style = GG::GRAPHIC_CENTER | GG::GRAPHIC_VCENTER |
@@ -1407,7 +1412,7 @@ private:
         if (m_initialized)
             return;
         m_initialized = true;
-        Refresh();
+        RefreshLayout();
     }
 
     void                RefreshCache() const {
@@ -1474,8 +1479,8 @@ public:
         m_indent_init(indent)
     {
         SetName("ObjectRow");
-        RequirePreRender();
         SetChildClippingMode(ClipToClient);
+        Init();
     }
 
     void Init() {
@@ -1484,13 +1489,6 @@ public:
                                   m_obj_init, m_expanded_init, !m_contained_object_panels.empty(), m_indent_init);
         push_back(m_panel);
         GG::Connect(m_panel->ExpandCollapseSignal,  &ObjectRow::ExpandCollapseClicked, this);
-    }
-
-    virtual void PreRender() {
-        GG::ListBox::Row::PreRender();
-
-        if (!m_panel)
-            Init();
 
         GG::Pt border(GG::X(2 * GetLayout()->BorderMargin()), GG::Y(2 * GetLayout()->BorderMargin()));
         m_panel->Resize(Size() - border);
@@ -1514,11 +1512,11 @@ public:
     void                    SetContainedPanels(const std::set<int>& contained_object_panels) {
         m_contained_object_panels = contained_object_panels;
         m_panel->SetHasContents(!m_contained_object_panels.empty());
-        m_panel->Refresh();
+        m_panel->RequirePreRender();
     }
 
     void                    Update()
-    { m_panel->Refresh(); }
+    { m_panel->RequirePreRender(); }
 
     void                    SizeMove(const GG::Pt& ul, const GG::Pt& lr) {
         const GG::Pt old_size = Size();
@@ -2099,7 +2097,6 @@ public:
         for (std::set<int>::iterator fld_it = fields.begin(); fld_it != fields.end(); ++fld_it)
             AddObjectRow(*fld_it, INVALID_OBJECT_ID, std::set<int>(), indent);
 
-
         if (!this->Empty())
             this->BringRowIntoView(--this->end());
         if (first_visible_queue_row < this->NumRows())
@@ -2355,7 +2352,7 @@ void ObjectListWnd::ObjectSelectionChanged(const GG::ListBox::SelectionSet& rows
             ErrorLogger() << "ObjectListWnd::ObjectSelectionChanged got empty row";
             continue;
         }
-        GG::Control* control = (*row)[0];
+        GG::Control* control = !row->empty() ? row->at(0) : 0;
         if (!control) {
             ErrorLogger() << "ObjectListWnd::ObjectSelectionChanged couldn't get control from row";
             continue;

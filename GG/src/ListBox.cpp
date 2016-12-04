@@ -239,9 +239,6 @@ std::size_t ListBox::Row::size() const
 bool ListBox::Row::empty() const
 { return m_cells.empty(); }
 
-Control* ListBox::Row::operator[](std::size_t n) const
-{ return m_cells[n]; }
-
 Control* ListBox::Row::at(std::size_t n) const
 { return m_cells.at(n); }
 
@@ -366,6 +363,8 @@ void ListBox::Row::SetCell(std::size_t n, Control* c)
 
 Control* ListBox::Row::RemoveCell(std::size_t n)
 {
+    if (m_cells.size() <= n)
+        return 0;
     Layout* layout = GetLayout();
     Control* retval = m_cells[n];
     layout->Remove(retval);
@@ -525,7 +524,7 @@ ListBox::ListBox(Clr color, Clr interior/* = CLR_ZERO*/) :
     m_lclick_row(m_rows.end()),
     m_rclick_row(m_rows.end()),
     m_last_row_browsed(m_rows.end()),
-    m_first_row_offset(Pt(X0, Y0)),
+    m_first_row_offset(Pt(X(BORDER_THICK), Y(BORDER_THICK))),
     m_first_row_shown(m_rows.end()),
     m_first_col_shown(0),
     m_num_cols(1),
@@ -859,26 +858,12 @@ void ListBox::PreRender()
     // Reset require prerender after call to adjust scrolls
     Control::PreRender();
 
-    // Ensure that data in occluded cells is not rendered
-    // and that any re-layout during prerender is immediate.
-    Y visible_height(0);
-    Y max_visible_height = ClientSize().y;
-    bool hide = true;
-    for (iterator it = m_rows.begin(); it != m_rows.end(); ++it) {
-        if (it == m_first_row_shown)
-            hide = false;
+    // Resize rows to fit client area.
+    X row_width(std::max(ClientWidth(), X(1)));
+    for (iterator it = m_rows.begin(); it != m_rows.end(); ++it)
+        (*it)->Resize(Pt(row_width, (*it)->Height()));
 
-        if (hide) {
-            (*it)->Hide();
-        } else {
-            (*it)->Show();
-            GUI::PreRenderWindow(*it);
-
-            visible_height += (*it)->Height();
-            if (visible_height >= max_visible_height)
-                hide = true;
-        }
-    }
+    ShowVisibleRows(true);
 
     if (!m_header_row->empty())
         GUI::PreRenderWindow(m_header_row);
@@ -957,9 +942,54 @@ void ListBox::SizeMove(const Pt& ul, const Pt& lr)
 {
     const GG::Pt old_size = Size();
     Wnd::SizeMove(ul, lr);
-    AdjustScrolls(true);
+    AdjustScrolls(old_size.x != Size().x);
     if (old_size != Size())
         RequirePreRender();
+}
+
+void ListBox::ShowVisibleRows(bool do_prerender)
+{
+    // Ensure that data in occluded cells is not rendered
+    // and that any re-layout during prerender is immediate.
+    Y visible_height(BORDER_THICK);
+    Y max_visible_height = ClientSize().y;
+    bool hide = true;
+    for (iterator it = m_rows.begin(); it != m_rows.end(); ++it) {
+        if (it == m_first_row_shown)
+            hide = false;
+
+        if (hide) {
+            (*it)->Hide();
+        } else {
+            (*it)->Show();
+            if (do_prerender)
+                GUI::PreRenderWindow(*it);
+
+            visible_height += (*it)->Height();
+            if (visible_height >= max_visible_height)
+                hide = true;
+        }
+    }
+
+}
+
+void ListBox::Show(bool show_children /* = true*/)
+{
+    Control::Show(false);
+
+    if (!show_children)
+        return;
+
+    // Deal with non row children normally
+    for (std::list<Wnd*>::const_iterator it = Children().begin();
+         it != Children().end(); ++it)
+    {
+        if (!dynamic_cast<Row*>(*it))
+            (*it)->Show(show_children);
+    }
+
+    // Show rows that will be visible when rendered but don't prerender them.
+    ShowVisibleRows(false);
 }
 
 void ListBox::Disable(bool b/* = true*/)
@@ -1002,7 +1032,7 @@ void ListBox::Clear()
     DetachChild(m_header_row);
     DeleteChildren();
     AttachChild(m_header_row);
-    m_first_row_offset = Pt(X0, Y0);
+    m_first_row_offset = Pt(X(BORDER_THICK), Y(BORDER_THICK));
     m_first_row_shown = m_rows.end();
     m_first_col_shown = 0;
     m_selections.clear();
@@ -1139,7 +1169,8 @@ void ListBox::BringRowIntoView(iterator it)
     // Find the y offsets of the first and last shown rows and 'it'.
     bool first_row_found(false), last_row_found(false), it_found(false);
 
-    Y y_offset(Y0), it_y_offset(Y0), first_row_y_offset(Y0), last_row_y_offset(Y0);
+    Y y_offset(BORDER_THICK), it_y_offset(BORDER_THICK);
+    Y first_row_y_offset(BORDER_THICK), last_row_y_offset(BORDER_THICK);
     iterator it2 = m_rows.begin();
     while ((it2 != m_rows.end()) && (!first_row_found || !last_row_found || !it_found)) {
         if (it2 == m_first_row_shown) {
@@ -1152,11 +1183,13 @@ void ListBox::BringRowIntoView(iterator it)
             it_found = true;
         }
 
-        if (first_row_found && !last_row_found)
-            last_row_y_offset = y_offset;
-
-        if ((y_offset - first_row_y_offset) >= ClientHeight())
+        if (first_row_found && !last_row_found
+            && ((y_offset - first_row_y_offset) >= ClientHeight()))
+        {
             last_row_found = true;
+            if (it2 != m_rows.begin())
+                last_row_y_offset = y_offset - (*boost::prior(it2))->Height();
+        }
 
         y_offset += (*it2)->Height();
         ++it2;
@@ -1165,34 +1198,34 @@ void ListBox::BringRowIntoView(iterator it)
     if (!it_found)
         return;
 
-    RequirePreRender();
-
     if (y_offset <= ClientHeight())
         SetFirstRowShown(begin());
 
     // Shift the view if 'it' is outside of [first_row .. last_row]
     if (it_y_offset < first_row_y_offset)
         SetFirstRowShown(it);
-    else if (it_y_offset > last_row_y_offset)
+    else if (it_y_offset >= last_row_y_offset)
         SetFirstRowShown(FirstRowShownWhenBottomIs(it, ClientHeight()));
 }
 
 void ListBox::SetFirstRowShown(iterator it)
 {
-    if (it != m_rows.end()) {
-        RequirePreRender();
-        m_first_row_shown = it;
+    if (it == m_rows.end())
+        return;
 
-        AdjustScrolls(false);
+    RequirePreRender();
+    m_first_row_shown = it;
 
-        if (m_vscroll) {
-            Y acc(0);
-            for (iterator it2 = m_rows.begin(); it2 != m_first_row_shown; ++it2)
-                acc += (*it2)->Height();
-            m_vscroll->ScrollTo(Value(acc));
-            SignalScroll(*m_vscroll, true);
-        }
-    }
+    AdjustScrolls(false);
+
+    if (!m_vscroll)
+        return;
+
+    Y acc(0);
+    for (iterator it2 = m_rows.begin(); it2 != m_first_row_shown; ++it2)
+        acc += (*it2)->Height();
+    m_vscroll->ScrollTo(Value(acc));
+    SignalScroll(*m_vscroll, true);
 }
 
 void ListBox::SetVScrollWheelIncrement(unsigned int increment)
@@ -1247,8 +1280,6 @@ void ListBox::SetColHeaders(Row* r)
             m_col_alignments.resize(m_header_row->size(), AlignmentFromStyle(m_style));
             m_col_stretches.resize(m_header_row->size(), 0.0);
         }
-        if (m_normalize_rows_on_insert)
-            NormalizeRow(m_header_row);
         m_header_row->MoveTo(Pt(X0, -m_header_row->Height()));
         AttachChild(m_header_row);
     } else {
@@ -1886,6 +1917,8 @@ ListBox::iterator ListBox::Insert(Row* row, iterator it, bool dropped, bool sign
 
     row->Hide();
 
+    row->Resize(Pt(std::max(ClientWidth(), X(1)), row->Height()));
+
     if (signal)
         AfterInsertSignal(it);
 
@@ -1918,6 +1951,7 @@ void ListBox::Insert(const std::vector<Row*>& rows, iterator it, bool dropped, b
         Row* row = *row_it;
         row->InstallEventFilter(this);
         row->Hide();
+        row->Resize(Pt(std::max(ClientWidth(), X(1)), row->Height()));
     }
 
     // add row at requested location (or default end position)
@@ -2237,7 +2271,7 @@ void ListBox::AdjustScrolls(bool adjust_for_resize)
     }
 
     // Resize rows to fit client area.
-    if (vscroll_added_or_removed) {
+    if (vscroll_added_or_removed || adjust_for_resize) {
         RequirePreRender();
         X row_width(std::max(ClientWidth(), X(1)));
         for (iterator it = m_rows.begin(); it != m_rows.end(); ++it) {
@@ -2249,7 +2283,7 @@ void ListBox::AdjustScrolls(bool adjust_for_resize)
 void ListBox::VScrolled(int tab_low, int tab_high, int low, int high)
 {
     m_first_row_shown = m_rows.empty() ? m_rows.end() : m_rows.begin();
-    Y position(0);
+    Y position(BORDER_THICK);
 
     // scan through list of rows until the tab position is less than one of the rows' centres
     for (iterator it = m_rows.begin(); it != m_rows.end(); ++it) {
@@ -2280,8 +2314,8 @@ void ListBox::VScrolled(int tab_low, int tab_high, int low, int high)
 void ListBox::HScrolled(int tab_low, int tab_high, int low, int high)
 {
     m_first_col_shown = 0;
-    X accum(0);
-    X position(0);
+    X accum(BORDER_THICK);
+    X position(BORDER_THICK);
     for (std::size_t i = 0; i < m_col_widths.size(); ++i) {
         X col_width = m_col_widths[i];
         if (tab_low < accum + col_width / 2) {
@@ -2382,11 +2416,14 @@ void ListBox::NormalizeRow(Row* row)
     row->SetColAlignments(m_col_alignments);
     row->SetColStretches(m_col_stretches);
     row->Resize(Pt(ClientWidth(), row->Height()));
+
+    // Normalize row is only called during prerender.
+    GUI::PreRenderWindow(row);
 }
 
 ListBox::iterator ListBox::FirstRowShownWhenBottomIs(iterator bottom_row, Y client_height)
 {
-    Y available_space = client_height;
+    Y available_space = client_height - (*bottom_row)->Height();
     iterator it = bottom_row;
     while (it != m_rows.begin() && (*boost::prior(it))->Height() <= available_space) {
         available_space -= (*--it)->Height();
