@@ -38,6 +38,12 @@
 
 using namespace GG;
 
+// static(s)
+const int ListBox::DEFAULT_MARGIN(2);
+const X ListBox::DEFAULT_ROW_WIDTH(50);
+const Y ListBox::DEFAULT_ROW_HEIGHT(22);
+const unsigned int ListBox::BORDER_THICK = 2;
+
 namespace {
     struct ListSignalEcho
     {
@@ -74,8 +80,6 @@ namespace {
     };
 
     const int SCROLL_WIDTH = 14;
-    const X DEFAULT_ROW_WIDTH(50);
-    const Y DEFAULT_ROW_HEIGHT(22);
 
     class RowSorter // used to sort rows by a certain column (which may contain some empty cells)
     {
@@ -192,13 +196,13 @@ namespace {
 // GG::ListBox::Row
 ////////////////////////////////////////////////
 ListBox::Row::Row() :
-    Control(X0, Y0, DEFAULT_ROW_WIDTH, DEFAULT_ROW_HEIGHT),
+    Control(X0, Y0, ListBox::DEFAULT_ROW_WIDTH, ListBox::DEFAULT_ROW_HEIGHT),
     m_cells(),
     m_row_alignment(ALIGN_VCENTER),
     m_col_alignments(),
     m_col_widths(),
     m_col_stretches(),
-    m_margin(2),
+    m_margin(ListBox::DEFAULT_MARGIN),
     m_ignore_adjust_layout(false),
     m_is_normalized(false)
 { SetLayout(new DeferredLayout(X0, Y0, Width(), Height(), 1, 1, m_margin, m_margin)); }
@@ -506,8 +510,6 @@ bool ListBox::RowPtrIteratorLess::operator()(const ListBox::iterator& lhs, const
 ////////////////////////////////////////////////
 // GG::ListBox
 ////////////////////////////////////////////////
-// static(s)
-const unsigned int ListBox::BORDER_THICK = 2;
 
 ListBox::ListBox(Clr color, Clr interior/* = CLR_ZERO*/) :
     Control(X0, Y0, X1, Y1, INTERACTIVE),
@@ -531,7 +533,7 @@ ListBox::ListBox(Clr color, Clr interior/* = CLR_ZERO*/) :
     m_col_widths(),
     m_col_alignments(),
     m_col_stretches(),
-    m_cell_margin(2),
+    m_cell_margin(DEFAULT_MARGIN),
     m_int_color(interior),
     m_hilite_color(CLR_SHADOW),
     m_style(LIST_NONE),
@@ -681,17 +683,22 @@ ListBox::iterator ListBox::LastVisibleRow() const
 
 std::size_t ListBox::LastVisibleCol() const
 {
-    X visible_pixels = ClientSize().x;
-    X acc(0);
-    std::size_t i = m_first_col_shown;
-    for (; i < m_col_widths.size(); ++i) {
-        acc += m_col_widths[i];
-        if (visible_pixels <= acc)
+    if (m_first_row_shown == m_rows.end())
+        return 0;
+
+    // Find the last column that is entirely left of the rightmost pixel.
+    X rightmost_pixel = ClientLowerRight().x;
+    std::size_t ii_last_visible(0);
+    for (std::list<Wnd*>::const_iterator it = (*m_first_row_shown)->GetLayout()->Children().begin();
+         it != (*m_first_row_shown)->GetLayout()->Children().end(); ++it, ++ii_last_visible)
+    {
+        if ((*it)->UpperLeft().x >= rightmost_pixel)
             break;
+        if (((*it)->UpperLeft().x < rightmost_pixel) && ((*it)->LowerRight().x >= rightmost_pixel))
+            return ii_last_visible;
     }
-    if (m_col_widths.size() <= i)
-        i = m_col_widths.size() - 1;
-    return i;
+
+    return (ii_last_visible ? (ii_last_visible - 1) : 0);
 }
 
 std::size_t ListBox::NumRows() const
@@ -942,7 +949,7 @@ void ListBox::SizeMove(const Pt& ul, const Pt& lr)
 {
     const GG::Pt old_size = Size();
     Wnd::SizeMove(ul, lr);
-    AdjustScrolls(old_size.x != Size().x);
+    AdjustScrolls(old_size != Size());
     if (old_size != Size())
         RequirePreRender();
 }
@@ -980,12 +987,14 @@ void ListBox::Show(bool show_children /* = true*/)
     if (!show_children)
         return;
 
-    // Deal with non row children normally
+    // Deal with the header row and non row children normally
     for (std::list<Wnd*>::const_iterator it = Children().begin();
          it != Children().end(); ++it)
     {
-        if (!dynamic_cast<Row*>(*it))
-            (*it)->Show(show_children);
+        const Row* row(dynamic_cast<Row*>(*it));
+        bool is_regular_row(row && row != m_header_row);
+        if (!is_regular_row)
+            (*it)->Show(true);
     }
 
     // Show rows that will be visible when rendered but don't prerender them.
@@ -1532,26 +1541,30 @@ void ListBox::KeyPress(Key key, boost::uint32_t key_code_point, Flags<ModKey> mo
             break;
 
         // horizontal scrolling keys
-        case GGK_LEFT: // left key (not numpad key)
-            if (m_first_col_shown) {
-                --m_first_col_shown;
-                m_hscroll->ScrollTo(
-                    Value(std::accumulate(m_col_widths.begin(), m_col_widths.begin() + m_first_col_shown, X0)));
-                SignalScroll(*m_hscroll, true);
-            }
-            break;
+        case GGK_LEFT:{ // left key (not numpad key)
+            if (m_first_col_shown == 0)
+                break;
+
+            --m_first_col_shown;
+            std::list<GG::Wnd*>::const_iterator first_row_first_child((*m_first_row_shown)->GetLayout()->Children().begin());
+            GG::Wnd* first_shown_cell(*boost::next(first_row_first_child, m_first_col_shown));
+            GG::X new_scroll_offset(first_shown_cell->UpperLeft().x - UpperLeft().x - GG::X(BORDER_THICK));
+            m_hscroll->ScrollTo(Value(new_scroll_offset));
+            SignalScroll(*m_hscroll, true);
+            break;}
         case GGK_RIGHT:{ // right key (not numpad)
-            std::size_t last_fully_visible_col = LastVisibleCol();
-            if (std::accumulate(m_col_widths.begin(), m_col_widths.begin() + last_fully_visible_col, X0) >
-                ClientSize().x) {
-                --last_fully_visible_col;
-            }
-            if (last_fully_visible_col < m_col_widths.size() - 1) {
-                ++m_first_col_shown;
-                m_hscroll->ScrollTo(
-                    Value(std::accumulate(m_col_widths.begin(), m_col_widths.begin() + m_first_col_shown, X0)));
-                SignalScroll(*m_hscroll, true);
-            }
+            std::size_t num_cols((*m_first_row_shown)->GetLayout()->Children().size());
+            if (num_cols <= 1)
+                break;
+            if (LastVisibleCol() >= (num_cols - 1))
+                break;
+
+            ++m_first_col_shown;
+            std::list<GG::Wnd*>::const_iterator first_row_first_child((*m_first_row_shown)->GetLayout()->Children().begin());
+            GG::Wnd* first_shown_cell(*boost::next(first_row_first_child, m_first_col_shown));
+            GG::X new_scroll_offset(first_shown_cell->UpperLeft().x - UpperLeft().x - GG::X(BORDER_THICK));
+            m_hscroll->ScrollTo(Value(new_scroll_offset));
+            SignalScroll(*m_hscroll, true);
             break;}
 
         // any other key gets passed along to the parent
@@ -1617,6 +1630,9 @@ void ListBox::DragDropHere(const Pt& pt, std::map<const Wnd*, bool>& drop_wnds_a
 }
 
 void ListBox::DragDropLeave()
+{ ResetAutoScrollVars(); }
+
+void ListBox::CancellingChildDragDrop(const std::vector<const Wnd*>& wnds)
 { ResetAutoScrollVars(); }
 
 void ListBox::TimerFiring(unsigned int ticks, Timer* timer)
