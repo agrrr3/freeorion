@@ -1430,7 +1430,7 @@ namespace {
     // row type used in the SpeciesSelector
     struct SpeciesRow : public GG::ListBox::Row {
         SpeciesRow(const Species* species, GG::X w, GG::Y h) :
-            GG::ListBox::Row(w, h, "", GG::ALIGN_VCENTER, 0)
+                   GG::ListBox::Row(w, h, "", GG::ALIGN_VCENTER, 0)
         {
             if (!species)
                 return;
@@ -1440,13 +1440,14 @@ namespace {
         };
 
         SpeciesRow(const std::string& species_name, const std::string& localized_name, const std::string& species_desc,
-            GG::X w, GG::Y h, boost::shared_ptr<GG::Texture> species_icon) :
-            GG::ListBox::Row(w, h, "", GG::ALIGN_VCENTER, 0)
+                   GG::X w, GG::Y h, boost::shared_ptr<GG::Texture> species_icon) :
+                   GG::ListBox::Row(w, h, "", GG::ALIGN_VCENTER, 0)
         { Init(species_name, localized_name, species_desc, w, h, species_icon); };
 
     private:
         void Init(const std::string& species_name, const std::string& localized_name, const std::string& species_desc,
-                  GG::X width, GG::Y height, boost::shared_ptr<GG::Texture> species_icon) {
+                  GG::X width, GG::Y height, boost::shared_ptr<GG::Texture> species_icon)
+        {
             GG::Wnd::SetName(species_name);
             GG::StaticGraphic* icon = new GG::StaticGraphic(species_icon, GG::GRAPHIC_FITGRAPHIC| GG::GRAPHIC_PROPSCALE);
             icon->Resize(GG::Pt(GG::X(Value(height - 5)), height - 5));
