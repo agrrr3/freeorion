@@ -968,14 +968,14 @@ namespace {
     }
 
     /** Replace species selection for any players set to "RANDOM" species, with a species based on @p galaxy_seed */
-    void ValidateSpeciesSelections(std::map<int, PlayerSetupData>& player_setup_data, const std::string& galaxy_seed) {
+    void ResolveRandomSpeciesSelections(std::map<int, PlayerSetupData>& player_setup_data, const std::string& galaxy_seed) {
         SpeciesManager& sm = GetSpeciesManager();
         int num_playable_species = sm.NumPlayableSpecies();
         std::string species_seed = galaxy_seed + "species";
         for (std::map<int, PlayerSetupData>::value_type& entry : player_setup_data) {
             if (entry.second.m_starting_species_name == "RANDOM") {
-                entry.second.m_starting_species_name = sm.SequentialPlayableSpeciesName(GetIdxForSeed(num_playable_species,
-                                                                                                         species_seed) + 1);
+                entry.second.m_starting_species_name = sm.SequentialPlayableSpeciesName(
+                    GetIdxForSeed(num_playable_species, species_seed + entry.second.m_player_name) + 1);
             }
         }
     }
@@ -1259,8 +1259,8 @@ void ServerApp::GenerateUniverse(std::map<int, PlayerSetupData>& player_setup_da
     universe.ResetUniverse();
     // Add predefined ship designs to universe
     GetPredefinedShipDesignManager().AddShipDesignsToUniverse();
-    // Validate species picks before empire setup
-    ValidateSpeciesSelections(player_setup_data, GetGalaxySetupData().m_seed);
+    // Change any selections for random species to playable species
+    ResolveRandomSpeciesSelections(player_setup_data, GetGalaxySetupData().m_seed);
     // Initialize empire objects for each player
     InitEmpires(player_setup_data);
 
