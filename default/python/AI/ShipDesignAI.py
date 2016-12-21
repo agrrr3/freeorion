@@ -52,7 +52,7 @@ import math
 import AIstate
 import CombatRatingsAI
 from collections import Counter, defaultdict
-
+from AIDependencies import INVALID_ID
 from EnumsAI import ShipDesignTypes
 from freeorion_tools import print_error, UserString, tech_is_complete
 
@@ -713,7 +713,7 @@ class ShipDesigner(object):
         self.colonisation = -1      # -1 since 0 indicates an outpost (capacity = 0)
         self.production_cost = 9999
         self.production_time = 1
-        self.pid = -1               # planetID for checks on production cost if not LocationInvariant.
+        self.pid = INVALID_ID               # planetID for checks on production cost if not LocationInvariant.
         self.additional_specifications = AdditionalSpecifications()
         self.design_name_dict = {k: v for k, v in zip(self.NAME_THRESHOLDS,
                                                       UserString(self.NAMETABLE, self.basename).splitlines())}
@@ -1689,10 +1689,13 @@ class MilitaryShipDesigner(WarShipDesigner):
                 h = self.hull.structure
                 ch = Cache.production_cost[self.pid].get(self.hull.name,
                                                          self.hull.productionCost(fo.empireID(), self.pid))
-                p1 = a*s*ca + a*ch
-                p2 = math.sqrt(a * (ca*s + ch) * (a*s*cw+a*ch+h*cw-h*ca))
-                p3 = a*(ca-cw)
-                n = max((p1+p2)/p3, (p1-p2)/p3)
+                if ca == cw:
+                    n = (s+h/a)/2
+                else:
+                    p1 = a*s*ca + a*ch
+                    p2 = math.sqrt(a * (ca*s + ch) * (a*s*cw+a*ch+h*cw-h*ca))
+                    p3 = a*(ca-cw)
+                    n = max((p1+p2)/p3, (p1-p2)/p3)
                 n = int(round(n))
                 n = max(n, 1)
                 n = min(n, s)

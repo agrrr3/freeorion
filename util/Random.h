@@ -15,6 +15,7 @@
 #include <ctime>
 
 #include "Export.h"
+#include "Logger.h"
 
 /** \file
  *
@@ -77,5 +78,23 @@ FO_COMMON_API double RandDouble(double min, double max);
 /** returns a double from a Gaussian (normal) distribution of doubles centered around \a mean, 
     with standard deviation \a sigma */
 FO_COMMON_API double RandGaussian(double mean, double sigma);
+
+/** returns number in range 0 to one less than the integer representation of @p enum_vals_count, determined by @p seed */
+template <typename T1>
+FO_COMMON_API int GetIdxForSeed(const T1& enum_vals_count, const std::string& seed) {
+    DebugLogger() << "hashing seed: " << seed;
+    // use probably-bad but adequate for this purpose hash function to
+    // convert seed into a hash value
+    int hash_value = 223;
+    for (size_t i = 0; i < seed.length(); ++i) {
+        hash_value += (seed[i] * 61);
+        hash_value %= 191;
+    }
+    DebugLogger() << "final hash value: " << hash_value
+                  << " and returning: " << hash_value % static_cast<int>(enum_vals_count)
+                  << " from 0 to " << static_cast<int>(enum_vals_count) - 1;
+    return hash_value % static_cast<int>(enum_vals_count);
+}
+
 
 #endif // _Random_h_

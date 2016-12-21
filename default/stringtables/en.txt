@@ -2068,6 +2068,9 @@ Aggressive
 GSETUP_MANIACAL
 Maniacal
 
+# Random species selection description
+GSETUP_SPECIES_RANDOM_DESC
+Picks a random selection from the available playable species.
 
 ##
 ## About dialog
@@ -3251,6 +3254,9 @@ Split Damaged Ships From Fleet
 
 FW_SPLIT_UNFUELED_FLEET
 Split Unfueled Ships From Fleet
+
+FW_SPLIT_NOT_FULL_FIGHTERS_FLEET
+Split Ships Without All Fighters From Fleet
 
 FW_SPLIT_FLEET
 Split Fleet

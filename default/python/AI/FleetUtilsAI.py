@@ -5,7 +5,7 @@ import CombatRatingsAI
 import traceback
 from universe_object import Planet
 from ShipDesignAI import get_part_type
-
+from AIDependencies import INVALID_ID
 __designStats = {}
 
 
@@ -196,7 +196,7 @@ def split_fleet(fleet_id):
             newfleets.append(new_fleet_id)
             foAI.foAIstate.newlySplitFleets[new_fleet_id] = True
         else:
-            if fleet.systemID == -1:
+            if fleet.systemID == INVALID_ID:
                 print "Error - tried to split ship id (%d) from fleet %d when fleet is in starlane" % (ship_id, fleet_id)
             else:
                 print "Error - got no fleet ID back after trying to split ship id (%d) from fleet %d" % (ship_id, fleet_id)
@@ -554,3 +554,27 @@ def get_fighter_capacity_of_fleet(fleet_id):
                 cur_capacity += ship.currentPartMeterValue(fo.meterType.capacity, partname)
                 max_capacity += ship.currentPartMeterValue(fo.meterType.maxCapacity, partname)
     return cur_capacity, max_capacity
+
+
+def get_fuel(fleet_id):
+    """Get fuel of fleet.
+
+    :param fleet_id: Queried fleet
+    :type fleet_id: int
+    :return: fuel of fleet
+    :rtype: float
+    """
+    fleet = fo.getUniverse().getFleet(fleet_id)
+    return fleet and fleet.fuel or 0.0
+
+
+def get_max_fuel(fleet_id):
+    """Get maximum fuel capacity of fleet.
+
+    :param fleet_id: Queried fleet
+    :type fleet_id: int
+    :return: max fuel of fleet
+    :rtype: float
+    """
+    fleet = fo.getUniverse().getFleet(fleet_id)
+    return fleet and fleet.maxFuel or 0.0

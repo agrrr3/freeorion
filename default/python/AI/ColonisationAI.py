@@ -13,6 +13,7 @@ import MilitaryAI
 from turn_state import state
 from EnumsAI import MissionType, FocusType, EmpireProductionTypes, ShipRoleType, PriorityType
 from freeorion_tools import dict_from_map, tech_is_complete, get_ai_tag_grade, cache_by_turn, Timer
+from AIDependencies import INVALID_ID, POP_CONST_MOD_MAP, POP_SIZE_MOD_MAP
 
 colonization_timer = Timer('getColonyFleets()')
 
@@ -45,24 +46,6 @@ ENVIRONS = {str(fo.planetEnvironment.uninhabitable): 0, str(fo.planetEnvironment
             str(fo.planetEnvironment.poor): 2, str(fo.planetEnvironment.adequate): 3, str(fo.planetEnvironment.good): 4}
 PHOTO_MAP = {fo.starType.blue: 3, fo.starType.white: 1.5, fo.starType.red: -1, fo.starType.neutron: -1,
              fo.starType.blackHole: -10, fo.starType.noStar: -10}
-
-
-#  mods per environ uninhab hostile poor adequate good
-POP_SIZE_MOD_MAP = {
-    "environment_bonus": [0, -4, -2, 0, 3],
-    "GRO_SUBTER_HAB": [0, 1, 1, 1, 1],
-    "GRO_SYMBIOTIC_BIO": [0, 0, 1, 1, 1],
-    "GRO_XENO_GENETICS": [0, 1, 2, 2, 0],
-    "GRO_XENO_HYBRID": [0, 2, 1, 0, 0],
-    "GRO_CYBORG": [0, 2, 0, 0, 0],
-    "CON_NDIM_STRUC": [0, 2, 2, 2, 2],
-    "CON_ORBITAL_HAB": [0, 1, 1, 1, 1],
-}
-
-POP_CONST_MOD_MAP = {
-    "GRO_PLANET_ECOL": [0, 0, 0, 1, 1],
-    "GRO_SYMBIOTIC_BIO": [0, 0, 0, -1, -1],
-}
 
 
 def get_pop_mods(planet, tag_list, species, planet_env, planet_specials, star_pop_mod):
@@ -516,7 +499,7 @@ def get_colony_fleets():
                 PlanetUtilsAI.planet_name_ids([loc]), PlanetUtilsAI.planet_name_ids([pid]), retval)
             if retval:
                 foAI.foAIstate.qualifyingOutpostBaseTargets[pid][1] = loc
-                queued_outpost_bases.append((planet and planet.systemID) or -1)
+                queued_outpost_bases.append((planet and planet.systemID) or INVALID_ID)
                 # res=fo.issueRequeueProductionOrder(production_queue.size -1, 0) # TODO: evaluate move to front
     colonization_timer.start('Evaluate Primary Colony Opportunities')
 
@@ -730,7 +713,7 @@ def evaluate_planet(planet_id, mission_type, spec_name, empire, detail=None):
     if homeworld:
         home_system_id = homeworld.systemID
         eval_system_id = this_sysid
-        if home_system_id != -1 and eval_system_id != -1:
+        if home_system_id != INVALID_ID and eval_system_id != INVALID_ID:
             least_jumps = universe.jumpDistance(home_system_id, eval_system_id)
             if least_jumps == -1:  # indicates no known path
                 return 0.0
@@ -1254,14 +1237,14 @@ def assign_colony_fleets_to_colonise():
         if not targets:
             print "Error found no valid target for outpost base in system %s (%d)" % (system.name, sys_id)
             continue
-        target_id = -1
+        target_id = INVALID_ID
         best_score = -1
         for pid, rating in assign_colonisation_values(targets, MissionType.OUTPOST, None,
                                                       empire).items():
             if rating[0] > best_score:
                 best_score = rating[0]
                 target_id = pid
-        if target_id != -1:
+        if target_id != INVALID_ID:
             foAI.foAIstate.qualifyingOutpostBaseTargets[target_id][1] = -1  # TODO: should probably delete
             ai_target = universe_object.Planet(target_id)
             ai_fleet_mission = foAI.foAIstate.get_fleet_mission(fid)
