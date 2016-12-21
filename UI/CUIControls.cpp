@@ -1430,7 +1430,7 @@ namespace {
     // row type used in the SpeciesSelector
     struct SpeciesRow : public GG::ListBox::Row {
         SpeciesRow(const Species* species, GG::X w, GG::Y h) :
-                   GG::ListBox::Row(w, h, "", GG::ALIGN_VCENTER, 0)
+            GG::ListBox::Row(w, h, "", GG::ALIGN_VCENTER, 0)
         {
             if (!species)
                 return;
@@ -1441,7 +1441,7 @@ namespace {
 
         SpeciesRow(const std::string& species_name, const std::string& localized_name, const std::string& species_desc,
                    GG::X w, GG::Y h, boost::shared_ptr<GG::Texture> species_icon) :
-                   GG::ListBox::Row(w, h, "", GG::ALIGN_VCENTER, 0)
+            GG::ListBox::Row(w, h, "", GG::ALIGN_VCENTER, 0)
         { Init(species_name, localized_name, species_desc, w, h, species_icon); };
 
     private:
