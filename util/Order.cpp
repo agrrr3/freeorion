@@ -925,7 +925,8 @@ ProductionQueueOrder::ProductionQueueOrder() :
     m_new_blocksize(INVALID_QUANTITY),
     m_new_index(INVALID_INDEX),
     m_rally_point_id(INVALID_OBJECT_ID),
-    m_pause(INVALID_PAUSE_RESUME)
+    m_pause(INVALID_PAUSE_RESUME),
+    m_use_imperial_pp(INVALID_USE_IMPERIAL_PP)
 {}
 
 ProductionQueueOrder::ProductionQueueOrder(int empire, const ProductionQueue::ProductionItem& item,
@@ -939,7 +940,8 @@ ProductionQueueOrder::ProductionQueueOrder(int empire, const ProductionQueue::Pr
     m_new_blocksize(INVALID_QUANTITY),
     m_new_index(pos),
     m_rally_point_id(INVALID_OBJECT_ID),
-    m_pause(INVALID_PAUSE_RESUME)
+    m_pause(INVALID_PAUSE_RESUME),
+    m_use_imperial_pp(INVALID_USE_IMPERIAL_PP)
 {}
 
 ProductionQueueOrder::ProductionQueueOrder(int empire, int index, int new_quantity, int new_blocksize) :
@@ -952,7 +954,8 @@ ProductionQueueOrder::ProductionQueueOrder(int empire, int index, int new_quanti
     m_new_blocksize(new_blocksize),
     m_new_index(INVALID_INDEX),
     m_rally_point_id(INVALID_OBJECT_ID),
-    m_pause(INVALID_PAUSE_RESUME)
+    m_pause(INVALID_PAUSE_RESUME),
+    m_use_imperial_pp(INVALID_USE_IMPERIAL_PP)
 {}
 
 ProductionQueueOrder::ProductionQueueOrder(int empire, int index, int new_quantity, bool dummy) :
@@ -965,7 +968,8 @@ ProductionQueueOrder::ProductionQueueOrder(int empire, int index, int new_quanti
     m_new_blocksize(INVALID_QUANTITY),
     m_new_index(INVALID_INDEX),
     m_rally_point_id(INVALID_OBJECT_ID),
-    m_pause(INVALID_PAUSE_RESUME)
+    m_pause(INVALID_PAUSE_RESUME),
+    m_use_imperial_pp(INVALID_USE_IMPERIAL_PP)
 {}
 
 ProductionQueueOrder::ProductionQueueOrder(int empire, int index, int rally_point_id, bool dummy1, bool dummy2) :
@@ -978,7 +982,8 @@ ProductionQueueOrder::ProductionQueueOrder(int empire, int index, int rally_poin
     m_new_blocksize(INVALID_QUANTITY),
     m_new_index(INVALID_INDEX),
     m_rally_point_id(rally_point_id),
-    m_pause(INVALID_PAUSE_RESUME)
+    m_pause(INVALID_PAUSE_RESUME),
+    m_use_imperial_pp(INVALID_USE_IMPERIAL_PP)
 {}
 
 ProductionQueueOrder::ProductionQueueOrder(int empire, int index, int new_index) :
@@ -991,7 +996,8 @@ ProductionQueueOrder::ProductionQueueOrder(int empire, int index, int new_index)
     m_new_blocksize(INVALID_QUANTITY),
     m_new_index(new_index),
     m_rally_point_id(INVALID_OBJECT_ID),
-    m_pause(INVALID_PAUSE_RESUME)
+    m_pause(INVALID_PAUSE_RESUME),
+    m_use_imperial_pp(INVALID_USE_IMPERIAL_PP)
 {}
 
 ProductionQueueOrder::ProductionQueueOrder(int empire, int index) :
@@ -1004,7 +1010,8 @@ ProductionQueueOrder::ProductionQueueOrder(int empire, int index) :
     m_new_blocksize(INVALID_QUANTITY),
     m_new_index(INVALID_INDEX),
     m_rally_point_id(INVALID_OBJECT_ID),
-    m_pause(INVALID_PAUSE_RESUME)
+    m_pause(INVALID_PAUSE_RESUME),
+    m_use_imperial_pp(INVALID_USE_IMPERIAL_PP)
 {}
 
 ProductionQueueOrder::ProductionQueueOrder(int empire, int index, bool pause, float dummy) :
@@ -1017,7 +1024,22 @@ ProductionQueueOrder::ProductionQueueOrder(int empire, int index, bool pause, fl
     m_new_blocksize(INVALID_QUANTITY),
     m_new_index(INVALID_INDEX),
     m_rally_point_id(INVALID_OBJECT_ID),
-    m_pause(pause ? PAUSE : RESUME)
+    m_pause(pause ? PAUSE : RESUME),
+    m_use_imperial_pp(INVALID_USE_IMPERIAL_PP)
+{}
+
+ProductionQueueOrder::ProductionQueueOrder(int empire, int index, bool allow_use_imperial_pp, float dummy, float dummy2) :
+    Order(empire),
+    m_item(),
+    m_number(0),
+    m_location(INVALID_OBJECT_ID),
+    m_index(index),
+    m_new_quantity(INVALID_QUANTITY),
+    m_new_blocksize(INVALID_QUANTITY),
+    m_new_index(INVALID_INDEX),
+    m_rally_point_id(INVALID_OBJECT_ID),
+    m_pause(INVALID_PAUSE_RESUME),
+    m_use_imperial_pp(allow_use_imperial_pp ? USE_IMPERIAL_PP : DONT_USE_IMPERIAL_PP)
 {}
 
 void ProductionQueueOrder::ExecuteImpl() const {
@@ -1052,6 +1074,14 @@ void ProductionQueueOrder::ExecuteImpl() const {
             } else if (m_pause == RESUME) {
                 DebugLogger() << "ProductionQueueOrder: unpausing production";
                 empire->ResumeProduction(m_index);
+
+            } else if (m_use_imperial_pp == USE_IMPERIAL_PP) {
+                DebugLogger() << "ProductionQueueOrder: allow use of imperial PP stockpile";
+                empire->AllowUseImperialPP(m_index, true);; // 
+
+            } else if (m_use_imperial_pp == DONT_USE_IMPERIAL_PP) {
+                DebugLogger() << "ProductionQueueOrder: disallow use of imperial PP stockpile";
+                empire->AllowUseImperialPP(m_index, false);
 
             } else /*if (m_pause == INVALID_PAUSE_RESUME)*/ {
                 DebugLogger() << "ProductionQueueOrder: removing item from index " << m_index;
