@@ -126,6 +126,8 @@ private:
     void    QueueItemDoubleClickedSlot(GG::ListBox::iterator it, const GG::Pt& pt, const GG::Flags<GG::ModKey>& modkeys);
     void    QueueItemRallied(GG::ListBox::iterator it, int object_id);
     void    QueueItemPaused(GG::ListBox::iterator it, bool pause);
+    void    QueueItemUseImperialPP(GG::ListBox::iterator it, bool allow);
+
     void    QueueItemDuped(GG::ListBox::iterator it);
     void    QueueItemSplit(GG::ListBox::iterator it);
 
