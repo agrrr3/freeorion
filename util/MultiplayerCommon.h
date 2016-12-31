@@ -124,7 +124,8 @@ struct PlayerSetupData {
         m_empire_color(GG::Clr(0, 0, 0, 0)),
         m_starting_species_name(),
         m_save_game_empire_id(ALL_EMPIRES),
-        m_client_type(Networking::INVALID_CLIENT_TYPE)
+        m_client_type(Networking::INVALID_CLIENT_TYPE),
+        m_player_ready(false)
     {}
     //@}
 
@@ -137,6 +138,7 @@ struct PlayerSetupData {
     int                     m_save_game_empire_id;  ///< when loading a game, the ID of the empire that this player will control
 
     Networking::ClientType  m_client_type;          ///< is this player an AI, human player or...?
+    bool                    m_player_ready;         ///< if player ready to play.
 
 private:
     friend class boost::serialization::access;
