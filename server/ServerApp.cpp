@@ -41,7 +41,7 @@
 
 
 #include <ctime>
-#include <util/Random.h>
+#include <../util/Random.h>
 
 namespace fs = boost::filesystem;
 
