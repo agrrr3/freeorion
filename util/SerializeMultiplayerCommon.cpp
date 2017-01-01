@@ -76,8 +76,7 @@ void PlayerSetupData::serialize(Archive& ar, const unsigned int version)
         & BOOST_SERIALIZATION_NVP(m_empire_color)
         & BOOST_SERIALIZATION_NVP(m_starting_species_name)
         & BOOST_SERIALIZATION_NVP(m_save_game_empire_id)
-        & BOOST_SERIALIZATION_NVP(m_client_type)
-        & BOOST_SERIALIZATION_NVP(m_player_ready);
+        & BOOST_SERIALIZATION_NVP(m_client_type);
 }
 
 template void PlayerSetupData::serialize<freeorion_bin_oarchive>(freeorion_bin_oarchive&, const unsigned int);

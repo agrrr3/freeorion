@@ -229,8 +229,6 @@ namespace {
                 push_back(new CUILabel(""));
                 push_back(new CUILabel(""));
                 push_back(new CUILabel(""));
-                push_back(new CUILabel(player_data.m_player_ready ? UserString("YES") : UserString("NO")));
-
                 return;
             }
 
@@ -262,12 +260,6 @@ namespace {
                 species_selector->Disable();
             else
                 GG::Connect(species_selector->SpeciesChangedSignal, &NewGamePlayerRow::SpeciesChanged,      this);
-
-            // ready check box or empty label for AI
-            if (player_data.m_client_type == Networking::CLIENT_TYPE_AI_PLAYER)
-                push_back(new CUILabel(""));
-            else
-                push_back(new CUILabel(player_data.m_player_ready ? UserString("YES") : UserString("NO")));
         }
 
     private:
@@ -350,12 +342,6 @@ namespace {
                 m_empire_list->Disable();
             else
                 Connect(m_empire_list->SelChangedSignal, &LoadGamePlayerRow::EmpireChanged, this);
-
-            // ready check box or empty label for AI
-            if (player_data.m_client_type == Networking::CLIENT_TYPE_AI_PLAYER)
-                push_back(new CUILabel(""));
-            else
-                push_back(new CUILabel(player_data.m_player_ready ? UserString("YES") : UserString("NO")));
         }
 
     private:
@@ -400,7 +386,6 @@ namespace {
             push_back(new CUILabel(""));
             push_back(new CUILabel(""));
             push_back(new CUILabel(""));
-            push_back(new CUILabel(""));
         }
     private:
         void PlayerTypeChanged(Networking::ClientType type) {
@@ -435,9 +420,8 @@ MultiPlayerLobbyWnd::MultiPlayerLobbyWnd() :
     m_players_lb_empire_name_column_label(0),
     m_players_lb_empire_colour_column_label(0),
     m_players_lb_species_or_original_player_label(0),
-    m_players_lb_player_ready_label(0),
     m_players_lb(0),
-    m_ready_bn(0),
+    m_start_game_bn(0),
     m_cancel_bn(0),
     m_start_conditions_text(0)
 {
@@ -466,15 +450,14 @@ MultiPlayerLobbyWnd::MultiPlayerLobbyWnd() :
     m_players_lb_empire_name_column_label = new CUILabel(UserString("MULTIPLAYER_PLAYER_LIST_EMPIRES"), GG::FORMAT_LEFT);
     m_players_lb_empire_colour_column_label = new CUILabel(UserString("MULTIPLAYER_PLAYER_LIST_COLOURS"), GG::FORMAT_LEFT);
     m_players_lb_species_or_original_player_label = new CUILabel(UserString("MULTIPLAYER_PLAYER_LIST_ORIGINAL_NAMES"), GG::FORMAT_LEFT);
-    m_players_lb_player_ready_label = new CUILabel(UserString("MULTIPLAYER_PLAYER_LIST_PLAYER_READY"), GG::FORMAT_LEFT);
 
     m_players_lb = new CUIListBox();
     m_players_lb->SetStyle(GG::LIST_NOSORT | GG::LIST_NOSEL);
     m_players_lb->ManuallyManageColProps();
     m_players_lb->NormalizeRowsOnInsert(true);
-    m_players_lb->SetNumCols(6);
+    m_players_lb->SetNumCols(5);
 
-    m_ready_bn = new CUIButton(UserString("READY_BN"));
+    m_start_game_bn = new CUIButton(UserString("START_GAME_BN"));
     m_cancel_bn = new CUIButton(UserString("CANCEL"));
 
     m_start_conditions_text = new CUILabel(UserString("MULTIPLAYER_GAME_START_CONDITIONS"), GG::FORMAT_LEFT);
@@ -492,8 +475,7 @@ MultiPlayerLobbyWnd::MultiPlayerLobbyWnd() :
     AttachChild(m_players_lb_empire_name_column_label);
     AttachChild(m_players_lb_empire_colour_column_label);
     AttachChild(m_players_lb_species_or_original_player_label);
-    AttachChild(m_players_lb_player_ready_label);
-    AttachChild(m_ready_bn);
+    AttachChild(m_start_game_bn);
     AttachChild(m_cancel_bn);
     AttachChild(m_start_conditions_text);
 
@@ -509,8 +491,8 @@ MultiPlayerLobbyWnd::MultiPlayerLobbyWnd() :
 
     GG::Connect(m_new_load_game_buttons->ButtonChangedSignal,   &MultiPlayerLobbyWnd::NewLoadClicked,           this);
     GG::Connect(m_galaxy_setup_panel->SettingsChangedSignal,    &MultiPlayerLobbyWnd::GalaxySetupPanelChanged,  this);
-    GG::Connect(m_browse_saves_btn->LeftClickedSignal,          &MultiPlayerLobbyWnd::SaveGameBrowse,           this);
-    GG::Connect(m_ready_bn->LeftClickedSignal,                  &MultiPlayerLobbyWnd::ReadyClicked,             this);
+    GG::Connect(m_browse_saves_btn->LeftClickedSignal,          &MultiPlayerLobbyWnd::SaveGameBrowse,          this);
+    GG::Connect(m_start_game_bn->LeftClickedSignal,             &MultiPlayerLobbyWnd::StartGameClicked,         this);
     GG::Connect(m_galaxy_setup_panel->ImageChangedSignal,       &MultiPlayerLobbyWnd::PreviewImageChanged,      this);
     GG::Connect(m_cancel_bn->LeftClickedSignal,                 &MultiPlayerLobbyWnd::CancelClicked,            this);
 
@@ -561,9 +543,10 @@ void MultiPlayerLobbyWnd::KeyPress(GG::Key key, boost::uint32_t key_code_point, 
         // put message just sent in chat box (local echo)
         *m_chat_box += player_name + ": " + text + "\n";
 
-    } else if (m_ready_bn && (key == GG::GGK_RETURN || key == GG::GGK_KP_ENTER))
+    } else if (m_start_game_bn && !m_start_game_bn->Disabled() &&
+               (key == GG::GGK_RETURN || key == GG::GGK_KP_ENTER))
     {
-        m_ready_bn->LeftClickedSignal();
+        m_start_game_bn->LeftClickedSignal();
     } else if (key == GG::GGK_ESCAPE) {
         m_cancel_bn->LeftClickedSignal();
     }
@@ -590,8 +573,7 @@ namespace {
             DebugLogger() << boost::lexical_cast<std::string>(entry.first) << " : "
                                    << entry.second.m_player_name << ", "
                                    << entry.second.m_client_type << ", "
-                                   << entry.second.m_starting_species_name
-                                   << (entry.second.m_player_ready ? ", Ready" : "");
+                                   << entry.second.m_starting_species_name;
     }
 }
 
@@ -625,6 +607,8 @@ void MultiPlayerLobbyWnd::Refresh() {
         m_save_file_text->Disable();
         m_browse_saves_btn->Disable();
     }
+
+    m_start_game_bn->Disable(!ThisClientIsHost() || !CanStart());
 }
 
 GG::Pt MultiPlayerLobbyWnd::MinUsableSize() const
@@ -684,9 +668,6 @@ void MultiPlayerLobbyWnd::DoLayout() {
     players_lb_labels_ul += players_lb_labels_advance;
     players_lb_labels_lr += players_lb_labels_advance;
     m_players_lb_species_or_original_player_label->SizeMove(players_lb_labels_ul, players_lb_labels_lr);
-    players_lb_labels_ul += players_lb_labels_advance;
-    players_lb_labels_lr += players_lb_labels_advance;
-    m_players_lb_player_ready_label->SizeMove(players_lb_labels_ul, players_lb_labels_lr);
 
     y += TEXT_HEIGHT + CONTROL_MARGIN;
     x = CHAT_WIDTH + CONTROL_MARGIN;
@@ -695,10 +676,10 @@ void MultiPlayerLobbyWnd::DoLayout() {
     GG::Pt players_lb_lr = players_lb_ul + GG::Pt(ClientWidth() - CONTROL_MARGIN - x, m_chat_input_edit->RelativeUpperLeft().y - CONTROL_MARGIN - y);
     m_players_lb->SizeMove(players_lb_ul, players_lb_lr);
 
-    m_ready_bn->SizeMove(GG::Pt(GG::X0, GG::Y0), GG::Pt(GG::X(125), m_ready_bn->MinUsableSize().y));
-    m_cancel_bn->SizeMove(GG::Pt(GG::X0, GG::Y0), GG::Pt(GG::X(125), m_ready_bn->MinUsableSize().y));
+    m_start_game_bn->SizeMove(GG::Pt(GG::X0, GG::Y0), GG::Pt(GG::X(125), m_start_game_bn->MinUsableSize().y));
+    m_cancel_bn->SizeMove(GG::Pt(GG::X0, GG::Y0), GG::Pt(GG::X(125), m_start_game_bn->MinUsableSize().y));
     m_cancel_bn->MoveTo(GG::Pt(ClientWidth() - m_cancel_bn->Width() - CONTROL_MARGIN, ClientHeight() - m_cancel_bn->Height() - CONTROL_MARGIN));
-    m_ready_bn->MoveTo(GG::Pt(m_cancel_bn->RelativeUpperLeft().x - CONTROL_MARGIN - m_ready_bn->Width(),
+    m_start_game_bn->MoveTo(GG::Pt(m_cancel_bn->RelativeUpperLeft().x - CONTROL_MARGIN - m_start_game_bn->Width(),
                                    ClientHeight() - m_cancel_bn->Height() - CONTROL_MARGIN));
 
     GG::Pt start_conditions_text_ul(x, ClientHeight() - m_cancel_bn->Height() - CONTROL_MARGIN);
@@ -767,6 +748,7 @@ void MultiPlayerLobbyWnd::PlayerDataChangedLocally() {
         }
     }
 
+    m_start_game_bn->Disable(!ThisClientIsHost() || !CanStart());
     SendUpdate();
 }
 
@@ -777,9 +759,6 @@ bool MultiPlayerLobbyWnd::PopulatePlayerList() {
     int initial_list_scroll_pos = std::distance(m_players_lb->begin(), m_players_lb->FirstRowShown());
 
     m_players_lb->Clear();
-
-    bool is_client_ready = false;
-    bool is_other_ready = true;
 
     // repopulate list with rows built from current lobby data
     for (std::pair<int, PlayerSetupData>& entry : m_lobby_data.m_players) {
@@ -808,15 +787,6 @@ bool MultiPlayerLobbyWnd::PopulatePlayerList() {
                 send_update_back_retval = true;
             }
         }
-
-        // checks for ready button
-        if (data_player_id == HumanClientApp::GetApp()->PlayerID())
-            is_client_ready = psd.m_player_ready;
-        else if (psd.m_client_type == Networking::CLIENT_TYPE_HUMAN_PLAYER ||
-            psd.m_client_type == Networking::CLIENT_TYPE_HUMAN_OBSERVER ||
-            psd.m_client_type == Networking::CLIENT_TYPE_HUMAN_MODERATOR) {
-            is_other_ready = is_other_ready && psd.m_player_ready;
-        }
     }
 
     // on host, add extra empty row, which the host can use to select
@@ -841,14 +811,6 @@ bool MultiPlayerLobbyWnd::PopulatePlayerList() {
     std::advance(first_row_it, first_row_to_show);
     m_players_lb->SetFirstRowShown(first_row_it);
 
-    // set ready button text according of situaton
-    m_ready_bn->Disable(false);
-    if (is_client_ready)
-        m_ready_bn->SetText(UserString("NOT_READY_BN"));
-    else if (is_other_ready)
-        m_ready_bn->SetText(UserString("START_GAME_BN"));
-    else
-        m_ready_bn->SetText(UserString("READY_BN"));
 
     Refresh();
 
@@ -918,16 +880,11 @@ bool MultiPlayerLobbyWnd::CanStart() const
 bool MultiPlayerLobbyWnd::ThisClientIsHost() const
 { return HumanClientApp::GetApp()->Networking().PlayerIsHost(HumanClientApp::GetApp()->Networking().PlayerID()); }
 
-void MultiPlayerLobbyWnd::ReadyClicked() {
-    for (std::pair<int, PlayerSetupData>& entry : m_lobby_data.m_players) {
-        if (entry.first == HumanClientApp::GetApp()->PlayerID()) {
-            entry.second.m_player_ready = (! entry.second.m_player_ready);
-        }
+void MultiPlayerLobbyWnd::StartGameClicked() {
+    if (CanStart() && ThisClientIsHost()) {
+        m_start_game_bn->Disable();
+        HumanClientApp::GetApp()->StartMultiPlayerGameFromLobby();
     }
-
-    PopulatePlayerList();
-    m_ready_bn->Disable(true);
-    SendUpdate();
 }
 
 void MultiPlayerLobbyWnd::CancelClicked()
