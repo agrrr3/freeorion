@@ -7,6 +7,7 @@
 #include "../../util/Directories.h"
 #include "../../util/Serialize.h"
 #include "../../util/i18n.h"
+#include "../util/AppInterface.h"
 #include "../../network/Message.h"
 #include "../util/Random.h"
 
@@ -23,6 +24,48 @@
 
 class CombatLogManager;
 CombatLogManager&   GetCombatLogManager();
+
+
+namespace {
+
+    /** AddTraitBypassOption creates a set of options for debugging of
+        the form:
+        AI.config.trait.<trait name>.force  -- If true use the following options to bypass the trait
+        AI.config.trait.<trait name>.all    -- If present use this value for all of the AIs not individually set
+        AI.config.trait.<trait name>.AI_1   -- Use for AI_1
+        .
+        .
+        .
+        AI.config.trait.<trait name>.AI_40  -- Use for AI_40
+     */
+    template <typename T>
+    void AddTraitBypassOption(OptionsDB& db, std::string const & root, std::string ROOT,
+                                 T def, ValidatorBase const & validator) {
+        std::string option_root = "AI.config.trait." + root +".";
+        std::string user_string_root = "OPTIONS_DB_AI_CONFIG_TRAIT_"+ROOT;
+        db.Add<bool>(option_root + "force", UserStringNop(user_string_root + "_FORCE"), false, Validator<bool>());
+        db.Add<T>(option_root + "all", UserStringNop(user_string_root + "_FORCE_VALUE"), def, validator);
+
+        for (int ii = 1; ii <= IApp::MAX_AI_PLAYERS(); ++ii) {
+            std::stringstream ss;
+            ss << option_root << "AI_" << boost::lexical_cast<int>(ii);
+            db.Add<T>(ss.str(), UserStringNop(user_string_root + "_FORCE_VALUE"), def, validator);
+        }
+    }
+
+    void AddOptions(OptionsDB& db) {
+        // Create options to allow bypassing the traits of the AI
+        // character and forcing them all to one value for testing
+        // purposes.
+
+        const int max_aggression = 5;
+        const int no_value = -1;
+        AddTraitBypassOption<int>(db, "aggression", "AGGRESSION", no_value, RangedValidator<int>(0, max_aggression));
+        AddTraitBypassOption<int>(db, "empire-id", "EMPIREID", no_value, RangedValidator<int>(0, IApp::MAX_AI_PLAYERS()));
+    }
+    bool temp_bool = RegisterOptions(&AddOptions);
+
+}
 
 // static member(s)
 AIClientApp::AIClientApp(const std::vector<std::string>& args) :
@@ -91,7 +134,7 @@ void AIClientApp::Run() {
                     Networking().GetMessage(msg);
                     HandleMessage(msg);
                 } else {
-                    boost::this_thread::sleep_for(boost::chrono::milliseconds(250));
+                    boost::this_thread::sleep_for(boost::chrono::milliseconds(10));
                 }
 
             } catch (boost::python::error_already_set) {
@@ -199,12 +242,12 @@ void AIClientApp::HandleMessage(const Message& msg) {
             std::string save_state_string;
             m_player_status.clear();
 
-            ExtractMessageData(msg,                     single_player_game,     m_empire_id,
-                               m_current_turn,          m_empires,              m_universe,
-                               GetSpeciesManager(),     GetCombatLogManager(),  GetSupplyManager(),
-                               m_player_info,           m_orders,               loaded_game_data,
-                               ui_data_available,       ui_data,                state_string_available,
-                               save_state_string,       m_galaxy_setup_data);
+            ExtractGameStartMessageData(msg,                     single_player_game,     m_empire_id,
+                                        m_current_turn,          m_empires,              m_universe,
+                                        GetSpeciesManager(),     GetCombatLogManager(),  GetSupplyManager(),
+                                        m_player_info,           m_orders,               loaded_game_data,
+                                        ui_data_available,       ui_data,                state_string_available,
+                                        save_state_string,       m_galaxy_setup_data);
 
             DebugLogger() << "Extracted GameStart message for turn: " << m_current_turn << " with empire: " << m_empire_id;
 
@@ -289,9 +332,9 @@ void AIClientApp::HandleMessage(const Message& msg) {
     case Message::TURN_UPDATE: {
         if (msg.SendingPlayer() == Networking::INVALID_PLAYER_ID) {
             //DebugLogger() << "AIClientApp::HandleMessage : extracting turn update message data";
-            ExtractMessageData(msg,                     m_empire_id,        m_current_turn,
-                               m_empires,               m_universe,         GetSpeciesManager(),
-                               GetCombatLogManager(),   GetSupplyManager(), m_player_info);
+            ExtractTurnUpdateMessageData(msg,                     m_empire_id,        m_current_turn,
+                                         m_empires,               m_universe,         GetSpeciesManager(),
+                                         GetCombatLogManager(),   GetSupplyManager(), m_player_info);
             //DebugLogger() << "AIClientApp::HandleMessage : generating orders";
             GetUniverse().InitializeSystemGraph(m_empire_id);
             m_AI->GenerateOrders();
@@ -302,7 +345,7 @@ void AIClientApp::HandleMessage(const Message& msg) {
 
     case Message::TURN_PARTIAL_UPDATE:
         if (msg.SendingPlayer() == Networking::INVALID_PLAYER_ID)
-            ExtractMessageData(msg, m_empire_id, m_universe);
+            ExtractTurnPartialUpdateMessageData(msg, m_empire_id, m_universe);
         break;
 
     case Message::TURN_PROGRESS:
@@ -321,14 +364,14 @@ void AIClientApp::HandleMessage(const Message& msg) {
 
     case Message::DIPLOMACY: {
         DiplomaticMessage diplo_message;
-        ExtractMessageData(msg, diplo_message);
+        ExtractDiplomacyMessageData(msg, diplo_message);
         m_AI->HandleDiplomaticMessage(diplo_message);
         break;
     }
 
     case Message::DIPLOMATIC_STATUS: {
         DiplomaticStatusUpdateInfo diplo_update;
-        ExtractMessageData(msg, diplo_update);
+        ExtractDiplomaticStatusMessageData(msg, diplo_update);
         m_AI->HandleDiplomaticStatusUpdate(diplo_update);
         break;
     }

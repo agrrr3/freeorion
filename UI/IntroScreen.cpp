@@ -114,23 +114,21 @@ void CreditsWnd::DrawCredits(GG::X x1, GG::Y y1, GG::X x2, GG::Y y2, int transpa
     glColor(GG::Clr(transparency, transparency, transparency, 255));
 
     std::string credit;
-    for (int i = 0; i < m_credits.NumChildren(); i++) {
-        if (0 == m_credits.Child(i).Tag().compare("GROUP")) {
-            XMLElement group = m_credits.Child(i);
-            for (int j = 0; j < group.NumChildren(); j++) {
-                if (0 == group.Child(j).Tag().compare("PERSON")) {
-                    XMLElement person = group.Child(j);
+    for (const XMLElement& group : m_credits.children) {
+        if (0 == group.Tag().compare("GROUP")) {
+            for (const XMLElement& person : group.children) {
+                if (0 == person.Tag().compare("PERSON")) {
                     credit = "";
-                    if (person.ContainsAttribute("name"))
-                        credit += person.Attribute("name");
-                    if (person.ContainsAttribute("nick") && person.Attribute("nick").length() > 0) {
+                    if (person.attributes.count("name"))
+                        credit += person.attributes.at("name");
+                    if (person.attributes.count("nick") && person.attributes.at("nick").length() > 0) {
                         credit += " <rgba 153 153 153 " + boost::lexical_cast<std::string>(transparency) +">(";
-                        credit += person.Attribute("nick");
+                        credit += person.attributes.at("nick");
                         credit += ")</rgba>";
                     }
-                    if (person.ContainsAttribute("task") && person.Attribute("task").length() > 0) {
+                    if (person.attributes.count("task") && person.attributes.at("task").length() > 0) {
                         credit += " - <rgba 204 204 204 " + boost::lexical_cast<std::string>(transparency) +">";
-                        credit += person.Attribute("task");
+                        credit += person.attributes.at("task");
                         credit += "</rgba>";
                     }
                     std::vector<boost::shared_ptr<GG::Font::TextElement> > text_elements =

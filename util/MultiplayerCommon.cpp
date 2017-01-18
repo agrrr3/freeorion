@@ -5,7 +5,6 @@
 #include "Logger.h"
 #include "OptionsDB.h"
 #include "Random.h"
-#include "XMLDoc.h"
 #include "../universe/Fleet.h"
 #include "../universe/Planet.h"
 #include "../universe/System.h"
@@ -42,75 +41,6 @@ namespace {
         db.Add<std::string>("ai-config",            UserStringNop("OPTIONS_DB_AI_CONFIG"),             "",       Validator<std::string>(), false);
     }
     bool temp_bool = RegisterOptions(&AddOptions);
-
-#ifdef DEBUG_XML_TO_CLR
-    std::string ClrToString(GG::Clr clr) {
-        unsigned int r = static_cast<int>(clr.r);
-        unsigned int g = static_cast<int>(clr.g);
-        unsigned int b = static_cast<int>(clr.b);
-        unsigned int a = static_cast<int>(clr.a);
-        std::string retval = "(" + boost::lexical_cast<std::string>(r) + ", " +
-            boost::lexical_cast<std::string>(g) + ", " +
-            boost::lexical_cast<std::string>(b) + ", " +
-            boost::lexical_cast<std::string>(a) + ")";
-        return retval;
-    }
-#endif
-}
-
-/////////////////////////////////////////////////////
-// Free Function(s)
-/////////////////////////////////////////////////////
-XMLElement ClrToXML(const GG::Clr& clr) {
-    XMLElement retval("GG::Clr");
-    retval.AppendChild(XMLElement("red", boost::lexical_cast<std::string>(static_cast<int>(clr.r))));
-    retval.AppendChild(XMLElement("green", boost::lexical_cast<std::string>(static_cast<int>(clr.g))));
-    retval.AppendChild(XMLElement("blue", boost::lexical_cast<std::string>(static_cast<int>(clr.b))));
-    retval.AppendChild(XMLElement("alpha", boost::lexical_cast<std::string>(static_cast<int>(clr.a))));
-    return retval;
-}
-
-GG::Clr XMLToClr(const XMLElement& clr) {
-    GG::Clr retval = GG::Clr(0, 0, 0, 255);
-    if (clr.ContainsAttribute("hex")) {
-        // get colour components as a single string representing three pairs of hex digits
-        // from 00 to FF and an optional fourth hex digit pair for alpha
-        const std::string& hex_colour = clr.Attribute("hex");
-        std::istringstream iss(hex_colour);
-        unsigned long rgba = 0;
-        if (!(iss >> std::hex >> rgba).fail()) {
-            if (hex_colour.size() == 6) {
-                retval.r = (rgba >> 16) & 0xFF;
-                retval.g = (rgba >> 8)  & 0xFF;
-                retval.b = rgba         & 0xFF;
-                retval.a = 255;
-            } else {
-                retval.r = (rgba >> 24) & 0xFF;
-                retval.g = (rgba >> 16) & 0xFF;
-                retval.b = (rgba >> 8)  & 0xFF;
-                retval.a = rgba         & 0xFF;
-            }
-#ifdef DEBUG_XML_TO_CLR
-            std::cout << "hex colour: " << hex_colour << " int: " << rgba << " RGBA: " << ClrToString(retval) << std::endl;
-#endif
-        } else {
-            std::cerr << "XMLToClr could not interpret hex colour string \"" << hex_colour << "\"" << std::endl;
-        }
-    } else {
-        // get colours listed as RGBA components ranging 0 to 255 as integers
-        if (clr.ContainsChild("red"))
-            retval.r = boost::lexical_cast<int>(clr.Child("red").Text());
-        if (clr.ContainsChild("green"))
-            retval.g = boost::lexical_cast<int>(clr.Child("green").Text());
-        if (clr.ContainsChild("blue"))
-            retval.b = boost::lexical_cast<int>(clr.Child("blue").Text());
-        if (clr.ContainsChild("alpha"))
-            retval.a = boost::lexical_cast<int>(clr.Child("alpha").Text());
-#ifdef DEBUG_XML_TO_CLR
-        std::cout << "non hex colour RGBA: " << ClrToString(retval) << std::endl;
-#endif
-    }
-    return retval;
 }
 
 
@@ -179,7 +109,8 @@ bool operator==(const PlayerSetupData& lhs, const PlayerSetupData& rhs) {
             lhs.m_empire_name == rhs.m_empire_name &&
             lhs.m_player_name == rhs.m_player_name &&
             lhs.m_save_game_empire_id == rhs.m_save_game_empire_id &&
-            lhs.m_starting_species_name == rhs.m_starting_species_name;
+            lhs.m_starting_species_name == rhs.m_starting_species_name &&
+            lhs.m_player_ready == rhs.m_player_ready;
 }
 
 bool operator!=(const PlayerSetupData& lhs, const PlayerSetupData& rhs)

@@ -294,8 +294,14 @@ const std::vector<GG::Clr>& EmpireColors() {
             return colors;
         }
 
-        for (int i = 0; i < doc.root_node.NumChildren(); ++i) {
-            colors.push_back(XMLToClr(doc.root_node.Child(i)));
+        for (const XMLElement& elem : doc.root_node.children) {
+            try {
+                std::string hex_colour("#");
+                hex_colour.append(elem.attributes.at("hex"));
+                colors.push_back(GG::HexClr(hex_colour));
+            } catch(const std::exception& e) {
+                std::cerr << "empire_colors.xml: " << e.what() << std::endl;
+            }
         }
     }
     if (colors.empty()) {

@@ -107,6 +107,8 @@ namespace {
             default:                                        ss << "<invalid client type>, ";
             }
             ss << entry.second.m_starting_species_name;
+            if (entry.second.m_player_ready)
+                ss << ", Ready";
             DebugLogger() << " ... " << ss.str();
         }
     }
@@ -139,7 +141,7 @@ namespace {
     void HandleErrorMessage(const Error& msg, ServerApp &server) {
         std::string problem;
         bool fatal;
-        ExtractMessageData(msg.m_message, problem, fatal);
+        ExtractErrorMessageData(msg.m_message, problem, fatal);
 
         std::stringstream ss;
 
@@ -259,7 +261,7 @@ sc::result Idle::react(const HostMPGame& msg) {
 
     std::string host_player_name;
     std::string client_version_string;
-    ExtractMessageData(message, host_player_name, client_version_string);
+    ExtractHostMPGameMessageData(message, host_player_name, client_version_string);
 
     // validate host name (was found and wasn't empty)
     if (host_player_name.empty()) {
@@ -291,7 +293,7 @@ sc::result Idle::react(const HostSPGame& msg) {
 
     boost::shared_ptr<SinglePlayerSetupData> single_player_setup_data(new SinglePlayerSetupData);
     std::string client_version_string;
-    ExtractMessageData(message, *single_player_setup_data, client_version_string);
+    ExtractHostSPGameMessageData(message, *single_player_setup_data, client_version_string);
 
 
     // get host player's name from setup data or saved file
@@ -396,7 +398,12 @@ sc::result MPLobby::react(const Disconnection& d) {
             break;
         }
     }
-    if (!player_was_in_lobby) {
+    if (player_was_in_lobby) {
+        // drop ready flag as player list changed
+        for (std::pair<int, PlayerSetupData>& plrs : m_lobby_data->m_players) {
+            plrs.second.m_player_ready = false;
+        }
+    } else {
         DebugLogger() << "MPLobby.Disconnection : Disconnecting player (" << id << ") was not in lobby";
         return discard_event();
     }
@@ -438,6 +445,13 @@ namespace {
         }
         return empire_colour;
     }
+
+    // return true if player has important changes.
+    bool IsPlayerChanged(const PlayerSetupData& lhs, const PlayerSetupData& rhs) {
+        return (lhs.m_client_type != rhs.m_client_type) ||
+            (lhs.m_starting_species_name != rhs.m_starting_species_name) ||
+            (lhs.m_save_game_empire_id != rhs.m_save_game_empire_id);
+    }
 }
 
 sc::result MPLobby::react(const JoinGame& msg) {
@@ -450,7 +464,7 @@ sc::result MPLobby::react(const JoinGame& msg) {
     std::string player_name;
     Networking::ClientType client_type;
     std::string client_version_string;
-    ExtractMessageData(message, player_name, client_type, client_version_string);
+    ExtractJoinGameMessageData(message, player_name, client_type, client_version_string);
     // TODO: check if player name is unique.  If not, modify it slightly to be unique.
 
     // assign unique player ID to newly connected player
@@ -477,6 +491,10 @@ sc::result MPLobby::react(const JoinGame& msg) {
     // after setting all details, push into lobby data
     m_lobby_data->m_players.push_back(std::make_pair(player_id, player_setup_data));
 
+    // drop ready player flag at new player
+    for (std::pair<int, PlayerSetupData>& plrs : m_lobby_data->m_players)
+        plrs.second.m_player_ready = false;
+
     for (ServerNetworking::const_established_iterator it = server.m_networking.established_begin();
          it != server.m_networking.established_end(); ++it)
     { (*it)->SendMessage(ServerLobbyUpdateMessage((*it)->PlayerID(), *m_lobby_data)); }
@@ -490,11 +508,13 @@ sc::result MPLobby::react(const LobbyUpdate& msg) {
     const Message& message = msg.m_message;
 
     MultiplayerLobbyData incoming_lobby_data;
-    ExtractMessageData(message, incoming_lobby_data);
+    ExtractLobbyUpdateMessageData(message, incoming_lobby_data);
 
     // check if new lobby data changed player setup data.  if so, need to echo
     // back to sender with updated lobby details.
     bool player_setup_data_changed = (incoming_lobby_data.m_players != m_lobby_data->m_players);
+    // if got important lobby changes so players shoul reset their ready status
+    bool has_important_changes = false;
 
     // store incoming lobby data.  clients can only change some of
     // this information (galaxy setup data, whether it is a new game and what
@@ -505,6 +525,40 @@ sc::result MPLobby::react(const LobbyUpdate& msg) {
     // TODO: ensure only the host can change anything other than a player's
     // own details.  non-hosts should not be able to edit other players' info
     // or the galaxy setup.
+    
+    // check if galaxy setup data changed
+    has_important_changes = has_important_changes || (m_lobby_data->m_seed != incoming_lobby_data.m_seed) ||
+        (m_lobby_data->m_size != incoming_lobby_data.m_size) ||
+        (m_lobby_data->m_shape != incoming_lobby_data.m_shape) ||
+        (m_lobby_data->m_age != incoming_lobby_data.m_age) ||
+        (m_lobby_data->m_starlane_freq != incoming_lobby_data.m_starlane_freq) ||
+        (m_lobby_data->m_planet_density != incoming_lobby_data.m_planet_density) ||
+        (m_lobby_data->m_specials_freq != incoming_lobby_data.m_specials_freq) ||
+        (m_lobby_data->m_monster_freq != incoming_lobby_data.m_monster_freq) ||
+        (m_lobby_data->m_native_freq != incoming_lobby_data.m_native_freq) ||
+        (m_lobby_data->m_ai_aggr != incoming_lobby_data.m_ai_aggr) ||
+        (m_lobby_data->m_new_game != incoming_lobby_data.m_new_game);
+
+    if (player_setup_data_changed) {
+        if (m_lobby_data->m_players.size() != incoming_lobby_data.m_players.size()) {
+            has_important_changes = true; // drop ready at number of players changed
+        } else {
+            for (std::pair<int, PlayerSetupData>& i_player : m_lobby_data->m_players) {
+                if (i_player.first < 0) // ignore changes in AI.
+                    continue;
+                int player_id = i_player.first;
+                bool is_found_player = false;
+                for (std::pair<int, PlayerSetupData>& j_player : incoming_lobby_data.m_players) {
+                    if (player_id == j_player.first) {
+                        has_important_changes = has_important_changes || IsPlayerChanged(i_player.second, j_player.second);
+                        is_found_player = true;
+                        break;
+                    }
+                }
+                has_important_changes = has_important_changes || (! is_found_player);
+            }
+        }
+    }
 
     // GalaxySetupData
     m_lobby_data->m_seed =          incoming_lobby_data.m_seed;
@@ -668,6 +722,64 @@ sc::result MPLobby::react(const LobbyUpdate& msg) {
         }
     }
 
+    if (has_important_changes) {
+        for (std::pair<int, PlayerSetupData>& player : m_lobby_data->m_players)
+            player.second.m_player_ready = false;
+    } else {
+        // check if all established human players ready to play
+        bool is_all_ready = true;
+        for (std::pair<int, PlayerSetupData>& player : m_lobby_data->m_players) {
+            if ((player.first >= 0) && (player.second.m_client_type == Networking::CLIENT_TYPE_HUMAN_OBSERVER ||
+                player.second.m_client_type == Networking::CLIENT_TYPE_HUMAN_MODERATOR ||
+                player.second.m_client_type == Networking::CLIENT_TYPE_HUMAN_PLAYER))
+            {
+                if (! player.second.m_player_ready)
+                    is_all_ready = false;
+            }
+        }
+
+        if (is_all_ready) {
+            // TODO: merge this code with MPLobby::react(const StartMPGame& msg)
+            // start game
+            
+            if (! m_lobby_data->m_new_game) {
+                // Load game ...
+                std::string save_filename = (GetSaveDir() / m_lobby_data->m_save_game).string();
+
+                try {
+                    LoadGame(save_filename,             *m_server_save_game_data,
+                             m_player_save_game_data,   GetUniverse(),
+                             Empires(),                 GetSpeciesManager(),
+                             GetCombatLogManager(),     server.m_galaxy_setup_data);
+                    int seed = 0;
+                    try {
+                        DebugLogger() << "Seeding with loaded galaxy seed: " << server.m_galaxy_setup_data.m_seed;
+                        seed = boost::lexical_cast<unsigned int>(server.m_galaxy_setup_data.m_seed);
+                    } catch (...) {
+                        try {
+                            boost::hash<std::string> string_hash;
+                            std::size_t h = string_hash(server.m_galaxy_setup_data.m_seed);
+                            seed = static_cast<unsigned int>(h);
+                        } catch (...) {}
+                    }
+                    Seed(seed);
+                    
+                } catch (const std::exception&) {
+                    SendMessageToAllPlayers(ErrorMessage(UserStringNop("UNABLE_TO_READ_SAVE_FILE"), true));
+                    return discard_event();
+                }
+            }
+            
+            // copy locally stored data to common server fsm context so it can be
+            // retreived in WaitingForMPGameJoiners
+            context<ServerFSM>().m_lobby_data = m_lobby_data;
+            context<ServerFSM>().m_player_save_game_data = m_player_save_game_data;
+            context<ServerFSM>().m_server_save_game_data = m_server_save_game_data;
+
+            return transit<WaitingForMPGameJoiners>();            
+        }
+    }
+
     // propagate lobby changes to players, so everyone has the latest updated
     // version of the lobby data
     for (ServerNetworking::const_established_iterator player_connection_it = server.m_networking.established_begin();
@@ -679,7 +791,8 @@ sc::result MPLobby::react(const LobbyUpdate& msg) {
         // after a player is added or dropped.  otherwise, messages can just go
         // to players who didn't send the message that this function is
         // responding to.  TODO: check for add/drop
-        if (new_save_file_selected || player_setup_data_changed || player_id != message.SendingPlayer())
+        if (new_save_file_selected || player_setup_data_changed ||
+            player_id != message.SendingPlayer() || has_important_changes )
             player_connection->SendMessage(ServerLobbyUpdateMessage(player_id, *m_lobby_data));
     }
 
@@ -893,7 +1006,7 @@ sc::result WaitingForSPGameJoiners::react(const JoinGame& msg) {
     std::string player_name("Default_Player_Name_in_WaitingForSPGameJoiners::react(const JoinGame& msg)");
     Networking::ClientType client_type(Networking::INVALID_CLIENT_TYPE);
     std::string client_version_string;
-    ExtractMessageData(message, player_name, client_type, client_version_string);
+    ExtractJoinGameMessageData(message, player_name, client_type, client_version_string);
 
     int player_id = server.m_networking.NewPlayerID();
 
@@ -1023,7 +1136,7 @@ sc::result WaitingForMPGameJoiners::react(const JoinGame& msg) {
     std::string player_name("Default_Player_Name_in_WaitingForMPGameJoiners::react(const JoinGame& msg)");
     Networking::ClientType client_type(Networking::INVALID_CLIENT_TYPE);
     std::string client_version_string;
-    ExtractMessageData(message, player_name, client_type, client_version_string);
+    ExtractJoinGameMessageData(message, player_name, client_type, client_version_string);
 
     int player_id = server.m_networking.NewPlayerID();
 
@@ -1125,7 +1238,7 @@ sc::result PlayingGame::react(const Diplomacy& msg) {
     const Message& message = msg.m_message;
 
     DiplomaticMessage diplo_message;
-    ExtractMessageData(message, diplo_message);
+    ExtractDiplomacyMessageData(message, diplo_message);
     Empires().HandleDiplomaticMessage(diplo_message);
 
     return discard_event();
@@ -1146,7 +1259,7 @@ sc::result PlayingGame::react(const ModeratorAct& msg) {
     }
 
     Moderator::ModeratorAction* action = 0;
-    ExtractMessageData(message, action);
+    ExtractModeratorActionMessageData(message, action);
 
     DebugLogger() << "PlayingGame::react(ModeratorAct): " << (action ? action->Dump() : "(null)");
 
@@ -1163,6 +1276,12 @@ sc::result PlayingGame::react(const ModeratorAct& msg) {
 
     delete action;
 
+    return discard_event();
+}
+
+sc::result PlayingGame::react(const RequestCombatLogs& msg) {
+    DebugLogger() << "(ServerFSM) PlayingGame::RequestCombatLogs message received";
+    Server().UpdateCombatLogs(msg.m_message, msg.m_player_connection);
     return discard_event();
 }
 
@@ -1190,7 +1309,7 @@ sc::result WaitingForTurnEnd::react(const TurnOrders& msg) {
     const Message& message = msg.m_message;
 
     OrderSet* order_set = new OrderSet;
-    ExtractMessageData(message, *order_set);
+    ExtractTurnOrdersMessageData(message, *order_set);
 
     assert(message.SendingPlayer() == msg.m_player_connection->PlayerID());
 
@@ -1388,7 +1507,7 @@ sc::result WaitingForSaveData::react(const ClientSaveData& msg) {
     bool save_state_string_available = false;
 
     try {
-        ExtractMessageData(message, received_orders, ui_data_available, *ui_data, save_state_string_available, save_state_string);
+        ExtractClientSaveDataMessageData(message, received_orders, ui_data_available, *ui_data, save_state_string_available, save_state_string);
     } catch (const std::exception& e) {
         DebugLogger() << "WaitingForSaveData::react(const ClientSaveData& msg) received invalid save data from player " << player_connection->PlayerName();
         player_connection->SendMessage(ErrorMessage(UserStringNop("INVALID_CLIENT_SAVE_DATA_RECEIVED"), false));

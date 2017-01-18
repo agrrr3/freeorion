@@ -128,6 +128,8 @@ void Empire::serialize(Archive& ar, const unsigned int version)
 
             & BOOST_SERIALIZATION_NVP(m_species_ships_owned)
             & BOOST_SERIALIZATION_NVP(m_ship_designs_owned)
+            & BOOST_SERIALIZATION_NVP(m_ship_part_types_owned)
+            & BOOST_SERIALIZATION_NVP(m_ship_part_class_owned)
             & BOOST_SERIALIZATION_NVP(m_species_colonies_owned)
             & BOOST_SERIALIZATION_NVP(m_outposts_owned)
             & BOOST_SERIALIZATION_NVP(m_building_types_owned)
@@ -201,7 +203,8 @@ void SupplyManager::serialize(Archive& ar, const unsigned int version)
         & BOOST_SERIALIZATION_NVP(m_supply_starlane_obstructed_traversals)
         & BOOST_SERIALIZATION_NVP(m_fleet_supplyable_system_ids)
         & BOOST_SERIALIZATION_NVP(m_resource_supply_groups)
-        & BOOST_SERIALIZATION_NVP(m_propagated_supply_ranges);
+        & BOOST_SERIALIZATION_NVP(m_propagated_supply_ranges)
+        & BOOST_SERIALIZATION_NVP(m_empire_propagated_supply_ranges);
 }
 
 template void SupplyManager::serialize<freeorion_bin_oarchive>(freeorion_bin_oarchive&, const unsigned int);

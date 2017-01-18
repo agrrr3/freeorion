@@ -13,17 +13,8 @@
 #include <boost/serialization/access.hpp>
 
 
-
-class XMLElement;
-
 FO_COMMON_API extern const std::string MP_SAVE_FILE_EXTENSION;
 FO_COMMON_API extern const std::string SP_SAVE_FILE_EXTENSION;
-
-/** Returns an XML representation of a GG::Clr object. */
-XMLElement ClrToXML(const GG::Clr& clr);
-
-/** Returns a GG::Clr object constructed from its XML representation. */
-FO_COMMON_API GG::Clr XMLToClr(const XMLElement& clr);
 
 /** The data that represent the galaxy setup for a new game. */
 struct FO_COMMON_API GalaxySetupData {
@@ -124,7 +115,8 @@ struct PlayerSetupData {
         m_empire_color(GG::Clr(0, 0, 0, 0)),
         m_starting_species_name(),
         m_save_game_empire_id(ALL_EMPIRES),
-        m_client_type(Networking::INVALID_CLIENT_TYPE)
+        m_client_type(Networking::INVALID_CLIENT_TYPE),
+        m_player_ready(false)
     {}
     //@}
 
@@ -137,6 +129,7 @@ struct PlayerSetupData {
     int                     m_save_game_empire_id;  ///< when loading a game, the ID of the empire that this player will control
 
     Networking::ClientType  m_client_type;          ///< is this player an AI, human player or...?
+    bool                    m_player_ready;         ///< if player ready to play.
 
 private:
     friend class boost::serialization::access;
