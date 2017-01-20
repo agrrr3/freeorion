@@ -84,11 +84,11 @@ public:
     Spin(T value, T step, T min, T max, bool edits, const boost::shared_ptr<Font>& font, Clr color,
          Clr text_color = CLR_BLACK);
 
-    ~Spin(); // dtor
+    ~Spin();
     //@}
 
     /** \name Accessors */ ///@{
-    virtual Pt MinUsableSize() const;
+    Pt MinUsableSize() const override;
 
     T      Value() const;              ///< returns the current value of the control's text
     T      StepSize() const;           ///< returns the step size of the control
@@ -107,12 +107,13 @@ public:
     //@}
 
     /** \name Mutators */ ///@{
-    virtual void Render();
+    void Render() override;
 
-    virtual void SizeMove(const Pt& ul, const Pt& lr);
+    void SizeMove(const Pt& ul, const Pt& lr) override;
 
-    virtual void Disable(bool b = true);
-    virtual void SetColor(Clr c);
+    void Disable(bool b = true) override;
+
+    void SetColor(Clr c) override;
 
     void Incr();  ///< increments the value of the control's text by StepSize(), up to at most MaxValue()
     void Decr();  ///< decrements the value of the control's text by StepSize(), down to at least MinValue()
@@ -147,10 +148,11 @@ protected:
     //@}
 
     /** \name Mutators */ ///@{
-    virtual void KeyPress(Key key, boost::uint32_t key_code_point, Flags<ModKey> mod_keys);
-    virtual void MouseWheel(const Pt& pt, int move, Flags<ModKey> mod_keys);
+    void KeyPress(Key key, boost::uint32_t key_code_point, Flags<ModKey> mod_keys) override;
 
-    virtual bool EventFilter(Wnd* w, const WndEvent& event);
+    void MouseWheel(const Pt& pt, int move, Flags<ModKey> mod_keys) override;
+
+    bool EventFilter(Wnd* w, const WndEvent& event) override;
     //@}
 
 private:
@@ -188,9 +190,9 @@ Spin<T>::Spin(T value, T step, T min, T max, bool edits, const boost::shared_ptr
     m_min_value(min),
     m_max_value(max),
     m_editable(edits),
-    m_edit(0),
-    m_up_button(0),
-    m_down_button(0),
+    m_edit(nullptr),
+    m_up_button(nullptr),
+    m_down_button(nullptr),
     m_button_width(15)
 {
     Init(font, color, text_color);

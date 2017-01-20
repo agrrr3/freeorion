@@ -9,7 +9,7 @@
 class ShipDesignPanel : public GG::Control {
 public:
     /** \name Structors */ //@{
-    ShipDesignPanel(GG::X w, GG::Y h, int design_id);   ///< basic ctor
+    ShipDesignPanel(GG::X w, GG::Y h, int design_id);
     //@}
 
     /** \name Accessors */ //@{
@@ -17,8 +17,9 @@ public:
     //@}
 
     /** \name Mutators */ //@{
-    virtual void            SizeMove(const GG::Pt& ul, const GG::Pt& lr);
-    virtual void            Render();
+    void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override;
+
+    void Render() override;
 
     void                    Update();
     //@}

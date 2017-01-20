@@ -4,6 +4,17 @@
 #include <string>
 #include <vector>
 
+#ifdef FREEORION_MACOSX
+// Bugfix for https://github.com/freeorion/freeorion/issues/1228
+
+// The problem on OSX is that the boost/python/str.hpp redefines toupper() and
+// similar functions if they are not already defined.
+
+// This includes iostream before the boost/python/str.hpp to fix this issue.
+// If the subsequent #include <boost/python/str.hpp> is removed then so can this workaround.
+#include <iostream>
+#endif
+
 #include <boost/python/str.hpp>
 
 struct CombatData;
@@ -212,7 +223,7 @@ namespace AIInterface {
      *
      * @param name The identifying name of the requested ::Tech.
      *
-     * @return A pointer to the ::Tech matching @a name or NULL if no ::Tech
+     * @return A pointer to the ::Tech matching @a name or nullptr if no ::Tech
      *      with that name was found.
      */
     const Tech* GetTech(const std::string& name);

@@ -180,7 +180,7 @@ namespace {
 
     class ColorEmpire : public LinkDecorator {
     public:
-        virtual std::string Decorate(const std::string& target, const std::string& content) const {
+        std::string Decorate(const std::string& target, const std::string& content) const override {
             GG::Clr color = ClientUI::DefaultLinkColor();
             int id = CastStringToInt(target);
             Empire* empire = GetEmpire(id);
@@ -202,7 +202,7 @@ namespace {
         mutable boost::signals2::signal<void(const GG::Pt&, GG::Flags<GG::ModKey>)> RightClickedSignal;
 
     protected:
-        void RClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) {
+        void RClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) override {
             if (GetLinkUnderPt(pt) != -1) {
                 LinkText::RClick(pt, mod_keys);
             } else {
@@ -220,22 +220,22 @@ namespace {
             Control(left, top, w, h, GG::NO_WND_FLAGS),
             m_initialized(false),
             m_sitrep_entry(sitrep),
-            m_icon(0),
-            m_link_text(0)
+            m_icon(nullptr),
+            m_link_text(nullptr)
         {
             SetChildClippingMode(ClipToClient);
             Init();
             DoLayout(GG::Pt(left, top), w);
         }
 
-        virtual void        Render() {
+        void Render() override {
             GG::Clr background_clr = this->Disabled() ? ClientUI::WndColor() : ClientUI::CtrlColor();
             GG::Pt spacer = GG::Pt(GG::X(sitrep_edge_to_outline_spacing), GG::Y(sitrep_edge_to_outline_spacing));
             GG::FlatRectangle(UpperLeft() + spacer, LowerRight() - spacer,
                               background_clr, ClientUI::WndOuterBorderColor(), 1u);
         }
 
-        virtual void        SizeMove(const GG::Pt& ul, const GG::Pt& lr) {
+        void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override {
             if (ul != ClientUpperLeft() || (lr.x - ul.x) != Width())
                 DoLayout(ul, lr.x - ul.x);
         }
@@ -245,7 +245,8 @@ namespace {
         mutable boost::signals2::signal<void(const GG::Pt&, GG::Flags<GG::ModKey>)> RightClickedSignal;
 
     protected:
-        void            RClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod) { RightClickedSignal(pt, mod); }
+        void RClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod) override
+        { RightClickedSignal(pt, mod); }
 
     private:
         void            DoLayout(const GG::Pt& ul, const GG::X& width) {
@@ -317,7 +318,7 @@ namespace {
     public:
         SitRepRow(GG::X w, GG::Y h, const SitRepEntry& sitrep) :
             GG::ListBox::Row(w, h, ""),
-            m_panel(0),
+            m_panel(nullptr),
             m_sitrep(sitrep)
         {
             SetName("SitRepRow");
@@ -328,7 +329,7 @@ namespace {
             RequirePreRender();
         }
 
-        virtual void        PreRender() {
+        void PreRender() override {
             GG::ListBox::Row::PreRender();
 
             if (!m_panel)
@@ -340,7 +341,7 @@ namespace {
             GG::ListBox::Row::Resize(m_panel->Size() + border);
         }
 
-        virtual void        SizeMove(const GG::Pt& ul, const GG::Pt& lr) {
+        void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override {
             if (!m_panel || (Size() != (lr - ul)))
                 RequirePreRender();
             GG::ListBox::Row::SizeMove(ul, lr);
@@ -366,11 +367,11 @@ SitRepPanel::SitRepPanel(const std::string& config_name) :
     CUIWnd(UserString("SITREP_PANEL_TITLE"),
            GG::ONTOP | GG::INTERACTIVE | GG::DRAGABLE | GG::RESIZABLE | CLOSABLE | PINABLE,
            config_name),
-    m_sitreps_lb(0),
-    m_prev_turn_button(0),
-    m_next_turn_button(0),
-    m_last_turn_button(0),
-    m_filter_button(0),
+    m_sitreps_lb(nullptr),
+    m_prev_turn_button(nullptr),
+    m_next_turn_button(nullptr),
+    m_last_turn_button(nullptr),
+    m_filter_button(nullptr),
     m_showing_turn(INVALID_GAME_TURN),
     m_hidden_sitrep_templates(HiddenSitRepTemplateStringsFromOptions())
 {
@@ -617,7 +618,7 @@ void SitRepPanel::DismissalMenu(GG::ListBox::iterator it, const GG::Pt& pt, cons
     std::string entry_margin("  ");
     separator_item.separator = true;
     int start_turn = 0;
-    SitRepRow* sitrep_row(0);
+    SitRepRow* sitrep_row = nullptr;
     if (it != m_sitreps_lb->end()) 
         sitrep_row = dynamic_cast<SitRepRow*>(*it);
     submenu_ignore.label = entry_margin + UserString("SITREP_IGNORE_MENU");

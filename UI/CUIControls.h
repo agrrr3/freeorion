@@ -37,14 +37,16 @@ public:
              GG::Flags<GG::TextFormat> format = GG::FORMAT_NONE,
              GG::Flags<GG::WndFlag> flags = GG::NO_WND_FLAGS,
              GG::X x = GG::X0, GG::Y y = GG::Y0, GG::X w = GG::X1, GG::Y h = GG::Y1);
+
     CUILabel(const std::string& str,
              const std::vector<boost::shared_ptr<GG::Font::TextElement> >& text_elements,
              GG::Flags<GG::TextFormat> format = GG::FORMAT_NONE,
              GG::Flags<GG::WndFlag> flags = GG::NO_WND_FLAGS,
              GG::X x = GG::X0, GG::Y y = GG::Y0, GG::X w = GG::X1, GG::Y h = GG::Y1);
     //@}
+
     /** \name Mutators */ //@{
-    virtual void RClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys);
+    void RClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) override;
     //@}
 };
 
@@ -52,26 +54,28 @@ public:
 class CUIButton : public GG::Button {
 public:
     /** \name Structors */ //@{
-    CUIButton(const std::string& str); ///< basic ctor
+    CUIButton(const std::string& str);
 
     CUIButton(const GG::SubTexture& unpressed, const GG::SubTexture& pressed, const GG::SubTexture& rollover);
     //@}
 
     /** \name Accessors */ //@{
-    virtual GG::Pt MinUsableSize() const;
+    GG::Pt MinUsableSize() const override;
 
-    virtual bool InWindow(const GG::Pt& pt) const;
+    bool InWindow(const GG::Pt& pt) const override;
     //@}
 
     /** \name Mutators */ //@{
-    virtual void MouseHere(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys);
+    void MouseHere(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) override;
     //@}
 
 protected:
     /** \name Mutators control */ //@{
-    virtual void RenderPressed();
-    virtual void RenderRollover();
-    virtual void RenderUnpressed();
+    void RenderPressed() override;
+
+    void RenderRollover() override;
+
+    void RenderUnpressed() override;
     //@}
 };
 
@@ -82,7 +86,7 @@ public:
     //@}
 
     /** \name Accessors */ //@{
-    virtual bool    InWindow(const GG::Pt& pt) const;
+    bool InWindow(const GG::Pt& pt) const override;
     //@}
 
 private:
@@ -94,22 +98,24 @@ class CUIArrowButton : public GG::Button {
 public:
     /** \name Structors */ //@{
     CUIArrowButton(ShapeOrientation orientation, bool fill_background,
-                   GG::Flags<GG::WndFlag> flags = GG::INTERACTIVE); ///< basic ctor
+                   GG::Flags<GG::WndFlag> flags = GG::INTERACTIVE);
     //@}
 
     /** \name Accessors */ //@{
-    virtual bool    InWindow(const GG::Pt& pt) const;
+    bool InWindow(const GG::Pt& pt) const override;
     //@}
 
     /** \name Mutators */ //@{
-    virtual void    MouseHere(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys);
+    void MouseHere(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) override;
     //@}
 
 protected:
     /** \name Mutators control */ //@{
-    virtual void RenderPressed();
-    virtual void RenderRollover();
-    virtual void RenderUnpressed();
+    void RenderPressed() override;
+
+    void RenderRollover() override;
+
+    void RenderUnpressed() override;
     //@}
 
 private:
@@ -120,43 +126,43 @@ private:
 /** \brief A FreeOrion styled check box state button. */
 class CUICheckBoxRepresenter : public GG::StateButtonRepresenter {
 public:
-    virtual void Render(const GG::StateButton& button) const;
+    void Render(const GG::StateButton& button) const override;
 
-    virtual void OnChanged(const GG::StateButton& button, GG::StateButton::ButtonState prev_state) const;
+    void OnChanged(const GG::StateButton& button, GG::StateButton::ButtonState prev_state) const override;
 
-    virtual void OnChecked(bool checked) const;
+    void OnChecked(bool checked) const override;
 };
 
 /** \brief A FreeOrion styled radio state button. */
 class CUIRadioRepresenter : public GG::StateButtonRepresenter {
 public:
-    virtual void Render(const GG::StateButton& button) const;
+    void Render(const GG::StateButton& button) const override;
 
-    virtual void OnChanged(const GG::StateButton& button, GG::StateButton::ButtonState prev_state) const;
+    void OnChanged(const GG::StateButton& button, GG::StateButton::ButtonState prev_state) const override;
 
-    virtual void OnChecked(bool checked) const;
+    void OnChecked(bool checked) const override;
 };
 
 /** \brief A FreeOrion styled TabBar tab. */
 class CUITabRepresenter : public GG::StateButtonRepresenter {
 public:
-    virtual void Render(const GG::StateButton& button) const;
+    void Render(const GG::StateButton& button) const override;
 
-    virtual void OnChanged(const GG::StateButton& button, GG::StateButton::ButtonState prev_state) const;
+    void OnChanged(const GG::StateButton& button, GG::StateButton::ButtonState prev_state) const override;
 
-    virtual void OnChecked(bool checked) const;
+    void OnChecked(bool checked) const override;
 
-    virtual GG::Pt MinUsableSize(const GG::StateButton& button) const;
+    GG::Pt MinUsableSize(const GG::StateButton& button) const override;
 };
 
 /** @brief A FreeOrion styled label toggle button. */
 class CUILabelButtonRepresenter : public GG::StateButtonRepresenter {
 public:
-    virtual void Render(const GG::StateButton& button) const;
+    void Render(const GG::StateButton& button) const override;
 
-    virtual void OnChanged(const GG::StateButton& button, GG::StateButton::ButtonState prev_state) const;
+    void OnChanged(const GG::StateButton& button, GG::StateButton::ButtonState prev_state) const override;
 
-    virtual void OnChecked(bool checked) const;
+    void OnChecked(bool checked) const override;
 };
 
 
@@ -179,9 +185,9 @@ public:
                              boost::shared_ptr<GG::SubTexture> checked_icon,
                              const GG::Clr& checked_clr);
 
-    virtual void Render(const GG::StateButton& button) const;
+    void Render(const GG::StateButton& button) const override;
 
-    virtual void OnChecked(bool checked) const;
+    void OnChecked(bool checked) const override;
 
 private:
     boost::shared_ptr<GG::SubTexture>   m_unchecked_icon;
@@ -195,7 +201,7 @@ private:
 class CUIStateButton : public GG::StateButton {
 public:
     /** \name Structors */ //@{
-    CUIStateButton(const std::string& str, GG::Flags<GG::TextFormat> format, boost::shared_ptr<GG::StateButtonRepresenter> representer); ///< ctor
+    CUIStateButton(const std::string& str, GG::Flags<GG::TextFormat> format, boost::shared_ptr<GG::StateButtonRepresenter> representer);
     //@}
 };
 
@@ -203,13 +209,12 @@ public:
 class CUITabBar : public GG::TabBar {
 public:
     /** \name Structors */ ///@{
-    /** Basic ctor. */
     CUITabBar(const boost::shared_ptr<GG::Font>& font, GG::Clr color,
               GG::Clr text_color);
     //@}
 
 private:
-    virtual void DistinguishCurrentTab(const std::vector<GG::StateButton*>& tab_buttons);
+    void DistinguishCurrentTab(const std::vector<GG::StateButton*>& tab_buttons) override;
 };
 
 /** a FreeOrion Scroll control */
@@ -218,14 +223,22 @@ public:
     /** represents the tab button for a CUIScroll */
     class ScrollTab : public GG::Button {
     public:
-        ScrollTab(GG::Orientation orientation, int scroll_width, GG::Clr color, GG::Clr border_color); ///< basic ctor
-        virtual void SetColor(GG::Clr c);
-        virtual void Render();
-        virtual void LButtonDown(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys);
-        virtual void LButtonUp(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys);
-        virtual void LClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys);
-        virtual void MouseEnter(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys);
-        virtual void MouseLeave();
+        ScrollTab(GG::Orientation orientation, int scroll_width, GG::Clr color, GG::Clr border_color);
+
+        void SetColor(GG::Clr c) override;
+
+        void Render() override;
+
+        void LButtonDown(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) override;
+
+        void LButtonUp(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) override;
+
+        void LClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) override;
+
+        void MouseEnter(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) override;
+
+        void MouseLeave() override;
+
     private:
         GG::Clr m_border_color;
         GG::Orientation m_orientation;
@@ -234,12 +247,13 @@ public:
     };
 
     /** \name Structors */ //@{
-    CUIScroll(GG::Orientation orientation); ///< basic ctor
+    CUIScroll(GG::Orientation orientation);
     //@}
 
     /** \name Mutators */ //@{
-    virtual void Render();
-    virtual void SizeMove(const GG::Pt& ul, const GG::Pt& lr);
+    void Render() override;
+
+    void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override;
     //@}
 
 protected:
@@ -250,11 +264,11 @@ protected:
 class CUIListBox : public GG::ListBox {
 public:
     /** \name Structors */ //@{
-    CUIListBox(void); ///< basic ctor
+    CUIListBox(void);
     //@}
 
     /** \name Mutators */ //@{
-    virtual void Render();
+    void Render() override;
     //@}
 };
 
@@ -262,25 +276,29 @@ public:
 class CUIDropDownList : public GG::DropDownList {
 public:
     /** \name Structors */ //@{
-    explicit CUIDropDownList(size_t num_shown_elements); ///< basic ctor
+    explicit CUIDropDownList(size_t num_shown_elements);
     //@}
 
     /** Return the width of the dropped row which excludes the DropArrow. */
-    virtual GG::X  DroppedRowWidth() const;
-    virtual GG::Pt  ClientLowerRight() const;
+    GG::X DroppedRowWidth() const override;
+
+    GG::Pt ClientLowerRight() const override;
 
     /** \name Mutators */ //@{
-    virtual void    Render();
-    virtual void    LClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys);
-    virtual void    MouseEnter(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys);
-    virtual void    MouseLeave();
+    void Render() override;
+
+    void LClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) override;
+
+    void MouseEnter(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) override;
+
+    void MouseLeave() override;
 
     void            DisableDropArrow();  ///< disables rendering of the small downward-facing arrow on the right of the control
     void            EnableDropArrow();   ///< enables rendering of the small downward-facing arrow on the right of the control
     //@}
 
 private:
-    virtual void    InitBuffer();
+    void InitBuffer() override;
 
     bool    m_render_drop_arrow;
     bool    m_mouse_here;
@@ -290,15 +308,19 @@ private:
 class CUIEdit : public GG::Edit {
 public:
     /** \name Structors */ //@{
-    CUIEdit(const std::string& str); ///< basic ctor
+    CUIEdit(const std::string& str);
     //@}
 
     /** \name Mutators */ //@{
-    virtual void RClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys);
-    virtual void KeyPress(GG::Key key, boost::uint32_t key_code_point, GG::Flags<GG::ModKey> mod_keys);
-    virtual void GainingFocus();
-    virtual void LosingFocus();
-    virtual void Render();
+    void RClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) override;
+
+    void KeyPress(GG::Key key, boost::uint32_t key_code_point, GG::Flags<GG::ModKey> mod_keys) override;
+
+    void GainingFocus() override;
+
+    void LosingFocus() override;
+
+    void Render() override;
     //@}
 
     mutable boost::signals2::signal<void ()> GainingFocusSignal;
@@ -309,12 +331,13 @@ public:
 class CUIMultiEdit : public GG::MultiEdit {
 public:
     /** \name Structors */ //@{
-    CUIMultiEdit(const std::string& str, GG::Flags<GG::MultiEditStyle> style = GG::MULTI_LINEWRAP); ///< basic ctor
+    CUIMultiEdit(const std::string& str, GG::Flags<GG::MultiEditStyle> style = GG::MULTI_LINEWRAP);
     //@}
 
     /** \name Mutators */ //@{
-    virtual void    Render();
-    virtual void    RClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys);
+    void Render() override;
+
+    void RClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) override;
     //@}
 };
 
@@ -322,33 +345,44 @@ public:
 class CUILinkTextMultiEdit : public CUIMultiEdit, public TextLinker {
 public:
     /** \name Structors */ //@{
-    CUILinkTextMultiEdit(const std::string& str, GG::Flags<GG::MultiEditStyle> style = GG::MULTI_LINEWRAP); ///< basic ctor
+    CUILinkTextMultiEdit(const std::string& str, GG::Flags<GG::MultiEditStyle> style = GG::MULTI_LINEWRAP);
     //@}
+
     /** \name Accessors */ //@{
-    virtual const std::vector<GG::Font::LineData>&  GetLineData() const;
-    virtual const boost::shared_ptr<GG::Font>&      GetFont() const;
-    virtual GG::Pt                                  TextUpperLeft() const;
-    virtual GG::Pt                                  TextLowerRight() const;
-    virtual const std::string&                      RawText() const;
+    const std::vector<GG::Font::LineData>& GetLineData() const override;
+
+    const boost::shared_ptr<GG::Font>& GetFont() const override;
+
+    GG::Pt TextUpperLeft() const override;
+
+    GG::Pt TextLowerRight() const override;
+
+    const std::string& RawText() const override;
     //@}
 
     /** \name Mutators */ //@{
-    virtual void    Render();
-    virtual void    LClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys);
-    virtual void    RClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys);
-    virtual void    MouseHere(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys);
-    virtual void    MouseLeave();
-    virtual void    SizeMove(const GG::Pt& ul, const GG::Pt& lr);   // needed primarily so the SetText call will take a RawText
+    void Render() override;
+
+    void LClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) override;
+
+    void RClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) override;
+
+    void MouseHere(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) override;
+
+    void MouseLeave() override;
+
+    /** Needed primarily so the SetText call will take a RawText. */
+    void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override;
 
     /** sets the text to \a str; may resize the window.  If the window was
         constructed to fit the size of the text (i.e. if the second ctor type
         was used), calls to this function cause the window to be resized to
         whatever space the newly rendered text occupies. */
-    virtual void    SetText(const std::string& str);
+    void SetText(const std::string& str) override;
     //@}
 
 private:
-    virtual void    SetLinkedText(const std::string& str);
+    void SetLinkedText(const std::string& str) override;
 
     bool            m_already_setting_text_so_dont_link;
     std::string     m_raw_text;
@@ -395,15 +429,22 @@ public:
     //@}
 
     /** \name Mutators */ //@{
-    virtual void    PreRender();
-    virtual void    Render() {}
+    void PreRender() override;
 
-    virtual void    SizeMove(const GG::Pt& ul, const GG::Pt& lr);
-    virtual void    LButtonDown(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys);
-    virtual void    RButtonDown(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys);
-    virtual void    LClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys);
-    virtual void    RClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys);
-    virtual void    MouseWheel(const GG::Pt& pt, int move, GG::Flags<GG::ModKey> mod_keys);
+    void Render() override
+    {}
+
+    void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override;
+
+    void LButtonDown(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) override;
+
+    void RButtonDown(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) override;
+
+    void LClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) override;
+
+    void RClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) override;
+
+    void MouseWheel(const GG::Pt& pt, int move, GG::Flags<GG::ModKey> mod_keys) override;
 
     void            SetValue(double value, int index = 0);  ///< sets displayed \a value with \a index
     //@}
@@ -432,11 +473,11 @@ public:
     //@}
 
     /** \name Accessors */ //@{
-    virtual bool    InWindow(const GG::Pt& pt) const;
+    bool InWindow(const GG::Pt& pt) const override;
     //@}
 
     /** \name Mutators */ //@{
-    void            Render();
+    void Render() override;
     //@}
 private:
 };
@@ -489,14 +530,18 @@ class ColorSelector : public GG::Control {
 public:
     /** \name Structors */ //@{
     ColorSelector(GG::Clr color, GG::Clr default_color);
+
     virtual ~ColorSelector();
     //@}
 
     /** \name Mutators */ //@{
-    virtual void Render();
-    virtual void LClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys);
-    virtual void RClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys);
-    virtual void SizeMove(const GG::Pt& ul, const GG::Pt& lr);
+    void Render() override;
+
+    void LClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) override;
+
+    void RClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) override;
+
+    void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override;
     //@}
 
     mutable boost::signals2::signal<void (const GG::Clr&)> ColorChangedSignal;
@@ -525,11 +570,11 @@ public:
     //@}
 
     /** \name Accessors */ //@{
-    virtual GG::Pt  MinUsableSize() const;
+    GG::Pt MinUsableSize() const override;
     //@}
 
     /** \name Mutators */ //@{
-    virtual void    SizeMove(const GG::Pt& ul, const GG::Pt& lr);
+    void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override;
 
     void            SetTotalPointsCost(float total_points, float total_cost);
     void            SetLocalPointsCost(float local_points, float local_cost, const std::string& location_name);
@@ -564,13 +609,12 @@ private:
 class MultiTurnProgressBar : public GG::Control {
 public:
     /** \name Structors */ //@{
-    /** ctor */
     MultiTurnProgressBar(int total_turns, double turns_completed, double total_cost, double turn_spending,
                          const GG::Clr& bar_color, const GG::Clr& background, const GG::Clr& outline_color);
     //@}
 
     /** \name Mutators */ //@{
-    virtual void Render();
+    void Render() override;
     //@}
 
 private:
@@ -587,8 +631,10 @@ private:
 class FPSIndicator : public GG::Label {
 public:
     FPSIndicator();
-    virtual void Render();
-    virtual void PreRender();
+
+    void Render() override;
+
+    void PreRender() override;
 private:
     void UpdateEnabled();
     bool m_enabled;
@@ -617,11 +663,12 @@ public:
     //@}
 
     /** \name Mutators */ ///@{
-    virtual void    Render();       ///< renders textures in order specified in constructor, back-to-front
+    /** Renders textures in order specified in constructor, back-to-front. */
+    void Render() override;
     //@}
 
 protected:
-    MultiTextureStaticGraphic();    ///< default ctor
+    MultiTextureStaticGraphic();
 
     /** Returns the area in which the graphic is actually rendered, in
         UpperLeft()-relative coordinates.  This may not be the entire area of
@@ -646,9 +693,10 @@ public:
     //@}
 
     /** \name Mutators */ ///@{
+    void Render() override;
+
     void            SetRPM(float rpm)               { m_rpm = std::max(-3600.0f, std::min(3600.0f, rpm)); }
     void            SetPhaseOffset(float degrees)   { m_phase_offset = degrees; }
-    virtual void    Render();
     //@}
 
 private:
@@ -662,8 +710,10 @@ public:
     ScanlineControl(GG::X x, GG::Y y, GG::X w, GG::Y h, bool square = false, GG::Clr clr = GG::CLR_BLACK);
 
     /** Changes the color used to draw the scanlines. */
-    void SetColor(GG::Clr clr) { m_color = clr; };
-    virtual void Render();
+    void Render() override;
+
+    void SetColor(GG::Clr clr) override
+    { m_color = clr; };
 
 private:
     bool m_square;

@@ -139,7 +139,6 @@ public:
     public:
         typedef std::pair<std::string::const_iterator, std::string::const_iterator> IterPair;
 
-        /** Default ctor. */
         Substring();
 
         /** Ctor.  \a first_ must be <= \a second_. */
@@ -347,17 +346,15 @@ public:
         formatting tags present on that line as well. */
     struct GG_API LineData
     {
-        LineData(); ///< Default ctor.
+        LineData();
 
         /** \brief Contains the extent, the index into the original string,
             and the text formatting tags that should be applied before
             rendering of a visible glyph. */
         struct GG_API CharData
         {
-            /** Defauilt ctor. */
             CharData();
 
-            /** Ctor. */
             CharData(X extent_, StrSize str_index, StrSize str_size, CPSize cp_index,
                      const std::vector<boost::shared_ptr<TextElement> >& tags_);
 
@@ -399,7 +396,8 @@ public:
         if present. */
     struct GG_API RenderState
     {
-        RenderState(); ///< Default ctor.
+        RenderState();
+
         RenderState(Clr color); //< Takes default text color as parameter
 
         /** The count of open \<i> tags seen since the last \</i> seen. */
@@ -517,7 +515,7 @@ public:
 
     /** Formatted text rendering. */
     void RenderText(const Pt& pt1, const Pt& pt2, const std::string& text, Flags<TextFormat>& format,
-                    const std::vector<LineData>& line_data, RenderState* render_state = 0) const;
+                    const std::vector<LineData>& line_data, RenderState* render_state = nullptr) const;
 
     /** Formatted text rendering over a subset of lines and code points.  The
         glyphs rendered are in the range [CodePointIndexOf(<i>begin_line</i>,
@@ -531,7 +529,7 @@ public:
     /** Wrapper around PreRenderText that provides dummy values for line start and end values.*/
     void PreRenderText(const Pt& ul, const Pt& lr, const std::string& text, Flags<TextFormat>& format,
                        RenderCache& cache, const std::vector<LineData>& line_data,
-                       RenderState* render_state = 0) const;
+                       RenderState* render_state = nullptr) const;
 
     /** Fill the \p cache with glyphs corresponding to the passed in \p text and \p line_data.*/
     void PreRenderText(const Pt& pt1, const Pt& pt2, const std::string& text,
@@ -668,7 +666,7 @@ public:
 
 protected:
     /** \name Structors */ ///@{
-    Font(); ///< Default ctor.
+    Font();
     //@}
 
 private:
@@ -676,7 +674,8 @@ private:
         from the OpenGL texture(s) created at GG::Font creation time. */
     struct Glyph
     {
-        Glyph(); ///< Default ctor
+        Glyph();
+
         Glyph(const boost::shared_ptr<Texture>& texture, const Pt& ul, const Pt& lr, Y y_ofs,
               X lb, X adv); ///< Ctor
 
@@ -943,7 +942,7 @@ template <class CharSetIter>
 boost::shared_ptr<GG::Font>
 GG::FontManager::GetFont(const std::string& font_filename, unsigned int pts,
                          CharSetIter first, CharSetIter last)
-{ return GetFontImpl(font_filename, pts, 0, first, last); }
+{ return GetFontImpl(font_filename, pts, nullptr, first, last); }
 
 template <class CharSetIter>
 boost::shared_ptr<GG::Font>

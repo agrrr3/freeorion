@@ -37,9 +37,13 @@ namespace {
     public:
         QueueTechPanel(GG::X x, GG::Y y, GG::X w, const std::string& tech_name, double allocated_rp,
                        int turns_left, double turns_completed, int empire_id, bool paused = false);
-        virtual void Render();
-        virtual void SizeMove(const GG::Pt& ul, const GG::Pt& lr);
+
+        void Render() override;
+
+        void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override;
+
         static GG::Y DefaultHeight();
+
     private:
         void Draw(GG::Clr clr, bool fill);
 
@@ -62,7 +66,7 @@ namespace {
         QueueRow(GG::X w, const ResearchQueue::Element& queue_element) :
             GG::ListBox::Row(w, QueueTechPanel::DefaultHeight(), "RESEARCH_QUEUE_ROW"),
             elem(queue_element),
-            panel(0)
+            panel(nullptr)
         {
             RequirePreRender();
             Resize(GG::Pt(w, QueueTechPanel::DefaultHeight()));
@@ -91,7 +95,7 @@ namespace {
             SetBrowseInfoWnd(TechPanelRowBrowseWnd(elem.name, elem.empire_id));
         }
 
-        virtual void PreRender() {
+        void PreRender() override {
             GG::ListBox::Row::PreRender();
 
             if (!panel)
@@ -102,7 +106,7 @@ namespace {
             GG::ListBox::Row::Resize(panel->Size() + border);
         }
 
-        virtual void SizeMove(const GG::Pt& ul, const GG::Pt& lr) {
+        void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override {
             if (panel) {
                 GG::Pt border(GG::X(2 * GetLayout()->BorderMargin()), GG::Y(2 * GetLayout()->BorderMargin()));
                 panel->Resize(lr - ul - border);
@@ -275,7 +279,7 @@ public:
     boost::signals2::signal<void (GG::ListBox::iterator, bool)> QueueItemPausedSignal;
 
 protected:
-    void ItemRightClickedImpl(GG::ListBox::iterator it, const GG::Pt& pt, const GG::Flags<GG::ModKey>& modkeys) {
+    void ItemRightClickedImpl(GG::ListBox::iterator it, const GG::Pt& pt, const GG::Flags<GG::ModKey>& modkeys) override {
         // mostly duplicated equivalent in QueueListBox, but with an extra command...
 
         GG::MenuItem menu_contents;
@@ -284,7 +288,7 @@ protected:
         menu_contents.next_level.push_back(GG::MenuItem(UserString("DELETE_QUEUE_ITEM"),    3, false, false));
 
         GG::ListBox::Row* row = *it;
-        QueueRow* queue_row = row ? dynamic_cast<QueueRow*>(row) : 0;
+        QueueRow* queue_row = row ? dynamic_cast<QueueRow*>(row) : nullptr;
         if (!queue_row)
             return;
 
@@ -358,14 +362,14 @@ public:
     ResearchQueueWnd(GG::X x, GG::Y y, GG::X w, GG::Y h) :
         CUIWnd("", x, y, w, h, GG::INTERACTIVE | GG::RESIZABLE | GG::DRAGABLE | GG::ONTOP | PINABLE,
                "research.ResearchQueueWnd"),
-        m_queue_lb(0)
+        m_queue_lb(nullptr)
     {
         Init(HumanClientApp::GetApp()->EmpireID());
     }
     //@}
 
     /** \name Mutators */ //@{
-    virtual void        SizeMove(const GG::Pt& ul, const GG::Pt& lr) {
+    void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override {
         GG::Pt sz = Size();
         CUIWnd::SizeMove(ul, lr);
         if (Size() != sz)
@@ -408,9 +412,9 @@ private:
 //////////////////////////////////////////////////
 ResearchWnd::ResearchWnd(GG::X w, GG::Y h, bool initially_hidden /*= true*/) :
     GG::Wnd(GG::X0, GG::Y0, w, h, GG::INTERACTIVE | GG::ONTOP),
-    m_research_info_panel(0),
-    m_queue_wnd(0),
-    m_tech_tree_wnd(0),
+    m_research_info_panel(nullptr),
+    m_queue_wnd(nullptr),
+    m_tech_tree_wnd(nullptr),
     m_enabled(false),
     m_empire_shown_id(ALL_EMPIRES)
 {

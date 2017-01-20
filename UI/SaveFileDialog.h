@@ -30,20 +30,21 @@ public:
 
     /// Contruct for getting the previews from the server
     SaveFileDialog(bool load = false);
-    ~SaveFileDialog(); //!< dtor
+
+    ~SaveFileDialog();
     //@}
 
     /** \name Mutators */ //@{
-    virtual void ModalInit(); //< Called when dialog is shown. Overrides
-    virtual void KeyPress(GG::Key key, boost::uint32_t key_code_point,
-                          GG::Flags<GG::ModKey> mod_keys);
+    void ModalInit() override;
+
+    void KeyPress(GG::Key key, boost::uint32_t key_code_point, GG::Flags<GG::ModKey> mod_keys) override;
     //@}
 
     /// Get the chosen save files full path
     std::string Result() const;
 
 protected:
-    virtual GG::Rect CalculatePosition() const;
+    GG::Rect CalculatePosition() const override;
 
 private:
     void Init();

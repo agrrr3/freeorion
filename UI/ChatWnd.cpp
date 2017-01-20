@@ -85,7 +85,7 @@ public:
     //@}
 
     //! \name Mutators //@{
-    virtual void    KeyPress(GG::Key key, boost::uint32_t key_code_point, GG::Flags<GG::ModKey> mod_keys);
+    void KeyPress(GG::Key key, boost::uint32_t key_code_point, GG::Flags<GG::ModKey> mod_keys) override;
     //@}
 
     /** emitted when user presses enter/return while entering text */
@@ -308,8 +308,8 @@ MessageWnd::MessageWnd(const std::string& config_name) :
     CUIWnd(UserString("MESSAGES_PANEL_TITLE"),
            GG::INTERACTIVE | GG::DRAGABLE | GG::ONTOP | GG::RESIZABLE | CLOSABLE | PINABLE,
            config_name),
-    m_display(0),
-    m_edit(0),
+    m_display(nullptr),
+    m_edit(nullptr),
     m_display_show_time(0),
     m_history(),
     m_history_position()

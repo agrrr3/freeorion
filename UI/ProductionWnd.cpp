@@ -59,7 +59,8 @@ namespace {
             Resize(GG::Pt(nwidth, text->Height()));
         }
 
-        void Render() {}
+        void Render() override
+        {}
     };
 
     //////////////
@@ -163,17 +164,17 @@ namespace {
         bool    amOn;
         GG::Y   h;
 
-        void LosingFocus() {
+        void LosingFocus() override {
             amOn = false;
             DropDownList::LosingFocus();
         }
 
-        void LButtonDown(const GG::Pt&  pt, GG::Flags<GG::ModKey> mod_keys) {
+        void LButtonDown(const GG::Pt&  pt, GG::Flags<GG::ModKey> mod_keys) override {
             amOn = !amOn;
             DropDownList::LButtonDown(pt, mod_keys);
         }
 
-        void LClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) {
+        void LClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) override {
             if (this->Disabled())
                 return;
 
@@ -192,12 +193,13 @@ namespace {
                                  const ProductionQueue::Element& build, double turn_cost, double total_cost,
                                  int turns, int number, int turns_completed, double partially_complete_turn);
 
-        virtual void    PreRender();
-        virtual void    Render();
+        void PreRender() override;
+        void Render() override;
+        void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override;
+
         void            UpdateQueue();
         void            ItemQuantityChanged(int quant, int blocksize);
         void            ItemBlocksizeChanged(int quant, int blocksize);
-        virtual void    SizeMove(const GG::Pt& ul, const GG::Pt& lr);
 
         static GG::Y    DefaultHeight();
 
@@ -325,7 +327,7 @@ namespace {
         QueueRow(GG::X w, const ProductionQueue::Element& elem, int queue_index_) :
             GG::ListBox::Row(w, QueueProductionItemPanel::DefaultHeight(),
                              BuildDesignatorWnd::PRODUCTION_ITEM_DROP_TYPE),
-            panel(0),
+            panel(nullptr),
             queue_index(queue_index_),
             elem(elem)
         { RequirePreRender(); }
@@ -363,14 +365,14 @@ namespace {
 
         }
 
-        virtual void PreRender() {
+        void PreRender() override {
             GG::ListBox::Row::PreRender();
 
             if (!panel)
                 Init();
         }
 
-        virtual void Disable(bool b) {
+        void Disable(bool b) override {
             GG::ListBox::Row::Disable(b);
 
             for (GG::Control* ctrl : m_cells) {
@@ -399,14 +401,14 @@ namespace {
                                                        int turns_completed, double partially_complete_turn) :
         GG::Control(x, y, w, DefaultHeight(), GG::NO_WND_FLAGS),
         elem(build),
-        m_name_text(0),
-        m_location_text(0),
-        m_PPs_and_turns_text(0),
-        m_turns_remaining_until_next_complete_text(0),
-        m_icon(0),
-        m_progress_bar(0),
-        m_quantity_selector(0),
-        m_block_size_selector(0),
+        m_name_text(nullptr),
+        m_location_text(nullptr),
+        m_PPs_and_turns_text(nullptr),
+        m_turns_remaining_until_next_complete_text(nullptr),
+        m_icon(nullptr),
+        m_progress_bar(nullptr),
+        m_quantity_selector(nullptr),
+        m_block_size_selector(nullptr),
         m_in_progress(build.allocated_pp || build.turns_left_to_next_item == 1),
         m_total_turns(turns),
         m_turn_spending(turn_spending),
@@ -461,7 +463,7 @@ namespace {
 
         const int FONT_PTS = ClientUI::Pts();
 
-        m_icon = 0;
+        m_icon = nullptr;
         if (graphic)
             m_icon = new GG::StaticGraphic(graphic, GG::GRAPHIC_FITGRAPHIC | GG::GRAPHIC_PROPSCALE);
 
@@ -641,7 +643,7 @@ namespace {
         boost::signals2::signal<void (GG::ListBox::iterator, bool)> QueueItemPausedSignal;
 
     protected:
-        void ItemRightClickedImpl(GG::ListBox::iterator it, const GG::Pt& pt, const GG::Flags<GG::ModKey>& modkeys) {
+        void ItemRightClickedImpl(GG::ListBox::iterator it, const GG::Pt& pt, const GG::Flags<GG::ModKey>& modkeys) override {
             // mostly duplicated equivalent in QueueListBox, but with extra commands...
 
             GG::MenuItem menu_contents;
@@ -651,7 +653,7 @@ namespace {
 
             // inspect clicked item: was it a ship?
             GG::ListBox::Row* row = *it;
-            QueueRow* queue_row = row ? dynamic_cast<QueueRow*>(row) : 0;
+            QueueRow* queue_row = row ? dynamic_cast<QueueRow*>(row) : nullptr;
             BuildType build_type = queue_row ? queue_row->elem.item.build_type : INVALID_BUILD_TYPE;
             if (build_type == BT_SHIP) {
                 // for ships, add a set rally point command
@@ -739,14 +741,14 @@ public:
     ProductionQueueWnd(GG::X x, GG::Y y, GG::X w, GG::Y h) :
         CUIWnd("", x, y, w, h, GG::INTERACTIVE | GG::RESIZABLE | GG::DRAGABLE | GG::ONTOP | PINABLE,
                "production.ProductionQueueWnd"),
-        m_queue_lb(0)
+        m_queue_lb(nullptr)
     {
         Init(HumanClientApp::GetApp()->EmpireID());
     }
     //@}
 
     /** \name Mutators */ //@{
-    virtual void        SizeMove(const GG::Pt& ul, const GG::Pt& lr) {
+    void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override {
         GG::Pt sz = Size();
         CUIWnd::SizeMove(ul, lr);
         if (Size() != sz)
@@ -788,9 +790,9 @@ private:
 //////////////////////////////////////////////////
 ProductionWnd::ProductionWnd(GG::X w, GG::Y h) :
     GG::Wnd(GG::X0, GG::Y0, w, h, GG::INTERACTIVE | GG::ONTOP),
-    m_production_info_panel(0),
-    m_queue_wnd(0),
-    m_build_designator_wnd(0),
+    m_production_info_panel(nullptr),
+    m_queue_wnd(nullptr),
+    m_build_designator_wnd(nullptr),
     m_order_issuing_enabled(false),
     m_empire_shown_id(ALL_EMPIRES)
 {

@@ -165,17 +165,22 @@ namespace {
     struct ObjectTypeVisitor : UniverseObjectVisitor {
         ObjectTypeVisitor() : m_type(INVALID_UNIVERSE_OBJECT_TYPE) {}
 
-        virtual TemporaryPtr<UniverseObject> Visit(TemporaryPtr<Building> obj) const
+        TemporaryPtr<UniverseObject> Visit(TemporaryPtr<Building> obj) const override
         { m_type = OBJ_BUILDING; return obj; }
-        virtual TemporaryPtr<UniverseObject> Visit(TemporaryPtr<Fleet> obj) const
+
+        TemporaryPtr<UniverseObject> Visit(TemporaryPtr<Fleet> obj) const override
         { m_type = OBJ_FLEET; return obj; }
-        virtual TemporaryPtr<UniverseObject> Visit(TemporaryPtr<Planet> obj) const
+
+        TemporaryPtr<UniverseObject> Visit(TemporaryPtr<Planet> obj) const override
         { m_type = OBJ_PLANET; return obj; }
-        virtual TemporaryPtr<UniverseObject> Visit(TemporaryPtr<Ship> obj) const
+
+        TemporaryPtr<UniverseObject> Visit(TemporaryPtr<Ship> obj) const override
         { m_type = OBJ_SHIP; return obj; }
-        virtual TemporaryPtr<UniverseObject> Visit(TemporaryPtr<System> obj) const
+
+        TemporaryPtr<UniverseObject> Visit(TemporaryPtr<System> obj) const override
         { m_type = OBJ_SYSTEM; return obj; }
-        virtual TemporaryPtr<UniverseObject> Visit(TemporaryPtr<Field> obj) const
+
+        TemporaryPtr<UniverseObject> Visit(TemporaryPtr<Field> obj) const override
         { m_type = OBJ_FIELD; return obj; }
 
         mutable UniverseObjectType m_type;
@@ -967,7 +972,7 @@ std::string Variable<std::string>::Eval(const ScriptingContext& context) const
             return planet->Focus();
 
     } else if (property_name == "PreferredFocus") {
-        const Species* species = 0;
+        const Species* species = nullptr;
         if (TemporaryPtr<const Planet> planet = boost::dynamic_pointer_cast<const Planet>(object)) {
             species = GetSpecies(planet->SpeciesName());
         } else if (TemporaryPtr<const Ship> ship = boost::dynamic_pointer_cast<const Ship>(object)) {
@@ -1630,7 +1635,7 @@ int ComplexVariable<int>::Eval(const ScriptingContext& context) const
         return retval;
 
     } else if (variable_name == "SlotsInHull") {
-        const HullType* hull_type = 0;
+        const HullType* hull_type = nullptr;
         if (m_string_ref1) {
             std::string hull_name = m_string_ref1->Eval(context);
             hull_type = GetHullType(hull_name);

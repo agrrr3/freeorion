@@ -46,24 +46,24 @@ namespace {
             m_item(item),
             m_empire_id(empire_id),
             m_location_id(location_id),
-            m_icon(0),
-            m_name(0),
-            m_cost(0),
-            m_time(0),
-            m_desc(0)
+            m_icon(nullptr),
+            m_name(nullptr),
+            m_cost(nullptr),
+            m_time(nullptr),
+            m_desc(nullptr)
         {
             SetChildClippingMode(ClipToClient);
         }
 
         /** Renders panel background and border. */
-        virtual void    Render() {
+        void Render() override {
             if (!m_initialized)
                 Init();
             GG::Clr background_clr = this->Disabled() ? ClientUI::WndColor() : ClientUI::CtrlColor();
             GG::FlatRectangle(UpperLeft(), LowerRight(), background_clr, ClientUI::WndOuterBorderColor(), 1u);
         }
 
-        virtual void    SizeMove(const GG::Pt& ul, const GG::Pt& lr) {
+        void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override {
             const GG::Pt old_size = Size();
             GG::Control::SizeMove(ul, lr);
             //std::cout << "ProductionItemPanel::SizeMove new size: (" << Value(Width()) << ", " << Value(Height()) << ")" << std::endl;
@@ -343,7 +343,7 @@ namespace {
             m_item(item),
             m_empire_id(empire_id),
             m_location_id(location_id),
-            m_panel(0)
+            m_panel(nullptr)
         {
             SetName("ProductionItemRow");
             SetChildClippingMode(ClipToClient);
@@ -376,7 +376,7 @@ namespace {
         int Location() const
         { return m_location_id; }
 
-        void SizeMove(const GG::Pt& ul, const GG::Pt& lr) {
+        void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override {
             const GG::Pt old_size = Size();
             GG::ListBox::Row::SizeMove(ul, lr);
             //std::cout << "ProductionItemRow::SizeMove size: (" << Value(Width()) << ", " << Value(Height()) << ")" << std::endl;
@@ -409,7 +409,7 @@ namespace {
             SetVScrollWheelIncrement(Value(ListRowHeight())*3);
         }
 
-        virtual void    SizeMove(const GG::Pt& ul, const GG::Pt& lr) {
+        void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override {
             const GG::Pt old_size = Size();
             CUIListBox::SizeMove(ul, lr);
             //std::cout << "BuildableItemsListBox::SizeMove size: (" << Value(Width()) << ", " << Value(Height()) << ")" << std::endl;
@@ -447,7 +447,7 @@ public:
     //@}
 
     /** \name Mutators */ //@{
-    virtual void    SizeMove(const GG::Pt& ul, const GG::Pt& lr);
+    void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override;
 
     /** Sets build location for this selector, which may be used to filter
       * items in the list or enable / disable them at some point in the
@@ -966,9 +966,9 @@ const std::string BuildDesignatorWnd::PRODUCTION_ITEM_DROP_TYPE = "Production It
 
 BuildDesignatorWnd::BuildDesignatorWnd(GG::X w, GG::Y h) :
     Wnd(GG::X0, GG::Y0, w, h, GG::INTERACTIVE | GG::ONTOP),
-    m_enc_detail_panel(0),
-    m_build_selector(0),
-    m_side_panel(0)
+    m_enc_detail_panel(nullptr),
+    m_build_selector(nullptr),
+    m_side_panel(nullptr)
 {
     m_enc_detail_panel = new EncyclopediaDetailPanel(GG::ONTOP | GG::INTERACTIVE | GG::DRAGABLE | GG::RESIZABLE | CLOSABLE | PINABLE, PROD_PEDIA_WND_NAME);
     GG::Connect(m_enc_detail_panel->ClosingSignal, boost::bind(&BuildDesignatorWnd::HidePedia, this));     // Wnd is manually closed by user

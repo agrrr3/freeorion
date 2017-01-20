@@ -112,31 +112,14 @@ namespace {
     }
 
     const std::vector<std::string>& GetSearchTextDirNames() {
-        static std::vector<std::string> dir_names;
-        if (dir_names.empty()) {
-            dir_names.push_back("ENC_INDEX");
-            dir_names.push_back("ENC_SHIP_PART");
-            dir_names.push_back("ENC_SHIP_HULL");
-            dir_names.push_back("ENC_TECH");
-            dir_names.push_back("ENC_BUILDING_TYPE");
-            dir_names.push_back("ENC_SPECIAL");
-            dir_names.push_back("ENC_SPECIES");
-            dir_names.push_back("ENC_FIELD_TYPE");
-            dir_names.push_back("ENC_METER_TYPE");
-            dir_names.push_back("ENC_EMPIRE");
-            dir_names.push_back("ENC_SHIP_DESIGN");
-            dir_names.push_back("ENC_SHIP");
-            dir_names.push_back("ENC_MONSTER");
-            dir_names.push_back("ENC_MONSTER_TYPE");
-            dir_names.push_back("ENC_FLEET");
-            dir_names.push_back("ENC_PLANET");
-            dir_names.push_back("ENC_BUILDING");
-            dir_names.push_back("ENC_SYSTEM");
-            dir_names.push_back("ENC_FIELD");
-            dir_names.push_back("ENC_GRAPH");
-            dir_names.push_back("ENC_GALAXY_SETUP");
-            //  dir_names.push_back("ENC_HOMEWORLDS");  // omitted due to weird formatting of article titles
-        }
+        static std::vector<std::string> dir_names {
+            "ENC_INDEX",        "ENC_SHIP_PART",    "ENC_SHIP_HULL",    "ENC_TECH",
+            "ENC_BUILDING_TYPE","ENC_SPECIAL",      "ENC_SPECIES",      "ENC_FIELD_TYPE",
+            "ENC_METER_TYPE",   "ENC_EMPIRE",       "ENC_SHIP_DESIGN",  "ENC_SHIP",
+            "ENC_MONSTER",      "ENC_MONSTER_TYPE", "ENC_FLEET",        "ENC_PLANET",
+            "ENC_BUILDING",     "ENC_SYSTEM",       "ENC_FIELD",        "ENC_GRAPH",
+            "ENC_GALAXY_SETUP"};
+        //  "ENC_HOMEWORLDS" omitted due to weird formatting of article titles
         return dir_names;
     }
 
@@ -493,9 +476,7 @@ namespace {
             CUIEdit("")
         {}
 
-        virtual void    KeyPress(GG::Key key, boost::uint32_t key_code_point,
-                                 GG::Flags<GG::ModKey> mod_keys)
-        {
+        void KeyPress(GG::Key key, boost::uint32_t key_code_point, GG::Flags<GG::ModKey> mod_keys) override {
             switch (key) {
             case GG::GGK_RETURN:
             case GG::GGK_KP_ENTER:
@@ -516,14 +497,14 @@ std::list <std::pair<std::string, std::string> >::iterator  EncyclopediaDetailPa
 
 EncyclopediaDetailPanel::EncyclopediaDetailPanel(GG::Flags<GG::WndFlag> flags, const std::string& config_name) :
     CUIWnd(UserString("MAP_BTN_PEDIA"), flags, config_name, false),
-    m_name_text(0),
-    m_cost_text(0),
-    m_summary_text(0),
-    m_description_box(0),
-    m_description_panel(0),
-    m_icon(0),
-    m_search_edit(0),
-    m_graph(0),
+    m_name_text(nullptr),
+    m_cost_text(nullptr),
+    m_summary_text(nullptr),
+    m_description_box(nullptr),
+    m_description_panel(nullptr),
+    m_icon(nullptr),
+    m_search_edit(nullptr),
+    m_graph(nullptr),
     m_needs_refresh(false)
 {
     const int PTS = ClientUI::Pts();
@@ -2562,7 +2543,7 @@ void EncyclopediaDetailPanel::PreRender() {
 void EncyclopediaDetailPanel::RefreshImpl() {
     if (m_icon) {
         DeleteChild(m_icon);
-        m_icon = 0;
+        m_icon = nullptr;
     }
     m_name_text->Clear();
     m_summary_text->Clear();

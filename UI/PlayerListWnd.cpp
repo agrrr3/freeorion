@@ -100,13 +100,13 @@ namespace {
         PlayerDataPanel(GG::X w, GG::Y h, int player_id) :
             Control(GG::X0, GG::Y0, w, h, GG::NO_WND_FLAGS),
             m_player_id(player_id),
-            //m_player_name_text(0),
-            m_empire_name_text(0),
-            m_empire_ship_text(0),
-            m_empire_planet_text(0),
-            m_empire_production_text(0),
-            m_empire_research_text(0),
-            m_empire_detection_text(0),
+            //m_player_name_text(nullptr),
+            m_empire_name_text(nullptr),
+            m_empire_ship_text(nullptr),
+            m_empire_planet_text(nullptr),
+            m_empire_production_text(nullptr),
+            m_empire_research_text(nullptr),
+            m_empire_detection_text(nullptr),
             m_diplo_status(INVALID_DIPLOMATIC_STATUS),
             m_player_status(Message::WAITING),
             m_player_type(Networking::INVALID_CLIENT_TYPE),
@@ -137,15 +137,15 @@ namespace {
         }
 
         /** Excludes border from the client area. */
-        virtual GG::Pt  ClientUpperLeft() const
+        GG::Pt ClientUpperLeft() const override
         { return UpperLeft() + GG::Pt(GG::X(DATA_PANEL_BORDER), GG::Y(DATA_PANEL_BORDER)); }
 
         /** Excludes border from the client area. */
-        virtual GG::Pt  ClientLowerRight() const
+        GG::Pt ClientLowerRight() const override
         { return LowerRight() - GG::Pt(GG::X(DATA_PANEL_BORDER), GG::Y(DATA_PANEL_BORDER)); }
 
         /** Renders panel background, border with color depending on the current state. */
-        virtual void    Render() {
+        void Render() override {
             const GG::Clr& background_colour = ClientUI::WndColor();
             const GG::Clr& unselected_colour = ClientUI::WndOuterBorderColor();
             const GG::Clr& selected_colour = ClientUI::WndInnerBorderColor();
@@ -216,7 +216,7 @@ namespace {
         void            Select(bool b)
         { m_selected = b; }
 
-        virtual void    SizeMove(const GG::Pt& ul, const GG::Pt& lr) {
+        void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override {
             const GG::Pt old_size = Size();
             GG::Control::SizeMove(ul, lr);
             if (old_size != Size())
@@ -450,7 +450,7 @@ namespace {
         PlayerRow(GG::X w, GG::Y h, int player_id) :
             GG::ListBox::Row(w, h, "", GG::ALIGN_NONE, 0),
             m_player_id(player_id),
-            m_panel(0)
+            m_panel(nullptr)
         {
             SetName("PlayerRow");
             SetChildClippingMode(ClipToClient);
@@ -474,7 +474,7 @@ namespace {
 
         /** This function overridden because otherwise, rows don't expand
           * larger than their initial size when resizing the list. */
-        void    SizeMove(const GG::Pt& ul, const GG::Pt& lr) {
+        void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override {
             const GG::Pt old_size = Size();
             GG::ListBox::Row::SizeMove(ul, lr);
             //std::cout << "PlayerRow::SizeMove size: (" << Value(Width()) << ", " << Value(Height()) << ")" << std::endl;
@@ -503,7 +503,7 @@ public:
         LockColWidths();
     }
 
-    virtual void    SizeMove(const GG::Pt& ul, const GG::Pt& lr) {
+    void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override {
         const GG::Pt old_size = Size();
         CUIListBox::SizeMove(ul, lr);
         //std::cout << "PlayerListBox::SizeMove size: (" << Value(Width()) << ", " << Value(Height()) << ")" << std::endl;
@@ -530,7 +530,7 @@ PlayerListWnd::PlayerListWnd(const std::string& config_name) :
     CUIWnd(UserString("PLAYERS_LIST_PANEL_TITLE"),
            GG::INTERACTIVE | GG::DRAGABLE | GG::ONTOP | GG::RESIZABLE | CLOSABLE | PINABLE,
            config_name),
-    m_player_list(0)
+    m_player_list(nullptr)
 {
     m_player_list = new PlayerListBox();
     m_player_list->SetHiliteColor(GG::CLR_ZERO);
@@ -667,7 +667,7 @@ void PlayerListWnd::PlayerSelectionChanged(const GG::ListBox::SelectionSet& rows
             ErrorLogger() << "PlayerListWnd::PlayerSelectionChanged got empty row";
             continue;
         }
-        GG::Control* control = !row->empty() ? row->at(0) : 0;
+        GG::Control* control = !row->empty() ? row->at(0) : nullptr;
         if (!control) {
             ErrorLogger() << "PlayerListWnd::PlayerSelectionChanged couldn't get control from row";
             continue;

@@ -26,13 +26,12 @@ namespace Condition {
 class FO_COMMON_API Special {
 public:
     /** \name Structors */ //@{
-    /** basic ctor */
     Special(const std::string& name, const std::string& description,
             ValueRef::ValueRefBase<double>* stealth,
             const std::vector<boost::shared_ptr<Effect::EffectsGroup> >& effects,
             double spawn_rate = 1.0, int spawn_limit = 99999,
-            ValueRef::ValueRefBase<double>* initial_capaicty = 0,
-            Condition::ConditionBase* location = 0,
+            ValueRef::ValueRefBase<double>* initial_capaicty = nullptr,
+            Condition::ConditionBase* location = nullptr,
             const std::string& graphic = "") :
         m_name(name),
         m_description(description),

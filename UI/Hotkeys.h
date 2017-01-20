@@ -139,7 +139,7 @@ class NoModalWndsOpenCondition : public HotkeyCondition {
 public:
     NoModalWndsOpenCondition() {};
 
-    virtual bool IsActive() const {
+    bool IsActive() const  override {
         return !GG::GUI::GetGUI()->ModalWndsOpen();
     };
 };
@@ -153,7 +153,8 @@ public:
     VisibleWindowCondition(const GG::Wnd* tg) :
         target(tg)
     {}
-    virtual bool IsActive() const {
+
+    bool IsActive() const override {
         if (!target)
             return false;
         return target->Visible();
@@ -166,11 +167,11 @@ protected:
     std::list<const GG::Wnd*> m_blacklist;
 
 public:
-    InvisibleWindowCondition(const GG::Wnd* w1,     const GG::Wnd* w2 = 0,
-                             const GG::Wnd* w3 = 0, const GG::Wnd* w4 = 0);
+    InvisibleWindowCondition(const GG::Wnd* w1, const GG::Wnd* w2 = nullptr,
+                             const GG::Wnd* w3 = nullptr, const GG::Wnd* w4 = nullptr);
     InvisibleWindowCondition(const std::list<const GG::Wnd*>& bl);
 
-    virtual bool IsActive() const;
+    bool IsActive() const override;
 };
 
 /// On when the given window is visible
@@ -182,7 +183,8 @@ public:
     FocusWindowCondition(const GG::Wnd* tg) :
         target(tg)
     {}
-    virtual bool IsActive() const {
+
+    bool IsActive() const override {
         if (!target)
             return false;
         const GG::Wnd* foc = GG::GUI::GetGUI()->FocusWnd();
@@ -195,7 +197,7 @@ class FocusWindowIsA : public HotkeyCondition {
 public:
     FocusWindowIsA() {};
 
-    virtual bool IsActive() const {
+    bool IsActive() const override {
         const GG::Wnd* foc = GG::GUI::GetGUI()->FocusWnd();
         //std::cout << "Focus: " << foc << std::endl;
         if (dynamic_cast<const W*>(foc))
@@ -209,15 +211,16 @@ protected:
     std::list<HotkeyCondition*> m_conditions;
 public:
     OrCondition(HotkeyCondition* c1, HotkeyCondition* c2,
-                HotkeyCondition* c3 = 0,
-                HotkeyCondition* c4 = 0,
-                HotkeyCondition* c5 = 0,
-                HotkeyCondition* c6 = 0,
-                HotkeyCondition* c7 = 0,
-                HotkeyCondition* c8 = 0);
+                HotkeyCondition* c3 = nullptr,
+                HotkeyCondition* c4 = nullptr,
+                HotkeyCondition* c5 = nullptr,
+                HotkeyCondition* c6 = nullptr,
+                HotkeyCondition* c7 = nullptr,
+                HotkeyCondition* c8 = nullptr);
 
     virtual ~OrCondition();
-    virtual bool IsActive() const;
+
+    bool IsActive() const override;
 };
 
 class AndCondition : public HotkeyCondition {
@@ -225,15 +228,16 @@ protected:
     std::list<HotkeyCondition*> m_conditions;
 public:
     AndCondition(HotkeyCondition* c1, HotkeyCondition* c2,
-                 HotkeyCondition* c3 = 0,
-                 HotkeyCondition* c4 = 0,
-                 HotkeyCondition* c5 = 0,
-                 HotkeyCondition* c6 = 0,
-                 HotkeyCondition* c7 = 0,
-                 HotkeyCondition* c8 = 0);
+                 HotkeyCondition* c3 = nullptr,
+                 HotkeyCondition* c4 = nullptr,
+                 HotkeyCondition* c5 = nullptr,
+                 HotkeyCondition* c6 = nullptr,
+                 HotkeyCondition* c7 = nullptr,
+                 HotkeyCondition* c8 = nullptr);
 
     virtual ~AndCondition();
-    virtual bool IsActive() const;
+
+    bool IsActive() const override;
 };
 
 class HotkeyManager {
@@ -251,10 +255,10 @@ public:
 
     /// Connects a named shortcut to the target slot in the target instance.
     template <class T, class R>
-    void Connect(T* instance, R (T::*member)(), const std::string& name, HotkeyCondition* cond = 0)
+    void Connect(T* instance, R (T::*member)(), const std::string& name, HotkeyCondition* cond = nullptr)
     { AddConditionalConnection(name, GG::Connect(NamedSignal(name), member, instance), cond); };
 
-    void Connect(boost::function<bool()> func, const std::string& name, HotkeyCondition* cond = 0)
+    void Connect(boost::function<bool()> func, const std::string& name, HotkeyCondition* cond = nullptr)
     { AddConditionalConnection(name, GG::Connect(NamedSignal(name), func), cond); };
 
 

@@ -50,7 +50,9 @@ namespace {
     class PlaceholderWnd : public GG::Wnd {
     public:
         PlaceholderWnd(GG::X w, GG::Y h) : Wnd(GG::X0, GG::Y0, w, h, GG::NO_WND_FLAGS) {}
-        virtual void Render() {}
+
+        void Render() override
+        {}
     };
 
     class RowContentsWnd : public GG::Control {
@@ -66,7 +68,7 @@ namespace {
             DoLayout();
         }
 
-        virtual void    SizeMove(const GG::Pt& ul, const GG::Pt& lr) {
+        void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override {
             const GG::Pt old_size = Size();
             GG::Control::SizeMove(ul, lr);
             if (old_size != Size())
@@ -80,7 +82,7 @@ namespace {
             }
         }
 
-        virtual void    Render() {
+        void Render() override {
             //GG::FlatRectangle(UpperLeft(), LowerRight(), GG::CLR_DARK_RED, GG::CLR_PINK, 1);
         }
     private:
@@ -200,7 +202,7 @@ namespace {
     template <>
     struct SetOptionFunctor<std::string>
     {
-        SetOptionFunctor(const std::string& option_name, GG::Edit* edit = 0, OptionsWnd::StringValidator string_validator = 0) :
+        SetOptionFunctor(const std::string& option_name, GG::Edit* edit = nullptr, OptionsWnd::StringValidator string_validator = nullptr) :
             m_option_name(option_name), m_edit(edit), m_string_validator(string_validator)
         { assert(bool(m_edit) == bool(m_string_validator)); }
 
@@ -263,10 +265,12 @@ namespace {
         KeyPressCatcher() :
             Wnd(GG::X0, GG::Y0, GG::X0, GG::Y0, GG::Flags<GG::WndFlag>(GG::MODAL))
         {};
-        virtual void Render() {};
 
-        virtual void KeyPress(GG::Key key, boost::uint32_t key_code_point,
-                              GG::Flags<GG::ModKey> mod_keys)
+        void Render() override
+        {}
+
+        void KeyPress(GG::Key key, boost::uint32_t key_code_point,
+                      GG::Flags<GG::ModKey> mod_keys) override
         {
             m_key = key;
             m_code_point = key_code_point;
@@ -294,9 +298,9 @@ namespace {
                    GG::GUI::GetGUI()->AppWidth() / 6,       GG::GUI::GetGUI()->AppHeight() / 6,
                    GG::GUI::GetGUI()->AppWidth() * 2 / 3,   GG::GUI::GetGUI()->AppHeight() * 2 / 3,
                    GG::INTERACTIVE | GG::DRAGABLE | GG::MODAL | GG::RESIZABLE | CLOSABLE),
-            m_font_graphic(0),
-            m_title_font_graphic(0),
-            m_hscroll(0)
+            m_font_graphic(nullptr),
+            m_title_font_graphic(nullptr),
+            m_hscroll(nullptr)
         {
             GG::Y top = GG::Y1;
 
@@ -331,7 +335,7 @@ namespace {
             DoLayout();
         }
 
-        virtual void SizeMove(const GG::Pt& ul, const GG::Pt& lr) {
+        void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override {
             GG::Pt old_size = GG::Wnd::Size();
 
             CUIWnd::SizeMove(ul, lr);
@@ -383,7 +387,7 @@ namespace {
 
         OptionsListRow(GG::X w, GG::Y h, Wnd* contents, int indentation = 0) :
             GG::ListBox::Row(w, h, ""),
-            m_contents(0)
+            m_contents(nullptr)
         {
             SetChildClippingMode(ClipToClient);
             if (contents) {
@@ -392,7 +396,7 @@ namespace {
             }
         }
 
-        virtual void    SizeMove(const GG::Pt& ul, const GG::Pt& lr) {
+        void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override {
             //std::cout << "OptionsListRow::SizeMove(" << ul << ", " << lr << ")" << std::endl;
             const GG::Pt old_size = Size();
             GG::ListBox::Row::SizeMove(ul, lr);
@@ -400,7 +404,7 @@ namespace {
                 m_contents->Resize(Size());
         }
 
-        virtual void    Render() {
+        void Render() override {
             //GG::FlatRectangle(UpperLeft(), LowerRight(), GG::CLR_DARK_BLUE, GG::CLR_YELLOW, 1);
         }
     private:
@@ -419,7 +423,7 @@ namespace {
             SetVScrollWheelIncrement(ClientUI::Pts() * 10);
         }
 
-        virtual void    SizeMove(const GG::Pt& ul, const GG::Pt& lr) {
+        void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override {
             const GG::Pt old_size = Size();
             CUIListBox::SizeMove(ul, lr);
             if (old_size != Size()) {
@@ -447,8 +451,8 @@ OptionsWnd::OptionsWnd():
     CUIWnd(UserString("OPTIONS_TITLE"),
            GG::INTERACTIVE | GG::DRAGABLE | GG::MODAL | GG::RESIZABLE,
            OPTIONS_WND_NAME),
-    m_tabs(0),
-    m_done_button(0)
+    m_tabs(nullptr),
+    m_done_button(nullptr)
 {
     m_done_button = new CUIButton(UserString("DONE"));
     // FIXME: PAGE_WIDTH is needed to prevent triggering an assert within the TabBar class.
@@ -463,7 +467,7 @@ OptionsWnd::OptionsWnd():
     AttachChild(m_tabs);
 
     bool UI_sound_enabled = GetOptionsDB().Get<bool>("UI.sound.enabled");
-    GG::ListBox* current_page = 0;
+    GG::ListBox* current_page = nullptr;
 
     Sound::TempUISoundDisabler sound_disabler;
 
@@ -834,7 +838,7 @@ void OptionsWnd::HotkeyOption(GG::ListBox* page, int indentation_level, const st
 GG::Spin<int>* OptionsWnd::IntOption(GG::ListBox* page, int indentation_level, const std::string& option_name, const std::string& text) {
     GG::Label* text_control = new CUILabel(text, GG::FORMAT_LEFT | GG::FORMAT_NOWRAP, GG::INTERACTIVE);
     boost::shared_ptr<const ValidatorBase> validator = GetOptionsDB().GetValidator(option_name);
-    GG::Spin<int>* spin = 0;
+    GG::Spin<int>* spin = nullptr;
     int value = GetOptionsDB().Get<int>(option_name);
     if (boost::shared_ptr<const RangedValidator<int> > ranged_validator = boost::dynamic_pointer_cast<const RangedValidator<int> >(validator))
         spin = new CUISpin<int>(value, 1, ranged_validator->m_min, ranged_validator->m_max, true);
@@ -846,7 +850,7 @@ GG::Spin<int>* OptionsWnd::IntOption(GG::ListBox* page, int indentation_level, c
         spin = new CUISpin<int>(value, 1, -1000000, 1000000, true);
     if (!spin) {
         ErrorLogger() << "Unable to create IntOption spin";
-        return 0;
+        return nullptr;
     }
     spin->Resize(GG::Pt(SPIN_WIDTH, spin->MinUsableSize().y));
     GG::Layout* layout = new GG::Layout(GG::X0, GG::Y0, ROW_WIDTH, spin->MinUsableSize().y, 1, 2, 0, 5);
@@ -870,7 +874,7 @@ GG::Spin<int>* OptionsWnd::IntOption(GG::ListBox* page, int indentation_level, c
 GG::Spin<double>* OptionsWnd::DoubleOption(GG::ListBox* page, int indentation_level, const std::string& option_name, const std::string& text) {
     GG::Label* text_control = new CUILabel(text, GG::FORMAT_LEFT | GG::FORMAT_NOWRAP, GG::INTERACTIVE);
     boost::shared_ptr<const ValidatorBase> validator = GetOptionsDB().GetValidator(option_name);
-    GG::Spin<double>* spin = 0;
+    GG::Spin<double>* spin = nullptr;
     double value = GetOptionsDB().Get<double>(option_name);
     if (boost::shared_ptr<const RangedValidator<double> > ranged_validator = boost::dynamic_pointer_cast<const RangedValidator<double> >(validator))
         spin = new CUISpin<double>(value, 1, ranged_validator->m_min, ranged_validator->m_max, true);
@@ -882,7 +886,7 @@ GG::Spin<double>* OptionsWnd::DoubleOption(GG::ListBox* page, int indentation_le
         spin = new CUISpin<double>(value, 1, -1000000, 1000000, true);
     if (!spin) {
         ErrorLogger() << "Unable to create DoubleOption spin";
-        return 0;
+        return nullptr;
     }
     spin->Resize(GG::Pt(SPIN_WIDTH, spin->MinUsableSize().y));
     GG::Layout* layout = new GG::Layout(GG::X0, GG::Y0, ROW_WIDTH, spin->MinUsableSize().y, 1, 2, 0, 5);

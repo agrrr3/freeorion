@@ -254,9 +254,11 @@ public:
     //@}
 
     //! \name Mutators //@{
-    virtual void    SizeMove(const GG::Pt& ul, const GG::Pt& lr);
-    virtual void    Render();
-    virtual void    LDrag(const GG::Pt& pt, const GG::Pt& move, GG::Flags<GG::ModKey> mod_keys);
+    void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override;
+
+    void Render() override;
+
+    void LDrag(const GG::Pt& pt, const GG::Pt& move, GG::Flags<GG::ModKey> mod_keys) override;
     //@}
 
 private:
@@ -504,7 +506,8 @@ public:
     //@}
 
     /** \name Accessors */ //@{
-    virtual GG::Pt          ClientLowerRight() const;
+    GG::Pt ClientLowerRight() const override;
+
     double                  Scale() const;
     std::set<std::string>   GetCategoriesShown() const;
     std::set<TechStatus>    GetTechStatusesShown() const;
@@ -517,8 +520,8 @@ public:
     //@}
 
     //! \name Mutators //@{
-    virtual void Render();
-    virtual void SizeMove(const GG::Pt& ul, const GG::Pt& lr);
+    void Render() override;
+    void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override;
 
     void Update();  ///< update indicated \a tech panel or all panels if \a tech_name is an empty string, without redoing layout
     void Clear();                               ///< remove all tech panels
@@ -549,14 +552,19 @@ private:
         LayoutSurface() :
             Wnd(GG::X0, GG::Y0, GG::X1, GG::Y1, GG::INTERACTIVE | GG::DRAGABLE)
         {}
-        virtual void LDrag(const GG::Pt& pt, const GG::Pt& move, GG::Flags<GG::ModKey> mod_keys)
+
+        void LDrag(const GG::Pt& pt, const GG::Pt& move, GG::Flags<GG::ModKey> mod_keys) override
         { DraggedSignal(move); }
-        virtual void LButtonDown(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys)
+
+        void LButtonDown(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) override
         { ButtonDownSignal(pt); }
-        virtual void LButtonUp(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys)
+
+        void LButtonUp(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) override
         { ButtonUpSignal(pt); }
-        virtual void MouseWheel(const GG::Pt& pt, int move, GG::Flags<GG::ModKey> mod_keys)
+
+        void MouseWheel(const GG::Pt& pt, int move, GG::Flags<GG::ModKey> mod_keys) override
         { ZoomedSignal(move); }
+
         mutable boost::signals2::signal<void (int)>           ZoomedSignal;
         mutable boost::signals2::signal<void (const GG::Pt&)> DraggedSignal;
         mutable boost::signals2::signal<void (const GG::Pt&)> ButtonDownSignal;
@@ -619,24 +627,35 @@ public:
     TechPanel(const std::string& tech_name, const TechTreeWnd::LayoutPanel* panel);
     virtual         ~TechPanel();
 
-    virtual bool    InWindow(const GG::Pt& pt) const;
+    bool InWindow(const GG::Pt& pt) const override;
 
     /** Update layout and format only if required.*/
-    virtual void    PreRender();
-    virtual void    Render();
-    virtual void    LDrag(const GG::Pt& pt, const GG::Pt& move, GG::Flags<GG::ModKey> mod_keys)
+    void PreRender() override;
+
+    void Render() override;
+
+    void LDrag(const GG::Pt& pt, const GG::Pt& move, GG::Flags<GG::ModKey> mod_keys) override
     { ForwardEventToParent(); }
-    virtual void    LButtonDown(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys)
+
+    void LButtonDown(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) override
     { ForwardEventToParent(); }
-    virtual void    LButtonUp(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys)
+
+    void LButtonUp(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) override
     { ForwardEventToParent(); }
-    virtual void    LClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys);
-    virtual void    RClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys);
-    virtual void    LDoubleClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys);
-    virtual void    MouseEnter(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys);
-    virtual void    MouseLeave();
-    virtual void    MouseWheel(const GG::Pt& pt, int move, GG::Flags<GG::ModKey> mod_keys)
+
+    void LClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) override;
+
+    void RClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) override;
+
+    void LDoubleClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) override;
+
+    void MouseEnter(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) override;
+
+    void MouseLeave() override;
+
+    void MouseWheel(const GG::Pt& pt, int move, GG::Flags<GG::ModKey> mod_keys) override
     { ForwardEventToParent(); }
+
     void            Update();
     void            Select(bool select);
     int             FontSize() const;
@@ -679,11 +698,11 @@ TechTreeWnd::LayoutPanel::TechPanel::TechPanel(const std::string& tech_name, con
     m_cost_and_duration_text(),
     m_eta_text(),
     m_layout_panel(panel),
-    m_icon(0),
+    m_icon(nullptr),
     m_unlock_icons(),
-    m_name_label(0),
-    m_cost_and_duration_label(0),
-    m_eta_label(0),
+    m_name_label(nullptr),
+    m_cost_and_duration_label(nullptr),
+    m_eta_label(nullptr),
     m_colour(GG::CLR_GRAY),
     m_status(TS_RESEARCHABLE),
     m_browse_highlight(false),
@@ -1087,11 +1106,11 @@ TechTreeWnd::LayoutPanel::LayoutPanel(GG::X w, GG::Y h) :
     m_selected_tech_name(),
     m_browsed_tech_name(),
     m_graph(),
-    m_layout_surface(0),
-    m_vscroll(0),
-    m_hscroll(0),
-    m_zoom_in_button(0),
-    m_zoom_out_button(0)
+    m_layout_surface(nullptr),
+    m_vscroll(nullptr),
+    m_hscroll(nullptr),
+    m_zoom_in_button(nullptr),
+    m_zoom_out_button(nullptr)
 {
     SetChildClippingMode(ClipToClient);
 
@@ -1580,8 +1599,10 @@ private:
     class TechRow : public CUIListBox::Row {
     public:
         TechRow(GG::X w, const std::string& tech_name);
+
+        void Render() override;
+
         const std::string&          GetTech() { return m_tech; }
-        virtual void                Render();
         static std::vector<GG::X>   ColWidths(GG::X total_width);
         static std::vector<GG::Alignment> ColAlignments();
         void                        Update();
@@ -1726,11 +1747,11 @@ void TechTreeWnd::TechListBox::TechRow::Update() {
     std::string just_pad = "    ";
 
     std::string cost_str = boost::lexical_cast<std::string>(static_cast<int>(this_row_tech->ResearchCost(HumanClientApp::GetApp()->EmpireID()) + 0.5));
-    if (GG::Button* cost_btn = dynamic_cast<GG::Button*>((size() >= 3) ? at(2) : 0))
+    if (GG::Button* cost_btn = dynamic_cast<GG::Button*>((size() >= 3) ? at(2) : nullptr))
         cost_btn->SetText(cost_str + just_pad + just_pad);
 
     std::string time_str = boost::lexical_cast<std::string>(this_row_tech->ResearchTime(HumanClientApp::GetApp()->EmpireID()));
-    if (GG::Button* time_btn = dynamic_cast<GG::Button*>((size() >= 4) ? at(3) : 0))
+    if (GG::Button* time_btn = dynamic_cast<GG::Button*>((size() >= 4) ? at(3) : nullptr))
         time_btn->SetText(time_str + just_pad + just_pad);
 }
 
@@ -2021,10 +2042,10 @@ void TechTreeWnd::TechListBox::TechDoubleClicked(GG::ListBox::iterator it, const
 //////////////////////////////////////////////////
 TechTreeWnd::TechTreeWnd(GG::X w, GG::Y h, bool initially_hidden /*= true*/) :
     GG::Wnd(GG::X0, GG::Y0, w, h, GG::INTERACTIVE),
-    m_tech_tree_controls(0),
-    m_enc_detail_panel(0),
-    m_layout_panel(0),
-    m_tech_list(0),
+    m_tech_tree_controls(nullptr),
+    m_enc_detail_panel(nullptr),
+    m_layout_panel(nullptr),
+    m_tech_list(nullptr),
     m_init_flag(initially_hidden)
 {
     Sound::TempUISoundDisabler sound_disabler;

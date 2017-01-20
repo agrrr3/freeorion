@@ -177,7 +177,7 @@ namespace {
         const ShipDesign* GetDesign(const std::string& design_name) {
             std::map<std::string, ShipDesign*>::const_iterator it = m_saved_designs.find(design_name);
             if (it == m_saved_designs.end())
-                return 0;
+                return nullptr;
             return it->second;
         }
 
@@ -228,7 +228,7 @@ namespace {
         std::map<std::string, ShipDesign*>  m_saved_designs;
         static SavedDesignsManager*         s_instance;
     };
-    SavedDesignsManager* SavedDesignsManager::s_instance = 0;
+    SavedDesignsManager* SavedDesignsManager::s_instance = nullptr;
 
     SavedDesignsManager& GetSavedDesignsManager()
     { return SavedDesignsManager::GetSavedDesignsManager(); }
@@ -311,9 +311,11 @@ public:
     //@}
 
     /** \name Mutators */ //@{
-    virtual void        Render();
-    virtual void        LClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys);
-    virtual void        LDoubleClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys);
+    void Render() override;
+
+    void LClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) override;
+
+    void LDoubleClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) override;
     //@}
 
     mutable boost::signals2::signal<void (const PartType*)> ClickedSignal;
@@ -327,8 +329,8 @@ private:
 
 PartControl::PartControl(const PartType* part) :
     GG::Control(GG::X0, GG::Y0, SLOT_CONTROL_WIDTH, SLOT_CONTROL_HEIGHT, GG::INTERACTIVE),
-    m_icon(0),
-    m_background(0),
+    m_icon(nullptr),
+    m_background(nullptr),
     m_part(part)
 {
     if (!m_part)
@@ -384,7 +386,7 @@ public:
     class PartsListBoxRow : public CUIListBox::Row {
     public:
         PartsListBoxRow(GG::X w, GG::Y h);
-        virtual void    ChildrenDraggedAway(const std::vector<GG::Wnd*>& wnds, const GG::Wnd* destination);
+        void ChildrenDraggedAway(const std::vector<GG::Wnd*>& wnds, const GG::Wnd* destination) override;
     };
 
     /** \name Structors */ //@{
@@ -399,8 +401,9 @@ public:
     bool                            GetShowingSuperfluous() const { return m_show_superfluous_parts; }
 
     /** \name Mutators */ //@{
-    virtual void    SizeMove(const GG::Pt& ul, const GG::Pt& lr);
-    virtual void    AcceptDrops(const GG::Pt& pt, const std::vector<GG::Wnd*>& wnds, GG::Flags<GG::ModKey> mod_keys);
+    void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override;
+
+    void AcceptDrops(const GG::Pt& pt, const std::vector<GG::Wnd*>& wnds, GG::Flags<GG::ModKey> mod_keys) override;
 
     PartGroupsType  GroupAvailableDisplayableParts(const Empire* empire);
     void            CullSuperfluousParts(std::vector<const PartType* >& this_group,
@@ -423,8 +426,8 @@ public:
     mutable boost::signals2::signal<void (const PartType*)> PartTypeDoubleClickedSignal;
 
 protected:
-    virtual void    DropsAcceptable(DropsAcceptableIter first, DropsAcceptableIter last,
-                                    const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) const;
+    void DropsAcceptable(DropsAcceptableIter first, DropsAcceptableIter last,
+                         const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) const override;
 
 private:
     std::set<ShipPartClass> m_part_classes_shown;   // which part classes should be shown
@@ -446,23 +449,23 @@ void PartsListBox::PartsListBoxRow::ChildrenDraggedAway(const std::vector<GG::Wn
     if (!control)
         delete wnd;
 
-    GG::Control* dragged_control = 0;
+    GG::Control* dragged_control = nullptr;
 
     // find control in row
     unsigned int i = -1;
     for (i = 0; i < size(); ++i) {
-        dragged_control = !empty() ? at(i) : 0;
+        dragged_control = !empty() ? at(i) : nullptr;
         if (dragged_control == control)
             break;
         else
-            dragged_control = 0;
+            dragged_control = nullptr;
     }
 
     if (!dragged_control)
         return;
 
     PartControl* part_control = dynamic_cast<PartControl*>(dragged_control);
-    const PartType* part_type = 0;
+    const PartType* part_type = nullptr;
     if (part_control)
         part_type = part_control->Part();
 
@@ -686,7 +689,7 @@ void PartsListBox::Populate() {
     const Empire* empire = GetEmpire(empire_id);  // may be 0
 
     int cur_col = NUM_COLUMNS;
-    PartsListBoxRow* cur_row = 0;
+    PartsListBoxRow* cur_row = nullptr;
 
     // remove parts currently in rows of listbox
     Clear();
@@ -860,7 +863,7 @@ public:
     //@}
 
     /** \name Mutators */ //@{
-    virtual void    SizeMove(const GG::Pt& ul, const GG::Pt& lr);
+    void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override;
 
     void            ShowClass(ShipPartClass part_class, bool refresh_list = true);
     void            ShowAllClasses(bool refresh_list = true);
@@ -897,8 +900,8 @@ DesignWnd::PartPalette::PartPalette(const std::string& config_name) :
     CUIWnd(UserString("DESIGN_WND_PART_PALETTE_TITLE"),
            GG::ONTOP | GG::INTERACTIVE | GG::DRAGABLE | GG::RESIZABLE,
            config_name),
-    m_parts_list(0),
-    m_superfluous_parts_button(0)
+    m_parts_list(nullptr),
+    m_superfluous_parts_button(nullptr)
 {
     //TempUISoundDisabler sound_disabler;     // should be redundant with disabler in DesignWnd::DesignWnd.  uncomment if this is not the case
     SetChildClippingMode(ClipToClient);
@@ -1194,8 +1197,12 @@ public:
     //@}
 
     /** \name Mutators */ //@{
-    virtual void                    SizeMove(const GG::Pt& ul, const GG::Pt& lr);
-    virtual void                    ChildrenDraggedAway(const std::vector<GG::Wnd*>& wnds, const GG::Wnd* destination);
+    void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override;
+
+    void ChildrenDraggedAway(const std::vector<GG::Wnd*>& wnds, const GG::Wnd* destination) override;
+
+    void EnableOrderIssuing(bool enable = true) override;
+
     void                            QueueItemMoved(GG::ListBox::Row* row, std::size_t position);
 
     void                            SetEmpireShown(int empire_id, bool refresh_list = true);
@@ -1209,7 +1216,6 @@ public:
 
     void                            ShowAvailability(bool available, bool refresh_list = true);
     void                            HideAvailability(bool available, bool refresh_list = true);
-    virtual void                    EnableOrderIssuing(bool enable = true);
     //@}
 
     mutable boost::signals2::signal<void (int)>                 DesignSelectedSignal;
@@ -1224,8 +1230,12 @@ public:
     class HullPanel : public GG::Control {
     public:
         HullPanel(GG::X w, GG::Y h, const std::string& hull);
-        virtual void                    SizeMove(const GG::Pt& ul, const GG::Pt& lr);
-        virtual void                    Render() {}
+
+        void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override;
+
+        void Render() override
+        {}
+
     private:
         GG::StaticGraphic*              m_graphic;
         GG::Label*                      m_name;
@@ -1234,8 +1244,12 @@ public:
     class SavedDesignPanel : public GG::Control {
     public:
         SavedDesignPanel(GG::X w, GG::Y h, const std::string& saved_design_name);
-        virtual void                    SizeMove(const GG::Pt& ul, const GG::Pt& lr);
-        virtual void                    Render() {}
+
+        void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override;
+
+        void Render() override
+        {}
+
     private:
         GG::StaticGraphic*              m_graphic;
         GG::Label*                      m_name;
@@ -1244,8 +1258,10 @@ public:
     class BasesListBoxRow : public CUIListBox::Row {
     public:
         BasesListBoxRow(GG::X w, GG::Y h);
-        virtual void                    Render();
-        virtual void                    SizeMove(const GG::Pt& ul, const GG::Pt& lr);
+
+        void Render() override;
+
+        void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override;
     };
 
     class HullAndPartsListBoxRow : public BasesListBoxRow {
@@ -1280,7 +1296,7 @@ public:
     };
 
 protected:
-    virtual void ItemRightClickedImpl(GG::ListBox::iterator it, const GG::Pt& pt, const GG::Flags<GG::ModKey>& modkeys);
+    void ItemRightClickedImpl(GG::ListBox::iterator it, const GG::Pt& pt, const GG::Flags<GG::ModKey>& modkeys) override;
 
 private:
     void    BaseDoubleClicked(GG::ListBox::iterator it, const GG::Pt& pt, const GG::Flags<GG::ModKey>& modkeys);
@@ -1331,8 +1347,8 @@ void BasesListBox::BasesListBoxRow::SizeMove(const GG::Pt& ul, const GG::Pt& lr)
 
 BasesListBox::HullPanel::HullPanel(GG::X w, GG::Y h, const std::string& hull) :
     GG::Control(GG::X0, GG::Y0, w, h, GG::NO_WND_FLAGS),
-    m_graphic(0),
-    m_name(0)
+    m_graphic(nullptr),
+    m_name(nullptr)
 {
     SetChildClippingMode(ClipToClient);
     m_graphic = new GG::StaticGraphic(ClientUI::HullIcon(hull),
@@ -1353,8 +1369,8 @@ void BasesListBox::HullPanel::SizeMove(const GG::Pt& ul, const GG::Pt& lr) {
 
 BasesListBox::SavedDesignPanel::SavedDesignPanel(GG::X w, GG::Y h, const std::string& saved_design_name) :
     GG::Control(GG::X0, GG::Y0, w, h, GG::NO_WND_FLAGS),
-    m_graphic(0),
-    m_name(0)
+    m_graphic(nullptr),
+    m_name(nullptr)
 {
     SetChildClippingMode(ClipToClient);
     const ShipDesign* design = GetSavedDesignsManager().GetDesign(saved_design_name);
@@ -1541,7 +1557,7 @@ void BasesListBox::QueueItemMoved(GG::ListBox::Row* row, std::size_t position) {
         iterator insert_before_row = begin();
         std::advance(insert_before_row, position);
 
-        const BasesListBox::CompletedDesignListBoxRow* insert_before_control = (insert_before_row == end()) ? NULL :
+        const BasesListBox::CompletedDesignListBoxRow* insert_before_control = (insert_before_row == end()) ? nullptr :
             boost::polymorphic_downcast<const BasesListBox::CompletedDesignListBoxRow*>(*insert_before_row);
         int insert_before_id = insert_before_control
             ? insert_before_control->DesignID() : ShipDesign::INVALID_DESIGN_ID;
@@ -2026,7 +2042,8 @@ public:
     //@}
 
     /** \name Mutators */ //@{
-    virtual void    SizeMove(const GG::Pt& ul, const GG::Pt& lr);
+    void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override;
+
     void            Reset();
     void            ToggleAvailability(bool available, bool refresh_list);
     void            SetEmpireShown(int empire_id, bool refresh_list);
@@ -2062,11 +2079,11 @@ DesignWnd::BaseSelector::BaseSelector(const std::string& config_name) :
     CUIWnd(UserString("DESIGN_WND_STARTS"),
            GG::INTERACTIVE | GG::RESIZABLE | GG::ONTOP | GG::DRAGABLE | PINABLE,
            config_name),
-    m_tabs(0),
-    m_hulls_list(0),
-    m_designs_list(0),
-    m_saved_designs_list(0),
-    m_monsters_list(0)
+    m_tabs(nullptr),
+    m_hulls_list(nullptr),
+    m_designs_list(nullptr),
+    m_saved_designs_list(nullptr),
+    m_monsters_list(nullptr)
 {
     m_availability_buttons.first = new CUIStateButton(UserString("PRODUCTION_WND_AVAILABILITY_AVAILABLE"), GG::FORMAT_CENTER, boost::make_shared<CUILabelButtonRepresenter>());
     AttachChild(m_availability_buttons.first);
@@ -2253,19 +2270,25 @@ public:
     //@}
 
     /** \name Mutators */ //@{
-    virtual void    StartingChildDragDrop(const GG::Wnd* wnd, const GG::Pt& offset);
-    virtual void    CancellingChildDragDrop(const std::vector<const GG::Wnd*>& wnds);
-    virtual void    AcceptDrops(const GG::Pt& pt, const std::vector<GG::Wnd*>& wnds, GG::Flags<GG::ModKey> mod_keys);
-    virtual void    ChildrenDraggedAway(const std::vector<GG::Wnd*>& wnds, const GG::Wnd* destination);
-    virtual void    DragDropEnter(const GG::Pt& pt, std::map<const GG::Wnd*, bool>& drop_wnds_acceptable,
-                                  GG::Flags<GG::ModKey> mod_keys);
-    virtual void    DragDropLeave();
+    void StartingChildDragDrop(const GG::Wnd* wnd, const GG::Pt& offset) override;
 
-    virtual void    Render();
+    void CancellingChildDragDrop(const std::vector<const GG::Wnd*>& wnds) override;
+
+    void AcceptDrops(const GG::Pt& pt, const std::vector<GG::Wnd*>& wnds, GG::Flags<GG::ModKey> mod_keys) override;
+
+    void ChildrenDraggedAway(const std::vector<GG::Wnd*>& wnds, const GG::Wnd* destination) override;
+
+    void DragDropEnter(const GG::Pt& pt, std::map<const GG::Wnd*, bool>& drop_wnds_acceptable,
+                       GG::Flags<GG::ModKey> mod_keys) override;
+
+    void DragDropLeave() override;
+
+    void Render() override;
+
     void            Highlight(bool actually = true);
 
     void            SetPart(const std::string& part_name);  //!< used to programmatically set the PartControl in this slot.  Does not emit signal
-    void            SetPart(const PartType* part_type = 0); //!< used to programmatically set the PartControl in this slot.  Does not emit signal
+    void            SetPart(const PartType* part_type = nullptr); //!< used to programmatically set the PartControl in this slot.  Does not emit signal
     //@}
 
     /** emitted when the contents of a slot are altered by the dragging
@@ -2276,9 +2299,10 @@ public:
     mutable boost::signals2::signal<void (const PartType*)> PartTypeClickedSignal;
 
 protected:
-    virtual bool    EventFilter(GG::Wnd* w, const GG::WndEvent& event);
-    virtual void    DropsAcceptable(DropsAcceptableIter first, DropsAcceptableIter last,
-                                    const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) const;
+    bool EventFilter(GG::Wnd* w, const GG::WndEvent& event) override;
+
+    void DropsAcceptable(DropsAcceptableIter first, DropsAcceptableIter last,
+                         const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) const override;
 
 private:
     /** emits SlotContentsAlteredSignal with PartType* = 0.  needed because
@@ -2299,8 +2323,8 @@ SlotControl::SlotControl() :
     m_slot_type(INVALID_SHIP_SLOT_TYPE),
     m_x_position_fraction(0.4),
     m_y_position_fraction(0.4),
-    m_part_control(0),
-    m_background(0)
+    m_part_control(nullptr),
+    m_background(nullptr)
 {}
 
 SlotControl::SlotControl(double x, double y, ShipSlotType slot_type) :
@@ -2309,8 +2333,8 @@ SlotControl::SlotControl(double x, double y, ShipSlotType slot_type) :
     m_slot_type(slot_type),
     m_x_position_fraction(x),
     m_y_position_fraction(y),
-    m_part_control(0),
-    m_background(0)
+    m_part_control(nullptr),
+    m_background(nullptr)
 {
     m_background = new GG::StaticGraphic(SlotBackgroundTexture(m_slot_type), GG::GRAPHIC_FITGRAPHIC | GG::GRAPHIC_PROPSCALE);
     m_background->Resize(GG::Pt(SLOT_CONTROL_WIDTH, SLOT_CONTROL_HEIGHT));
@@ -2399,7 +2423,7 @@ const PartType* SlotControl::GetPart() const {
     if (m_part_control)
         return m_part_control->Part();
     else
-        return 0;
+        return nullptr;
 }
 
 void SlotControl::StartingChildDragDrop(const GG::Wnd* wnd, const GG::Pt& offset) {
@@ -2440,7 +2464,7 @@ void SlotControl::AcceptDrops(const GG::Pt& pt, const std::vector<GG::Wnd*>& wnd
 
     const GG::Wnd* wnd = *(wnds.begin());
     const PartControl* control = boost::polymorphic_downcast<const PartControl*>(wnd);
-    const PartType* part_type = control ? control->Part() : 0;
+    const PartType* part_type = control ? control->Part() : nullptr;
 
     delete wnd;
 
@@ -2457,10 +2481,10 @@ void SlotControl::ChildrenDraggedAway(const std::vector<GG::Wnd*>& wnds, const G
         return;
     // SlotContentsAlteredSignal is connected to this->SetPart, which will
     // delete m_part_control if it is not null.  The drop-accepting Wnd is
-    // responsible for deleting the accepted Wnd, so setting m_part_control = 0
+    // responsible for deleting the accepted Wnd, so setting m_part_control = nullptr
     // here prevents this->SetPart from deleting it prematurely
-    m_part_control = 0;
-    SlotContentsAlteredSignal(0);
+    m_part_control = nullptr;
+    SlotContentsAlteredSignal(nullptr);
 }
 
 void SlotControl::DragDropEnter(const GG::Pt& pt, std::map<const GG::Wnd*, bool>& drop_wnds_acceptable,
@@ -2493,7 +2517,7 @@ void SlotControl::SetPart(const PartType* part_type) {
     // remove existing part control, if any
     if (m_part_control) {
         delete m_part_control;
-        m_part_control = 0;
+        m_part_control = nullptr;
     }
 
     // create new part control for passed in part_type
@@ -2527,7 +2551,7 @@ void SlotControl::SetPart(const PartType* part_type) {
 }
 
 void SlotControl::EmitNullSlotContentsAlteredSignal()
-{ SlotContentsAlteredSignal(0); }
+{ SlotContentsAlteredSignal(nullptr); }
 
 
 /** PartsListBox accepts parts that are being removed from a SlotControl.*/
@@ -2574,10 +2598,12 @@ public:
     //@}
 
     /** \name Mutators */ //@{
-    virtual void    LClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys);
-    virtual void    AcceptDrops(const GG::Pt& pt, const std::vector<GG::Wnd*>& wnds, GG::Flags<GG::ModKey> mod_keys);
+    void LClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) override;
 
-    virtual void    SizeMove(const GG::Pt& ul, const GG::Pt& lr);
+    void AcceptDrops(const GG::Pt& pt, const std::vector<GG::Wnd*>& wnds, GG::Flags<GG::ModKey> mod_keys) override;
+
+    void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override;
+
     void            Sanitize();
 
     void            SetPart(const std::string& part_name, unsigned int slot);   //!< puts specified part in specified slot.  does nothing if slot is out of range of available slots for current hull
@@ -2637,8 +2663,8 @@ public:
     mutable boost::signals2::signal<void (int)>             CompleteDesignClickedSignal;
 
 protected:
-    virtual void    DropsAcceptable(DropsAcceptableIter first, DropsAcceptableIter last,
-                                    const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) const;
+    void DropsAcceptable(DropsAcceptableIter first, DropsAcceptableIter last,
+                         const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) const override;
 
 private:
     // disambiguate overloaded SetPart function, because otherwise boost::bind wouldn't be able to tell them apart
@@ -2690,20 +2716,20 @@ DesignWnd::MainPanel::MainPanel(const std::string& config_name) :
     CUIWnd(UserString("DESIGN_WND_MAIN_PANEL_TITLE"),
            GG::INTERACTIVE | GG::DRAGABLE | GG::RESIZABLE,
            config_name),
-    m_hull(0),
+    m_hull(nullptr),
     m_slots(),
     m_complete_design_id(ShipDesign::INVALID_DESIGN_ID),
     m_replaced_design_id(ShipDesign::INVALID_DESIGN_ID),
     m_incomplete_design(),
     m_completed_design_dump_strings(),
-    m_background_image(0),
-    m_design_name_label(0),
-    m_design_name(0),
-    m_design_description_label(0),
-    m_design_description(0),
-    m_replace_button(0),
-    m_confirm_button(0),
-    m_clear_button(0),
+    m_background_image(nullptr),
+    m_design_name_label(nullptr),
+    m_design_name(nullptr),
+    m_design_description_label(nullptr),
+    m_design_description(nullptr),
+    m_replace_button(nullptr),
+    m_confirm_button(nullptr),
+    m_clear_button(nullptr),
     m_disabled_by_name(false),
     m_disabled_by_part_conflict(false)
 {
@@ -2830,7 +2856,7 @@ void DesignWnd::MainPanel::ReregisterDesigns() {
 }
 
 void DesignWnd::MainPanel::Sanitize() {
-    SetHull(0);
+    SetHull(nullptr);
     m_design_name->SetText(UserString("DESIGN_NAME_DEFAULT"));
     m_design_description->SetText(UserString("DESIGN_DESCRIPTION_DEFAULT"));
     // disconnect old empire design signal
@@ -2986,7 +3012,7 @@ std::pair<int, int> DesignWnd::MainPanel::FindSlotForPartWithSwapping(const Part
 
 void DesignWnd::MainPanel::ClearParts() {
     for (SlotControl* slot : m_slots)
-        slot->SetPart(0);
+        slot->SetPart(nullptr);
     DesignChangedSignal();
 }
 
@@ -2996,7 +3022,7 @@ void DesignWnd::MainPanel::SetHull(const std::string& hull_name)
 void DesignWnd::MainPanel::SetHull(const HullType* hull) {
     m_hull = hull;
     DeleteChild(m_background_image);
-    m_background_image = 0;
+    m_background_image = nullptr;
     if (m_hull) {
         boost::shared_ptr<GG::Texture> texture = ClientUI::HullTexture(hull->Name());
         m_background_image = new GG::StaticGraphic(texture, GG::GRAPHIC_PROPSCALE | GG::GRAPHIC_FITGRAPHIC);
@@ -3013,7 +3039,7 @@ void DesignWnd::MainPanel::SetDesign(const ShipDesign* ship_design) {
     m_incomplete_design.reset();
 
     if (!ship_design) {
-        SetHull(0);
+        SetHull(nullptr);
         return;
     }
 
@@ -3411,10 +3437,10 @@ void DesignWnd::MainPanel::AcceptDrops(const GG::Pt& pt, const std::vector<GG::W
 //////////////////////////////////////////////////
 DesignWnd::DesignWnd(GG::X w, GG::Y h) :
     GG::Wnd(GG::X0, GG::Y0, w, h, GG::ONTOP | GG::INTERACTIVE),
-    m_detail_panel(0),
-    m_base_selector(0),
-    m_part_palette(0),
-    m_main_panel(0)
+    m_detail_panel(nullptr),
+    m_base_selector(nullptr),
+    m_part_palette(nullptr),
+    m_main_panel(nullptr)
 {
     Sound::TempUISoundDisabler sound_disabler;
     SetChildClippingMode(ClipToClient);

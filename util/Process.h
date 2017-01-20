@@ -1,28 +1,9 @@
 #ifndef _Process_h_
 #define _Process_h_
 
-// HACK: The following two includes work around a bug in boost 1.56,
-// which uses them without including.
-#include <boost/version.hpp>
-#if BOOST_VERSION == 105600
-#include <boost/serialization/singleton.hpp> // This
-#include <boost/serialization/extended_type_info.hpp> //This
-#endif
-// HACK: For a similar boost 1.57 bug
-#if BOOST_VERSION == 105700
-#include <boost/serialization/type_info_implementation.hpp> // This
-#endif
-
-#if BOOST_VERSION == 105800
-// HACK: The following two includes work around a bug in boost 1.58
-#include <boost/serialization/type_info_implementation.hpp>
-#include <boost/archive/basic_archive.hpp>
-#endif
-
-#include <boost/serialization/shared_ptr.hpp>
-
 #include <vector>
 #include <string>
+#include <boost/shared_ptr.hpp>
 
 #include "Export.h"
 
@@ -41,17 +22,26 @@
 class FO_COMMON_API Process {
 public:
     /** \name Structors */ //@{
-    /** default ctor.  Creates a Process with no associated child process.  A child process will never be associated 
-        with this default-constructed Process unless another Process is assigned to it.*/
+    /** Creates a Process with no associated child process.  A child process
+        will never be associated with this default-constructed Process unless
+        another Process is assigned to it. */
     Process();
 
-    /** ctor requiring a command and a full argv-style command line.  The command may be a relative or an absolute path 
-        name. The first token on the command line must be the name of the executable of the process to be created.  Example: 
-        cmd: "/usr/bin/cvs", argv: "cvs update -C project_file.cpp". Of course, each arg should be in its own string within 
-        argv, and argv strings containing spaces must be enclosed in quotes.  \throw std::runtime_error Throws 
-        std::runtime_error if the process cannot be successfully created.
+    /** Ctor requiring a command and a full argv-style command line.  The
+        command may be a relative or an absolute path name.  The first token on
+        the command line must be the name of the executable of the process to be
+        created.
 
-        Process returns immediately.*/
+        Example:
+        cmd: "/usr/bin/cvs", argv: "cvs update -C project_file.cpp".
+
+        Of course, each arg should be in its own string within argv, and argv
+        strings containing spaces must be enclosed in quotes.
+
+        @throw std::runtime_error  If the process cannot be successfully
+            created.
+
+        Process returns immediately. */
     Process(const std::string& cmd, const std::vector<std::string>& argv);
     //@}
 

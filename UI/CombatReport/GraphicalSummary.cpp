@@ -278,7 +278,7 @@ public:
         m_health_color = options.Get<StreamableColor>("UI.combat.summary.health-color").ToClr();
     }
 
-    virtual void Render() {
+    void Render() override {
         GG::Clr base_color = Alive() ? m_wound_color : m_dead_color;
 
         // Always draw the red background, health will cover it
@@ -303,10 +303,10 @@ public:
         }
     }
 
-    virtual void MouseEnter(const GG::Pt& pt, GG::Flags< GG::ModKey > mod_keys)
+    void MouseEnter(const GG::Pt& pt, GG::Flags< GG::ModKey > mod_keys) override
     { m_hovered = true; }
 
-    virtual void MouseLeave()
+    void MouseLeave() override
     { m_hovered = false; }
 
     /// Resizes the bar to have a width and height based on the
@@ -340,7 +340,7 @@ public:
     SideBar(const CombatSummary& combat_summary, const BarSizer& sizer):
         GG::Wnd(GG::X0, GG::Y0, GG::X1, GG::Y1, GG::INTERACTIVE),
         m_side_summary(combat_summary),
-        m_x_axis_label(0),
+        m_x_axis_label(nullptr),
         m_sizer(sizer)
     {
 
@@ -476,7 +476,7 @@ public:
         glEnable(GL_TEXTURE_2D);
     }
 
-    virtual void Render() {
+    void Render() override {
         // Draw the axes outside th3e client area
         GG::Pt begin(ClientUpperLeft().x - AXIS_WIDTH/2, ClientLowerRight().y + AXIS_HEIGHT/2);
         GG::Pt x_end(ClientLowerRight().x, begin.y);
@@ -485,7 +485,7 @@ public:
         DrawArrow(begin, y_end);
     }
 
-    virtual void SizeMove(const GG::Pt& ul, const GG::Pt& lr) {
+    void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override {
         GG::Wnd::SizeMove(ul, lr);
         DoLayout();
     }
@@ -495,10 +495,10 @@ public:
         return ul;
     }
 
-    virtual GG::Pt ClientUpperLeft() const
+    GG::Pt ClientUpperLeft() const override
     { return  GG::Wnd::UpperLeft() + RelativeClientUpperLeft(); }
 
-    virtual GG::Pt ClientLowerRight() const {
+    GG::Pt ClientLowerRight() const override {
         // The axes are considered to be outside the client area.
         GG::Pt lr = GG::Wnd::ClientLowerRight();
         lr.y -= AXIS_HEIGHT;
@@ -561,7 +561,7 @@ public:
         m_toggles.clear();
     }
 
-    virtual GG::Pt MinUsableSize() const {
+    GG::Pt MinUsableSize() const override {
         GG::Pt min_size(GG::X0, GG::Y0);
 
         for (ToggleData* data : m_toggles)
@@ -633,7 +633,7 @@ private:
             option_key(option_key),
             sizer(sizer),
             parent(parent),
-            button(0)
+            button(nullptr)
         {
             button = new CUIButton("-");
             parent->AttachChild(button);
@@ -646,8 +646,8 @@ private:
 
 GraphicalSummaryWnd::GraphicalSummaryWnd() :
     GG::Wnd(GG::X0, GG::Y0, GG::X1, GG::Y1, GG::NO_WND_FLAGS),
-    m_sizer(0),
-    m_options_bar(0)
+    m_sizer(nullptr),
+    m_options_bar(nullptr)
 {}
 
 GG::Pt GraphicalSummaryWnd::MinUsableSize() const {

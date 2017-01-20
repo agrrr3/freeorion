@@ -467,26 +467,33 @@ namespace {
 class SidePanel::PlanetPanel : public GG::Control {
 public:
     /** \name Structors */ //@{
-    PlanetPanel(GG::X w, int planet_id, StarType star_type); ///< basic ctor
+    PlanetPanel(GG::X w, int planet_id, StarType star_type);
+
     ~PlanetPanel();
     //@}
 
     /** \name Accessors */ //@{
-    virtual bool            InWindow(const GG::Pt& pt) const;
+    bool InWindow(const GG::Pt& pt) const override;
+
     int                     PlanetID() const { return m_planet_id; }
     //@}
 
     /** \name Mutators */ //@{
+    void PreRender() override;
+
+    void Render() override;
+
+    void LClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) override;
+
+    void LDoubleClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) override;
+
+    void RClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) override;
+
+    void MouseWheel(const GG::Pt& pt, int move, GG::Flags<GG::ModKey> mod_keys) override;
+
+    void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override;
+
     void                    Select(bool selected);
-
-    virtual void            PreRender();
-    virtual void            Render();
-    virtual void            LClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys);
-    virtual void            LDoubleClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys);
-    virtual void            RClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys);
-    virtual void            MouseWheel(const GG::Pt& pt, int move, GG::Flags<GG::ModKey> mod_keys);
-
-    virtual void            SizeMove(const GG::Pt& ul, const GG::Pt& lr);
 
     void                    Refresh();                      ///< updates panels, shows / hides colonize button, redoes layout of infopanels
 
@@ -560,8 +567,9 @@ public:
     //@}
 
     /** \name Accessors */ //@{
-    virtual bool    InWindow(const GG::Pt& pt) const;
-    virtual void    MouseWheel(const GG::Pt& pt, int move, GG::Flags<GG::ModKey> mod_keys);  ///< respond to movement of the mouse wheel (move > 0 indicates the wheel is rolled up, < 0 indicates down)
+    bool InWindow(const GG::Pt& pt) const override;
+
+    void MouseWheel(const GG::Pt& pt, int move, GG::Flags<GG::ModKey> mod_keys) override;
 
     int                     SelectedPlanetID() const    {return m_selected_planet_id;}
     const std::set<int>&    SelectionCandidates() const {return m_candidate_ids;}
@@ -569,7 +577,11 @@ public:
     //@}
 
     /** \name Mutators */ //@{
-    virtual void    LDrag(const GG::Pt& pt, const GG::Pt& move, GG::Flags<GG::ModKey> mod_keys);
+    void LDrag(const GG::Pt& pt, const GG::Pt& move, GG::Flags<GG::ModKey> mod_keys) override;
+
+    void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override;
+
+    void PreRender() override;
 
     void            Clear();
     void            SetPlanets(const std::vector<int>& planet_ids, StarType star_type);
@@ -577,12 +589,10 @@ public:
     void            SetValidSelectionPredicate(const boost::shared_ptr<UniverseObjectVisitor> &visitor);
     void            ScrollTo(int pos);
 
-    virtual void    PreRender();
     void            RefreshAllPlanetPanels();           //!< updates data displayed in info panels and redoes layout
 
     virtual void    ShowScrollbar();
     virtual void    HideScrollbar();
-    virtual void    SizeMove(const GG::Pt& ul, const GG::Pt& lr);
 
     /** Enables, or disables if \a enable is false, issuing orders via the
       * PlanetPanels in this PlanetPanelContainer. */
@@ -634,7 +644,7 @@ public:
         Refresh();
     }
 
-    virtual void Render() {
+    void Render() override {
         GG::Pt ul = UpperLeft(), lr = LowerRight();
         // render rotating base planet texture
         RenderPlanet(ul + GG::Pt(Width() / 2, Height() / 2), Value(Width()), m_surface_texture, m_overlay_texture,
@@ -744,7 +754,7 @@ namespace {
             GetLayout()->PreRender();
         }
 
-        virtual void PreRender() {
+        void PreRender() override {
             // If there is no control add it.
             if (GetLayout()->Children().empty())
                 Init();
@@ -754,7 +764,7 @@ namespace {
 
         int SystemID() const { return m_system_id; }
 
-        virtual SortKeyType SortKey(std::size_t column) const
+        SortKeyType SortKey(std::size_t column) const override
         { return GetSystem(m_system_id)->Name() + boost::lexical_cast<std::string>(m_system_id); }
 
     private:
@@ -773,7 +783,7 @@ class SidePanel::SystemNameDropDownList : public CUIDropDownList {
     void EnableOrderIssuing(bool enable = true)
     { m_order_issuing_enabled = enable; }
 
-    virtual void RClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) {
+    void RClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) override {
         if (CurrentItem() == end())
             return;
 
@@ -868,22 +878,22 @@ namespace {
 SidePanel::PlanetPanel::PlanetPanel(GG::X w, int planet_id, StarType star_type) :
     GG::Control(GG::X0, GG::Y0, w, GG::Y1, GG::INTERACTIVE),
     m_planet_id(planet_id),
-    m_planet_name(0),
-    m_env_size(0),
-    m_colonize_button(0),
-    m_invade_button(0),
-    m_bombard_button(0),
-    m_planet_graphic(0),
-    m_rotating_planet_graphic(0),
+    m_planet_name(nullptr),
+    m_env_size(nullptr),
+    m_colonize_button(nullptr),
+    m_invade_button(nullptr),
+    m_bombard_button(nullptr),
+    m_planet_graphic(nullptr),
+    m_rotating_planet_graphic(nullptr),
     m_selected(false),
     m_order_issuing_enabled(true),
     m_empire_colour(GG::CLR_ZERO),
-    m_focus_drop(0),
-    m_population_panel(0),
-    m_resource_panel(0),
-    m_military_panel(0),
-    m_buildings_panel(0),
-    m_specials_panel(0),
+    m_focus_drop(nullptr),
+    m_population_panel(nullptr),
+    m_resource_panel(nullptr),
+    m_military_panel(nullptr),
+    m_buildings_panel(nullptr),
+    m_specials_panel(nullptr),
     m_star_type(star_type)
 {
     SetName(UserString("PLANET_PANEL"));
@@ -1089,11 +1099,11 @@ void SidePanel::PlanetPanel::RefreshPlanetGraphic() {
 
     if (m_planet_graphic) {
         delete m_planet_graphic;
-        m_planet_graphic = 0;
+        m_planet_graphic = nullptr;
     }
     if (m_rotating_planet_graphic) {
         delete m_rotating_planet_graphic;
-        m_rotating_planet_graphic = 0;
+        m_rotating_planet_graphic = nullptr;
     }
 
     if (planet->Type() == PT_ASTEROIDS) {
@@ -1201,7 +1211,7 @@ namespace {
         if (!ship || planet_type == INVALID_PLANET_TYPE)
             return false;
 
-        const ShipDesign* design = 0;
+        const ShipDesign* design = nullptr;
         double colony_ship_capacity = 0.0;
 
         design = ship->Design();
@@ -1472,37 +1482,48 @@ void SidePanel::PlanetPanel::Refresh() {
         DebugLogger() << "PlanetPanel::Refresh couldn't get planet!";
         // clear / hide everything...
         DetachChild(m_planet_name);
-        delete m_planet_name;           m_planet_name = 0;
+        delete m_planet_name;
+        m_planet_name = nullptr;
 
         DetachChild(m_env_size);
-        delete m_env_size;              m_env_size = 0;
+        delete m_env_size;
+        m_env_size = nullptr;
 
         DetachChild(m_focus_drop);
-        delete m_focus_drop;            m_focus_drop = 0;
+        delete m_focus_drop;
+        m_focus_drop = nullptr;
 
         DetachChild(m_population_panel);
-        delete m_population_panel;      m_population_panel = 0;
+        delete m_population_panel;
+        m_population_panel = nullptr;
 
         DetachChild(m_resource_panel);
-        delete m_resource_panel;        m_resource_panel = 0;
+        delete m_resource_panel;
+        m_resource_panel = nullptr;
 
         DetachChild(m_military_panel);
-        delete m_military_panel;        m_military_panel = 0;
+        delete m_military_panel;
+        m_military_panel = nullptr;
 
         DetachChild(m_buildings_panel);
-        delete m_buildings_panel;       m_buildings_panel = 0;
+        delete m_buildings_panel;
+        m_buildings_panel = nullptr;
 
         DetachChild(m_colonize_button);
-        delete m_colonize_button;       m_colonize_button = 0;
+        delete m_colonize_button;
+        m_colonize_button = nullptr;
 
         DetachChild(m_invade_button);
-        delete m_invade_button;         m_invade_button = 0;
+        delete m_invade_button;
+        m_invade_button = nullptr;
 
         DetachChild(m_bombard_button);
-        delete m_bombard_button;        m_bombard_button = 0;
+        delete m_bombard_button;
+        m_bombard_button = nullptr;
 
         DetachChild(m_specials_panel);
-        delete m_specials_panel;        m_specials_panel = 0;
+        delete m_specials_panel;
+        m_specials_panel = nullptr;
 
         RequirePreRender();
         return;
@@ -2740,13 +2761,13 @@ boost::signals2::signal<void (int)>        SidePanel::SystemSelectedSignal;
 
 SidePanel::SidePanel(const std::string& config_name) :
     CUIWnd("", GG::INTERACTIVE | GG::RESIZABLE | GG::DRAGABLE | GG::ONTOP, config_name),
-    m_system_name(0),
-    m_star_type_text(0),
-    m_button_prev(0),
-    m_button_next(0),
-    m_star_graphic(0),
-    m_planet_panel_container(0),
-    m_system_resource_summary(0),
+    m_system_name(nullptr),
+    m_star_type_text(nullptr),
+    m_button_prev(nullptr),
+    m_button_next(nullptr),
+    m_star_graphic(nullptr),
+    m_planet_panel_container(nullptr),
+    m_system_resource_summary(nullptr),
     m_selection_enabled(false)
 {
     m_planet_panel_container = new PlanetPanelContainer();
@@ -3058,8 +3079,10 @@ void SidePanel::RefreshImpl() {
     // clear out current contents
     m_planet_panel_container->Clear();
     m_star_type_text->SetText("");
-    delete m_star_graphic;              m_star_graphic = 0;
-    delete m_system_resource_summary;   m_system_resource_summary = 0;
+    delete m_star_graphic;
+    m_star_graphic = nullptr;
+    delete m_system_resource_summary;
+    m_system_resource_summary = nullptr;
 
 
     RefreshSystemNames();

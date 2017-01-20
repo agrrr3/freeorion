@@ -62,7 +62,7 @@ public:
 
     /** \name Structors */ ///@{
     Button(const std::string& str, const boost::shared_ptr<Font>& font, Clr color,
-           Clr text_color = CLR_BLACK, Flags<WndFlag> flags = INTERACTIVE); ///< ctor
+           Clr text_color = CLR_BLACK, Flags<WndFlag> flags = INTERACTIVE);
     //@}
 
     /** \name Accessors */ ///@{
@@ -329,7 +329,7 @@ public:
     //@}
 
     /** \name Structors */ ///@{
-    RadioButtonGroup(Orientation orientation); ///< ctor
+    RadioButtonGroup(Orientation orientation);
     //@}
 
     /** \name Accessors */ ///@{
@@ -426,9 +426,10 @@ protected:
         RadioButtonGroup. */
     struct GG_API ButtonSlot
     {
-        ButtonSlot();
         ButtonSlot(StateButton* button_);
-        StateButton*                button;
+
+        StateButton* button;
+
         boost::signals2::connection connection;
     };
 

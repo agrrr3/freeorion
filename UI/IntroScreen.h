@@ -15,11 +15,16 @@ class CreditsWnd;
 class IntroScreen : public GG::Wnd {
 public:
     /** \name Structors*/ //!@{
-    IntroScreen();                              //!< default ctor
-    ~IntroScreen();                             //!< default dtor
+    IntroScreen();
+
+    ~IntroScreen();
     //!@}
 
     /** \name Mutators*/ //!@{
+    void KeyPress(GG::Key key, boost::uint32_t key_code_point, GG::Flags<GG::ModKey> mod_keys) override;
+
+    void Render() override;
+
     void            OnSinglePlayer();  //!< called when single player is clicked
     void            OnQuickStart();    //!< called when quick start is clicked
     void            OnMultiPlayer();   //!< ...
@@ -30,11 +35,10 @@ public:
     void            OnWebsite();
     void            OnCredits();
     void            OnExitGame();
-    virtual void    KeyPress (GG::Key key, boost::uint32_t key_code_point, GG::Flags<GG::ModKey> mod_keys);
+
 
     void            DoLayout();
     virtual void    Close();
-    virtual void    Render();
     //!@}
 
 private:

@@ -14,7 +14,7 @@
 struct PromptRow : GG::ListBox::Row {
     PromptRow(GG::X w, std::string prompt_str) :
         GG::ListBox::Row(w, GG::Y(20), ""),
-        m_prompt(0)
+        m_prompt(nullptr)
     {
         //std::cout << "PromptRow(" << w << ", ...)" << std::endl;
 
@@ -27,7 +27,7 @@ struct PromptRow : GG::ListBox::Row {
         push_back(m_prompt);
     }
 
-    virtual void    SizeMove(const GG::Pt& ul, const GG::Pt& lr) {
+    void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override {
         const GG::Pt old_size = Size();
         GG::ListBox::Row::SizeMove(ul, lr);
         if (!empty() && old_size != Size() && m_prompt)
