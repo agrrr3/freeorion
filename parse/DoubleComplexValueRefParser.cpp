@@ -1,6 +1,9 @@
 #include "ValueRefParserImpl.h"
 
 namespace parse {
+    const std::string TOK_SPECIES_EMPIRE_OPINION{"SpeciesEmpireOpinion"};
+    const std::string TOK_SPECIES_SPECIES_OPINION{"SpeciesSpeciesOpinion"};
+
     struct double_complex_parser_rules {
         double_complex_parser_rules() {
             qi::_1_type _1;
@@ -26,6 +29,13 @@ namespace parse {
                   )     [ _val = new_<ValueRef::ComplexVariable<double> >(_a, _b, _c, _f, _d, _e) ]
                 ;
 
+            empire_meter_value
+                = (     tok.EmpireMeterValue_ [ _a = construct<std::string>(_1)]
+                     >  parse::label(Empire_token)  >  simple_int[ _b = _1]
+                     >  parse::label(Meter_token) > tok.string[ _d = new_<ValueRef::Constant<std::string> >(_1)]
+                  )     [_val = new_<ValueRef::ComplexVariable<double> >(_a, _b, _c, _f, _d, _e)]
+                ;
+
              direct_distance
                 = (     tok.DirectDistanceBetween_ [ _a = construct<std::string>(_1) ]
                      >  parse::label(Object_token) > simple_int [ _b = _1 ]
@@ -48,7 +58,7 @@ namespace parse {
 
             species_empire_opinion
                 = (
-                    (  tok.SpeciesOpinion_ [ _a = construct<std::string>("SpeciesEmpireOpinion") ]
+                    (  tok.SpeciesOpinion_ [ _a = construct<std::string>(TOK_SPECIES_EMPIRE_OPINION) ]
                        >  parse::label(Species_token) >  string_value_ref [ _d = _1 ]
                     )
                   >> parse::label(Empire_token)  >  simple_int [ _b = _1 ]
@@ -57,7 +67,7 @@ namespace parse {
 
             species_species_opinion
                 = (
-                    (   tok.SpeciesOpinion_ [ _a = construct<std::string>("SpeciesSpeciesOpinion") ]
+                    (   tok.SpeciesOpinion_ [ _a = construct<std::string>(TOK_SPECIES_SPECIES_OPINION) ]
                       >  parse::label(Species_token) >  string_value_ref [ _d = _1 ]
                     )
                   >> parse::label(Species_token) >  string_value_ref [ _e = _1 ]
@@ -66,6 +76,7 @@ namespace parse {
 
             start
                 %=  part_capacity
+                |   empire_meter_value
                 |   direct_distance
                 |   shortest_path
                 |   species_empire_opinion
@@ -73,6 +84,7 @@ namespace parse {
                 ;
 
             part_capacity.name("PartCapacity");
+            empire_meter_value.name("EmpireMeterValue");
             direct_distance.name("DirectDistanceBetween");
             shortest_path.name("ShortestPathBetween");
             species_empire_opinion.name("SpeciesOpinion (of empire)");
@@ -84,6 +96,7 @@ namespace parse {
         }
 
         complex_variable_rule<double>::type part_capacity;
+        complex_variable_rule<double>::type empire_meter_value;
         complex_variable_rule<double>::type direct_distance;
         complex_variable_rule<double>::type shortest_path;
         complex_variable_rule<double>::type species_empire_opinion;

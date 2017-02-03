@@ -1,11 +1,12 @@
 #ifndef COMBATREPORTDATA_H
 #define COMBATREPORTDATA_H
 
-#include "../universe/TemporaryPtr.h"
 
 #include <GG/Clr.h>
 
+#include <memory>
 #include <vector>
+
 
 struct WeaponFireEvent;
 struct CombatParticipantState;
@@ -30,7 +31,7 @@ struct ParticipantSummary {
 struct CombatSummary {
 public:
     // Should be auto_ptr, but don't have c++11
-    typedef boost::shared_ptr<ParticipantSummary> ParticipantSummaryPtr;
+    typedef std::shared_ptr<ParticipantSummary> ParticipantSummaryPtr;
     // Participant summaries have vectors inside them,
     // so we don't want to have to copy them around while sorting
     // therefore we store them with pointers

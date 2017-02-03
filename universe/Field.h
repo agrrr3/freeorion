@@ -25,7 +25,7 @@ public:
 
     bool ContainedBy(int object_id) const override;
 
-    TemporaryPtr<UniverseObject> Accept(const UniverseObjectVisitor& visitor) const override;
+    std::shared_ptr<UniverseObject> Accept(const UniverseObjectVisitor& visitor) const override;
 
     const std::string& PublicName(int empire_id) const override;
 
@@ -33,12 +33,13 @@ public:
 
     const std::string&          FieldTypeName() const { return m_type_name; }
 
-    bool                        InField(TemporaryPtr<const UniverseObject> obj) const;
+    bool InField(std::shared_ptr<const UniverseObject> obj) const;
+
     bool                        InField(double x, double y) const;
     //@}
 
     /** \name Mutators */ //@{
-    void Copy(TemporaryPtr<const UniverseObject> copied_object, int empire_id = ALL_EMPIRES) override;
+    void Copy(std::shared_ptr<const UniverseObject> copied_object, int empire_id = ALL_EMPIRES) override;
 
     void ResetTargetMaxUnpairedMeters() override;
     //@}
@@ -50,17 +51,13 @@ protected:
 
     Field(const std::string& field_type, double x, double y, double radius);
 
+    template <typename T> friend void UniverseObjectDeleter(T*);
     template <class T> friend void boost::python::detail::value_destroyer<false>::execute(T const volatile* p);
-    template <class T> friend void boost::checked_delete(T* x);
 
-#if BOOST_VERSION >= 106100
 public:
-#endif
-    ~Field() {}
-#if BOOST_VERSION >= 106100
-protected:
-#endif
+    ~Field();
 
+protected:
     /** Returns new copy of this Field. */
     Field* Clone(int empire_id = ALL_EMPIRES) const override;
     //@}
@@ -80,7 +77,7 @@ public:
     /** \name Structors */ //@{
     FieldType(const std::string& name, const std::string& description,
               float stealth, const std::set<std::string>& tags,
-              const std::vector<boost::shared_ptr<Effect::EffectsGroup> >& effects,
+              const std::vector<std::shared_ptr<Effect::EffectsGroup>>& effects,
               const std::string& graphic);
     ~FieldType();
     //@}
@@ -91,8 +88,12 @@ public:
     std::string                     Dump() const;                                       ///< returns a data file format representation of this object
     float                           Stealth() const         { return m_stealth; }       ///< returns stealth of field type
     const std::set<std::string>&    Tags() const            { return m_tags; }
-    const std::vector<boost::shared_ptr<Effect::EffectsGroup> >&
-                                    Effects() const         { return m_effects; }       ///< returns the EffectsGroups that encapsulate the effects of this FieldType
+
+    /** Returns the EffectsGroups that encapsulate the effects of thisi
+        FieldType. */
+    const std::vector<std::shared_ptr<Effect::EffectsGroup>>& Effects() const
+    { return m_effects; }
+
     const std::string&              Graphic() const         { return m_graphic; }       ///< returns the name of the grapic file for this field type
     //@}
 
@@ -101,7 +102,7 @@ private:
     std::string                                             m_description;
     float                                                   m_stealth;
     std::set<std::string>                                   m_tags;
-    std::vector<boost::shared_ptr<Effect::EffectsGroup> >   m_effects;
+    std::vector<std::shared_ptr<Effect::EffectsGroup>> m_effects;
     std::string                                             m_graphic;
 };
 

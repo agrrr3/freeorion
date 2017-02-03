@@ -30,7 +30,7 @@ public:
 
     void Render() override;
 
-    void KeyPress(GG::Key key, boost::uint32_t key_code_point, GG::Flags<GG::ModKey> mod_keys) override;
+    void KeyPress(GG::Key key, std::uint32_t key_code_point, GG::Flags<GG::ModKey> mod_keys) override;
 
     void            ChatMessage(int player_id, const std::string& msg);
     void            LobbyUpdate(const MultiplayerLobbyData& lobby_data);
@@ -54,7 +54,7 @@ private:
     void            NewLoadClicked(std::size_t idx);
     void            GalaxySetupPanelChanged();
     void            SaveGameBrowse();
-    void            PreviewImageChanged(boost::shared_ptr<GG::Texture> new_image);
+    void PreviewImageChanged(std::shared_ptr<GG::Texture> new_image);
     void            PlayerDataChangedLocally();
     bool            PopulatePlayerList();   ///< repopulate list with rows built from current m_lobby_data.  returns true iff something in the lobby data was changed during population and an update should be sent back to the server
     void            SendUpdate();

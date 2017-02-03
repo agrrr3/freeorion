@@ -1,6 +1,12 @@
 #ifndef _Predicates_h_
 #define _Predicates_h_
 
+
+#include "../util/Export.h"
+
+#include <memory>
+
+
 class UniverseObject;
 class Building;
 class Fleet;
@@ -10,15 +16,6 @@ class System;
 class Field;
 class Fighter;
 
-#include <boost/mpl/assert.hpp>
-#include <boost/pointer_cast.hpp>
-#include <boost/type_traits/add_pointer.hpp>
-#include <boost/type_traits/is_same.hpp>
-#include <boost/type_traits/remove_const.hpp>
-#include <boost/type_traits/remove_pointer.hpp>
-
-#include "../util/Export.h"
-#include "TemporaryPtr.h"
 
 extern const int ALL_EMPIRES;
 
@@ -35,21 +32,21 @@ extern const int ALL_EMPIRES;
     Visit(UniverseObject*) is 0, so overridding any \a one Visit() method besides this one will ensure that only UniverseObjects
     of a single subclass are recognized by the visitor. */
 struct FO_COMMON_API UniverseObjectVisitor {
-    virtual TemporaryPtr<UniverseObject> Visit(TemporaryPtr<UniverseObject> obj) const;
+    virtual std::shared_ptr<UniverseObject> Visit(std::shared_ptr<UniverseObject> obj) const;
 
-    virtual TemporaryPtr<UniverseObject> Visit(TemporaryPtr<Building> obj) const;
+    virtual std::shared_ptr<UniverseObject> Visit(std::shared_ptr<Building> obj) const;
 
-    virtual TemporaryPtr<UniverseObject> Visit(TemporaryPtr<Fleet> obj) const;
+    virtual std::shared_ptr<UniverseObject> Visit(std::shared_ptr<Fleet> obj) const;
 
-    virtual TemporaryPtr<UniverseObject> Visit(TemporaryPtr<Planet> obj) const;
+    virtual std::shared_ptr<UniverseObject> Visit(std::shared_ptr<Planet> obj) const;
 
-    virtual TemporaryPtr<UniverseObject> Visit(TemporaryPtr<Ship> obj) const;
+    virtual std::shared_ptr<UniverseObject> Visit(std::shared_ptr<Ship> obj) const;
 
-    virtual TemporaryPtr<UniverseObject> Visit(TemporaryPtr<System> obj) const;
+    virtual std::shared_ptr<UniverseObject> Visit(std::shared_ptr<System> obj) const;
 
-    virtual TemporaryPtr<UniverseObject> Visit(TemporaryPtr<Field> obj) const;
+    virtual std::shared_ptr<UniverseObject> Visit(std::shared_ptr<Field> obj) const;
 
-    virtual TemporaryPtr<UniverseObject> Visit(TemporaryPtr<Fighter> obj) const;
+    virtual std::shared_ptr<UniverseObject> Visit(std::shared_ptr<Fighter> obj) const;
 
     virtual ~UniverseObjectVisitor();
 };
@@ -63,7 +60,7 @@ struct FO_COMMON_API StationaryFleetVisitor : UniverseObjectVisitor
 
     virtual ~StationaryFleetVisitor();
 
-    TemporaryPtr<UniverseObject> Visit(TemporaryPtr<Fleet> obj) const override;
+    std::shared_ptr<UniverseObject> Visit(std::shared_ptr<Fleet> obj) const override;
 
     const int empire_id;
 };
@@ -77,7 +74,7 @@ struct FO_COMMON_API OrderedMovingFleetVisitor : UniverseObjectVisitor
 
     virtual ~OrderedMovingFleetVisitor();
 
-    TemporaryPtr<UniverseObject> Visit(TemporaryPtr<Fleet> obj) const override;
+    std::shared_ptr<UniverseObject> Visit(std::shared_ptr<Fleet> obj) const override;
 
     const int empire_id;
 };
@@ -90,7 +87,7 @@ struct FO_COMMON_API MovingFleetVisitor : UniverseObjectVisitor
 
     virtual ~MovingFleetVisitor();
 
-    TemporaryPtr<UniverseObject> Visit(TemporaryPtr<Fleet> obj) const override;
+    std::shared_ptr<UniverseObject> Visit(std::shared_ptr<Fleet> obj) const override;
 
     const int empire_id;
 };
@@ -104,7 +101,7 @@ struct OwnedVisitor : UniverseObjectVisitor
     virtual ~OwnedVisitor()
     {}
 
-    TemporaryPtr<UniverseObject> Visit(TemporaryPtr<T> obj) const override;
+    std::shared_ptr<UniverseObject> Visit(std::shared_ptr<T> obj) const override;
 
     const int empire_id;
 };
@@ -115,11 +112,11 @@ OwnedVisitor<T>::OwnedVisitor(int empire) :
 {}
 
 template <class T>
-TemporaryPtr<UniverseObject> OwnedVisitor<T>::Visit(TemporaryPtr<T> obj) const
+std::shared_ptr<UniverseObject> OwnedVisitor<T>::Visit(std::shared_ptr<T> obj) const
 {
     if (obj->OwnedBy(empire_id))
         return obj;
-    return TemporaryPtr<UniverseObject>();
+    return nullptr;
 }
 
 #endif // _Predicates_h_

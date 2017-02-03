@@ -49,7 +49,7 @@ namespace {
         const CPSize m_value;
     };
 
-    Y HeightFromFont(const boost::shared_ptr<Font>& font, unsigned int pixel_margin)
+    Y HeightFromFont(const std::shared_ptr<Font>& font, unsigned int pixel_margin)
     {  return font->Height() + 2 * static_cast<int>(pixel_margin); }
 }
 
@@ -59,7 +59,7 @@ namespace {
 // static(s)
 const int Edit::PIXEL_MARGIN = 5;
 
-Edit::Edit(const std::string& str, const boost::shared_ptr<Font>& font, Clr color,
+Edit::Edit(const std::string& str, const std::shared_ptr<Font>& font, Clr color,
            Clr text_color/* = CLR_BLACK*/, Clr interior/* = CLR_ZERO*/) :
     TextControl(X0, Y0, X1, HeightFromFont(font, PIXEL_MARGIN), str, font, text_color, FORMAT_LEFT | FORMAT_IGNORETAGS, INTERACTIVE | REPEAT_KEY_PRESS),
     m_cursor_pos(CP0, CP0),
@@ -224,7 +224,7 @@ void Edit::SetText(const std::string& str)
     // make sure the change in text did not make the cursor or view position invalid
     if (Text().empty() || GetLineData().empty() || GetLineData()[0].char_data.size() < m_cursor_pos.first) {
         m_first_char_shown = CP0;
-        m_cursor_pos = std::make_pair(CP0, CP0);
+        m_cursor_pos = {CP0, CP0};
     }
 
     m_recently_edited = true;
@@ -402,7 +402,7 @@ void Edit::LButtonUp(const Pt& pt, Flags<ModKey> mod_keys)
 void Edit::LClick(const Pt& pt, Flags<ModKey> mod_keys)
 { ClearDoubleButtonDownMode(); }
 
-void Edit::KeyPress(Key key, boost::uint32_t key_code_point, Flags<ModKey> mod_keys)
+void Edit::KeyPress(Key key, std::uint32_t key_code_point, Flags<ModKey> mod_keys)
 {
     if (Disabled()) {
         TextControl::KeyPress(key, key_code_point, mod_keys);
@@ -630,14 +630,14 @@ void Edit::AdjustView()
 ////////////////////////////////////////////////////////////
 // Free Functions
 ////////////////////////////////////////////////////////////
-void GG::GetTranslatedCodePoint(Key key, boost::uint32_t key_code_point, Flags<ModKey> mod_keys,
+void GG::GetTranslatedCodePoint(Key key, std::uint32_t key_code_point, Flags<ModKey> mod_keys,
                                 std::string& translated_code_point)
 {
     // only process it if it's a valid code point or a known printable
     // key, and no significant modifiers are in use
     if (key_code_point) {
         try {
-            boost::uint32_t chars[] = { key_code_point };
+            std::uint32_t chars[] = { key_code_point };
             utf8::utf32to8(chars, chars + 1, std::back_inserter(translated_code_point));
         } catch (const utf8::invalid_code_point&) {
             translated_code_point.clear();

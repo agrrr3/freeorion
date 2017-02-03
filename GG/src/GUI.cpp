@@ -47,9 +47,9 @@
 # endif
 #endif
 
+#include <boost/algorithm/string/predicate.hpp>
 #include <boost/format.hpp>
 #include <boost/thread.hpp>
-#include <boost/algorithm/string.hpp>
 #include <boost/xpressive/xpressive.hpp>
 
 #include <cassert>
@@ -151,8 +151,11 @@ struct GG::GUIImpl
     void HandleMouseDrag(         unsigned int mouse_button, const GG::Pt& pos, int curr_ticks);
     void HandleMouseButtonRelease(unsigned int mouse_button, const GG::Pt& pos, int curr_ticks);
     void HandleIdle(             Flags<ModKey> mod_keys, const GG::Pt& pos, int curr_ticks);
-    void HandleKeyPress(         Key key, boost::uint32_t key_code_point, Flags<ModKey> mod_keys, int curr_ticks);
-    void HandleKeyRelease(       Key key, boost::uint32_t key_code_point, Flags<ModKey> mod_keys, int curr_ticks);
+
+    void HandleKeyPress(Key key, std::uint32_t key_code_point, Flags<ModKey> mod_keys, int curr_ticks);
+
+    void HandleKeyRelease(Key key, std::uint32_t key_code_point, Flags<ModKey> mod_keys, int curr_ticks);
+
     void HandleTextInput(        const std::string* text);
     void HandleMouseMove(        Flags<ModKey> mod_keys, const GG::Pt& pos, const Pt& rel, int curr_ticks);
     void HandleMouseWheel(       Flags<ModKey> mod_keys, const GG::Pt& pos, const Pt& rel, int curr_ticks);
@@ -176,8 +179,9 @@ struct GG::GUIImpl
     int          m_key_press_repeat_delay;          // see note above GUI class definition
     int          m_key_press_repeat_interval;
     int          m_last_key_press_repeat_time;      // last time of a simulated key press message
-    std::pair<Key, boost::uint32_t>
-                 m_last_pressed_key_code_point;
+
+    std::pair<Key, std::uint32_t> m_last_pressed_key_code_point;
+
     int          m_prev_key_press_time;             // the time of the most recent key press
 
     int          m_mouse_button_down_repeat_delay;      // see note above GUI class definition
@@ -202,8 +206,9 @@ struct GG::GUIImpl
     Pt           m_wnd_resize_offset;     // offset from the cursor of either the upper-left or lower-right corner of the GUI window currently being resized
     WndRegion    m_wnd_region;            // window region currently being dragged or clicked; for non-frame windows, this will always be WR_NONE
 
-    boost::shared_ptr<BrowseInfoWnd>
-                 m_browse_info_wnd;       // the current browse info window, if any
+    /** The current browse info window, if any. */
+    std::shared_ptr<BrowseInfoWnd> m_browse_info_wnd;
+
     int          m_browse_info_mode;      // the current browse info mode (only valid if browse_info_wnd is non-null)
     Wnd*         m_browse_target;         // the current browse info target
 
@@ -216,8 +221,8 @@ struct GG::GUIImpl
     std::set<std::pair<Key, Flags<ModKey> > >
                  m_accelerators;          // the keyboard accelerators
 
-    std::map<std::pair<Key, Flags<ModKey> >, boost::shared_ptr<GUI::AcceleratorSignalType> >
-                 m_accelerator_sigs;      // the signals emitted by the keyboard accelerators
+    /** The signals emitted by the keyboard accelerators. */
+    std::map<std::pair<Key, Flags<ModKey>>, std::shared_ptr<GUI::AcceleratorSignalType>> m_accelerator_sigs;
 
     bool         m_mouse_lr_swap;         // treat left and right mouse events as each other
     std::map<Key, Key>
@@ -234,9 +239,9 @@ struct GG::GUIImpl
     int          m_double_click_start_time;// the time from which we started measuring double_click_time, in ms
     int          m_double_click_time;     // time elapsed since last click, in ms
 
-    boost::shared_ptr<StyleFactory> m_style_factory;
+    std::shared_ptr<StyleFactory> m_style_factory;
     bool                            m_render_cursor;
-    boost::shared_ptr<Cursor>       m_cursor;
+    std::shared_ptr<Cursor> m_cursor;
 
     std::set<Timer*>  m_timers;
 
@@ -255,7 +260,7 @@ GUIImpl::GUIImpl() :
     m_key_press_repeat_delay(250),
     m_key_press_repeat_interval(66),
     m_last_key_press_repeat_time(0),
-    m_last_pressed_key_code_point(std::make_pair(GGK_UNKNOWN, 0u)),
+    m_last_pressed_key_code_point{GGK_UNKNOWN, 0u},
     m_prev_key_press_time(-1),
     m_mouse_button_down_repeat_delay(250),
     m_mouse_button_down_repeat_interval(66),
@@ -644,13 +649,13 @@ void GUIImpl::HandleIdle(Flags<ModKey> mod_keys, const GG::Pt& pos, int curr_tic
     }
 }
 
-void GUIImpl::HandleKeyPress(Key key, boost::uint32_t key_code_point, Flags<ModKey> mod_keys, int curr_ticks)
+void GUIImpl::HandleKeyPress(Key key, std::uint32_t key_code_point, Flags<ModKey> mod_keys, int curr_ticks)
 {
     key = KeyMappedKey(key, m_key_map);
     m_browse_info_wnd.reset();
     m_browse_info_mode = -1;
     m_browse_target = nullptr;
-    m_last_pressed_key_code_point = std::make_pair(key, key_code_point);
+    m_last_pressed_key_code_point = {key, key_code_point};
     m_last_key_press_repeat_time = 0;
     m_prev_key_press_time = curr_ticks;
 
@@ -662,7 +667,7 @@ void GUIImpl::HandleKeyPress(Key key, boost::uint32_t key_code_point, Flags<ModK
         // capslock, or which side of the keyboard's CTRL, SHIFT, etc.
         // was pressed, but the accelerators don't
         Flags<ModKey> massaged_mods = MassagedAccelModKeys(mod_keys);
-        if (m_accelerators.find(std::make_pair(key, massaged_mods))
+        if (m_accelerators.find({key, massaged_mods})
             != m_accelerators.end())
         {
             processed = GUI::s_gui->AcceleratorSignal(key, massaged_mods)();
@@ -673,7 +678,7 @@ void GUIImpl::HandleKeyPress(Key key, boost::uint32_t key_code_point, Flags<ModK
             WndEvent::KeyPress, key, key_code_point, mod_keys));
 }
 
-void GUIImpl::HandleKeyRelease(Key key, boost::uint32_t key_code_point, Flags<ModKey> mod_keys, int curr_ticks)
+void GUIImpl::HandleKeyRelease(Key key, std::uint32_t key_code_point, Flags<ModKey> mod_keys, int curr_ticks)
 {
     key = KeyMappedKey(key, m_key_map);
     m_last_key_press_repeat_time = 0;
@@ -751,7 +756,7 @@ void GUIImpl::ClearState()
     m_mod_keys = Flags<ModKey>();
     m_last_mouse_button_down_repeat_time = 0;
     m_last_key_press_repeat_time = 0;
-    m_last_pressed_key_code_point = std::make_pair(GGK_UNKNOWN, 0u);
+    m_last_pressed_key_code_point = {GGK_UNKNOWN, 0u};
 
     m_prev_wnd_drag_position = Pt();
     m_browse_info_wnd.reset();
@@ -782,7 +787,7 @@ void GUIImpl::ClearState()
 
 // static member(s)
 GUI*                       GUI::s_gui = nullptr;
-boost::shared_ptr<GUIImpl> GUI::s_impl;
+std::shared_ptr<GUIImpl> GUI::s_impl;
 
 // member functions
 GUI::GUI(const std::string& app_name)
@@ -1011,7 +1016,7 @@ std::set<std::pair<StrSize, StrSize> > GUI::FindWordsStringIndices(const std::st
         std::advance(word_pos_it, match_result.length());
         StrSize end_idx(std::distance(str.begin(), word_pos_it.base()));
 
-        retval.insert(std::make_pair(start_idx, end_idx));
+        retval.insert({start_idx, end_idx});
     }
     return retval;
 }
@@ -1044,13 +1049,13 @@ bool GUI::ContainsWord(const std::string& str, const std::string& word) const
     return false;
 }
 
-const boost::shared_ptr<StyleFactory>& GUI::GetStyleFactory() const
+const std::shared_ptr<StyleFactory>& GUI::GetStyleFactory() const
 { return s_impl->m_style_factory; }
 
 bool GUI::RenderCursor() const
 { return s_impl->m_render_cursor; }
 
-const boost::shared_ptr<Cursor>& GUI::GetCursor() const
+const std::shared_ptr<Cursor>& GUI::GetCursor() const
 { return s_impl->m_cursor; }
 
 GUI::const_accel_iterator GUI::accel_begin() const
@@ -1061,7 +1066,7 @@ GUI::const_accel_iterator GUI::accel_end() const
 
 GUI::AcceleratorSignalType& GUI::AcceleratorSignal(Key key, Flags<ModKey> mod_keys/* = MOD_KEY_NONE*/) const
 {
-    boost::shared_ptr<AcceleratorSignalType>& sig_ptr = s_impl->m_accelerator_sigs[std::make_pair(key, mod_keys)];
+    std::shared_ptr<AcceleratorSignalType>& sig_ptr = s_impl->m_accelerator_sigs[{key, mod_keys}];
     if (!sig_ptr)
         sig_ptr.reset(new AcceleratorSignalType());
     if (INSTRUMENT_ALL_SIGNALS)
@@ -1084,7 +1089,7 @@ void GUI::SaveWndAsPNG(const Wnd* wnd, const std::string& filename) const
 void GUI::operator()()
 { Run(); }
 
-void GUI::HandleGGEvent(EventType event, Key key, boost::uint32_t key_code_point,
+void GUI::HandleGGEvent(EventType event, Key key, std::uint32_t key_code_point,
                         Flags<ModKey> mod_keys, const Pt& pos, const Pt& rel, const std::string* text)
 {
     s_impl->m_mod_keys = mod_keys;
@@ -1204,7 +1209,7 @@ void GUI::Register(Wnd* wnd)
 void GUI::RegisterModal(Wnd* wnd)
 {
     if (wnd && wnd->Modal()) {
-        s_impl->m_modal_wnds.push_back(std::make_pair(wnd, wnd));
+        s_impl->m_modal_wnds.push_back({wnd, wnd});
         wnd->HandleEvent(WndEvent(WndEvent::GainingFocus));
     }
 }
@@ -1286,8 +1291,8 @@ void GUI::MoveUp(Wnd* wnd)
 void GUI::MoveDown(Wnd* wnd)
 { if (wnd) s_impl->m_zlist.MoveDown(wnd); }
 
-boost::shared_ptr<ModalEventPump> GUI::CreateModalEventPump(bool& done)
-{ return boost::shared_ptr<ModalEventPump>(new ModalEventPump(done)); }
+std::shared_ptr<ModalEventPump> GUI::CreateModalEventPump(bool& done)
+{ return std::make_shared<ModalEventPump>(done); }
 
 void GUI::RegisterDragDropWnd(Wnd* wnd, const Pt& offset, Wnd* originating_wnd)
 {
@@ -1361,13 +1366,13 @@ GUI::accel_iterator GUI::accel_end()
 void GUI::SetAccelerator(Key key, Flags<ModKey> mod_keys/* = MOD_KEY_NONE*/)
 {
     mod_keys = MassagedAccelModKeys(mod_keys);
-    s_impl->m_accelerators.insert(std::make_pair(key, mod_keys));
+    s_impl->m_accelerators.insert({key, mod_keys});
 }
 
 void GUI::RemoveAccelerator(Key key, Flags<ModKey> mod_keys/* = MOD_KEY_NONE*/)
 {
     mod_keys = MassagedAccelModKeys(mod_keys);
-    s_impl->m_accelerators.erase(std::make_pair(key, mod_keys));
+    s_impl->m_accelerators.erase({key, mod_keys});
 }
 
 void GUI::RemoveAccelerator(accel_iterator it)
@@ -1382,16 +1387,16 @@ void GUI::SetMouseLRSwapped(bool swapped/* = true*/)
 void GUI::SetKeyMap(const std::map<Key, Key>& key_map)
 { s_impl->m_key_map = key_map; }
 
-boost::shared_ptr<Font> GUI::GetFont(const std::string& font_filename, unsigned int pts)
+std::shared_ptr<Font> GUI::GetFont(const std::string& font_filename, unsigned int pts)
 { return GetFontManager().GetFont(font_filename, pts); }
 
-boost::shared_ptr<Font> GUI::GetFont(const std::string& font_filename, unsigned int pts,
-                                     const std::vector<unsigned char>& file_contents)
+std::shared_ptr<Font> GUI::GetFont(const std::string& font_filename, unsigned int pts,
+                                   const std::vector<unsigned char>& file_contents)
 { return GetFontManager().GetFont(font_filename, pts, file_contents); }
 
-boost::shared_ptr<Font> GUI::GetFont(const boost::shared_ptr<Font>& font, unsigned int pts)
+std::shared_ptr<Font> GUI::GetFont(const std::shared_ptr<Font>& font, unsigned int pts)
 {
-    boost::shared_ptr<Font> retval;
+    std::shared_ptr<Font> retval;
     if (font->FontName() == StyleFactory::DefaultFontName()) {
         retval = GetStyleFactory()->DefaultFont(pts);
     } else {
@@ -1405,19 +1410,19 @@ boost::shared_ptr<Font> GUI::GetFont(const boost::shared_ptr<Font>& font, unsign
 void GUI::FreeFont(const std::string& font_filename, unsigned int pts)
 { GetFontManager().FreeFont(font_filename, pts); }
 
-boost::shared_ptr<Texture> GUI::StoreTexture(Texture* texture, const std::string& texture_name)
+std::shared_ptr<Texture> GUI::StoreTexture(Texture* texture, const std::string& texture_name)
 { return GetTextureManager().StoreTexture(texture, texture_name); }
 
-boost::shared_ptr<Texture> GUI::StoreTexture(const boost::shared_ptr<Texture>& texture, const std::string& texture_name)
+std::shared_ptr<Texture> GUI::StoreTexture(const std::shared_ptr<Texture>& texture, const std::string& texture_name)
 { return GetTextureManager().StoreTexture(texture, texture_name); }
 
-boost::shared_ptr<Texture> GUI::GetTexture(const boost::filesystem::path& path, bool mipmap/* = false*/)
+std::shared_ptr<Texture> GUI::GetTexture(const boost::filesystem::path& path, bool mipmap/* = false*/)
 { return GetTextureManager().GetTexture(path, mipmap); }
 
 void GUI::FreeTexture(const boost::filesystem::path& path)
 { GetTextureManager().FreeTexture(path); }
 
-void GUI::SetStyleFactory(const boost::shared_ptr<StyleFactory>& factory)
+void GUI::SetStyleFactory(const std::shared_ptr<StyleFactory>& factory)
 {
     s_impl->m_style_factory = factory;
     if (!s_impl->m_style_factory)
@@ -1427,7 +1432,7 @@ void GUI::SetStyleFactory(const boost::shared_ptr<StyleFactory>& factory)
 void GUI::RenderCursor(bool render)
 { s_impl->m_render_cursor = render; }
 
-void GUI::SetCursor(const boost::shared_ptr<Cursor>& cursor)
+void GUI::SetCursor(const std::shared_ptr<Cursor>& cursor)
 { s_impl->m_cursor = cursor; }
 
 std::string GUI::ClipboardText() const

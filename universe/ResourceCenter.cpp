@@ -9,6 +9,7 @@
 #include "ShipDesign.h"
 #include "System.h"
 #include "Building.h"
+#include "Enums.h"
 
 #include <stdexcept>
 
@@ -33,8 +34,8 @@ ResourceCenter::ResourceCenter(const ResourceCenter& rhs) :
     m_last_turn_focus_changed_turn_initial(rhs.m_last_turn_focus_changed_turn_initial)
 {}
 
-void ResourceCenter::Copy(TemporaryPtr<const ResourceCenter> copied_object, Visibility vis) {
-    if (copied_object == this)
+void ResourceCenter::Copy(std::shared_ptr<const ResourceCenter> copied_object, Visibility vis) {
+    if (copied_object.get() == this)
         return;
     if (!copied_object) {
         ErrorLogger() << "ResourceCenter::Copy passed a null object";
@@ -48,6 +49,9 @@ void ResourceCenter::Copy(TemporaryPtr<const ResourceCenter> copied_object, Visi
         this->m_last_turn_focus_changed_turn_initial = copied_object->m_last_turn_focus_changed_turn_initial;
     }
 }
+
+void ResourceCenter::Copy(std::shared_ptr<const ResourceCenter> copied_object)
+{ Copy(copied_object, VIS_FULL_VISIBILITY); }
 
 void ResourceCenter::Init() {
     //DebugLogger() << "ResourceCenter::Init";

@@ -9,12 +9,13 @@
 #include "CommonParams.h"
 
 #include "../universe/Building.h"
+#include "../universe/Enums.h"
 
 #define DEBUG_PARSERS 0
 
 #if DEBUG_PARSERS
 namespace std {
-    inline ostream& operator<<(ostream& os, const std::vector<boost::shared_ptr<Effect::EffectsGroup> >&) { return os; }
+    inline ostream& operator<<(ostream& os, const std::vector<std::shared_ptr<Effect::EffectsGroup>>&) { return os; }
     inline ostream& operator<<(ostream& os, const std::map<std::string, BuildingType*>&) { return os; }
     inline ostream& operator<<(ostream& os, const std::pair<const std::string, BuildingType*>&) { return os; }
 }

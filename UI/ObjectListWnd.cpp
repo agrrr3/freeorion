@@ -21,6 +21,7 @@
 #include "../universe/Species.h"
 #include "../universe/Condition.h"
 #include "../universe/ValueRef.h"
+#include "../universe/Enums.h"
 
 #include <GG/DrawUtil.h>
 #include <GG/Layout.h>
@@ -28,6 +29,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/locale.hpp>
 
+#include <iterator>
 #include <sstream>
 
 std::vector<std::string> SpecialNames();
@@ -36,16 +38,14 @@ namespace {
     const unsigned int NUM_COLUMNS(12u);
 
     void AddOptions(OptionsDB& db) {
-        std::vector<std::pair<std::string, int> > default_columns_widths;
-        default_columns_widths.push_back(std::make_pair("NAME",             12*12));
-        default_columns_widths.push_back(std::make_pair("ID",               4*12));
-        default_columns_widths.push_back(std::make_pair("OBJECT_TYPE",      5*12));
-        default_columns_widths.push_back(std::make_pair("OWNER",            10*12));
-        default_columns_widths.push_back(std::make_pair("SPECIES",          8*12));
-        default_columns_widths.push_back(std::make_pair("PLANET_TYPE",      8*12));
-        default_columns_widths.push_back(std::make_pair("SIZE_AS_DOUBLE",   8*12));
+        std::vector<std::pair<std::string, int>> default_columns_widths = {
+            {"NAME",             12*12},    {"ID",               4*12},
+            {"OBJECT_TYPE",      5*12},     {"OWNER",            10*12},
+            {"SPECIES",          8*12},     {"PLANET_TYPE",      8*12},
+            {"SIZE_AS_DOUBLE",   8*12}};
+
         for (unsigned int i = default_columns_widths.size(); i < NUM_COLUMNS; ++i)
-            default_columns_widths.push_back(std::make_pair("", 8*12));   // arbitrary default width
+            default_columns_widths.push_back({"", 8*12});   // arbitrary default width
 
         for (unsigned int i = 0; i < default_columns_widths.size(); ++i) {
             db.Add<std::string>("UI.objects-list-info-col-" + boost::lexical_cast<std::string>(i),
@@ -61,48 +61,73 @@ namespace {
 
     ValueRef::Variable<std::string>* StringValueRef(const std::string& token) {
         return new ValueRef::Variable<std::string>(
-            ValueRef::SOURCE_REFERENCE, std::vector<std::string>(1u, token));
+            ValueRef::SOURCE_REFERENCE, token);
     }
 
     ValueRef::Variable<std::string>* UserStringValueRef(const std::string& token) {
-        return new ValueRef::UserStringLookup(
+        return new ValueRef::UserStringLookup<std::string>(
             new ValueRef::Variable<std::string>(
-                ValueRef::SOURCE_REFERENCE, std::vector<std::string>(1u, token)));
+                ValueRef::SOURCE_REFERENCE, token));
+    }
+
+    ValueRef::Variable<std::string>* UserStringVecValueRef(const std::string& token) {
+        return new ValueRef::UserStringLookup<std::vector<std::string>>(
+            new ValueRef::Variable<std::vector<std::string>>(
+                ValueRef::SOURCE_REFERENCE, token));
     }
 
     template <typename T>
     ValueRef::Variable<std::string>* StringCastedValueRef(const std::string& token) {
         return new ValueRef::StringCast<T>(
             new ValueRef::Variable<T>(
-                ValueRef::SOURCE_REFERENCE, std::vector<std::string>(1u, token)));
+                ValueRef::SOURCE_REFERENCE, token));
+    }
+
+    template <typename T>
+    ValueRef::Variable<std::string>* StringCastedComplexValueRef(const std::string& token,
+                                                                 ValueRef::ValueRefBase<int>* int_ref1 = nullptr,
+                                                                 ValueRef::ValueRefBase<int>* int_ref2 = nullptr,
+                                                                 ValueRef::ValueRefBase<int>* int_ref3 = nullptr,
+                                                                 ValueRef::ValueRefBase<std::string>* string_ref1 = nullptr,
+                                                                 ValueRef::ValueRefBase<std::string>* string_ref2 = nullptr)
+    {
+        return new ValueRef::StringCast<T>(
+            new ValueRef::ComplexVariable<T>(token, int_ref1, int_ref2, int_ref3, string_ref1, string_ref2));
+    }
+
+    ValueRef::Variable<std::string>* SystemSupplyRangeValueRef(bool propegated = false) {
+        return StringCastedComplexValueRef<double>(
+            propegated ? "PropegatedSystemSupplyRange" :"SystemSupplyRange",
+            nullptr,
+            new ValueRef::Variable<int>(ValueRef::SOURCE_REFERENCE, "SystemID"));
     }
 
     template <typename T>
     ValueRef::Variable<std::string>* UserStringCastedValueRef(const std::string& token) {
-        return new ValueRef::UserStringLookup(
+        return new ValueRef::UserStringLookup<std::string>(
             new ValueRef::StringCast<T>(
                 new ValueRef::Variable<T>(
-                    ValueRef::SOURCE_REFERENCE, std::vector<std::string>(1u, token))));
+                    ValueRef::SOURCE_REFERENCE, token)));
     }
 
     ValueRef::Variable<std::string>* ObjectNameValueRef(const std::string& token) {
         return new ValueRef::NameLookup(
             new ValueRef::Variable<int>(
-                ValueRef::SOURCE_REFERENCE, std::vector<std::string>(1u, token)),
+                ValueRef::SOURCE_REFERENCE, token),
             ValueRef::NameLookup::OBJECT_NAME);
     }
 
     ValueRef::Variable<std::string>* EmpireNameValueRef(const std::string& token) {
         return new ValueRef::NameLookup(
             new ValueRef::Variable<int>(
-                ValueRef::SOURCE_REFERENCE, std::vector<std::string>(1u, token)),
+                ValueRef::SOURCE_REFERENCE, token),
             ValueRef::NameLookup::EMPIRE_NAME);
     }
 
     ValueRef::Variable<std::string>* DesignNameValueRef(const std::string& token) {
         return new ValueRef::NameLookup(
             new ValueRef::Variable<int>(
-                ValueRef::SOURCE_REFERENCE, std::vector<std::string>(1u, token)),
+                ValueRef::SOURCE_REFERENCE, token),
             ValueRef::NameLookup::SHIP_DESIGN_NAME);
     }
 
@@ -110,51 +135,59 @@ namespace {
         static std::map<std::pair<std::string, std::string>, ValueRef::ValueRefBase<std::string>*> col_types;
         if (col_types.empty()) {
             // General
-            col_types[std::make_pair(UserStringNop("NAME"),                 "")] =  StringValueRef("Name");
-            col_types[std::make_pair(UserStringNop("OBJECT_TYPE"),          "")] =  UserStringValueRef("TypeName");
-            col_types[std::make_pair(UserStringNop("ID"),                   "")] =  StringCastedValueRef<int>("ID");
-            col_types[std::make_pair(UserStringNop("CREATION_TURN"),        "")] =  StringCastedValueRef<int>("CreationTurn");
-            col_types[std::make_pair(UserStringNop("AGE"),                  "")] =  StringCastedValueRef<int>("Age");
-            col_types[std::make_pair(UserStringNop("SYSTEM"),               "")] =  ObjectNameValueRef("SystemID");
-            col_types[std::make_pair(UserStringNop("STAR_TYPE"),            "")] =  UserStringCastedValueRef<StarType>("StarType");
-            col_types[std::make_pair(UserStringNop("BUILDING_TYPE"),        "")] =  UserStringValueRef("BuildingType");
-            col_types[std::make_pair(UserStringNop("LAST_TURN_BATTLE_HERE"),"")] =  StringCastedValueRef<int>("LastTurnBattleHere");
-            col_types[std::make_pair(UserStringNop("NUM_SPECIALS"),         "")] =  StringCastedValueRef<int>("NumSpecials");
+            col_types[{UserStringNop("NAME"),                 ""}] =  StringValueRef("Name");
+            col_types[{UserStringNop("OBJECT_TYPE"),          ""}] =  UserStringValueRef("TypeName");
+            col_types[{UserStringNop("ID"),                   ""}] =  StringCastedValueRef<int>("ID");
+            col_types[{UserStringNop("CREATION_TURN"),        ""}] =  StringCastedValueRef<int>("CreationTurn");
+            col_types[{UserStringNop("AGE"),                  ""}] =  StringCastedValueRef<int>("Age");
+            col_types[{UserStringNop("SYSTEM"),               ""}] =  ObjectNameValueRef("SystemID");
+            col_types[{UserStringNop("STAR_TYPE"),            ""}] =  UserStringCastedValueRef<StarType>("StarType");
+            col_types[{UserStringNop("BUILDING_TYPE"),        ""}] =  UserStringValueRef("BuildingType");
+            col_types[{UserStringNop("LAST_TURN_BATTLE_HERE"),""}] =  StringCastedValueRef<int>("LastTurnBattleHere");
+            col_types[{UserStringNop("NUM_SPECIALS"),         ""}] =  StringCastedValueRef<int>("NumSpecials");
+            col_types[{UserStringNop("SPECIALS"),             ""}] =  UserStringVecValueRef("Specials");
+            col_types[{UserStringNop("TAGS"),                 ""}] =  UserStringVecValueRef("Tags");
+
             // empire
-            col_types[std::make_pair(UserStringNop("SUPPLYING_EMPIRE"),     "")] =  EmpireNameValueRef("SupplyingEmpire");
-            col_types[std::make_pair(UserStringNop("OWNER"),                "")] =  EmpireNameValueRef("Owner");
-            col_types[std::make_pair(UserStringNop("PRODUCED_BY"),          "")] =  EmpireNameValueRef("ProducedByEmpireID");
+            col_types[{UserStringNop("SUPPLYING_EMPIRE"),     ""}] =  EmpireNameValueRef("SupplyingEmpire");
+            col_types[{UserStringNop("SYSTEM_SUPPLY_RANGE"),  ""}] =  SystemSupplyRangeValueRef(false);
+            col_types[{UserStringNop("PROPAGATED_SUPPLY_RANGE"),""}]= SystemSupplyRangeValueRef(true);
+            col_types[{UserStringNop("OWNER"),                ""}] =  EmpireNameValueRef("Owner");
+            col_types[{UserStringNop("PRODUCED_BY"),          ""}] =  EmpireNameValueRef("ProducedByEmpireID");
 
             // planet
-            col_types[std::make_pair(UserStringNop("SPECIES"),                      UserStringNop("PLANETS_SUBMENU"))] =UserStringValueRef("Species");
-            col_types[std::make_pair(UserStringNop("FOCUS"),                        UserStringNop("PLANETS_SUBMENU"))] =UserStringValueRef("Focus");
-            col_types[std::make_pair(UserStringNop("PREFERRED_FOCUS"),              UserStringNop("PLANETS_SUBMENU"))] =UserStringValueRef("PreferredFocus");
-            col_types[std::make_pair(UserStringNop("TURNS_SINCE_FOCUS_CHANGE"),     UserStringNop("PLANETS_SUBMENU"))] =StringCastedValueRef<int>("TurnsSinceFocusChange");
-            col_types[std::make_pair(UserStringNop("SIZE_AS_DOUBLE"),               UserStringNop("PLANETS_SUBMENU"))] =StringCastedValueRef<double>("SizeAsDouble");
-            col_types[std::make_pair(UserStringNop("NEXT_TURN_POP_GROWTH"),         UserStringNop("PLANETS_SUBMENU"))] =StringCastedValueRef<double>("NextTurnPopGrowth");
-            col_types[std::make_pair(UserStringNop("DISTANCE_FROM_ORIGINAL_TYPE"),  UserStringNop("PLANETS_SUBMENU"))] =StringCastedValueRef<double>("DistanceFromOriginalType");
-            col_types[std::make_pair(UserStringNop("PLANET_TYPE"),                  UserStringNop("PLANETS_SUBMENU"))] =UserStringCastedValueRef<PlanetType>("PlanetType");
-            col_types[std::make_pair(UserStringNop("ORIGINAL_TYPE"),                UserStringNop("PLANETS_SUBMENU"))] =UserStringCastedValueRef<PlanetType>("OriginalType");
-            col_types[std::make_pair(UserStringNop("NEXT_TOWARDS_ORIGINAL_TYPE"),   UserStringNop("PLANETS_SUBMENU"))] =UserStringCastedValueRef<PlanetType>("NextCloserToOriginalPlanetType");
-            col_types[std::make_pair(UserStringNop("PLANET_SIZE"),                  UserStringNop("PLANETS_SUBMENU"))] =UserStringCastedValueRef<PlanetSize>("PlanetSize");
-            col_types[std::make_pair(UserStringNop("PLANET_ENVIRONMENT"),           UserStringNop("PLANETS_SUBMENU"))] =UserStringCastedValueRef<PlanetEnvironment>("PlanetEnvironment");
-            col_types[std::make_pair(UserStringNop("SUPPLY_RANGE"),                 UserStringNop("PLANETS_SUBMENU"))] =StringCastedValueRef<double>("PropagatedSupplyRange");
+            col_types[{UserStringNop("SPECIES"),                      UserStringNop("PLANETS_SUBMENU")}] =UserStringValueRef("Species");
+            col_types[{UserStringNop("FOCUS"),                        UserStringNop("PLANETS_SUBMENU")}] =UserStringValueRef("Focus");
+            col_types[{UserStringNop("PREFERRED_FOCUS"),              UserStringNop("PLANETS_SUBMENU")}] =UserStringValueRef("PreferredFocus");
+            col_types[{UserStringNop("TURNS_SINCE_FOCUS_CHANGE"),     UserStringNop("PLANETS_SUBMENU")}] =StringCastedValueRef<int>("TurnsSinceFocusChange");
+            col_types[{UserStringNop("SIZE_AS_DOUBLE"),               UserStringNop("PLANETS_SUBMENU")}] =StringCastedValueRef<double>("SizeAsDouble");
+            col_types[{UserStringNop("NEXT_TURN_POP_GROWTH"),         UserStringNop("PLANETS_SUBMENU")}] =StringCastedValueRef<double>("NextTurnPopGrowth");
+            col_types[{UserStringNop("DISTANCE_FROM_ORIGINAL_TYPE"),  UserStringNop("PLANETS_SUBMENU")}] =StringCastedValueRef<double>("DistanceFromOriginalType");
+            col_types[{UserStringNop("PLANET_TYPE"),                  UserStringNop("PLANETS_SUBMENU")}] =UserStringCastedValueRef<PlanetType>("PlanetType");
+            col_types[{UserStringNop("ORIGINAL_TYPE"),                UserStringNop("PLANETS_SUBMENU")}] =UserStringCastedValueRef<PlanetType>("OriginalType");
+            col_types[{UserStringNop("NEXT_TOWARDS_ORIGINAL_TYPE"),   UserStringNop("PLANETS_SUBMENU")}] =UserStringCastedValueRef<PlanetType>("NextCloserToOriginalPlanetType");
+            col_types[{UserStringNop("PLANET_SIZE"),                  UserStringNop("PLANETS_SUBMENU")}] =UserStringCastedValueRef<PlanetSize>("PlanetSize");
+            col_types[{UserStringNop("PLANET_ENVIRONMENT"),           UserStringNop("PLANETS_SUBMENU")}] =UserStringCastedValueRef<PlanetEnvironment>("PlanetEnvironment");
+            col_types[{UserStringNop("SUPPLY_RANGE"),                 UserStringNop("PLANETS_SUBMENU")}] =StringCastedValueRef<double>("PropagatedSupplyRange");
+            col_types[{UserStringNop("AVAILABLE_FOCI"),               UserStringNop("PLANETS_SUBMENU")}] =UserStringVecValueRef("AvailableFoci");
 
             // ship/fleet
-            col_types[std::make_pair(UserStringNop("SPECIES"),                      UserStringNop("FLEETS_SUBMENU"))] = UserStringValueRef("Species");
-            col_types[std::make_pair(UserStringNop("DESIGN_WND_DESIGN_NAME"),       UserStringNop("FLEETS_SUBMENU"))] = DesignNameValueRef("DesignID");
-            col_types[std::make_pair(UserStringNop("LAST_TURN_ACTIVE_IN_BATTLE"),   UserStringNop("FLEETS_SUBMENU"))] = StringCastedValueRef<int>("LastTurnActiveInBattle");
-            col_types[std::make_pair(UserStringNop("ARRIVED_ON_TURN"),              UserStringNop("FLEETS_SUBMENU"))] = StringCastedValueRef<int>("ArrivedOnTurn");
-            col_types[std::make_pair(UserStringNop("ETA"),                          UserStringNop("FLEETS_SUBMENU"))] = StringCastedValueRef<int>("ETA");
-            col_types[std::make_pair(UserStringNop("FINAL_DEST"),                   UserStringNop("FLEETS_SUBMENU"))] = ObjectNameValueRef("FinalDestinationID");
-            col_types[std::make_pair(UserStringNop("NEXT_SYSTEM"),                  UserStringNop("FLEETS_SUBMENU"))] = ObjectNameValueRef("NextSystemID");
-            col_types[std::make_pair(UserStringNop("PREV_SYSTEM"),                  UserStringNop("FLEETS_SUBMENU"))] = ObjectNameValueRef("PreviousSystemID");
-            col_types[std::make_pair(UserStringNop("NEAREST_SYSTEM"),               UserStringNop("FLEETS_SUBMENU"))] = ObjectNameValueRef("NearestSystemID");
+            col_types[{UserStringNop("SPECIES"),                      UserStringNop("FLEETS_SUBMENU")}] = UserStringValueRef("Species");
+            col_types[{UserStringNop("DESIGN_WND_DESIGN_NAME"),       UserStringNop("FLEETS_SUBMENU")}] = DesignNameValueRef("DesignID");
+            col_types[{UserStringNop("LAST_TURN_ACTIVE_IN_BATTLE"),   UserStringNop("FLEETS_SUBMENU")}] = StringCastedValueRef<int>("LastTurnActiveInBattle");
+            col_types[{UserStringNop("ARRIVED_ON_TURN"),              UserStringNop("FLEETS_SUBMENU")}] = StringCastedValueRef<int>("ArrivedOnTurn");
+            col_types[{UserStringNop("ETA"),                          UserStringNop("FLEETS_SUBMENU")}] = StringCastedValueRef<int>("ETA");
+            col_types[{UserStringNop("FINAL_DEST"),                   UserStringNop("FLEETS_SUBMENU")}] = ObjectNameValueRef("FinalDestinationID");
+            col_types[{UserStringNop("NEXT_SYSTEM"),                  UserStringNop("FLEETS_SUBMENU")}] = ObjectNameValueRef("NextSystemID");
+            col_types[{UserStringNop("PREV_SYSTEM"),                  UserStringNop("FLEETS_SUBMENU")}] = ObjectNameValueRef("PreviousSystemID");
+            col_types[{UserStringNop("NEAREST_SYSTEM"),               UserStringNop("FLEETS_SUBMENU")}] = ObjectNameValueRef("NearestSystemID");
+            col_types[{UserStringNop("HULL"),                         UserStringNop("FLEETS_SUBMENU")}] = UserStringValueRef("Hull");
+            col_types[{UserStringNop("PARTS"),                        UserStringNop("FLEETS_SUBMENU")}] = UserStringVecValueRef("Parts");
 
             for (MeterType meter = MeterType(0); meter <= METER_SPEED;  // the meter(s) after METER_SPEED are part-specific
                  meter = MeterType(meter + 1))
             {
-                col_types[std::make_pair(boost::lexical_cast<std::string>(meter),   UserStringNop("METERS_SUBMENU"))] = StringCastedValueRef<double>(ValueRef::MeterToName(meter));
+                col_types[{boost::lexical_cast<std::string>(meter),   UserStringNop("METERS_SUBMENU")}] = StringCastedValueRef<double>(ValueRef::MeterToName(meter));
             }
         }
         return col_types;
@@ -631,17 +664,13 @@ private:
         m_class_drop->SetStyle(GG::LIST_NOSORT);
         AttachChild(m_class_drop);
 
-        std::vector<std::string> row_keys;
-        row_keys.push_back(ALL_CONDITION);              row_keys.push_back(PLANETTYPE_CONDITION);
-        row_keys.push_back(PLANETSIZE_CONDITION);       row_keys.push_back(HASGROWTHSPECIAL_CONDITION);
-        row_keys.push_back(GGWITHPTYPE_CONDITION);      row_keys.push_back(ASTWITHPTYPE_CONDITION);
-        row_keys.push_back(FOCUSTYPE_CONDITION);        row_keys.push_back(STARTYPE_CONDITION);
-        row_keys.push_back(HASTAG_CONDITION);           row_keys.push_back(SPECIES_CONDITION);
-        row_keys.push_back(HASSPECIAL_CONDITION);       row_keys.push_back(EMPIREAFFILIATION_CONDITION);
-        row_keys.push_back(MONSTER_CONDITION);          row_keys.push_back(ARMED_CONDITION);
-        row_keys.push_back(STATIONARY_CONDITION);       row_keys.push_back(CANPRODUCESHIPS_CONDITION);
-        row_keys.push_back(CANCOLONIZE_CONDITION);      row_keys.push_back(HOMEWORLD_CONDITION);
-        row_keys.push_back(METERVALUE_CONDITION);       row_keys.push_back(CAPITAL_CONDITION);
+        std::vector<std::string> row_keys ={ALL_CONDITION,              PLANETTYPE_CONDITION,       PLANETSIZE_CONDITION,
+                                            HASGROWTHSPECIAL_CONDITION, GGWITHPTYPE_CONDITION,      ASTWITHPTYPE_CONDITION,
+                                            FOCUSTYPE_CONDITION,        STARTYPE_CONDITION,         HASTAG_CONDITION,
+                                            HASSPECIAL_CONDITION,       EMPIREAFFILIATION_CONDITION,MONSTER_CONDITION,
+                                            ARMED_CONDITION,            STATIONARY_CONDITION,       CANPRODUCESHIPS_CONDITION,
+                                            CANCOLONIZE_CONDITION,      HOMEWORLD_CONDITION,        METERVALUE_CONDITION,
+                                            CAPITAL_CONDITION };
 
         SetMinSize(m_class_drop->Size());
         GG::ListBox::iterator select_row_it = m_class_drop->end();
@@ -755,7 +784,7 @@ private:
             // collect all valid tags on any object in universe
             std::set<std::string> all_tags;
 
-            for (TemporaryPtr<const UniverseObject> obj : GetUniverse().Objects().FindObjects<UniverseObject>()) {
+            for (std::shared_ptr<const UniverseObject> obj : GetUniverse().Objects().FindObjects<UniverseObject>()) {
                 std::set<std::string> tags = obj->Tags();
                 all_tags.insert(tags.begin(), tags.end());
             }
@@ -840,7 +869,7 @@ private:
 
             // collect all valid foci on any object in universe
             std::set<std::string> all_foci;
-            for (TemporaryPtr<const Planet> planet : Objects().FindObjects<Planet>()) {
+            for (std::shared_ptr<const Planet> planet : Objects().FindObjects<Planet>()) {
                 std::vector<std::string> obj_foci = planet->AvailableFoci();
                 std::copy(obj_foci.begin(), obj_foci.end(), std::inserter(all_foci, all_foci.end()));
             }
@@ -993,19 +1022,19 @@ private:
             GG::Connect(label->LeftClickedSignal,
                         boost::bind(&FilterDialog::UpdateVisFiltersFromObjectTypeButton, this, uot));
 
-            GG::StateButton* button = new CUIStateButton(" ", GG::FORMAT_CENTER, boost::make_shared<CUICheckBoxRepresenter>());
+            GG::StateButton* button = new CUIStateButton(" ", GG::FORMAT_CENTER, std::make_shared<CUICheckBoxRepresenter>());
             button->SetCheck(vis_display.find(SHOW_VISIBLE) != vis_display.end());
             m_filters_layout->Add(button, 1, col, GG::ALIGN_CENTER | GG::ALIGN_VCENTER);
             GG::Connect(button->CheckedSignal,  &FilterDialog::UpdateVisFiltersFromStateButtons,    this);
             m_filter_buttons[uot][SHOW_VISIBLE] = button;
 
-            button = new CUIStateButton(" ", GG::FORMAT_CENTER, boost::make_shared<CUICheckBoxRepresenter>());
+            button = new CUIStateButton(" ", GG::FORMAT_CENTER, std::make_shared<CUICheckBoxRepresenter>());
             button->SetCheck(vis_display.find(SHOW_PREVIOUSLY_VISIBLE) != vis_display.end());
             m_filters_layout->Add(button, 2, col, GG::ALIGN_CENTER | GG::ALIGN_VCENTER);
             GG::Connect(button->CheckedSignal,  &FilterDialog::UpdateVisFiltersFromStateButtons,    this);
             m_filter_buttons[uot][SHOW_PREVIOUSLY_VISIBLE] = button;
 
-            button = new CUIStateButton(" ", GG::FORMAT_CENTER, boost::make_shared<CUICheckBoxRepresenter>());
+            button = new CUIStateButton(" ", GG::FORMAT_CENTER, std::make_shared<CUICheckBoxRepresenter>());
             button->SetCheck(vis_display.find(SHOW_DESTROYED) != vis_display.end());
             m_filters_layout->Add(button, 3, col, GG::ALIGN_CENTER | GG::ALIGN_VCENTER);
             GG::Connect(button->CheckedSignal,  &FilterDialog::UpdateVisFiltersFromStateButtons,    this);
@@ -1131,11 +1160,11 @@ private:
 };
 
 namespace {
-    std::vector<boost::shared_ptr<GG::Texture> > ObjectTextures(TemporaryPtr<const UniverseObject> obj) {
-        std::vector<boost::shared_ptr<GG::Texture> > retval;
+    std::vector<std::shared_ptr<GG::Texture>> ObjectTextures(std::shared_ptr<const UniverseObject> obj) {
+        std::vector<std::shared_ptr<GG::Texture>> retval;
 
         if (obj->ObjectType() == OBJ_SHIP) {
-            TemporaryPtr<const Ship> ship = boost::dynamic_pointer_cast<const Ship>(obj);
+            std::shared_ptr<const Ship> ship = std::dynamic_pointer_cast<const Ship>(obj);
             if (ship) {
                 if (const ShipDesign* design = ship->Design())
                     retval.push_back(ClientUI::ShipDesignIcon(design->ID()));
@@ -1144,34 +1173,34 @@ namespace {
                 retval.push_back(ClientUI::ShipDesignIcon(INVALID_OBJECT_ID));  // default icon
             }
         } else if (obj->ObjectType() == OBJ_FLEET) {
-            if (TemporaryPtr<const Fleet> fleet = boost::dynamic_pointer_cast<const Fleet>(obj)) {
-                boost::shared_ptr<GG::Texture> size_icon = FleetSizeIcon(fleet, FleetButton::FLEET_BUTTON_LARGE);
+            if (std::shared_ptr<const Fleet> fleet = std::dynamic_pointer_cast<const Fleet>(obj)) {
+                std::shared_ptr<GG::Texture> size_icon = FleetSizeIcon(fleet, FleetButton::FLEET_BUTTON_LARGE);
                 if (size_icon)
                     retval.push_back(size_icon);
-                std::vector<boost::shared_ptr<GG::Texture> > head_icons = FleetHeadIcons(fleet, FleetButton::FLEET_BUTTON_LARGE);
+                std::vector<std::shared_ptr<GG::Texture>> head_icons = FleetHeadIcons(fleet, FleetButton::FLEET_BUTTON_LARGE);
                 std::copy(head_icons.begin(), head_icons.end(), std::back_inserter(retval));
             }
         } else if (obj->ObjectType() == OBJ_SYSTEM) {
-            if (TemporaryPtr<const System> system = boost::dynamic_pointer_cast<const System>(obj)) {
+            if (std::shared_ptr<const System> system = std::dynamic_pointer_cast<const System>(obj)) {
                 StarType star_type = system->GetStarType();
                 ClientUI* ui = ClientUI::GetClientUI();
-                boost::shared_ptr<GG::Texture> disc_texture = ui->GetModuloTexture(
+                std::shared_ptr<GG::Texture> disc_texture = ui->GetModuloTexture(
                     ClientUI::ArtDir() / "stars", ClientUI::StarTypeFilePrefixes()[star_type], system->ID());
                 if (disc_texture)
                     retval.push_back(disc_texture);
-                boost::shared_ptr<GG::Texture> halo_texture = ui->GetModuloTexture(
+                std::shared_ptr<GG::Texture> halo_texture = ui->GetModuloTexture(
                     ClientUI::ArtDir() / "stars", ClientUI::HaloStarTypeFilePrefixes()[star_type], system->ID());
                 if (halo_texture)
                     retval.push_back(halo_texture);
             }
         } else if (obj->ObjectType() == OBJ_PLANET) {
-            if (TemporaryPtr<const Planet> planet = boost::dynamic_pointer_cast<const Planet>(obj))
+            if (std::shared_ptr<const Planet> planet = std::dynamic_pointer_cast<const Planet>(obj))
                 retval.push_back(ClientUI::PlanetIcon(planet->Type()));
         } else if (obj->ObjectType() == OBJ_BUILDING) {
-            if (TemporaryPtr<const Building> building = boost::dynamic_pointer_cast<const Building>(obj))
+            if (std::shared_ptr<const Building> building = std::dynamic_pointer_cast<const Building>(obj))
                 retval.push_back(ClientUI::BuildingIcon(building->BuildingTypeName()));
         } else if (obj->ObjectType() == OBJ_FIELD) {
-            if (TemporaryPtr<const Field> field = boost::dynamic_pointer_cast<const Field>(obj))
+            if (std::shared_ptr<const Field> field = std::dynamic_pointer_cast<const Field>(obj))
                 retval.push_back(ClientUI::FieldTexture(field->FieldTypeName()));
         }
         if (retval.empty())
@@ -1187,7 +1216,7 @@ namespace {
 ////////////////////////////////////////////////
 class ObjectPanel : public GG::Control {
 public:
-    ObjectPanel(GG::X w, GG::Y h, TemporaryPtr<const UniverseObject> obj,
+    ObjectPanel(GG::X w, GG::Y h, std::shared_ptr<const UniverseObject> obj,
                 bool expanded, bool has_contents, int indent) :
         Control(GG::X0, GG::Y0, w, h, GG::NO_WND_FLAGS),
         m_initialized(false),
@@ -1202,7 +1231,7 @@ public:
         m_selected(false)
     {
         SetChildClippingMode(ClipToClient);
-        TemporaryPtr<const ResourceCenter> rcobj = boost::dynamic_pointer_cast<const ResourceCenter>(obj);
+        std::shared_ptr<const ResourceCenter> rcobj = std::dynamic_pointer_cast<const ResourceCenter>(obj);
         if (rcobj)
             GG::Connect(rcobj->ResourceCenterChangedSignal, &ObjectPanel::ResourceCenterChanged, this);
     }
@@ -1286,8 +1315,8 @@ public:
             AttachChild(m_dot);
         }
 
-        TemporaryPtr<const UniverseObject> obj = GetUniverseObject(m_object_id);
-        std::vector<boost::shared_ptr<GG::Texture> > textures = ObjectTextures(obj);
+        std::shared_ptr<const UniverseObject> obj = GetUniverseObject(m_object_id);
+        std::vector<std::shared_ptr<GG::Texture>> textures = ObjectTextures(obj);
 
         m_icon = new MultiTextureStaticGraphic(textures,
                                                std::vector<GG::Flags<GG::GraphicStyle> >(textures.size(), style));
@@ -1367,7 +1396,7 @@ private:
     void                RefreshCache() const {
         m_column_val_cache.clear();
         m_column_val_cache.reserve(NUM_COLUMNS);
-        TemporaryPtr<const UniverseObject> obj = GetUniverseObject(m_object_id);
+        std::shared_ptr<const UniverseObject> obj = GetUniverseObject(m_object_id);
         ScriptingContext context(obj);
 
         // get currently displayed column value refs, put values into this panel's cache
@@ -1416,7 +1445,7 @@ private:
 ////////////////////////////////////////////////
 class ObjectRow : public GG::ListBox::Row {
 public:
-    ObjectRow(GG::X w, GG::Y h, TemporaryPtr<const UniverseObject> obj, bool expanded,
+    ObjectRow(GG::X w, GG::Y h, std::shared_ptr<const UniverseObject> obj, bool expanded,
               int container_object_panel, const std::set<int>& contained_object_panels,
               int indent) :
         GG::ListBox::Row(w, h, "", GG::ALIGN_CENTER, 1),
@@ -1484,7 +1513,7 @@ private:
     ObjectPanel*        m_panel;
     int                 m_container_object_panel;
     std::set<int>       m_contained_object_panels;
-    TemporaryPtr<const UniverseObject> m_obj_init;
+    std::shared_ptr<const UniverseObject> m_obj_init;
     bool                m_expanded_init;
     int                 m_indent_init;
 };
@@ -1810,7 +1839,7 @@ public:
         m_object_change_connections.clear();
     }
 
-    bool            ObjectShown(TemporaryPtr<const UniverseObject> obj, bool assume_visible_without_checking = false) {
+    bool ObjectShown(std::shared_ptr<const UniverseObject> obj, bool assume_visible_without_checking = false) {
         if (!obj)
             return false;
 
@@ -1844,7 +1873,7 @@ public:
         std::map<int, std::set<int> >   planet_buildings;
         std::set<int>                   fields;
 
-        for (TemporaryPtr<const UniverseObject> obj : GetUniverse().Objects()) {
+        for (std::shared_ptr<const UniverseObject> obj : GetUniverse().Objects()) {
             if (!ObjectShown(obj))
                 continue;
 
@@ -1854,13 +1883,13 @@ public:
                 systems.insert(object_id);
             } else if (obj->ObjectType() == OBJ_FIELD) {
                 fields.insert(object_id);
-            } else if (TemporaryPtr<const Fleet> fleet = boost::dynamic_pointer_cast<const Fleet>(obj)) {
+            } else if (std::shared_ptr<const Fleet> fleet = std::dynamic_pointer_cast<const Fleet>(obj)) {
                 system_fleets[fleet->SystemID()].insert(object_id);
-            } else if (TemporaryPtr<const Ship> ship = boost::dynamic_pointer_cast<const Ship>(obj)) {
+            } else if (std::shared_ptr<const Ship> ship = std::dynamic_pointer_cast<const Ship>(obj)) {
                 fleet_ships[ship->FleetID()].insert(object_id);
-            } else if (TemporaryPtr<const Planet> planet = boost::dynamic_pointer_cast<const Planet>(obj)) {
+            } else if (std::shared_ptr<const Planet> planet = std::dynamic_pointer_cast<const Planet>(obj)) {
                 system_planets[planet->SystemID()].insert(object_id);
-            } else if (TemporaryPtr<const Building> building = boost::dynamic_pointer_cast<const Building>(obj)) {
+            } else if (std::shared_ptr<const Building> building = std::dynamic_pointer_cast<const Building>(obj)) {
                 planet_buildings[building->PlanetID()].insert(object_id);
             }
         }
@@ -2015,7 +2044,7 @@ public:
         if (!this->Empty())
             this->BringRowIntoView(--this->end());
         if (first_visible_queue_row < this->NumRows())
-            this->BringRowIntoView(boost::next(this->begin(), first_visible_queue_row));
+            this->BringRowIntoView(std::next(this->begin(), first_visible_queue_row));
     }
 
     void            UpdateObjectPanel(int object_id = INVALID_OBJECT_ID) {
@@ -2068,7 +2097,7 @@ private:
     void            AddObjectRow(int object_id, int container, const std::set<int>& contents,
                                  int indent, GG::ListBox::iterator it)
     {
-        TemporaryPtr<const UniverseObject> obj = GetUniverseObject(object_id);
+        std::shared_ptr<const UniverseObject> obj = GetUniverseObject(object_id);
         if (!obj)
             return;
         const GG::Pt row_size = ListRowSize();
@@ -2160,7 +2189,7 @@ private:
     void            ObjectStateChanged(int object_id) {
         if (object_id == INVALID_OBJECT_ID)
             return;
-        TemporaryPtr<const UniverseObject> obj = GetUniverseObject(object_id);
+        std::shared_ptr<const UniverseObject> obj = GetUniverseObject(object_id);
         DebugLogger() << "ObjectListBox::ObjectStateChanged: " << obj->Name();
         if (!obj)
             return;
@@ -2172,7 +2201,7 @@ private:
             Refresh();
     }
 
-    void            UniverseObjectDeleted(TemporaryPtr<const UniverseObject> obj)
+    void UniverseObjectDeleted(std::shared_ptr<const UniverseObject> obj)
     { if (obj) RemoveObjectRow(obj->ID()); }
 
     std::map<int, boost::signals2::connection>          m_object_change_connections;
@@ -2332,7 +2361,7 @@ void ObjectListWnd::ObjectRightClicked(GG::ListBox::iterator it, const GG::Pt& p
     GG::MenuItem menu_contents;
     menu_contents.next_level.push_back(GG::MenuItem(UserString("DUMP"), 1, false, false));
 
-    TemporaryPtr<const UniverseObject> obj = GetUniverseObject(object_id);
+    std::shared_ptr<const UniverseObject> obj = GetUniverseObject(object_id);
     //DebugLogger() << "ObjectListBox::ObjectStateChanged: " << obj->Name();
     if (!obj)
         return;
@@ -2353,7 +2382,7 @@ void ObjectListWnd::ObjectRightClicked(GG::ListBox::iterator it, const GG::Pt& p
         for (const GG::ListBox::SelectionSet::value_type& entry : m_list_box->Selections()) {
             ObjectRow *row = dynamic_cast<ObjectRow *>(*entry);
             if (row) {
-                TemporaryPtr<Planet> one_planet = GetPlanet(row->ObjectID());
+                std::shared_ptr<Planet> one_planet = GetPlanet(row->ObjectID());
                 if (one_planet && one_planet->OwnedBy(app->EmpireID())) {
                     for (const std::string& planet_focus : one_planet->AvailableFoci())
                         all_foci[planet_focus]++;
@@ -2440,13 +2469,11 @@ void ObjectListWnd::ObjectRightClicked(GG::ListBox::iterator it, const GG::Pt& p
         default: {
             int id = popup.MenuID();
             if (id > MENUITEM_SET_FOCUS_BASE && id <= menuitem_id) {
-                std::map<std::string, int>::iterator it = all_foci.begin();
-                std::advance(it, id - MENUITEM_SET_FOCUS_BASE - 1);
-                std::string focus = it->first;
+                std::string focus = std::next(all_foci.begin(), id - MENUITEM_SET_FOCUS_BASE - 1)->first;
                 for (const GG::ListBox::SelectionSet::value_type& entry : m_list_box->Selections()) {
                     ObjectRow *row = dynamic_cast<ObjectRow *>(*entry);
                     if (row) {
-                        TemporaryPtr<Planet> one_planet = GetPlanet(row->ObjectID());
+                        std::shared_ptr<Planet> one_planet = GetPlanet(row->ObjectID());
                         if (one_planet && one_planet->OwnedBy(app->EmpireID())) {
                             one_planet->SetFocus(focus);
                             app->Orders().IssueOrder(OrderPtr(new ChangeFocusOrder(app->EmpireID(), one_planet->ID(), focus)));
@@ -2454,15 +2481,13 @@ void ObjectListWnd::ObjectRightClicked(GG::ListBox::iterator it, const GG::Pt& p
                     }
                 }
             } else if (id > MENUITEM_SET_SHIP_BASE && id <= ship_menuitem_id) {
-                std::map<int, int>::iterator it = avail_designs.begin();
-                std::advance(it, id - MENUITEM_SET_SHIP_BASE - 1);
-                int ship_design = it->first;
+                int ship_design = std::next(avail_designs.begin(), id - MENUITEM_SET_SHIP_BASE - 1)->first;
                 bool needs_queue_update(false);
                 for (const GG::ListBox::SelectionSet::value_type& entry : m_list_box->Selections()) {
                     ObjectRow *row = dynamic_cast<ObjectRow *>(*entry);
                     if (!row)
                         continue;
-                    TemporaryPtr<Planet> one_planet = GetPlanet(row->ObjectID());
+                    std::shared_ptr<Planet> one_planet = GetPlanet(row->ObjectID());
                     if (!one_planet || !one_planet->OwnedBy(app->EmpireID()) || !cur_empire->ProducibleItem(BT_SHIP, ship_design, row->ObjectID()))
                         continue;
                     ProductionQueue::ProductionItem ship_item(BT_SHIP, ship_design);
@@ -2472,15 +2497,13 @@ void ObjectListWnd::ObjectRightClicked(GG::ListBox::iterator it, const GG::Pt& p
                 if (needs_queue_update)
                     cur_empire->UpdateProductionQueue();
             } else if (id > MENUITEM_SET_BUILDING_BASE && id <= bld_menuitem_id) {
-                std::map<std::string, int>::iterator it = avail_blds.begin();
-                std::advance(it, id - MENUITEM_SET_BUILDING_BASE - 1);
-                std::string bld = it->first;
+                std::string bld = std::next(avail_blds.begin(), id - MENUITEM_SET_BUILDING_BASE - 1)->first;
                 bool needs_queue_update(false);
                 for (const GG::ListBox::SelectionSet::value_type& entry : m_list_box->Selections()) {
                     ObjectRow *row = dynamic_cast<ObjectRow *>(*entry);
                     if (!row)
                         continue;
-                    TemporaryPtr<Planet> one_planet = GetPlanet(row->ObjectID());
+                    std::shared_ptr<Planet> one_planet = GetPlanet(row->ObjectID());
                     if (!one_planet || !one_planet->OwnedBy(app->EmpireID())
                        || !cur_empire->EnqueuableItem(BT_BUILDING, bld, row->ObjectID())
                        || !cur_empire->ProducibleItem(BT_BUILDING, bld, row->ObjectID()))

@@ -6,6 +6,7 @@
 #include "TechTreeWnd.h"
 #include "../Empire/Empire.h"
 #include "../universe/Tech.h"
+#include "../universe/Enums.h"
 #include "../util/i18n.h"
 #include "../util/Order.h"
 #include "../util/OptionsDB.h"
@@ -19,6 +20,8 @@
 #include <boost/cast.hpp>
 
 #include <cmath>
+#include <iterator>
+
 
 namespace {
     const float OUTER_LINE_THICKNESS = 2.0f;
@@ -564,7 +567,7 @@ void ResearchWnd::UpdateQueue() {
     if (!queue_lb->Empty())
         queue_lb->BringRowIntoView(--queue_lb->end());
     if (first_visible_queue_row < queue_lb->NumRows())
-        queue_lb->BringRowIntoView(boost::next(queue_lb->begin(), first_visible_queue_row));
+        queue_lb->BringRowIntoView(std::next(queue_lb->begin(), first_visible_queue_row));
 }
 
 void ResearchWnd::UpdateInfoPanel() {

@@ -285,7 +285,7 @@ public:
         /** Return the constructed text.*/
         const std::string& Text();
         /** Return the constructed TextElements.*/
-        const std::vector<boost::shared_ptr<TextElement> >& Elements();
+        const std::vector<std::shared_ptr<TextElement>>& Elements();
 
         /** Add an open tag iff it exists as a recognized tag.*/
         TextAndElementsAssembler& AddOpenTag(const std::string& tag);
@@ -356,7 +356,7 @@ public:
             CharData();
 
             CharData(X extent_, StrSize str_index, StrSize str_size, CPSize cp_index,
-                     const std::vector<boost::shared_ptr<TextElement> >& tags_);
+                     const std::vector<std::shared_ptr<TextElement>>& tags_);
 
             /** The furthest-right extent of this glyph as it appears on the
                 line. */
@@ -375,7 +375,7 @@ public:
 
             /** The text formatting tags that should be applied before
                 rendering this glyph. */
-            std::vector<boost::shared_ptr<FormattingTag> > tags;
+            std::vector<std::shared_ptr<FormattingTag>> tags;
         };
 
         X    Width() const; ///< Returns the width of the line.
@@ -488,7 +488,8 @@ public:
         rendered. */
     unsigned int PointSize() const;
 
-    const boost::shared_ptr<Texture> GetTexture() const { return m_texture; }
+    const std::shared_ptr<Texture> GetTexture() const
+    { return m_texture; }
 
     /** Returns the range(s) of code points rendered in the font */
     const std::vector<UnicodeCharset>& UnicodeCharsets() const;
@@ -553,14 +554,14 @@ public:
         it from tight loops.  Do not call it from within Render().  Do not
         call it repeatedly on a known text.
     */
-    std::vector<boost::shared_ptr<Font::TextElement> > ExpensiveParseFromTextToTextElements(const std::string& text,
-                                                                                            const Flags<TextFormat>& format) const;
+    std::vector<std::shared_ptr<Font::TextElement>> ExpensiveParseFromTextToTextElements(const std::string& text,
+                                                                                         const Flags<TextFormat>& format) const;
 
     /** Fill \p text_elements with the font widths of characters from \p text starting from \p
         starting_from. */
     void FillTemplatedText(const std::string& text,
-                           std::vector<boost::shared_ptr<TextElement> >& text_elements,
-                           std::vector<boost::shared_ptr<TextElement> >::iterator starting_from) const;
+                           std::vector<std::shared_ptr<TextElement>>& text_elements,
+                           std::vector<std::shared_ptr<TextElement>>::iterator starting_from) const;
 
     /** Change \p text_elements and \p text to replace the text of the TextElement at
         \p targ_offset with \p new_text.
@@ -592,7 +593,7 @@ public:
 
     */
     void ChangeTemplatedText(std::string& text,
-                             std::vector<boost::shared_ptr<TextElement> >& text_elements,
+                             std::vector<std::shared_ptr<TextElement>>& text_elements,
                              const std::string& new_text,
                              size_t targ_offset) const;
 
@@ -609,7 +610,7 @@ public:
         bound.  Compatible means the exact same \p text object, not the same text content.
         */
     std::vector<LineData>   DetermineLines(const std::string& text, Flags<TextFormat>& format, X box_width,
-                                           const std::vector<boost::shared_ptr<TextElement> >& text_elements) const;
+                                           const std::vector<std::shared_ptr<TextElement>>& text_elements) const;
 
     /** Returns the maximum dimensions of the text in x and y. */
     Pt   TextExtent(const std::vector<LineData>& line_data) const;
@@ -662,7 +663,7 @@ public:
         character (if possible), or as a Unicode code point.  \a format_str
         should contain the Boost.Format positional notation formatting tag
         "%1%" where the code point should appear. */
-    static void ThrowBadGlyph(const std::string& format_str, boost::uint32_t c);
+    static void ThrowBadGlyph(const std::string& format_str, std::uint32_t c);
 
 protected:
     /** \name Structors */ ///@{
@@ -676,7 +677,7 @@ private:
     {
         Glyph();
 
-        Glyph(const boost::shared_ptr<Texture>& texture, const Pt& ul, const Pt& lr, Y y_ofs,
+        Glyph(const std::shared_ptr<Texture>& texture, const Pt& ul, const Pt& lr, Y y_ofs,
               X lb, X adv); ///< Ctor
 
         SubTexture  sub_texture;   ///< The subtexture containing just this glyph
@@ -686,13 +687,15 @@ private:
         X           width;         ///< The width of the glyph only
     };
 
-    typedef boost::unordered_map<boost::uint32_t, Glyph> GlyphMap;
+    typedef boost::unordered_map<std::uint32_t, Glyph> GlyphMap;
 
     FT_Error          GetFace(FT_Face& face);
     FT_Error          GetFace(const std::vector<unsigned char>& file_contents, FT_Face& face);
     void              CheckFace(FT_Face font, FT_Error error);
     void              Init(FT_Face& font);
-    bool              GenerateGlyph(FT_Face font, boost::uint32_t ch);
+
+    bool GenerateGlyph(FT_Face font, std::uint32_t ch);
+
     void              ValidateFormat(Flags<TextFormat>& format) const;
 
     X                 StoreGlyph(const Pt& pt, const Glyph& glyph, const RenderState* render_state, RenderCache& cache) const;
@@ -700,11 +703,11 @@ private:
     void              StoreUnderlineImpl(RenderCache& cache, GG::Clr color, const Pt& pt, const Glyph& glyph,
                                          Y descent, Y height, Y underline_height, Y underline_offset) const;
 
-    void              HandleTag(const boost::shared_ptr<FormattingTag>& tag, double* orig_color,
+    void              HandleTag(const std::shared_ptr<FormattingTag>& tag, double* orig_color,
                                 RenderState& render_state) const;
     bool              IsDefaultFont();
-    boost::shared_ptr<Font>
-                      GetDefaultFont(unsigned int pts);
+
+    std::shared_ptr<Font> GetDefaultFont(unsigned int pts);
 
     std::string          m_font_filename;
     unsigned int         m_pt_sz;
@@ -720,7 +723,9 @@ private:
     double               m_shadow_offset;    ///< Amount that shadows rendered under texts are displaced from the text
     X                    m_space_width; ///< The width of the glyph for the space character
     GlyphMap             m_glyphs;      ///< The locations of the images of each glyph within the textures
-    boost::shared_ptr<Texture> m_texture;    ///< The OpenGL texture object in which the glyphs can be found
+
+    /** The OpenGL texture object in which the glyphs can be found. */
+    std::shared_ptr<Texture> m_texture;
 };
 
 /** Stream output operator for Font::Substring. */
@@ -795,29 +800,29 @@ public:
     /** Returns a shared_ptr to the requested font, supporting all printable
         ASCII characters.  \note May load font if unavailable at time of
         request. */
-    boost::shared_ptr<Font> GetFont(const std::string& font_filename, unsigned int pts);
+    std::shared_ptr<Font> GetFont(const std::string& font_filename, unsigned int pts);
 
     /** Returns a shared_ptr to the requested font, supporting all printable
         ASCII characters, from the in-memory contents \a file_contents.  \note
         May load font if unavailable at time of request. */
-    boost::shared_ptr<Font> GetFont(const std::string& font_filename, unsigned int pts,
-                                    const std::vector<unsigned char>& file_contents);
+    std::shared_ptr<Font> GetFont(const std::string& font_filename, unsigned int pts,
+                                  const std::vector<unsigned char>& file_contents);
 
     /** Returns a shared_ptr to the requested font, supporting all the
         code points in the UnicodeCharsets in the range [first, last).  \note
         May load font if unavailable at time of request. */
     template <class CharSetIter>
-    boost::shared_ptr<Font> GetFont(const std::string& font_filename, unsigned int pts,
-                                    CharSetIter first, CharSetIter last);
+    std::shared_ptr<Font> GetFont(const std::string& font_filename, unsigned int pts,
+                                  CharSetIter first, CharSetIter last);
 
     /** Returns a shared_ptr to the requested font, supporting all the code
         points in the UnicodeCharsets in the range [first, last), from the
         in-memory contents \a file_contents.  \note May load font if
         unavailable at time of request. */
     template <class CharSetIter>
-    boost::shared_ptr<Font> GetFont(const std::string& font_filename, unsigned int pts,
-                                    const std::vector<unsigned char>& file_contents,
-                                    CharSetIter first, CharSetIter last);
+    std::shared_ptr<Font> GetFont(const std::string& font_filename, unsigned int pts,
+                                  const std::vector<unsigned char>& file_contents,
+                                  CharSetIter first, CharSetIter last);
 
     /** Removes the indicated font from the font manager.  Due to shared_ptr
         semantics, the font may not be deleted until much later. */
@@ -827,13 +832,13 @@ public:
 private:
     FontManager();
     template <class CharSetIter>
-    boost::shared_ptr<Font> GetFontImpl(const std::string& font_filename, unsigned int pts,
-                                        const std::vector<unsigned char>* file_contents,
-                                        CharSetIter first, CharSetIter last);
+    std::shared_ptr<Font> GetFontImpl(const std::string& font_filename, unsigned int pts,
+                                      const std::vector<unsigned char>* file_contents,
+                                      CharSetIter first, CharSetIter last);
 
-    std::map<FontKey, boost::shared_ptr<Font> > m_rendered_fonts;
+    std::map<FontKey, std::shared_ptr<Font>> m_rendered_fonts;
 
-    static const boost::shared_ptr<Font> EMPTY_FONT;
+    static const std::shared_ptr<Font> EMPTY_FONT;
 
     friend GG_API FontManager& GetFontManager();
 };
@@ -928,7 +933,7 @@ bool GG::FontManager::HasFont(const std::string& font_filename, unsigned int pts
 {
     bool retval = false;
     FontKey key(font_filename, pts);
-    std::map<FontKey, boost::shared_ptr<Font> >::const_iterator it = m_rendered_fonts.find(key);
+    std::map<FontKey, std::shared_ptr<Font>>::const_iterator it = m_rendered_fonts.find(key);
     if (it != m_rendered_fonts.end()) {
         std::set<UnicodeCharset> requested_charsets(first, last);
         std::set<UnicodeCharset> found_charsets(it->second->UnicodeCharsets().begin(),
@@ -939,13 +944,13 @@ bool GG::FontManager::HasFont(const std::string& font_filename, unsigned int pts
 }
 
 template <class CharSetIter>
-boost::shared_ptr<GG::Font>
+std::shared_ptr<GG::Font>
 GG::FontManager::GetFont(const std::string& font_filename, unsigned int pts,
                          CharSetIter first, CharSetIter last)
 { return GetFontImpl(font_filename, pts, nullptr, first, last); }
 
 template <class CharSetIter>
-boost::shared_ptr<GG::Font>
+std::shared_ptr<GG::Font>
 GG::FontManager::GetFont(const std::string& font_filename, unsigned int pts,
                          const std::vector<unsigned char>& file_contents,
                          CharSetIter first, CharSetIter last)
@@ -953,20 +958,20 @@ GG::FontManager::GetFont(const std::string& font_filename, unsigned int pts,
 
 
 template <class CharSetIter>
-boost::shared_ptr<GG::Font>
+std::shared_ptr<GG::Font>
 GG::FontManager::GetFontImpl(const std::string& font_filename, unsigned int pts,
                              const std::vector<unsigned char>* file_contents,
                              CharSetIter first, CharSetIter last)
 {
     FontKey key(font_filename, pts);
-    std::map<FontKey, boost::shared_ptr<Font> >::iterator it = m_rendered_fonts.find(key);
+    std::map<FontKey, std::shared_ptr<Font>>::iterator it = m_rendered_fonts.find(key);
     if (it == m_rendered_fonts.end()) { // if no such font has been created, create it now
         if (font_filename == "") {
             // keeps this function from throwing; "" is the only invalid font
             // filename that shouldn't throw
             return EMPTY_FONT;
         } else {
-            boost::shared_ptr<Font> font(
+            std::shared_ptr<Font> font(
                 file_contents ?
                 new Font(font_filename, pts, *file_contents, first, last) :
                 new Font(font_filename, pts, first, last)
@@ -986,7 +991,7 @@ GG::FontManager::GetFontImpl(const std::string& font_filename, unsigned int pts,
                            found_charsets.begin(), found_charsets.end(),
                            std::back_inserter(united_charsets));
             m_rendered_fonts.erase(it);
-            boost::shared_ptr<Font> font(
+            std::shared_ptr<Font> font(
                 file_contents ?
                 new Font(font_filename, pts, *file_contents,
                          united_charsets.begin(), united_charsets.end()) :

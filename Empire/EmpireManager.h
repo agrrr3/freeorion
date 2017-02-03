@@ -1,7 +1,7 @@
 #ifndef _EmpireManager_h_
 #define _EmpireManager_h_
 
-#include "../universe/Enums.h"
+#include "../universe/EnumsFwd.h"
 #include "Diplomacy.h"
 #include "../util/Export.h"
 
@@ -16,6 +16,7 @@
 #include <vector>
 
 class Empire;
+class UniverseObject;
 
 struct FO_COMMON_API DiplomaticStatusUpdateInfo {
     DiplomaticStatusUpdateInfo();
@@ -43,6 +44,8 @@ public:
     /** \name Accessors */ //@{
     /** Returns the empire whose ID is \a ID, or 0 if none exists. */
     const Empire*       GetEmpire(int id) const;
+    /** Return the empire source or nullptr if the empire or source doesn't exist.*/
+    std::shared_ptr<const UniverseObject> GetSource(int id) const;
     const std::string&  GetEmpireName(int id) const;
 
     const_iterator      begin() const;
@@ -78,7 +81,7 @@ public:
       * caller's responsibility to make sure that universe updates planet
       * ownership. */
     Empire*     CreateEmpire(int empire_id, const std::string& name, const std::string& player_name,
-                                 const GG::Clr& color);
+                             const GG::Clr& color);
 
     /** Removes and deletes all empires from the manager. */
     void        Clear();

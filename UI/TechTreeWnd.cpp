@@ -15,6 +15,7 @@
 #include "../universe/Tech.h"
 #include "../universe/Effect.h"
 #include "../universe/ValueRef.h"
+#include "../universe/Enums.h"
 #include "../Empire/Empire.h"
 #include "TechTreeLayout.h"
 #include "TechTreeArcs.h"
@@ -99,44 +100,6 @@ namespace {
         return true;
     }
 
-
-    struct SetCategoryViewFunctor {
-        SetCategoryViewFunctor(TechTreeWnd* tree_wnd, const std::string& category) :
-            m_tree_wnd(tree_wnd),
-            m_category(category)
-        {}
-        void operator()(bool b) {
-            if (m_tree_wnd)
-                b ? m_tree_wnd->ShowCategory(m_category) : m_tree_wnd->HideCategory(m_category);
-        }
-        TechTreeWnd* const m_tree_wnd;
-        const std::string m_category;
-    };
-
-    struct SetAllCategoryViewsFunctor {
-        SetAllCategoryViewsFunctor(TechTreeWnd* tree_wnd) :
-            m_tree_wnd(tree_wnd)
-        {}
-        void operator()(bool b) {
-            if (m_tree_wnd)
-                b ? m_tree_wnd->ShowAllCategories() : m_tree_wnd->HideAllCategories();
-        }
-        TechTreeWnd* const m_tree_wnd;
-    };
-
-    struct SetTechStatusViewFunctor {
-        SetTechStatusViewFunctor(TechTreeWnd* tree_wnd, TechStatus status) :
-            m_tree_wnd(tree_wnd),
-            m_status(status)
-        {}
-        void operator()(bool b) {
-            if (m_tree_wnd)
-                b ? m_tree_wnd->ShowStatus(m_status) : m_tree_wnd->HideStatus(m_status);
-        }
-        TechTreeWnd* const m_tree_wnd;
-        const TechStatus m_status;
-    };
-
     // Duplicated in MapWnd.cpp/ObjectListWnd.cpp
     const std::locale& GetLocale() {
         static boost::locale::generator gen;
@@ -148,13 +111,11 @@ namespace {
 ///////////////////////////
 // TechPanelRowBrowseWnd //
 ///////////////////////////
-boost::shared_ptr<GG::BrowseInfoWnd> TechPanelRowBrowseWnd(const std::string& tech_name, int empire_id) {
+std::shared_ptr<GG::BrowseInfoWnd> TechPanelRowBrowseWnd(const std::string& tech_name, int empire_id) {
     const Empire* empire = GetEmpire(empire_id);
     const Tech* tech = GetTech(tech_name);
-    if (!tech) {
-        boost::shared_ptr<GG::BrowseInfoWnd> browse_wnd;
-        return browse_wnd;
-    }
+    if (!tech)
+        return nullptr;
 
     std::string main_text;
 
@@ -236,9 +197,8 @@ boost::shared_ptr<GG::BrowseInfoWnd> TechPanelRowBrowseWnd(const std::string& te
             % turns);
     }
 
-    boost::shared_ptr<GG::BrowseInfoWnd> browse_wnd(new IconTextBrowseWnd(
-        ClientUI::TechIcon(tech_name), UserString(tech_name), main_text));
-    return browse_wnd;
+    return std::make_shared<IconTextBrowseWnd>(
+        ClientUI::TechIcon(tech_name), UserString(tech_name), main_text);
 }
 
 
@@ -300,10 +260,10 @@ TechTreeWnd::TechTreeControls::TechTreeControls(const std::string& config_name) 
     // create a button for each tech category...
     for (const std::string& category : GetTechManager().CategoryNames()) {
         GG::Clr icon_clr = ClientUI::CategoryColor(category);
-        boost::shared_ptr<GG::SubTexture> icon = boost::make_shared<GG::SubTexture>(ClientUI::CategoryIcon(category));
+        std::shared_ptr<GG::SubTexture> icon = std::make_shared<GG::SubTexture>(ClientUI::CategoryIcon(category));
         m_cat_buttons[category] = new GG::StateButton("", ClientUI::GetFont(), GG::FORMAT_NONE, GG::CLR_ZERO,
-                                                     boost::make_shared<CUIIconButtonRepresenter>(icon, icon_clr));
-        m_cat_buttons[category]->SetBrowseInfoWnd(boost::make_shared<TextBrowseWnd>(UserString(category), ""));
+                                                     std::make_shared<CUIIconButtonRepresenter>(icon, icon_clr));
+        m_cat_buttons[category]->SetBrowseInfoWnd(std::make_shared<TextBrowseWnd>(UserString(category), ""));
         m_cat_buttons[category]->SetBrowseModeTime(tooltip_delay);
         AttachChild(m_cat_buttons[category]);
     }
@@ -311,46 +271,46 @@ TechTreeWnd::TechTreeControls::TechTreeControls(const std::string& config_name) 
     GG::Clr icon_color = GG::Clr(113, 150, 182, 255);
     // and one for "ALL"
     m_all_cat_button = new GG::StateButton("", ClientUI::GetFont(), GG::FORMAT_NONE, GG::CLR_ZERO,
-                                           boost::make_shared<CUIIconButtonRepresenter>(boost::make_shared<GG::SubTexture>(ClientUI::GetTexture(icon_dir / "00_all_cats.png", true)), icon_color));
-    m_all_cat_button->SetBrowseInfoWnd(boost::make_shared<TextBrowseWnd>(UserString("ALL"), ""));
+                                           std::make_shared<CUIIconButtonRepresenter>(std::make_shared<GG::SubTexture>(ClientUI::GetTexture(icon_dir / "00_all_cats.png", true)), icon_color));
+    m_all_cat_button->SetBrowseInfoWnd(std::make_shared<TextBrowseWnd>(UserString("ALL"), ""));
     m_all_cat_button->SetBrowseModeTime(tooltip_delay);
     m_all_cat_button->SetCheck(true);
     AttachChild(m_all_cat_button);
 
     // create a button for each tech status
     m_status_buttons[TS_UNRESEARCHABLE] = new GG::StateButton("", ClientUI::GetFont(), GG::FORMAT_NONE, GG::CLR_ZERO,
-                                                              boost::make_shared<CUIIconButtonRepresenter>(boost::make_shared<GG::SubTexture>(ClientUI::GetTexture(icon_dir / "01_locked.png", true)), icon_color));
-    m_status_buttons[TS_UNRESEARCHABLE]->SetBrowseInfoWnd(boost::make_shared<TextBrowseWnd>(UserString("TECH_WND_STATUS_LOCKED"), ""));
+                                                              std::make_shared<CUIIconButtonRepresenter>(std::make_shared<GG::SubTexture>(ClientUI::GetTexture(icon_dir / "01_locked.png", true)), icon_color));
+    m_status_buttons[TS_UNRESEARCHABLE]->SetBrowseInfoWnd(std::make_shared<TextBrowseWnd>(UserString("TECH_WND_STATUS_LOCKED"), ""));
     m_status_buttons[TS_UNRESEARCHABLE]->SetBrowseModeTime(tooltip_delay);
     m_status_buttons[TS_UNRESEARCHABLE]->SetCheck(false);
     AttachChild(m_status_buttons[TS_UNRESEARCHABLE]);
 
     m_status_buttons[TS_HAS_RESEARCHED_PREREQ] = new GG::StateButton("", ClientUI::GetFont(), GG::FORMAT_NONE, GG::CLR_ZERO,
-                                                                 boost::make_shared<CUIIconButtonRepresenter>(boost::make_shared<GG::SubTexture>(ClientUI::GetTexture(icon_dir / "02_partial.png", true)), icon_color));
-    m_status_buttons[TS_HAS_RESEARCHED_PREREQ]->SetBrowseInfoWnd(boost::make_shared<TextBrowseWnd>(UserString("TECH_WND_STATUS_PARTIAL_UNLOCK"), ""));
+                                                                     std::make_shared<CUIIconButtonRepresenter>(std::make_shared<GG::SubTexture>(ClientUI::GetTexture(icon_dir / "02_partial.png", true)), icon_color));
+    m_status_buttons[TS_HAS_RESEARCHED_PREREQ]->SetBrowseInfoWnd(std::make_shared<TextBrowseWnd>(UserString("TECH_WND_STATUS_PARTIAL_UNLOCK"), ""));
     m_status_buttons[TS_HAS_RESEARCHED_PREREQ]->SetBrowseModeTime(tooltip_delay);
     m_status_buttons[TS_HAS_RESEARCHED_PREREQ]->SetCheck(true);
     AttachChild(m_status_buttons[TS_HAS_RESEARCHED_PREREQ]);
 
     m_status_buttons[TS_RESEARCHABLE] = new GG::StateButton("", ClientUI::GetFont(), GG::FORMAT_NONE, GG::CLR_ZERO,
-                                                            boost::make_shared<CUIIconButtonRepresenter>(boost::make_shared<GG::SubTexture>(ClientUI::GetTexture(icon_dir / "03_unlocked.png", true)), icon_color));
-    m_status_buttons[TS_RESEARCHABLE]->SetBrowseInfoWnd(boost::make_shared<TextBrowseWnd>(UserString("TECH_WND_STATUS_RESEARCHABLE"), ""));
+                                                            std::make_shared<CUIIconButtonRepresenter>(std::make_shared<GG::SubTexture>(ClientUI::GetTexture(icon_dir / "03_unlocked.png", true)), icon_color));
+    m_status_buttons[TS_RESEARCHABLE]->SetBrowseInfoWnd(std::make_shared<TextBrowseWnd>(UserString("TECH_WND_STATUS_RESEARCHABLE"), ""));
     m_status_buttons[TS_RESEARCHABLE]->SetBrowseModeTime(tooltip_delay);
     m_status_buttons[TS_RESEARCHABLE]->SetCheck(true);
     AttachChild(m_status_buttons[TS_RESEARCHABLE]);
 
     m_status_buttons[TS_COMPLETE] = new GG::StateButton("", ClientUI::GetFont(), GG::FORMAT_NONE, GG::CLR_ZERO,
-                                                        boost::make_shared<CUIIconButtonRepresenter>(boost::make_shared<GG::SubTexture>(ClientUI::GetTexture(icon_dir / "04_completed.png", true)), icon_color));
-    m_status_buttons[TS_COMPLETE]->SetBrowseInfoWnd(boost::make_shared<TextBrowseWnd>(UserString("TECH_WND_STATUS_COMPLETED"), ""));
+                                                        std::make_shared<CUIIconButtonRepresenter>(std::make_shared<GG::SubTexture>(ClientUI::GetTexture(icon_dir / "04_completed.png", true)), icon_color));
+    m_status_buttons[TS_COMPLETE]->SetBrowseInfoWnd(std::make_shared<TextBrowseWnd>(UserString("TECH_WND_STATUS_COMPLETED"), ""));
     m_status_buttons[TS_COMPLETE]->SetBrowseModeTime(tooltip_delay);
     m_status_buttons[TS_COMPLETE]->SetCheck(true);
     AttachChild(m_status_buttons[TS_COMPLETE]);
 
     // create button to switch between tree and list views
     m_view_type_button = new GG::StateButton("", ClientUI::GetFont(), GG::FORMAT_NONE, GG::CLR_ZERO,
-                                             boost::make_shared<CUIIconButtonRepresenter>(boost::make_shared<GG::SubTexture>(ClientUI::GetTexture(icon_dir / "06_view_tree.png", true)), icon_color,
-                                                                                      boost::make_shared<GG::SubTexture>(ClientUI::GetTexture(icon_dir / "05_view_list.png", true)), GG::Clr(110, 172, 150, 255)));
-    m_view_type_button->SetBrowseInfoWnd(boost::make_shared<TextBrowseWnd>(UserString("TECH_WND_VIEW_TYPE"), ""));
+                                             std::make_shared<CUIIconButtonRepresenter>(std::make_shared<GG::SubTexture>(ClientUI::GetTexture(icon_dir / "06_view_tree.png", true)), icon_color,
+                                                                                      std::make_shared<GG::SubTexture>(ClientUI::GetTexture(icon_dir / "05_view_list.png", true)), GG::Clr(110, 172, 150, 255)));
+    m_view_type_button->SetBrowseInfoWnd(std::make_shared<TextBrowseWnd>(UserString("TECH_WND_VIEW_TYPE"), ""));
     m_view_type_button->SetBrowseModeTime(tooltip_delay);
     m_view_type_button->SetCheck(false);
     AttachChild(m_view_type_button);
@@ -512,9 +472,7 @@ public:
     std::set<std::string>   GetCategoriesShown() const;
     std::set<TechStatus>    GetTechStatusesShown() const;
 
-    mutable TechTreeWnd::TechSignalType         TechBrowsedSignal;
     mutable TechTreeWnd::TechClickSignalType    TechLeftClickedSignal;
-    mutable TechTreeWnd::TechClickSignalType    TechRightClickedSignal;
     mutable TechTreeWnd::TechClickSignalType    TechDoubleClickedSignal;
     mutable TechTreeWnd::TechSignalType         TechPediaDisplaySignal;
     //@}
@@ -577,11 +535,8 @@ private:
 
     void ScrolledSlot(int, int, int, int);
 
-    void TechBrowsedSlot(const std::string& tech_name);
     void TechLeftClickedSlot(const std::string& tech_name,
                              const GG::Flags<GG::ModKey>& modkeys);
-    void TechRightClickedSlot(const std::string& tech_name,
-                              const GG::Flags<GG::ModKey>& modkeys);
     void TechDoubleClickedSlot(const std::string& tech_name,
                                const GG::Flags<GG::ModKey>& modkeys);
     void TechPediaDisplaySlot(const std::string& tech_name);
@@ -660,9 +615,7 @@ public:
     void            Select(bool select);
     int             FontSize() const;
 
-    mutable TechTreeWnd::TechSignalType         TechBrowsedSignal;
     mutable TechTreeWnd::TechClickSignalType    TechLeftClickedSignal;
-    mutable TechTreeWnd::TechClickSignalType    TechRightClickedSignal;
     mutable TechTreeWnd::TechClickSignalType    TechDoubleClickedSignal;
     mutable TechTreeWnd::TechSignalType         TechPediaDisplaySignal;
 
@@ -920,8 +873,6 @@ void TechTreeWnd::LayoutPanel::TechPanel::LClick(const GG::Pt& pt, GG::Flags<GG:
 void TechTreeWnd::LayoutPanel::TechPanel::RClick(const GG::Pt& pt,
                                                  GG::Flags<GG::ModKey> mod_keys)
 {
-    TechRightClickedSignal(m_tech_name, mod_keys);
-
     GG::MenuItem menu_contents;
     if (!(m_enqueued) && !(m_status == TS_COMPLETE))
         menu_contents.next_level.push_back(GG::MenuItem(UserString("PRODUCTION_DETAIL_ADD_TO_QUEUE"),   1, false, false));
@@ -950,15 +901,11 @@ void TechTreeWnd::LayoutPanel::TechPanel::RClick(const GG::Pt& pt,
 void TechTreeWnd::LayoutPanel::TechPanel::LDoubleClick(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys)
 { TechDoubleClickedSignal(m_tech_name, mod_keys); }
 
-void TechTreeWnd::LayoutPanel::TechPanel::MouseEnter(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys) {
-    TechBrowsedSignal(m_tech_name);
-    m_browse_highlight = true;
-}
+void TechTreeWnd::LayoutPanel::TechPanel::MouseEnter(const GG::Pt& pt, GG::Flags<GG::ModKey> mod_keys)
+{ m_browse_highlight = true; }
 
-void TechTreeWnd::LayoutPanel::TechPanel::MouseLeave() {
-    TechBrowsedSignal("");
-    m_browse_highlight = false;
-}
+void TechTreeWnd::LayoutPanel::TechPanel::MouseLeave()
+{ m_browse_highlight = false; }
 
 void TechTreeWnd::LayoutPanel::TechPanel::Select(bool select)
 { m_selected = select; }
@@ -1008,7 +955,7 @@ void TechTreeWnd::LayoutPanel::TechPanel::Update() {
 
             // add icons for unlocked items
             for (const ItemSpec& item : tech->UnlockedItems()) {
-                boost::shared_ptr<GG::Texture> texture;
+                std::shared_ptr<GG::Texture> texture;
                 switch (item.type) {
                 case UIT_BUILDING:  texture = ClientUI::BuildingIcon(item.name);    break;
                 case UIT_SHIP_PART: texture = ClientUI::PartIcon(item.name);        break;
@@ -1027,7 +974,7 @@ void TechTreeWnd::LayoutPanel::TechPanel::Update() {
             std::set<MeterType> meters_affected;
             std::set<std::string> specials_affected;
             std::set<std::string> parts_whose_meters_are_affected;
-            for (boost::shared_ptr<Effect::EffectsGroup> effects_group : tech->Effects()) {
+            for (std::shared_ptr<Effect::EffectsGroup> effects_group : tech->Effects()) {
                 for (Effect::EffectBase* effect : effects_group->EffectsList()) {
                     if (const Effect::SetMeter* set_meter_effect = dynamic_cast<const Effect::SetMeter*>(effect)) {
                         meters_affected.insert(set_meter_effect->GetMeterType());
@@ -1046,7 +993,7 @@ void TechTreeWnd::LayoutPanel::TechPanel::Update() {
             }
 
             for (const std::string& part_name : parts_whose_meters_are_affected) {
-                boost::shared_ptr<GG::Texture> texture = ClientUI::PartIcon(part_name);
+                std::shared_ptr<GG::Texture> texture = ClientUI::PartIcon(part_name);
                 if (texture) {
                     GG::StaticGraphic* graphic = new GG::StaticGraphic(texture, GG::GRAPHIC_FITGRAPHIC | GG::GRAPHIC_PROPSCALE);
                     m_unlock_icons.push_back(graphic);
@@ -1055,7 +1002,7 @@ void TechTreeWnd::LayoutPanel::TechPanel::Update() {
                 }
             }
             for (MeterType meter_type : meters_affected) {
-                boost::shared_ptr<GG::Texture> texture = ClientUI::MeterIcon(meter_type);
+                std::shared_ptr<GG::Texture> texture = ClientUI::MeterIcon(meter_type);
                 if (texture) {
                     GG::StaticGraphic* graphic = new GG::StaticGraphic(texture, GG::GRAPHIC_FITGRAPHIC | GG::GRAPHIC_PROPSCALE);
                     m_unlock_icons.push_back(graphic);
@@ -1065,7 +1012,7 @@ void TechTreeWnd::LayoutPanel::TechPanel::Update() {
             }
 
             for (const std::string& special_name : specials_affected) {
-                boost::shared_ptr<GG::Texture> texture = ClientUI::SpecialIcon(special_name);
+                std::shared_ptr<GG::Texture> texture = ClientUI::SpecialIcon(special_name);
                 if (texture) {
                     GG::StaticGraphic* graphic = new GG::StaticGraphic(texture, GG::GRAPHIC_FITGRAPHIC | GG::GRAPHIC_PROPSCALE);
                     m_unlock_icons.push_back(graphic);
@@ -1160,14 +1107,14 @@ TechTreeWnd::LayoutPanel::LayoutPanel(GG::X w, GG::Y h) :
 void TechTreeWnd::LayoutPanel::ConnectKeyboardAcceleratorSignals() {
     HotkeyManager* hkm = HotkeyManager::GetManager();
 
-    hkm->Connect(this, &TechTreeWnd::LayoutPanel::TreeZoomInKeyboard,   "map.zoom_in",
-                 new AndCondition(new VisibleWindowCondition(this), new NoModalWndsOpenCondition()));
-    hkm->Connect(this, &TechTreeWnd::LayoutPanel::TreeZoomInKeyboard,   "map.zoom_in_alt",
-                 new AndCondition(new VisibleWindowCondition(this), new NoModalWndsOpenCondition()));
-    hkm->Connect(this, &TechTreeWnd::LayoutPanel::TreeZoomOutKeyboard,  "map.zoom_out",
-                 new AndCondition(new VisibleWindowCondition(this), new NoModalWndsOpenCondition()));
-    hkm->Connect(this, &TechTreeWnd::LayoutPanel::TreeZoomOutKeyboard,  "map.zoom_out_alt",
-                 new AndCondition(new VisibleWindowCondition(this), new NoModalWndsOpenCondition()));
+    hkm->Connect(boost::bind(&TechTreeWnd::LayoutPanel::TreeZoomInKeyboard, this), "map.zoom_in",
+                 AndCondition({VisibleWindowCondition(this), NoModalWndsOpenCondition}));
+    hkm->Connect(boost::bind(&TechTreeWnd::LayoutPanel::TreeZoomInKeyboard, this), "map.zoom_in_alt",
+                 AndCondition({VisibleWindowCondition(this), NoModalWndsOpenCondition}));
+    hkm->Connect(boost::bind(&TechTreeWnd::LayoutPanel::TreeZoomOutKeyboard, this), "map.zoom_out",
+                 AndCondition({VisibleWindowCondition(this), NoModalWndsOpenCondition}));
+    hkm->Connect(boost::bind(&TechTreeWnd::LayoutPanel::TreeZoomOutKeyboard, this), "map.zoom_out_alt",
+                 AndCondition({VisibleWindowCondition(this), NoModalWndsOpenCondition}));
 
     hkm->RebuildShortcuts();
 }
@@ -1436,9 +1383,7 @@ void TechTreeWnd::LayoutPanel::Layout(bool keep_position) {
         TechPanel* tech_panel = m_techs[tech_name];
         tech_panel->MoveTo(GG::Pt(node->GetX(), node->GetY()));
         m_layout_surface->AttachChild(tech_panel);
-        GG::Connect(tech_panel->TechBrowsedSignal,          &TechTreeWnd::LayoutPanel::TechBrowsedSlot,         this);
         GG::Connect(tech_panel->TechLeftClickedSignal,      &TechTreeWnd::LayoutPanel::TechLeftClickedSlot,     this);
-        GG::Connect(tech_panel->TechRightClickedSignal,     &TechTreeWnd::LayoutPanel::TechRightClickedSlot,    this);
         GG::Connect(tech_panel->TechDoubleClickedSignal,    &TechTreeWnd::LayoutPanel::TechDoubleClickedSlot,   this);
         GG::Connect(tech_panel->TechPediaDisplaySignal,     &TechTreeWnd::LayoutPanel::TechPediaDisplaySlot,    this);
 
@@ -1491,9 +1436,6 @@ void TechTreeWnd::LayoutPanel::ScrolledSlot(int, int, int, int) {
     m_scroll_position_y = m_vscroll->PosnRange().first;
 }
 
-void TechTreeWnd::LayoutPanel::TechBrowsedSlot(const std::string& tech_name)
-{ TechBrowsedSignal(tech_name); }
-
 void TechTreeWnd::LayoutPanel::TechLeftClickedSlot(const std::string& tech_name,
                                                    const GG::Flags<GG::ModKey>& modkeys)
 {
@@ -1506,10 +1448,6 @@ void TechTreeWnd::LayoutPanel::TechLeftClickedSlot(const std::string& tech_name,
     m_selected_tech_name = tech_name;
     TechLeftClickedSignal(tech_name, modkeys);
 }
-
-void TechTreeWnd::LayoutPanel::TechRightClickedSlot(const std::string& tech_name,
-                                                    const GG::Flags<GG::ModKey>& modkeys)
-{ TechRightClickedSignal(tech_name, modkeys); }
 
 void TechTreeWnd::LayoutPanel::TechDoubleClickedSlot(const std::string& tech_name,
                                                      const GG::Flags<GG::ModKey>& modkeys)
@@ -1589,9 +1527,7 @@ public:
     void    HideStatus(TechStatus status);
     //@}
 
-    mutable TechSignalType      TechBrowsedSignal;      ///< emitted when the mouse rolls over a technology
     mutable TechClickSignalType TechLeftClickedSignal;  ///< emitted when a technology is single-left-clicked
-    mutable TechClickSignalType TechRightClickedSignal; ///< emitted when a technology is single-right-clicked
     mutable TechClickSignalType TechDoubleClickedSignal;///< emitted when a technology is double-clicked
     mutable TechSignalType      TechPediaDisplaySignal; ///< emitted when requesting a pedia lookup
 
@@ -1632,8 +1568,6 @@ void TechTreeWnd::TechListBox::TechRow::Render() {
 }
 
 std::vector<GG::X> TechTreeWnd::TechListBox::TechRow::ColWidths(GG::X total_width) {
-    std::vector<GG::X> retval;
-
     GG::X graphic_width(    GetOptionsDB().Get<int>("UI.research.listbox.column-widths.graphic"));
     GG::X name_width(       GetOptionsDB().Get<int>("UI.research.listbox.column-widths.name"));
     GG::X cost_width(       GetOptionsDB().Get<int>("UI.research.listbox.column-widths.cost"));
@@ -1645,27 +1579,12 @@ std::vector<GG::X> TechTreeWnd::TechListBox::TechRow::ColWidths(GG::X total_widt
     GG::X desc_width(std::max(GetOptionsDB().Get<int>("UI.research.listbox.column-widths.description"),
                               Value(total_width - cols_width_sum)));
 
-    retval.push_back(graphic_width);
-    retval.push_back(name_width);
-    retval.push_back(cost_width);
-    retval.push_back(time_width);
-    retval.push_back(category_width);
-    retval.push_back(desc_width);
-
-    return retval;
+    return {graphic_width, name_width, cost_width, time_width, category_width, desc_width};
 }
 
 std::vector<GG::Alignment> TechTreeWnd::TechListBox::TechRow::ColAlignments() {
-    std::vector<GG::Alignment> retval;
-
-    retval.push_back(GG::ALIGN_CENTER);  // graphic
-    retval.push_back(GG::ALIGN_LEFT);  // name
-    retval.push_back(GG::ALIGN_RIGHT);  // cost
-    retval.push_back(GG::ALIGN_RIGHT);  // time
-    retval.push_back(GG::ALIGN_LEFT);  // category
-    retval.push_back(GG::ALIGN_LEFT);  // description
-
-    return retval;
+    //              graphic,         name,           cost,           time,         category,     description
+    return {GG::ALIGN_CENTER, GG::ALIGN_LEFT, GG::ALIGN_RIGHT, GG::ALIGN_RIGHT, GG::ALIGN_LEFT, GG::ALIGN_LEFT};
 }
 
 bool TechTreeWnd::TechListBox::TechRowCmp(const GG::ListBox::Row& lhs, const GG::ListBox::Row& rhs, std::size_t column) {
@@ -2051,17 +1970,13 @@ TechTreeWnd::TechTreeWnd(GG::X w, GG::Y h, bool initially_hidden /*= true*/) :
     Sound::TempUISoundDisabler sound_disabler;
 
     m_layout_panel = new LayoutPanel(w, h);
-    GG::Connect(m_layout_panel->TechBrowsedSignal,      &TechTreeWnd::TechBrowsedSlot,          this);
     GG::Connect(m_layout_panel->TechLeftClickedSignal,  &TechTreeWnd::TechLeftClickedSlot,      this);
-    GG::Connect(m_layout_panel->TechRightClickedSignal, &TechTreeWnd::TechRightClickedSlot,     this);
     GG::Connect(m_layout_panel->TechDoubleClickedSignal,&TechTreeWnd::TechDoubleClickedSlot,    this);
     GG::Connect(m_layout_panel->TechPediaDisplaySignal, &TechTreeWnd::TechPediaDisplaySlot,     this);
     AttachChild(m_layout_panel);
 
     m_tech_list = new TechListBox(w, h);
-    GG::Connect(m_tech_list->TechBrowsedSignal,         &TechTreeWnd::TechBrowsedSlot,          this);
     GG::Connect(m_tech_list->TechLeftClickedSignal,     &TechTreeWnd::TechLeftClickedSlot,      this);
-    GG::Connect(m_tech_list->TechRightClickedSignal,    &TechTreeWnd::TechRightClickedSlot,     this);
     GG::Connect(m_tech_list->TechDoubleClickedSignal,   &TechTreeWnd::TechDoubleClickedSlot,    this);
     GG::Connect(m_tech_list->TechPediaDisplaySignal,    &TechTreeWnd::TechPediaDisplaySlot,     this);
 
@@ -2083,14 +1998,35 @@ TechTreeWnd::TechTreeWnd(GG::X w, GG::Y h, bool initially_hidden /*= true*/) :
 
     // connect category button clicks to update display
     for (std::map<std::string, GG::StateButton*>::value_type& cat_button : m_tech_tree_controls->m_cat_buttons)
-    { GG::Connect(cat_button.second->CheckedSignal, SetCategoryViewFunctor(this, cat_button.first)); }
+    {
+        const std::string& category_name = cat_button.first;
+        GG::Connect(cat_button.second->CheckedSignal, [this, category_name](bool checked) {
+            if(checked)
+                this->ShowCategory(category_name);
+            else
+                this->HideCategory(category_name);
+        });
+    }
 
     // connect button for all categories to update display
-    GG::Connect(m_tech_tree_controls->m_all_cat_button->CheckedSignal, SetAllCategoryViewsFunctor(this));
+    GG::Connect(m_tech_tree_controls->m_all_cat_button->CheckedSignal, [this](bool checked) {
+        if(checked)
+            this->ShowAllCategories();
+        else
+            this->HideAllCategories();
+    });
 
     // connect status and type button clicks to update display
     for (std::map<TechStatus, GG::StateButton*>::value_type& status_button : m_tech_tree_controls->m_status_buttons)
-    { GG::Connect(status_button.second->CheckedSignal, SetTechStatusViewFunctor(this, status_button.first)); }
+    {
+        TechStatus tech_status = status_button.first;
+        GG::Connect(status_button.second->CheckedSignal, [this, tech_status](bool checked) {
+            if(checked)
+                this->ShowStatus(tech_status);
+            else
+                this->HideStatus(tech_status);
+        });
+    }
 
     // connect view type selector
     GG::Connect(m_tech_tree_controls->m_view_type_button->CheckedSignal, &TechTreeWnd::ToggleViewType, this);
@@ -2299,9 +2235,6 @@ void TechTreeWnd::TogglePedia() {
 bool TechTreeWnd::PediaVisible()
 { return m_enc_detail_panel->Visible(); }
 
-void TechTreeWnd::TechBrowsedSlot(const std::string& tech_name)
-{ TechBrowsedSignal(tech_name); }
-
 void TechTreeWnd::TechLeftClickedSlot(const std::string& tech_name,
                                   const GG::Flags<GG::ModKey>& modkeys)
 {
@@ -2312,10 +2245,6 @@ void TechTreeWnd::TechLeftClickedSlot(const std::string& tech_name,
         TechSelectedSignal(tech_name);
     }
 }
-
-void TechTreeWnd::TechRightClickedSlot(const std::string& tech_name,
-                                       const GG::Flags<GG::ModKey>& modkeys)
-{}
 
 void TechTreeWnd::TechDoubleClickedSlot(const std::string& tech_name,
                                         const GG::Flags<GG::ModKey>& modkeys)

@@ -102,6 +102,7 @@
     (Else)                                      \
     (Empire)                                    \
     (EmpireMeter)                               \
+    (EmpireMeterValue)                          \
     (EmpireShipsDestroyed)                      \
     (Endpoint)                                  \
     (EnemyOf)                                   \
@@ -428,6 +429,7 @@
     (SpawnRate)                                 \
     (Special)                                   \
     (Species)                                   \
+    (SpeciesID)                                 \
     (SpeciesOpinion)                            \
     (SpeciesPlanetsBombed)                      \
     (SpeciesColoniesOwned)                      \

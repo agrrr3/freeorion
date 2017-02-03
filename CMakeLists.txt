@@ -109,7 +109,7 @@ endif ()
 # Dependencies                         #
 ########################################
 set(MINIMUM_PYTHON_VERSION 2.7)
-set(MINIMUM_BOOST_VERSION 1.54.0)
+set(MINIMUM_BOOST_VERSION 1.56.0)
 
 find_package(Threads)
 find_package(PythonInterp ${MINIMUM_PYTHON_VERSION} REQUIRED)
@@ -232,8 +232,8 @@ set (freeorioncommon_HEADER
     universe/System.h
     universe/Tech.h
     universe/Universe.h
+    universe/Pathfinder.h
     universe/UniverseObject.h
-    universe/TemporaryPtr.h
     universe/ValueRef.h
     universe/ValueRefFwd.h
     util/AppInterface.h
@@ -295,6 +295,7 @@ set (freeorioncommon_SOURCE
     universe/System.cpp
     universe/Tech.cpp
     universe/Universe.cpp
+    universe/Pathfinder.cpp
     universe/UniverseObject.cpp
     universe/ValueRef.cpp
     util/AppInterface.cpp

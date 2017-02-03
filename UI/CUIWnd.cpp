@@ -42,7 +42,7 @@ namespace {
 // CUI_MinRestoreButton
 ////////////////////////////////////////////////
 CUI_MinRestoreButton::CUI_MinRestoreButton() :
-    GG::Button("", boost::shared_ptr<GG::Font>(), ClientUI::WndInnerBorderColor()),
+    GG::Button("", nullptr, ClientUI::WndInnerBorderColor()),
     m_mode(MIN_BUTTON)
 { GG::Connect(LeftClickedSignal, &CUI_MinRestoreButton::Toggle, this); }
 
@@ -78,7 +78,7 @@ void CUI_MinRestoreButton::Toggle() {
 // CUI_PinButton
 ////////////////////////////////////////////////
 CUI_PinButton::CUI_PinButton() :
-    GG::Button("", boost::shared_ptr<GG::Font>(), ClientUI::WndInnerBorderColor())
+    GG::Button("", nullptr, ClientUI::WndInnerBorderColor())
 {
     GG::Connect(LeftClickedSignal, &PlayCloseSound, -1);
     SetUnpressedGraphic(GG::SubTexture(ClientUI::GetTexture( ClientUI::ArtDir() / "icons" / "buttons" / "pin.png"   )));
@@ -326,7 +326,7 @@ void CUIWnd::Render() {
     GG::Pt lr = LowerRight();
     GG::BeginScissorClipping(ul, lr);
     glColor(ClientUI::TextColor());
-    boost::shared_ptr<GG::Font> font = ClientUI::GetTitleFont();
+    std::shared_ptr<GG::Font> font = ClientUI::GetTitleFont();
     font->RenderText(GG::Pt(ul.x + BORDER_LEFT, ul.y + TITLE_OFFSET), Name());
     GG::EndScissorClipping();
 }
@@ -888,7 +888,7 @@ CUIEditWnd::CUIEditWnd(GG::X w, const std::string& prompt_text, const std::strin
 void CUIEditWnd::ModalInit()
 { GG::GUI::GetGUI()->SetFocusWnd(m_edit); }
 
-void CUIEditWnd::KeyPress(GG::Key key, boost::uint32_t key_code_point, GG::Flags<GG::ModKey> mod_keys) {
+void CUIEditWnd::KeyPress(GG::Key key, std::uint32_t key_code_point, GG::Flags<GG::ModKey> mod_keys) {
     switch (key) {
     case GG::GGK_RETURN: if (!m_ok_bn->Disabled()) OkClicked(); break;
     case GG::GGK_ESCAPE: CloseClicked(); break;

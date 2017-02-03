@@ -38,13 +38,13 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/xpressive/xpressive.hpp>
 #include <boost/xpressive/regex_actions.hpp>
-#include <boost/assign/list_of.hpp>
-#include <boost/unordered_set.hpp>
 
-#include <cmath>
 #include <cctype>
+#include <cmath>
+#include <iterator>
 #include <numeric>
 #include <sstream>
+#include <unordered_set>
 
 #define DEBUG_DETERMINELINES 0
 
@@ -62,11 +62,11 @@ namespace GG { namespace detail {
 using namespace GG;
 
 namespace {
-    const boost::uint32_t WIDE_SPACE = ' ';
-    const boost::uint32_t WIDE_NEWLINE = '\n';
-    const boost::uint32_t WIDE_CR = '\r';
-    const boost::uint32_t WIDE_FF = '\f';
-    const boost::uint32_t WIDE_TAB = '\t';
+    const std::uint32_t WIDE_SPACE = ' ';
+    const std::uint32_t WIDE_NEWLINE = '\n';
+    const std::uint32_t WIDE_CR = '\r';
+    const std::uint32_t WIDE_FF = '\f';
+    const std::uint32_t WIDE_TAB = '\t';
 
     const std::string ITALIC_TAG = "i";
     const std::string SHADOW_TAG = "s";
@@ -245,18 +245,18 @@ namespace {
     const double ITALICS_SLANT_ANGLE = 12; // degrees
     const double ITALICS_FACTOR = 1.0 / tan((90 - ITALICS_SLANT_ANGLE) * 3.1415926 / 180.0); // factor used to shear glyphs ITALICS_SLANT_ANGLE degrees CW from straight up
 
-    const std::vector<std::pair<boost::uint32_t, boost::uint32_t> > PRINTABLE_ASCII_ALPHA_RANGES = boost::assign::list_of
-        (std::pair<boost::uint32_t, boost::uint32_t>(0x41, 0x5B))
-        (std::pair<boost::uint32_t, boost::uint32_t>(0x61, 0x7B));
+    const std::vector<std::pair<std::uint32_t, std::uint32_t>> PRINTABLE_ASCII_ALPHA_RANGES{
+        {0x41, 0x5B},
+        {0x61, 0x7B}};
 
-    const std::vector<std::pair<boost::uint32_t, boost::uint32_t> > PRINTABLE_ASCII_NONALPHA_RANGES = boost::assign::list_of
-        (std::pair<boost::uint32_t, boost::uint32_t>(0x09, 0x0D))
-        (std::pair<boost::uint32_t, boost::uint32_t>(0x20, 0x21))
-        (std::pair<boost::uint32_t, boost::uint32_t>(0x30, 0x3A))
-        (std::pair<boost::uint32_t, boost::uint32_t>(0x21, 0x30))
-        (std::pair<boost::uint32_t, boost::uint32_t>(0x3A, 0x41))
-        (std::pair<boost::uint32_t, boost::uint32_t>(0x5B, 0x61))
-        (std::pair<boost::uint32_t, boost::uint32_t>(0x7B, 0x7F));
+    const std::vector<std::pair<std::uint32_t, std::uint32_t>> PRINTABLE_ASCII_NONALPHA_RANGES{
+        {0x09, 0x0D},
+        {0x20, 0x21},
+        {0x30, 0x3A},
+        {0x21, 0x30},
+        {0x3A, 0x41},
+        {0x5B, 0x61},
+        {0x7B, 0x7F}};
 }
 
 ///////////////////////////////////////
@@ -368,10 +368,10 @@ void Font::Substring::Bind(const std::string& str_)
 }
 
 std::string::const_iterator Font::Substring::begin() const
-{ return boost::next(str->begin(), first); }
+{ return std::next(str->begin(), first); }
 
 std::string::const_iterator Font::Substring::end() const
-{ return boost::next(str->begin(), second); }
+{ return std::next(str->begin(), second); }
 
 bool Font::Substring::empty() const
 { return first == second; }
@@ -493,7 +493,7 @@ namespace {
         regular expression.*/
     class CompiledRegex {
     public:
-        CompiledRegex(const boost::unordered_set<std::string>& known_tags, bool strip_unpaired_tags) :
+        CompiledRegex(const std::unordered_set<std::string>& known_tags, bool strip_unpaired_tags) :
             m_text(nullptr),
             m_known_tags(&known_tags),
             m_ignore_tags(false),
@@ -581,7 +581,7 @@ namespace {
         }
 
         const std::string* m_text;
-        const boost::unordered_set<std::string>* m_known_tags;
+        const std::unordered_set<std::string>* m_known_tags;
         bool m_ignore_tags;
 
         // m_tag_stack is used to track XML opening/closing tags.
@@ -629,7 +629,7 @@ namespace {
 
     private:
         // set of tags known to the handler
-        boost::unordered_set<std::string> m_known_tags;
+        std::unordered_set<std::string> m_known_tags;
 
         // Compiled regular expression including tag stack
         CompiledRegex m_regex_w_tags;
@@ -763,7 +763,7 @@ public:
     { return m_text; }
 
     /** Return the constructed TextElements.*/
-    const std::vector<boost::shared_ptr<TextElement> >& Elements()
+    const std::vector<std::shared_ptr<TextElement>>& Elements()
     {
         if (!m_are_widths_calculated)
             m_font.FillTemplatedText(m_text, m_text_elements, m_text_elements.begin());
@@ -780,13 +780,13 @@ public:
         m_are_widths_calculated = false;
 
         // Create the opening part of an open tag, like this: "<tag"
-        boost::shared_ptr<Font::FormattingTag> element(new Font::FormattingTag(false));
+        auto element = std::make_shared<Font::FormattingTag>(false);
         size_t tag_begin = m_text.size();
         size_t tag_name_begin = m_text.append("<").size();
         size_t tag_name_end = m_text.append(tag).size();
         element->tag_name = Substring(m_text,
-                                      boost::next(m_text.begin(), tag_name_begin),
-                                      boost::next(m_text.begin(), tag_name_end));
+                                      std::next(m_text.begin(), tag_name_begin),
+                                      std::next(m_text.begin(), tag_name_end));
 
         // If there are params add them, like this: "<tag param1 param2"
         if (params) {
@@ -796,16 +796,16 @@ public:
                 size_t param_end = m_text.append(param).size();
 
                 element->params.push_back(Substring(m_text,
-                                                    boost::next(m_text.begin(), param_begin),
-                                                    boost::next(m_text.begin(), param_end)));
+                                                    std::next(m_text.begin(), param_begin),
+                                                    std::next(m_text.begin(), param_end)));
             }
         }
 
         // Create the close part of an open tag to complete the tag, like this:"<tag param1 param2>"
         size_t tag_end = m_text.append(">").size();
         element->text = Substring(m_text,
-                                  boost::next(m_text.begin(), tag_begin),
-                                  boost::next(m_text.begin(), tag_end));
+                                  std::next(m_text.begin(), tag_begin),
+                                  std::next(m_text.begin(), tag_end));
 
         m_text_elements.push_back(element);
     }
@@ -819,18 +819,18 @@ public:
         m_are_widths_calculated = false;
 
         // Create a close tag that looks like this: "</tag>"
-        boost::shared_ptr<Font::FormattingTag> element(new Font::FormattingTag(true));
+        auto element = std::make_shared<Font::FormattingTag>(true);
         size_t tag_begin = m_text.size();
         size_t tag_name_begin = m_text.append("</").size();
         size_t tag_name_end = m_text.append(tag).size();
         size_t tag_end = m_text.append(">").size();
         element->text = Substring(m_text,
-                                  boost::next(m_text.begin(), tag_begin),
-                                  boost::next(m_text.begin(), tag_end));
+                                  std::next(m_text.begin(), tag_begin),
+                                  std::next(m_text.begin(), tag_end));
 
         element->tag_name = Substring(m_text,
-                                      boost::next(m_text.begin(), tag_name_begin),
-                                      boost::next(m_text.begin(), tag_name_end));
+                                      std::next(m_text.begin(), tag_name_begin),
+                                      std::next(m_text.begin(), tag_name_end));
         m_text_elements.push_back(element);
     }
 
@@ -839,12 +839,12 @@ public:
     {
         m_are_widths_calculated = false;
 
-        boost::shared_ptr<Font::TextElement> element(new Font::TextElement(false, false));
+        auto element = std::make_shared<Font::TextElement>(false, false);
         size_t begin = m_text.size();
         size_t end = m_text.append(text).size();
         element->text = Substring(m_text,
-                                  boost::next(m_text.begin(), begin),
-                                  boost::next(m_text.begin(), end));
+                                  std::next(m_text.begin(), begin),
+                                  std::next(m_text.begin(), end));
         m_text_elements.push_back(element);
     }
 
@@ -853,12 +853,12 @@ public:
     {
         m_are_widths_calculated = false;
 
-        boost::shared_ptr<Font::TextElement> element(new Font::TextElement(true, false));
+        auto element = std::make_shared<Font::TextElement>(true, false);
         size_t begin = m_text.size();
         size_t end = m_text.append(whitespace).size();
         element->text = Substring(m_text,
-                                  boost::next(m_text.begin(), begin),
-                                  boost::next(m_text.begin(), end));
+                                  std::next(m_text.begin(), begin),
+                                  std::next(m_text.begin(), end));
         m_text_elements.push_back(element);
     }
 
@@ -867,18 +867,16 @@ public:
     {
         m_are_widths_calculated = false;
 
-        boost::shared_ptr<Font::TextElement> element(new Font::TextElement(false, true));
-        m_text_elements.push_back(element);
+        m_text_elements.push_back(std::make_shared<Font::TextElement>(false, true));
     }
 
     /** Add open color tag.*/
     void AddOpenTag(const Clr& color)
     {
-        std::vector<std::string> params;
-        params.push_back(boost::lexical_cast<std::string>(static_cast<int>(color.r)));
-        params.push_back(boost::lexical_cast<std::string>(static_cast<int>(color.g)));
-        params.push_back(boost::lexical_cast<std::string>(static_cast<int>(color.b)));
-        params.push_back(boost::lexical_cast<std::string>(static_cast<int>(color.a)));
+        std::vector<std::string> params = { boost::lexical_cast<std::string>(static_cast<int>(color.r)),
+                                            boost::lexical_cast<std::string>(static_cast<int>(color.g)),
+                                            boost::lexical_cast<std::string>(static_cast<int>(color.b)),
+                                            boost::lexical_cast<std::string>(static_cast<int>(color.a)) };
 
         AddOpenTag("rgba", &params);
     }
@@ -886,7 +884,7 @@ public:
 private:
     const Font& m_font;
     std::string m_text;
-    std::vector<boost::shared_ptr<TextElement> > m_text_elements;
+    std::vector<std::shared_ptr<TextElement>> m_text_elements;
     bool m_are_widths_calculated;
 };
 
@@ -902,7 +900,7 @@ Font::TextAndElementsAssembler::~TextAndElementsAssembler()
 const std::string& Font::TextAndElementsAssembler::Text()
 { return pimpl->Text(); }
 
-const std::vector<boost::shared_ptr<Font::TextElement> >& Font::TextAndElementsAssembler::Elements()
+const std::vector<std::shared_ptr<Font::TextElement>>& Font::TextAndElementsAssembler::Elements()
 { return pimpl->Elements(); }
 
 Font::TextAndElementsAssembler& Font::TextAndElementsAssembler::AddOpenTag(const std::string& tag)
@@ -1035,15 +1033,15 @@ Font::LineData::CharData::CharData() :
 {}
 
 Font::LineData::CharData::CharData(X extent_, StrSize str_index, StrSize str_size, CPSize cp_index,
-                                   const std::vector<boost::shared_ptr<TextElement> >& tags_) :
+                                   const std::vector<std::shared_ptr<TextElement>>& tags_) :
     extent(extent_),
     string_index(str_index),
     string_size(str_size),
     code_point_index(cp_index),
     tags()
 {
-    for (boost::shared_ptr<TextElement> tag : tags_) {
-        tags.push_back(boost::dynamic_pointer_cast<FormattingTag>(tag));
+    for (std::shared_ptr<TextElement> tag : tags_) {
+        tags.push_back(std::dynamic_pointer_cast<FormattingTag>(tag));
     }
 }
 
@@ -1058,7 +1056,7 @@ Font::Glyph::Glyph() :
     width(0)
 {}
 
-Font::Glyph::Glyph(const boost::shared_ptr<Texture>& texture, const Pt& ul, const Pt& lr, Y y_ofs, X lb, X adv) :
+Font::Glyph::Glyph(const std::shared_ptr<Texture>& texture, const Pt& ul, const Pt& lr, Y y_ofs, X lb, X adv) :
     sub_texture(texture, ul.x, ul.y, lr.x, lr.y),
     y_offset(y_ofs),
     left_bearing(lb),
@@ -1165,7 +1163,7 @@ X Font::RenderText(const Pt& pt_, const std::string& text) const
     RenderState render_state;
 
     for (std::string::const_iterator text_it = text.begin(); text_it != text.end();) {
-        boost::uint32_t c = utf8::next (text_it, text.end());
+        std::uint32_t c = utf8::next(text_it, text.end());
         GlyphMap::const_iterator it = m_glyphs.find(c);
         if (it == m_glyphs.end()) {
             pt.x += m_space_width; // move forward by the extent of the character when a whitespace or unprintable glyph is requested
@@ -1251,10 +1249,10 @@ void Font::PreRenderText(const Pt& ul, const Pt& lr, const std::string& text, Fl
         std::string::const_iterator string_end_it = text.end();
         for (CPSize j = start; j < end; ++j) {
             const LineData::CharData& char_data = line.char_data[Value(j)];
-            for (boost::shared_ptr<FormattingTag> tag : char_data.tags) {
+            for (std::shared_ptr<FormattingTag> tag : char_data.tags) {
                 HandleTag(tag, orig_color, render_state);
             }
-            boost::uint32_t c = utf8::peek_next(text.begin() + Value(char_data.string_index), string_end_it);
+            std::uint32_t c = utf8::peek_next(text.begin() + Value(char_data.string_index), string_end_it);
             assert((text[Value(char_data.string_index)] == '\n') == (c == WIDE_NEWLINE));
             if (c == WIDE_NEWLINE)
                 continue;
@@ -1307,7 +1305,7 @@ void Font::ProcessTagsBefore(const std::vector<LineData>& line_data, RenderState
         for (CPSize j = CP0;
              j < ((i == begin_line) ? begin_char : CPSize(line.char_data.size()));
              ++j) {
-            for (boost::shared_ptr<Font::FormattingTag> tag : line.char_data[Value(j)].tags) {
+            for (std::shared_ptr<Font::FormattingTag> tag : line.char_data[Value(j)].tags) {
                 HandleTag(tag, orig_color, render_state);
             }
         }
@@ -1372,17 +1370,17 @@ void Font::ClearKnownTags()
     RegisterDefaultTags();
 }
 
-void Font::ThrowBadGlyph(const std::string& format_str, boost::uint32_t c)
+void Font::ThrowBadGlyph(const std::string& format_str, std::uint32_t c)
 {
     boost::format format(isprint(c) ? "%c" : "U+%x");
     throw BadGlyph(boost::io::str(boost::format(format_str) % boost::io::str(format % c)));
 }
 
 namespace DebugOutput {
-    void PrintParseResults(const std::vector<boost::shared_ptr<Font::TextElement> >& text_elements) {
+    void PrintParseResults(const std::vector<std::shared_ptr<Font::TextElement>>& text_elements) {
         std::cout << "results of parse:\n";
-        for (boost::shared_ptr<Font::TextElement> elem : text_elements) {
-            if (boost::shared_ptr<Font::FormattingTag> tag_elem = boost::dynamic_pointer_cast<Font::FormattingTag>(elem)) {
+        for (std::shared_ptr<Font::TextElement> elem : text_elements) {
+            if (std::shared_ptr<Font::FormattingTag> tag_elem = std::dynamic_pointer_cast<Font::FormattingTag>(elem)) {
                 std::cout << "FormattingTag\n    text=\"" << tag_elem->text << "\" (@ "
                           << static_cast<const void*>(&*tag_elem->text.begin()) << ")\n    widths=";
                 for (const X& width : tag_elem->widths) {
@@ -1436,7 +1434,7 @@ namespace DebugOutput {
             }
             std::cout << "\"" << std::endl;
             for (std::size_t j = 0; j < line_data[i].char_data.size(); ++j) {
-                for (boost::shared_ptr<Font::FormattingTag> tag_elem : line_data[i].char_data[j].tags) {
+                for (std::shared_ptr<Font::FormattingTag> tag_elem : line_data[i].char_data[j].tags) {
                     if (tag_elem) {
                         std::cout << "FormattingTag @" << j << "\n    text=\"" << tag_elem->text << "\"\n    widths=";
                         for (const X& width : tag_elem->widths) {
@@ -1457,10 +1455,10 @@ namespace DebugOutput {
     }
 }
 
-std::vector<boost::shared_ptr<Font::TextElement> > Font::ExpensiveParseFromTextToTextElements(const std::string& text,
+std::vector<std::shared_ptr<Font::TextElement>> Font::ExpensiveParseFromTextToTextElements(const std::string& text,
                                                                                               const Flags<TextFormat>& format) const
 {
-    std::vector<boost::shared_ptr<TextElement> > text_elements;
+    std::vector<std::shared_ptr<TextElement>> text_elements;
 
     using namespace boost::xpressive;
 
@@ -1505,7 +1503,7 @@ std::vector<boost::shared_ptr<Font::TextElement> > Font::ExpensiveParseFromTextT
 
             // Open XML tag.
             if ((*it)[open_bracket_tag].matched) {
-                boost::shared_ptr<Font::FormattingTag> element(new Font::FormattingTag(false));
+                auto element = std::make_shared<Font::FormattingTag>(false);
                 element->text = Substring(text, (*it)[0]);
 
                 // Check open tags for submatches which are parameters.  For example a Color tag
@@ -1525,29 +1523,28 @@ std::vector<boost::shared_ptr<Font::TextElement> > Font::ExpensiveParseFromTextT
 
             // Close XML tag
             } else if ((*it)[close_bracket_tag].matched) {
-                boost::shared_ptr<Font::FormattingTag> element(new Font::FormattingTag(true));
+                auto element = std::make_shared<Font::FormattingTag>(true);
                 element->text = Substring(text, (*it)[0]);
                 element->tag_name = Substring(text, (*it)[tag_name_tag]);
                 text_elements.push_back(element);
 
             // Whitespace element
             } else if ((*it)[whitespace_tag].matched) {
-                boost::shared_ptr<Font::TextElement> element(new Font::TextElement(true, false));
+                auto element = std::make_shared<Font::TextElement>(true, false);
                 element->text = Substring(text, (*it)[whitespace_tag]);
                 text_elements.push_back(element);
 
                 // If the last character of a whitespace element is a line ending then create a
                 // newline TextElement.
-                char last_char = *boost::prior(element->text.end());
+                char last_char = *std::prev(element->text.end());
                 if (last_char == '\n' || last_char == '\f' || last_char == '\r') {
-                    boost::shared_ptr<Font::TextElement> element(new Font::TextElement(false, true));
-                    text_elements.push_back(element);
+                    text_elements.push_back(std::make_shared<Font::TextElement>(false, true));
                 }
             }
 
         // Basic text element.
         } else {
-            boost::shared_ptr<Font::TextElement> element(new Font::TextElement(false, false));
+            auto element = std::make_shared<Font::TextElement>(false, false);
             element->text = combined_text;
             text_elements.push_back(element);
         }
@@ -1568,13 +1565,13 @@ std::vector<boost::shared_ptr<Font::TextElement> > Font::ExpensiveParseFromTextT
 
 void Font::FillTemplatedText(
     const std::string& text,
-    std::vector<boost::shared_ptr<Font::TextElement> >& text_elements,
-    std::vector<boost::shared_ptr<Font::TextElement> >::iterator start) const
+    std::vector<std::shared_ptr<Font::TextElement>>& text_elements,
+    std::vector<std::shared_ptr<Font::TextElement>>::iterator start) const
 {
     // For each TextElement in text_elements starting from start.
-    std::vector<boost::shared_ptr<Font::TextElement> >::iterator& te_it = start;
+    std::vector<std::shared_ptr<Font::TextElement>>::iterator& te_it = start;
     for (; te_it != text_elements.end(); ++te_it) {
-        boost::shared_ptr<TextElement> elem = (*te_it);
+        std::shared_ptr<TextElement> elem = (*te_it);
 
         // For each character in the TextElement.
         std::string::const_iterator it = elem->text.begin();
@@ -1583,7 +1580,7 @@ void Font::FillTemplatedText(
 
             // Find and set the width of the character glyph.
             elem->widths.push_back(X0);
-            boost::uint32_t c = utf8::next(it, end_it);
+            std::uint32_t c = utf8::next(it, end_it);
             if (c != WIDE_NEWLINE) {
                 GlyphMap::const_iterator it = m_glyphs.find(c);
                 // use a space when an unrendered glyph is requested (the
@@ -1596,7 +1593,7 @@ void Font::FillTemplatedText(
 
 void Font::ChangeTemplatedText(
     std::string& text,
-    std::vector<boost::shared_ptr<Font::TextElement> >& text_elements,
+    std::vector<std::shared_ptr<Font::TextElement>>& text_elements,
     const std::string& new_text,
     size_t targ_offset) const
 {
@@ -1610,7 +1607,7 @@ void Font::ChangeTemplatedText(
 
     // Find the target text element.
     size_t curr_offset = 0;
-    std::vector<boost::shared_ptr<Font::TextElement> >::iterator te_it = text_elements.begin();
+    std::vector<std::shared_ptr<Font::TextElement>>::iterator te_it = text_elements.begin();
     while (te_it != text_elements.end()) {
         if ((*te_it)->Type() == TextElement::TEXT) {
             // Change the target text element
@@ -1623,8 +1620,8 @@ void Font::ChangeTemplatedText(
 
                 change_of_len = new_text.size() - sub_len;
                 (*te_it)->text = Substring(text,
-                                           boost::next(text.begin(), ii_sub_begin),
-                                           boost::next(text.begin(), ii_sub_begin + new_text.size()));
+                                           std::next(text.begin(), ii_sub_begin),
+                                           std::next(text.begin(), ii_sub_begin + new_text.size()));
                 break;
             }
             ++curr_offset;
@@ -1635,7 +1632,7 @@ void Font::ChangeTemplatedText(
     if (te_it == text_elements.end())
         return;
 
-    std::vector<boost::shared_ptr<Font::TextElement> >::iterator start_of_reflow = te_it;
+    std::vector<std::shared_ptr<Font::TextElement>>::iterator start_of_reflow = te_it;
 
     if (change_of_len != 0) {
         ++te_it;
@@ -1645,8 +1642,8 @@ void Font::ChangeTemplatedText(
             size_t ii_sub_begin = (*te_it)->text.begin() - text.begin();
             size_t ii_sub_end = (*te_it)->text.end() - text.begin();
             (*te_it)->text = Substring(text,
-                                       boost::next(text.begin(), ii_sub_begin + change_of_len),
-                                       boost::next(text.begin(), ii_sub_end + change_of_len));
+                                       std::next(text.begin(), ii_sub_begin + change_of_len),
+                                       std::next(text.begin(), ii_sub_end + change_of_len));
 
             ++te_it;
         }
@@ -1656,7 +1653,7 @@ void Font::ChangeTemplatedText(
 }
 
 std::vector<Font::LineData> Font::DetermineLines(const std::string& text, Flags<TextFormat>& format, X box_width,
-                                                 const std::vector<boost::shared_ptr<TextElement> >& text_elements) const
+                                                 const std::vector<std::shared_ptr<TextElement>>& text_elements) const
 {
     ValidateFormat(format);
 
@@ -1684,8 +1681,8 @@ std::vector<Font::LineData> Font::DetermineLines(const std::string& text, Flags<
     StrSize original_string_offset(0);
     // the index of the first code point of the current TextElement
     CPSize code_point_offset(0);
-    std::vector<boost::shared_ptr<TextElement> > pending_formatting_tags;
-    for (const boost::shared_ptr<TextElement>& elem : text_elements) {
+    std::vector<std::shared_ptr<TextElement>> pending_formatting_tags;
+    for (const std::shared_ptr<TextElement>& elem : text_elements) {
         // if a newline is explicitly requested, start a new one
         if (elem->Type() == TextElement::NEWLINE) {
             line_data.push_back(LineData());
@@ -1699,7 +1696,7 @@ std::vector<Font::LineData> Font::DetermineLines(const std::string& text, Flags<
             std::string::const_iterator end_it = elem->text.end();
             while (it != end_it) {
                 StrSize char_index(std::distance(elem->text.begin(), it));
-                boost::uint32_t c = utf8::next(it, end_it);
+                std::uint32_t c = utf8::next(it, end_it);
                 StrSize char_size = std::distance(elem->text.begin(), it) - char_index;
                 if (c != WIDE_CR && c != WIDE_FF) {
                     X advance_position = x + m_space_width;
@@ -1821,9 +1818,9 @@ std::vector<Font::LineData> Font::DetermineLines(const std::string& text, Flags<
                 }
             }
         } else if (elem->Type() == TextElement::OPEN_TAG) {
-            assert(boost::dynamic_pointer_cast<FormattingTag>(elem));
-            boost::shared_ptr<FormattingTag> elem_as_tag =
-                boost::static_pointer_cast<FormattingTag>(elem);
+            assert(std::dynamic_pointer_cast<FormattingTag>(elem));
+            std::shared_ptr<FormattingTag> elem_as_tag =
+                std::static_pointer_cast<FormattingTag>(elem);
             if (elem_as_tag->tag_name == ALIGN_LEFT_TAG)
                 line_data.back().justification = ALIGN_LEFT;
             else if (elem_as_tag->tag_name == ALIGN_CENTER_TAG)
@@ -1835,9 +1832,9 @@ std::vector<Font::LineData> Font::DetermineLines(const std::string& text, Flags<
             last_line_of_curr_just = false;
             code_point_offset += elem->CodePointSize();
         } else if (elem->Type() == TextElement::CLOSE_TAG) {
-            assert(boost::dynamic_pointer_cast<FormattingTag>(elem));
-            boost::shared_ptr<FormattingTag> elem_as_tag =
-                boost::static_pointer_cast<FormattingTag>(elem);
+            assert(std::dynamic_pointer_cast<FormattingTag>(elem));
+            std::shared_ptr<FormattingTag> elem_as_tag =
+                std::static_pointer_cast<FormattingTag>(elem);
             if ((elem_as_tag->tag_name == ALIGN_LEFT_TAG && line_data.back().justification == ALIGN_LEFT) ||
                 (elem_as_tag->tag_name == ALIGN_CENTER_TAG && line_data.back().justification == ALIGN_CENTER) ||
                 (elem_as_tag->tag_name == ALIGN_RIGHT_TAG && line_data.back().justification == ALIGN_RIGHT))
@@ -1908,7 +1905,7 @@ void Font::Init(FT_Face& face)
     m_shadow_offset = 1.0;
 
     // we always need these whitespace, number, and punctuation characters
-    std::vector<std::pair<boost::uint32_t, boost::uint32_t> > range_vec(
+    std::vector<std::pair<std::uint32_t, std::uint32_t>> range_vec(
         PRINTABLE_ASCII_NONALPHA_RANGES.begin(),
         PRINTABLE_ASCII_NONALPHA_RANGES.end());
 
@@ -1919,7 +1916,7 @@ void Font::Init(FT_Face& face)
                          PRINTABLE_ASCII_ALPHA_RANGES.begin(),
                          PRINTABLE_ASCII_ALPHA_RANGES.end());
     } else {
-        typedef std::pair<boost::uint32_t, boost::uint32_t> Pair;
+        typedef std::pair<std::uint32_t, std::uint32_t> Pair;
         for (std::size_t i = 0; i < m_charsets.size(); ++i) {
             range_vec.push_back(Pair(m_charsets[i].m_first_char, m_charsets[i].m_last_char));
         }
@@ -1930,25 +1927,25 @@ void Font::Init(FT_Face& face)
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &GL_TEX_MAX_SIZE);
     const std::size_t TEX_MAX_SIZE = GL_TEX_MAX_SIZE;
 
-    std::map<boost::uint32_t, TempGlyphData> temp_glyph_data;
+    std::map<std::uint32_t, TempGlyphData> temp_glyph_data;
 
     // Start with width and height of 16,
     // increase them as needed.
     // We will lay out the glyphs on the texture side by side
     // until the width would reach TEX_MAX_SIZE, then go to the next row.
     // QUESTION: Would a more square-like shape be better for the texture?
-    Buffer2d<boost::uint16_t> buffer(X(16), Y(16), 0);
+    Buffer2d<std::uint16_t> buffer(X(16), Y(16), 0);
 
     X x = X0;
     Y y = Y0;
     X max_x = X0;
     Y max_y = Y0;
-    for (const std::pair<boost::uint32_t, boost::uint32_t>& range : range_vec) {
-        boost::uint32_t low = range.first;
-        boost::uint32_t high = range.second;
+    for (const std::pair<std::uint32_t, std::uint32_t>& range : range_vec) {
+        std::uint32_t low = range.first;
+        std::uint32_t high = range.second;
 
         // copy glyph images
-        for (boost::uint32_t c = low; c < high; ++c) {
+        for (std::uint32_t c = low; c < high; ++c) {
             if (temp_glyph_data.find(c) == temp_glyph_data.end() && GenerateGlyph(face, c)) {
                 const FT_Bitmap& glyph_bitmap = face->glyph->bitmap;
                 if ((glyph_bitmap.width > TEX_MAX_SIZE) | (glyph_bitmap.rows > TEX_MAX_SIZE)) {
@@ -1968,13 +1965,13 @@ void Font::Init(FT_Face& face)
                     max_y = y + Y(glyph_bitmap.rows + 1); //Leave a one pixel gap between glyphs
                 }
 
-                boost::uint8_t*  src_start = glyph_bitmap.buffer;
+                std::uint8_t*  src_start = glyph_bitmap.buffer;
                 // Resize buffer to fit new data
                 buffer.at(x + X(glyph_bitmap.width), y + Y(glyph_bitmap.rows)) = 0;
 
                 for (unsigned int row = 0; row < glyph_bitmap.rows; ++row) {
-                    boost::uint8_t*  src = src_start + row * glyph_bitmap.pitch;
-                    boost::uint16_t* dst = &buffer.get(x, y + Y(row));
+                    std::uint8_t*  src = src_start + row * glyph_bitmap.pitch;
+                    std::uint16_t* dst = &buffer.get(x, y + Y(row));
                     // Rows are always contiguous, so we can copy along a row using simple incrementation
                     for (unsigned int col = 0; col < glyph_bitmap.width; ++col) {
 #ifdef __BIG_ENDIAN__
@@ -2006,7 +2003,7 @@ void Font::Init(FT_Face& face)
                     (unsigned char*)buffer.Buffer(), GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, 2);
 
     // create Glyph objects from temp glyph data
-    for (const std::map<boost::uint32_t, TempGlyphData>::value_type& glyph_data : temp_glyph_data)
+    for (const std::map<std::uint32_t, TempGlyphData>::value_type& glyph_data : temp_glyph_data)
         m_glyphs[glyph_data.first] = Glyph(m_texture, glyph_data.second.ul, glyph_data.second.lr, glyph_data.second.y_offset, glyph_data.second.left_b, glyph_data.second.adv);
 
     // record the width of the space character
@@ -2015,7 +2012,7 @@ void Font::Init(FT_Face& face)
     m_space_width = glyph_it->second.advance;
 }
 
-bool Font::GenerateGlyph(FT_Face face, boost::uint32_t ch)
+bool Font::GenerateGlyph(FT_Face face, std::uint32_t ch)
 {
     bool retval = true;
 
@@ -2141,7 +2138,7 @@ X Font::StoreGlyph(const Pt& pt, const Glyph& glyph, const Font::RenderState* re
     return glyph.advance;
 }
 
-void Font::HandleTag(const boost::shared_ptr<FormattingTag>& tag, double* orig_color,
+void Font::HandleTag(const std::shared_ptr<FormattingTag>& tag, double* orig_color,
                      RenderState& render_state) const
 {
     if (tag->tag_name == ITALIC_TAG) {
@@ -2232,7 +2229,7 @@ void Font::HandleTag(const boost::shared_ptr<FormattingTag>& tag, double* orig_c
 bool Font::IsDefaultFont()
 { return m_font_filename == StyleFactory::DefaultFontName(); }
 
-boost::shared_ptr<Font> Font::GetDefaultFont(unsigned int pts)
+std::shared_ptr<Font> Font::GetDefaultFont(unsigned int pts)
 { return GG::GUI::GetGUI()->GetStyleFactory()->DefaultFont(pts); }
 
 
@@ -2250,7 +2247,7 @@ bool FontManager::FontKey::operator<(const FontKey& rhs) const
 
 // FontManager
 // static(s)
-const boost::shared_ptr<Font> FontManager::EMPTY_FONT(new Font("", 0));
+const std::shared_ptr<Font> FontManager::EMPTY_FONT{std::make_shared<Font>("", 0)};
 
 FontManager::FontManager()
 {}
@@ -2258,15 +2255,15 @@ FontManager::FontManager()
 bool FontManager::HasFont(const std::string& font_filename, unsigned int pts) const
 { return m_rendered_fonts.find(FontKey(font_filename, pts)) != m_rendered_fonts.end(); }
 
-boost::shared_ptr<Font> FontManager::GetFont(const std::string& font_filename, unsigned int pts)
+std::shared_ptr<Font> FontManager::GetFont(const std::string& font_filename, unsigned int pts)
 {
     std::vector<UnicodeCharset> v;
     std::vector<UnicodeCharset>::iterator it = v.end();
     return GetFont(font_filename, pts, it, it);
 }
 
-boost::shared_ptr<Font> FontManager::GetFont(const std::string& font_filename, unsigned int pts,
-                                             const std::vector<unsigned char>& file_contents)
+std::shared_ptr<Font> FontManager::GetFont(const std::string& font_filename, unsigned int pts,
+                                           const std::vector<unsigned char>& file_contents)
 {
     std::vector<UnicodeCharset> v;
     std::vector<UnicodeCharset>::iterator it = v.end();
@@ -2276,7 +2273,7 @@ boost::shared_ptr<Font> FontManager::GetFont(const std::string& font_filename, u
 void FontManager::FreeFont(const std::string& font_filename, unsigned int pts)
 {
     FontKey key(font_filename, pts);
-    std::map<FontKey, boost::shared_ptr<Font> >::iterator it = m_rendered_fonts.find(key);
+    std::map<FontKey, std::shared_ptr<Font>>::iterator it = m_rendered_fonts.find(key);
     if (it != m_rendered_fonts.end())
         m_rendered_fonts.erase(it);
 }

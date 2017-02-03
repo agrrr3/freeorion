@@ -19,13 +19,12 @@
 #include <GG/utf8/checked.h>
 #include <GG/dialogs/ThreeButtonDlg.h>
 
-#include <boost/algorithm/string.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/cast.hpp>
 #include <boost/format.hpp>
-#include <boost/shared_ptr.hpp>
 
+#include <memory>
 #include <string>
 
 namespace fs = boost::filesystem;
@@ -98,7 +97,7 @@ namespace {
         // Calculate the extent manually to ensure the control stretches to full
         // width when possible.  Otherwise it would always word break.
         GG::Flags<GG::TextFormat> fmt = GG::FORMAT_NONE;
-        std::vector<boost::shared_ptr<GG::Font::TextElement> > text_elements =
+        std::vector<std::shared_ptr<GG::Font::TextElement>> text_elements =
             ClientUI::GetFont()->ExpensiveParseFromTextToTextElements(string, fmt);
         std::vector<GG::Font::LineData> lines = ClientUI::GetFont()->DetermineLines(string, fmt, width, text_elements);
         GG::Pt extent = ClientUI::GetFont()->TextExtent(lines);
@@ -122,7 +121,7 @@ namespace {
     }
 
     bool Prompt(const std::string& question){
-        boost::shared_ptr<GG::Font> font = ClientUI::GetFont();
+        std::shared_ptr<GG::Font> font = ClientUI::GetFont();
         GG::ThreeButtonDlg prompt(PROMT_WIDTH, PROMPT_HEIGHT, question, font,
                                   ClientUI::CtrlColor(), ClientUI::CtrlBorderColor(), ClientUI::CtrlColor(), ClientUI::TextColor(),
                                   std::size_t(2), UserString("YES"), UserString("CANCEL"), "");
@@ -153,8 +152,8 @@ namespace {
 /** Describes how a column should be set up in the dialog */
 class SaveFileColumn {
 public:
-    static boost::shared_ptr<std::vector<SaveFileColumn> > GetColumns(GG::X max_width) {
-        boost::shared_ptr<std::vector<SaveFileColumn> > columns(new std::vector<SaveFileColumn>);
+    static std::shared_ptr<std::vector<SaveFileColumn>> GetColumns(GG::X max_width) {
+        auto columns = std::make_shared<std::vector<SaveFileColumn>>();
         for (unsigned int i = 0; i < VALID_PREVIEW_COLUMN_COUNT; ++i)
             columns->push_back(GetColumn(VALID_PREVIEW_COLUMNS[i], max_width));
         return columns;
@@ -281,13 +280,13 @@ private:
     }
 
     static GG::X ComputeFixedWidth(const std::string& title, const std::string& wide_as, GG::X max_width) {
-        boost::shared_ptr<GG::Font> font = ClientUI::GetFont();
+        std::shared_ptr<GG::Font> font = ClientUI::GetFont();
         // We need to maintain the fixed sizes since the base list box messes them
         std::vector<GG::Font::LineData> lines;
         GG::Flags<GG::TextFormat> fmt = GG::FORMAT_NONE;
 
         //TODO cache this resulting extent
-        std::vector<boost::shared_ptr<GG::Font::TextElement> > text_elements =
+        std::vector<std::shared_ptr<GG::Font::TextElement>> text_elements =
             font->ExpensiveParseFromTextToTextElements(wide_as, fmt);
         lines = font->DetermineLines(wide_as, fmt, max_width, text_elements);
         GG::Pt extent1 = font->TextExtent(lines);
@@ -317,7 +316,7 @@ class SaveFileRow: public GG::ListBox::Row {
 public:
     SaveFileRow() {}
 
-    SaveFileRow(const boost::shared_ptr<std::vector<SaveFileColumn> >& columns, const std::string& filename) :
+    SaveFileRow(const std::shared_ptr<std::vector<SaveFileColumn>>& columns, const std::string& filename) :
         m_filename(filename),
         m_columns(columns),
         m_initialized(false)
@@ -373,13 +372,13 @@ public:
 
 protected:
     std::string m_filename;
-    boost::shared_ptr<std::vector<SaveFileColumn> > m_columns;
+    std::shared_ptr<std::vector<SaveFileColumn>> m_columns;
     bool m_initialized;
 };
 
 class SaveFileHeaderRow: public SaveFileRow {
 public:
-    SaveFileHeaderRow(const boost::shared_ptr<std::vector<SaveFileColumn> >& columns) :
+    SaveFileHeaderRow(const std::shared_ptr<std::vector<SaveFileColumn>>& columns) :
         SaveFileRow(columns, "")
     {
         SetMargin(ROW_MARGIN);
@@ -395,7 +394,7 @@ public:
 
 class SaveFileDirectoryRow: public SaveFileRow {
 public:
-    SaveFileDirectoryRow(const boost::shared_ptr<std::vector<SaveFileColumn> >& columns, const std::string& directory) :
+    SaveFileDirectoryRow(const std::shared_ptr<std::vector<SaveFileColumn>>& columns, const std::string& directory) :
         SaveFileRow(columns, directory) {
         SetMargin(ROW_MARGIN);
     }
@@ -442,8 +441,8 @@ class SaveFileFileRow: public SaveFileRow {
 public:
     /// Creates a row for the given savefile
     SaveFileFileRow(const FullPreview& full,
-                    const boost::shared_ptr<std::vector<SaveFileColumn> >& visible_columns,
-                    const boost::shared_ptr<std::vector<SaveFileColumn> >& columns,
+                    const std::shared_ptr<std::vector<SaveFileColumn>>& visible_columns,
+                    const std::shared_ptr<std::vector<SaveFileColumn>>& columns,
                     int tooltip_delay) :
         SaveFileRow(visible_columns, full.filename),
         m_all_columns(columns),
@@ -473,7 +472,9 @@ public:
     { return m_full_preview.preview.save_time; }
 
     private:
-    boost::shared_ptr<std::vector<SaveFileColumn> > m_all_columns; ///<All possible columns
+    /** All possible columns. */
+    std::shared_ptr<std::vector<SaveFileColumn>> m_all_columns;
+
     const FullPreview m_full_preview;
 };
 
@@ -515,7 +516,8 @@ public:
     { return GG::Y(ClientUI::Pts() * 2); }
 
     /// Loads preview data on all save files in a directory specidifed by path.
-    /// @param [in] path The path of the directory
+    /// @param[in] path The path of the directory
+    /// @param[in] extension File name extension to filter by
     void LoadSaveGamePreviews(const fs::path& path, const std::string& extension) {
         LoadDirectories(path);
 
@@ -572,14 +574,14 @@ public:
     }
 
 private:
-    boost::shared_ptr<std::vector<SaveFileColumn> > m_columns;
-    boost::shared_ptr<std::vector<SaveFileColumn> > m_visible_columns;
+    std::shared_ptr<std::vector<SaveFileColumn>> m_columns;
+    std::shared_ptr<std::vector<SaveFileColumn>> m_visible_columns;
 
-    static boost::shared_ptr<std::vector<SaveFileColumn> > FilterColumns(
-        const boost::shared_ptr<std::vector<SaveFileColumn> >& all_cols)
+    static std::shared_ptr<std::vector<SaveFileColumn>> FilterColumns(
+        const std::shared_ptr<std::vector<SaveFileColumn>>& all_cols)
     {
         std::vector<std::string> names = GetOptionsDB().Get<std::vector<std::string> >("UI.save-file-dialog.columns");
-        boost::shared_ptr<std::vector<SaveFileColumn> > columns(new std::vector<SaveFileColumn>);
+        auto columns = std::make_shared<std::vector<SaveFileColumn>>();
         for (const std::string& column_name : names) {
             bool found_col = false;
             for (const SaveFileColumn& column : *all_cols) {
@@ -671,7 +673,7 @@ void SaveFileDialog::Init() {
 
     m_layout->Add(directory_label, 0, 0);
 
-    boost::shared_ptr<GG::Font> font = ClientUI::GetFont();
+    std::shared_ptr<GG::Font> font = ClientUI::GetFont();
     if (!m_server_previews) {
         m_layout->Add(m_current_dir_edit, 0, 1, 1, 3);
 
@@ -689,7 +691,7 @@ void SaveFileDialog::Init() {
         m_layout->Add(m_remote_dir_dropdown, 0, 2 , 1, 2);
         GG::Flags<GG::TextFormat> fmt = GG::FORMAT_NONE;
         std::string server_label(SERVER_LABEL+SERVER_LABEL+SERVER_LABEL);
-        std::vector<boost::shared_ptr<GG::Font::TextElement> > text_elements =
+        std::vector<std::shared_ptr<GG::Font::TextElement>> text_elements =
             font->ExpensiveParseFromTextToTextElements(server_label, fmt);
         std::vector<GG::Font::LineData> lines =
             font->DetermineLines(server_label, fmt, ClientWidth(), text_elements);
@@ -710,7 +712,7 @@ void SaveFileDialog::Init() {
     m_layout->SetRowStretch      (1, 1.0 );
     GG::Flags<GG::TextFormat> fmt = GG::FORMAT_NONE;
     std::string cancel_text(cancel_btn->Text());
-    std::vector<boost::shared_ptr<GG::Font::TextElement> > text_elements =
+    std::vector<std::shared_ptr<GG::Font::TextElement>> text_elements =
     font->ExpensiveParseFromTextToTextElements(cancel_text, fmt);
     std::vector<GG::Font::LineData> lines = ClientUI::GetFont()->DetermineLines(
         cancel_text, fmt, GG::X(1 << 15), text_elements);
@@ -768,7 +770,7 @@ void SaveFileDialog::ModalInit() {
     GG::GUI::GetGUI()->SetFocusWnd(m_name_edit);
 }
 
-void SaveFileDialog::KeyPress(GG::Key key, boost::uint32_t key_code_point, GG::Flags<GG::ModKey> mod_keys ) {
+void SaveFileDialog::KeyPress(GG::Key key, std::uint32_t key_code_point, GG::Flags<GG::ModKey> mod_keys ) {
     // Return without filename
     if (key == GG::GGK_ESCAPE) {
         Cancel();
@@ -867,7 +869,7 @@ void SaveFileDialog::AskDelete() {
         if (Prompt (question)) {
             fs::remove(chosen);
             // Move selection to next if any or previous, if any
-            GG::ListBox::SelectionSet::iterator it = m_file_list->Selections().begin();
+            GG::ListBox::SelectionSet::const_iterator it = m_file_list->Selections().begin();
             if (it != m_file_list->Selections().end()) {
                 GG::ListBox::iterator row_it = *it;
                 GG::ListBox::iterator next(row_it);

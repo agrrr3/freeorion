@@ -3,13 +3,14 @@
 #include "../universe/Universe.h"
 #include "../universe/ShipDesign.h"
 #include "../universe/System.h"
+#include "../universe/Enums.h"
 #include "../Empire/EmpireManager.h"
 #include "../Empire/Empire.h"
 #include "i18n.h"
 #include "Logger.h"
 
+#include <boost/algorithm/string/split.hpp>
 #include <boost/static_assert.hpp>
-#include <boost/algorithm/string.hpp>
 #include <boost/spirit/include/classic.hpp>
 
 #include <map>
@@ -66,7 +67,7 @@ namespace {
             valid = false;
             return UserString("ERROR");
         }
-        TemporaryPtr<const UniverseObject> obj = GetUniverseObject(object_id);
+        std::shared_ptr<const UniverseObject> obj = GetUniverseObject(object_id);
         if (!obj) {
             //ErrorLogger() << "UniverseObjectString couldn't get object with ID " << object_id;
             valid = false;

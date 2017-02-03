@@ -56,8 +56,8 @@ ServerConnectWnd::ServerConnectWnd() :
     GG::Label* player_name_label = new CUILabel(UserString("PLAYER_NAME_LABEL"), GG::FORMAT_LEFT);
     m_player_name_edit = new CUIEdit(GetOptionsDB().Get<std::string>("multiplayersetup.player-name"));
     m_host_or_join_radio_group = new GG::RadioButtonGroup(GG::VERTICAL);
-    m_host_or_join_radio_group->AddButton(new CUIStateButton(UserString("HOST_GAME_BN"), GG::FORMAT_LEFT, boost::make_shared<CUIRadioRepresenter>()));
-    m_host_or_join_radio_group->AddButton(new CUIStateButton(UserString("JOIN_GAME_BN"), GG::FORMAT_LEFT, boost::make_shared<CUIRadioRepresenter>()));
+    m_host_or_join_radio_group->AddButton(new CUIStateButton(UserString("HOST_GAME_BN"), GG::FORMAT_LEFT, std::make_shared<CUIRadioRepresenter>()));
+    m_host_or_join_radio_group->AddButton(new CUIStateButton(UserString("JOIN_GAME_BN"), GG::FORMAT_LEFT, std::make_shared<CUIRadioRepresenter>()));
     m_LAN_game_label = new CUILabel(UserString("LAN_GAME_LABEL"), GG::FORMAT_LEFT | GG::FORMAT_NOWRAP);
     m_servers_lb = new CUIListBox();
     m_servers_lb->SetStyle(GG::LIST_NOSORT | GG::LIST_SINGLESEL);
@@ -113,7 +113,7 @@ GG::Rect ServerConnectWnd::CalculatePosition() const {
     return GG::Rect(new_ul, new_ul + new_sz);
 }
 
-void ServerConnectWnd::KeyPress(GG::Key key, boost::uint32_t key_code_point, GG::Flags<GG::ModKey> mod_keys) {
+void ServerConnectWnd::KeyPress(GG::Key key, std::uint32_t key_code_point, GG::Flags<GG::ModKey> mod_keys) {
     if (!m_ok_bn->Disabled() && (key == GG::GGK_RETURN || key == GG::GGK_KP_ENTER)) { // Same behaviour as if "OK" was pressed
         OkClicked();
     } else if (key == GG::GGK_ESCAPE) { // Same behaviour as if "Cancel" was pressed

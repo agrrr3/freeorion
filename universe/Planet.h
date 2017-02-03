@@ -38,12 +38,11 @@ public:
 
     float NextTurnCurrentMeterValue(MeterType type) const override;
 
-    TemporaryPtr<UniverseObject> Accept(const UniverseObjectVisitor& visitor) const override;
+    std::shared_ptr<UniverseObject> Accept(const UniverseObjectVisitor& visitor) const override;
 
-    void Copy(TemporaryPtr<const UniverseObject> copied_object, int empire_id = ALL_EMPIRES) override;
+    void Copy(std::shared_ptr<const UniverseObject> copied_object, int empire_id = ALL_EMPIRES) override;
 
     Meter* GetMeter(MeterType type) override;
-
 
     std::vector<std::string> AvailableFoci() const override;
 
@@ -120,7 +119,7 @@ public:
 
     void            SetSurfaceTexture(const std::string& texture);
 
-    void ResetTargetMaxUnpairedMeters() override;
+    void            ResetTargetMaxUnpairedMeters() override;
     //@}
 
     static int      TypeDifference(PlanetType type1, PlanetType type2);
@@ -135,17 +134,13 @@ protected:
     /** Create planet from @p type and @p size. */
     Planet(PlanetType type, PlanetSize size);
 
+    template <typename T> friend void UniverseObjectDeleter(T*);
     template <class T> friend void boost::python::detail::value_destroyer<false>::execute(T const volatile* p);
-    template <class T> friend void boost::checked_delete(T* x);
 
-#if BOOST_VERSION >= 106100
 public:
-#endif
     ~Planet() {}
-#if BOOST_VERSION >= 106100
-protected:
-#endif
 
+protected:
     /** returns new copy of this Planet. */
     Planet* Clone(int empire_id = ALL_EMPIRES) const override;
     //@}

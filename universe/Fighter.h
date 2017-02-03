@@ -13,15 +13,15 @@ class FO_COMMON_API Fighter : public UniverseObject {
 public:
     Fighter(int empire_id, int launched_from_id, const std::string& species_name, float damage);
     Fighter();
-    ~Fighter() {}
+    ~Fighter();
 
     UniverseObjectType ObjectType() const override;
 
     std::string Dump() const override;
 
-    TemporaryPtr<UniverseObject> Accept(const UniverseObjectVisitor& visitor) const override;
+    std::shared_ptr<UniverseObject> Accept(const UniverseObjectVisitor& visitor) const override;
 
-    void Copy(TemporaryPtr<const UniverseObject> copied_object, int empire_id = ALL_EMPIRES) override;
+    void Copy(std::shared_ptr<const UniverseObject> copied_object, int empire_id = ALL_EMPIRES) override;
 
     float                       Damage() const;
     bool                        Destroyed() const;

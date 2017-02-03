@@ -14,20 +14,9 @@
 #include "Hotkeys.h"
 #include "Sound.h"
 
-#if defined(_MSC_VER)
-  // HACK! this keeps VC 7.x from barfing when it sees "typedef __int64 int64_t;"
-  // in boost/cstdint.h when compiling under windows
-#  if defined(int64_t)
-#    undef int64_t
-#  endif
-#elif defined(WIN32)
-  // HACK! this keeps gcc 3.x from barfing when it sees "typedef long long uint64_t;"
-  // in boost/cstdint.h when compiling under windows
-#  define BOOST_MSVC -1
-#endif
-
 #include <boost/cast.hpp>
 #include <boost/serialization/vector.hpp>
+
 
 namespace {
     // Margin between text and row edge.
@@ -40,13 +29,13 @@ namespace {
     GG::X PlayerReadyBrowseWidth()
     { return GG::X(ClientUI::Pts() * 11); }
 
-    const boost::shared_ptr<GG::Texture> GetReadyTexture(bool ready) {
+    const std::shared_ptr<GG::Texture> GetReadyTexture(bool ready) {
         if (ready)
             return ClientUI::GetTexture(ClientUI::ArtDir() / "icons/ready.png");
         return ClientUI::GetTexture(ClientUI::ArtDir() / "icons/not_ready.png");
     }
 
-    const boost::shared_ptr<GG::Texture> GetHostTexture() {
+    const std::shared_ptr<GG::Texture> GetHostTexture() {
         return ClientUI::GetTexture(ClientUI::ArtDir() / "icons/host.png");
     }
 
@@ -247,9 +236,9 @@ namespace {
                     GG::GRAPHIC_CENTER | GG::GRAPHIC_FITGRAPHIC | GG::GRAPHIC_PROPSCALE, GG::INTERACTIVE));
                 at(5)->SetMinSize(GG::Pt(GG::X(ClientUI::Pts()), PlayerFontHeight()));
                 at(5)->SetBrowseModeTime(GetOptionsDB().Get<int>("UI.tooltip-delay"));
-                at(5)->SetBrowseInfoWnd(boost::shared_ptr<GG::BrowseInfoWnd>(new TextBrowseWnd(
+                at(5)->SetBrowseInfoWnd(std::make_shared<TextBrowseWnd>(
                     m_player_data.m_player_ready ? UserString("READY_BN") : UserString("NOT_READY_BN"),
-                    "", PlayerReadyBrowseWidth())));
+                    "", PlayerReadyBrowseWidth()));
                 if (HumanClientApp::GetApp()->Networking().PlayerIsHost(player_id)) {
                     push_back(new GG::StaticGraphic(GetHostTexture(),
                         GG::GRAPHIC_CENTER | GG::GRAPHIC_FITGRAPHIC | GG::GRAPHIC_PROPSCALE, GG::INTERACTIVE));
@@ -299,9 +288,9 @@ namespace {
                     GG::GRAPHIC_CENTER | GG::GRAPHIC_FITGRAPHIC | GG::GRAPHIC_PROPSCALE, GG::INTERACTIVE));
                 at(5)->SetMinSize(GG::Pt(GG::X(ClientUI::Pts()), PlayerFontHeight()));
                 at(5)->SetBrowseModeTime(GetOptionsDB().Get<int>("UI.tooltip-delay"));
-                at(5)->SetBrowseInfoWnd(boost::shared_ptr<GG::BrowseInfoWnd>(new TextBrowseWnd(
+                at(5)->SetBrowseInfoWnd(std::make_shared<TextBrowseWnd>(
                     m_player_data.m_player_ready ? UserString("READY_BN") : UserString("NOT_READY_BN"),
-                    "", PlayerReadyBrowseWidth())));
+                    "", PlayerReadyBrowseWidth()));
             }
 
             // host
@@ -404,9 +393,9 @@ namespace {
                 push_back(new GG::StaticGraphic(GetReadyTexture(m_player_data.m_player_ready),
                     GG::GRAPHIC_CENTER | GG::GRAPHIC_FITGRAPHIC | GG::GRAPHIC_PROPSCALE, GG::INTERACTIVE));
                 at(5)->SetBrowseModeTime(GetOptionsDB().Get<int>("UI.tooltip-delay"));
-                at(5)->SetBrowseInfoWnd(boost::shared_ptr<GG::BrowseInfoWnd>(new TextBrowseWnd(
+                at(5)->SetBrowseInfoWnd(std::make_shared<TextBrowseWnd>(
                     m_player_data.m_player_ready ? UserString("READY_BN") : UserString("NOT_READY_BN"),
-                    "", PlayerReadyBrowseWidth())));
+                    "", PlayerReadyBrowseWidth()));
                 at(5)->SetMinSize(GG::Pt(GG::X(ClientUI::Pts()), PlayerFontHeight()));
             }
 
@@ -525,15 +514,14 @@ MultiPlayerLobbyWnd::MultiPlayerLobbyWnd() :
 
     m_new_load_game_buttons = new GG::RadioButtonGroup(GG::VERTICAL);
     m_new_load_game_buttons->AddButton(
-        new CUIStateButton(UserString("NEW_GAME_BN"), GG::FORMAT_LEFT, boost::make_shared<CUIRadioRepresenter>()));
+        new CUIStateButton(UserString("NEW_GAME_BN"), GG::FORMAT_LEFT, std::make_shared<CUIRadioRepresenter>()));
     m_new_load_game_buttons->AddButton(
-        new CUIStateButton(UserString("LOAD_GAME_BN"), GG::FORMAT_LEFT, boost::make_shared<CUIRadioRepresenter>()));
+        new CUIStateButton(UserString("LOAD_GAME_BN"), GG::FORMAT_LEFT, std::make_shared<CUIRadioRepresenter>()));
 
     m_browse_saves_btn = new CUIButton("...");
     m_save_file_text = new CUILabel("", GG::FORMAT_NOWRAP);
 
-    boost::shared_ptr<GG::Texture> temp_tex(new GG::Texture());
-    m_preview_image = new GG::StaticGraphic(temp_tex, GG::GRAPHIC_FITGRAPHIC);
+    m_preview_image = new GG::StaticGraphic(std::make_shared<GG::Texture>(), GG::GRAPHIC_FITGRAPHIC);
 
     m_players_lb_headers = new PlayerLabelRow();
     m_players_lb_headers->SetMinSize(GG::Pt(GG::X(0), PlayerRowHeight() + PlayerFontHeight()));
@@ -658,7 +646,7 @@ void MultiPlayerLobbyWnd::Render() {
                       GG::CLR_BLACK, ClientUI::WndInnerBorderColor(), 1);
 }
 
-void MultiPlayerLobbyWnd::KeyPress(GG::Key key, boost::uint32_t key_code_point, GG::Flags<GG::ModKey> mod_keys) {
+void MultiPlayerLobbyWnd::KeyPress(GG::Key key, std::uint32_t key_code_point, GG::Flags<GG::ModKey> mod_keys) {
     if ((key == GG::GGK_RETURN || key == GG::GGK_KP_ENTER) &&
          GG::GUI::GetGUI()->FocusWnd() == m_chat_input_edit)
     {
@@ -837,7 +825,7 @@ void MultiPlayerLobbyWnd::SaveGameBrowse() {
     SendUpdate();
 }
 
-void MultiPlayerLobbyWnd::PreviewImageChanged(boost::shared_ptr<GG::Texture> new_image) {
+void MultiPlayerLobbyWnd::PreviewImageChanged(std::shared_ptr<GG::Texture> new_image) {
     if (m_preview_image) {
         DeleteChild(m_preview_image);
         m_preview_image = nullptr;
@@ -855,13 +843,13 @@ void MultiPlayerLobbyWnd::PlayerDataChangedLocally() {
         if (const EmptyPlayerRow* empty_row = dynamic_cast<const EmptyPlayerRow*>(player_row)) {
             // empty rows that have been changed to Add AI need to be sent so the server knows to add an AI player.
             if (empty_row->m_player_data.m_client_type == Networking::CLIENT_TYPE_AI_PLAYER)
-                m_lobby_data.m_players.push_back(std::make_pair(Networking::INVALID_PLAYER_ID, player_row->m_player_data));
+                m_lobby_data.m_players.push_back({Networking::INVALID_PLAYER_ID, player_row->m_player_data});
 
             // empty rows that are still showing no player don't need to be sent to the server.
 
         } else {
             // all other row types pass along data directly
-            m_lobby_data.m_players.push_back(std::make_pair(player_row->m_player_id, player_row->m_player_data));
+            m_lobby_data.m_players.push_back({player_row->m_player_id, player_row->m_player_data});
         }
     }
 

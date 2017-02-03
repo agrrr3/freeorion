@@ -5,8 +5,7 @@
 #include "../util/Serialize.ipp"
 #include "../util/Serialize.h"
 #include "../universe/Universe.h"
-
-#include <sstream>
+#include "../universe/Enums.h"
 
 #include "../util/i18n.h"
 #include "../util/Logger.h"
@@ -14,6 +13,9 @@
 #include "../util/VarText.h"
 #include "../UI/LinkText.h"
 #include "../Empire/Empire.h"
+
+#include <sstream>
+
 
 namespace {
     //TODO: Move this code into a common non UI linked location, so that
@@ -74,7 +76,7 @@ namespace {
     /// Returns UserString("ENC_COMBAT_UNKNOWN_OBJECT") if object_id is not found.
     std::string PublicNameLink(int empire_id, int object_id) {
 
-        TemporaryPtr<const UniverseObject> object = GetUniverseObject(object_id);
+        std::shared_ptr<const UniverseObject> object = GetUniverseObject(object_id);
         if (object) {
             const std::string& name = object->PublicName(empire_id);
             const std::string& tag = LinkTag(object->ObjectType());
@@ -461,7 +463,7 @@ std::string StealthChangeEvent::StealthChangeEventDetail::CombatLogDescription(i
 void StealthChangeEvent::AddEvent(int attacker_id_, int target_id_, int attacker_empire_
                              , int target_empire_, Visibility new_visibility_) {
     events[target_empire_].push_back(
-        boost::make_shared<StealthChangeEventDetail>(
+        std::make_shared<StealthChangeEventDetail>(
             attacker_id_, target_id_, attacker_empire_, target_empire_, new_visibility_));
 }
 
@@ -519,7 +521,7 @@ std::vector<ConstCombatEventPtr> StealthChangeEvent::SubEvents(int viewing_empir
     for (const std::map<int, std::vector<StealthChangeEventDetailPtr>>::value_type& target : events) {
 
         for (const StealthChangeEventDetailPtr event : target.second){
-            all_events.push_back(boost::dynamic_pointer_cast<CombatEvent>(event));
+            all_events.push_back(std::dynamic_pointer_cast<CombatEvent>(event));
         }
     }
     return all_events;
@@ -704,7 +706,7 @@ std::string IncapacitationEvent::DebugString() const {
 
 
 std::string IncapacitationEvent::CombatLogDescription(int viewing_empire_id) const {
-    TemporaryPtr<const UniverseObject> object = GetUniverseObject(object_id);
+    std::shared_ptr<const UniverseObject> object = GetUniverseObject(object_id);
     std::string template_str, object_str;
     int owner_id = object_owner_id;
 
@@ -729,7 +731,9 @@ std::string IncapacitationEvent::CombatLogDescription(int viewing_empire_id) con
     if (const Empire* owner = GetEmpire(owner_id))
         owner_string += owner->Name() + " ";
 
-    return str(FlexibleFormat(template_str) % owner_string % object_str);
+    std::string object_link = FighterOrPublicNameLink(viewing_empire_id, object_id, object_owner_id);
+
+    return str(FlexibleFormat(template_str) % owner_string % object_link);
 }
 
 boost::optional<int> IncapacitationEvent::PrincipalFaction(int viewing_empire_id) const {
@@ -919,7 +923,7 @@ void WeaponsPlatformEvent::AddEvent(
     int round_, int target_id_, int target_owner_id_, std::string const & weapon_name_,
     float power_, float shield_, float damage_) {
     events[target_id_].push_back(
-        boost::make_shared<WeaponFireEvent>(
+        std::make_shared<WeaponFireEvent>(
             bout, round_, attacker_id, target_id_, weapon_name_,
             boost::tie(power_, shield_, damage_),
             attacker_owner_id, target_owner_id_));
@@ -996,7 +1000,7 @@ std::vector<ConstCombatEventPtr> WeaponsPlatformEvent::SubEvents(int viewing_emp
     std::vector<ConstCombatEventPtr> all_events;
     for (const std::map<int, std::vector<WeaponFireEvent::WeaponFireEventPtr>>::value_type& target : events) {
         for (WeaponFireEvent::WeaponFireEventPtr event : target.second) {
-            all_events.push_back(boost::dynamic_pointer_cast<CombatEvent>(event));
+            all_events.push_back(std::dynamic_pointer_cast<CombatEvent>(event));
         }
     }
     return all_events;

@@ -187,7 +187,7 @@ public:
     };
 
     /** \name Structors */ ///@{
-    ColorDlg(X x, Y y, Clr original_color, const boost::shared_ptr<Font>& font,
+    ColorDlg(X x, Y y, Clr original_color, const std::shared_ptr<Font>& font,
              Clr dialog_color, Clr border_color, Clr text_color = CLR_BLACK);
     //@}
 
@@ -202,23 +202,15 @@ public:
     //@}
 
     void Render() override;
-    void KeyPress(Key key, boost::uint32_t key_code_point, Flags<ModKey> mod_keys) override;
+    void KeyPress(Key key, std::uint32_t key_code_point, Flags<ModKey> mod_keys) override;
     //@}
 
     static const std::size_t INVALID_COLOR_BUTTON;
 
 private:
-    struct ColorButtonClickFunctor
-    {
-        ColorButtonClickFunctor(std::size_t id, ColorDlg* picker_);
-        void operator()();
-        const std::size_t button_id;
-        ColorDlg* picker;
-    };
-
     enum {R, G, B, A, H, S, V};
 
-    void Init(const boost::shared_ptr<Font>& font);
+    void Init(const std::shared_ptr<Font>& font);
     void ConnectSignals();
     void ColorChanged(HSVClr color);
     void HueSaturationPickerChanged(double hue, double saturation);
@@ -265,8 +257,6 @@ private:
     Clr                       m_text_color;
 
     static std::vector<Clr>   s_custom_colors;
-
-    friend struct ColorButtonClickFunctor;
 };
 
 } // namespace GG

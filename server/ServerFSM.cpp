@@ -22,6 +22,9 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/thread/thread.hpp>
 
+#include <iterator>
+
+
 class CombatLogManager;
 CombatLogManager&   GetCombatLogManager();
 
@@ -115,9 +118,7 @@ namespace {
 
     std::string GenerateEmpireName(std::list<std::pair<int, PlayerSetupData> >& players) {
         // load default empire names
-        static std::list<std::string> empire_names;
-        if (empire_names.empty())
-            UserStringList("EMPIRE_NAMES", empire_names);
+        static std::vector<std::string> empire_names = UserStringList("EMPIRE_NAMES");
         std::set<std::string> validNames(empire_names.begin(), empire_names.end());
         for (const std::pair<int, PlayerSetupData>& psd : players) {
             std::set<std::string>::iterator name_it = validNames.find(psd.second.m_empire_name);
@@ -127,9 +128,7 @@ namespace {
         if (!validNames.empty()) {
             // pick a name from the list of empire names
             int empire_name_idx = RandSmallInt(0, static_cast<int>(validNames.size()) - 1);
-            std::set<std::string>::iterator it = validNames.begin();
-            std::advance(it, empire_name_idx);
-            return *it;
+            return *std::next(validNames.begin(), empire_name_idx);
         } else {
             // use a generic name
             return UserString("EMPIRE");
@@ -291,7 +290,7 @@ sc::result Idle::react(const HostSPGame& msg) {
     const Message& message = msg.m_message;
     const PlayerConnectionPtr& player_connection = msg.m_player_connection;
 
-    boost::shared_ptr<SinglePlayerSetupData> single_player_setup_data(new SinglePlayerSetupData);
+    auto single_player_setup_data = std::make_shared<SinglePlayerSetupData>();
     std::string client_version_string;
     ExtractHostSPGameMessageData(message, *single_player_setup_data, client_version_string);
 
@@ -741,8 +740,8 @@ sc::result MPLobby::react(const LobbyUpdate& msg) {
         if (is_all_ready) {
             // TODO: merge this code with MPLobby::react(const StartMPGame& msg)
             // start game
-            
-            if (! m_lobby_data->m_new_game) {
+
+            if (!m_lobby_data->m_new_game) {
                 // Load game ...
                 std::string save_filename = (GetSaveDir() / m_lobby_data->m_save_game).string();
 
@@ -753,7 +752,6 @@ sc::result MPLobby::react(const LobbyUpdate& msg) {
                              GetCombatLogManager(),     server.m_galaxy_setup_data);
                     int seed = 0;
                     try {
-                        DebugLogger() << "Seeding with loaded galaxy seed: " << server.m_galaxy_setup_data.m_seed;
                         seed = boost::lexical_cast<unsigned int>(server.m_galaxy_setup_data.m_seed);
                     } catch (...) {
                         try {
@@ -762,8 +760,9 @@ sc::result MPLobby::react(const LobbyUpdate& msg) {
                             seed = static_cast<unsigned int>(h);
                         } catch (...) {}
                     }
+                    DebugLogger() << "Seeding with loaded galaxy seed: " << server.m_galaxy_setup_data.m_seed << "  interpreted as actual seed: " << seed;
                     Seed(seed);
-                    
+
                 } catch (const std::exception&) {
                     SendMessageToAllPlayers(ErrorMessage(UserStringNop("UNABLE_TO_READ_SAVE_FILE"), true));
                     return discard_event();
@@ -844,7 +843,6 @@ sc::result MPLobby::react(const StartMPGame& msg) {
                          GetCombatLogManager(),     server.m_galaxy_setup_data);
                 int seed = 0;
                 try {
-                    DebugLogger() << "Seeding with loaded galaxy seed: " << server.m_galaxy_setup_data.m_seed;
                     seed = boost::lexical_cast<unsigned int>(server.m_galaxy_setup_data.m_seed);
                 } catch (...) {
                     try {
@@ -853,6 +851,7 @@ sc::result MPLobby::react(const StartMPGame& msg) {
                         seed = static_cast<unsigned int>(h);
                     } catch (...) {}
                 }
+                DebugLogger() << "Seeding with loaded galaxy seed: " << server.m_galaxy_setup_data.m_seed << "  interpreted as actual seed: " << seed;
                 Seed(seed);
 
             } catch (const std::exception&) {
@@ -1501,7 +1500,7 @@ sc::result WaitingForSaveData::react(const ClientSaveData& msg) {
 
     // extract client save information in message
     OrderSet received_orders;
-    boost::shared_ptr<SaveGameUIData> ui_data(new SaveGameUIData);
+    auto ui_data = std::make_shared<SaveGameUIData>();
     bool ui_data_available = false;
     std::string save_state_string;
     bool save_state_string_available = false;
@@ -1518,7 +1517,7 @@ sc::result WaitingForSaveData::react(const ClientSaveData& msg) {
     // store recieved orders or already existing orders.  I'm not sure what's
     // going on here with the two possible sets of orders.  apparently the
     // received orders are ignored if there are already existing orders?
-    boost::shared_ptr<OrderSet> order_set;
+    std::shared_ptr<OrderSet> order_set;
     if (const Empire* empire = GetEmpire(server.PlayerEmpireID(player_id))) {
         OrderSet* existing_orders = server.m_turn_sequence[empire->EmpireID()];
         if (existing_orders)

@@ -3,7 +3,7 @@
 
 #include "ValueRefFwd.h"
 
-#include "Enums.h"
+#include "EnumsFwd.h"
 #include "../util/Export.h"
 
 #include <boost/multi_index_container.hpp>
@@ -14,6 +14,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <map>
 
 #include <GG/Clr.h>
 
@@ -62,7 +63,7 @@ public:
          ValueRef::ValueRefBase<int>* research_turns,
          bool researchable,
          const std::set<std::string>& tags,
-         const std::vector<boost::shared_ptr<Effect::EffectsGroup> >& effects,
+         const std::vector<std::shared_ptr<Effect::EffectsGroup>>& effects,
          const std::set<std::string>& prerequisites, const std::vector<ItemSpec>& unlocked_items,
          const std::string& graphic) :
         m_name(name),
@@ -86,7 +87,7 @@ public:
     /** basic ctor taking helper struct to reduce number of direct parameters
       * in order to making parsing work. */
     Tech(const TechInfo& tech_info,
-         const std::vector<boost::shared_ptr<Effect::EffectsGroup> >& effects,
+         const std::vector<std::shared_ptr<Effect::EffectsGroup>>& effects,
          const std::set<std::string>& prerequisites, const std::vector<ItemSpec>& unlocked_items,
          const std::string& graphic) :
         m_name(tech_info.name),
@@ -124,7 +125,7 @@ public:
     /** returns the effects that are applied to the discovering empire's capital
       * when this tech is researched; not all techs have effects, in which case
       * this returns 0 */
-    const std::vector<boost::shared_ptr<Effect::EffectsGroup> >&  Effects() const
+    const std::vector<std::shared_ptr<Effect::EffectsGroup>>& Effects() const
     { return m_effects; }
 
     const std::set<std::string>&    Prerequisites() const { return m_prerequisites; }   //!< returns the set of names of all techs required before this one can be researched
@@ -146,8 +147,7 @@ private:
     ValueRef::ValueRefBase<int>*    m_research_turns;
     bool                            m_researchable;
     std::set<std::string>           m_tags;
-    std::vector<boost::shared_ptr<Effect::EffectsGroup> >
-                                    m_effects;
+    std::vector<std::shared_ptr<Effect::EffectsGroup>> m_effects;
     std::set<std::string>           m_prerequisites;
     std::vector<ItemSpec>           m_unlocked_items;
     std::string                     m_graphic;
@@ -161,11 +161,8 @@ private:
   * stores the type of item that is being unlocked, such as a building or ship component, and the
   * \a name field contains the name of the actual item (e.g. (UIT_BUILDING, "Superfarm") or
   * (UIT_SHIP_PART, "Death Ray")). */
-struct ItemSpec {
-    ItemSpec() :
-        type(INVALID_UNLOCKABLE_ITEM_TYPE),
-        name("")
-    {}
+struct FO_COMMON_API ItemSpec {
+    ItemSpec();
     ItemSpec(UnlockableItemType type_, const std::string& name_) :
         type(type_),
         name(name_)

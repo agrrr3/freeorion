@@ -1,6 +1,7 @@
 #include "Fighter.h"
 
 #include "Predicates.h"
+#include "Enums.h"
 #include "../util/Logger.h"
 
 
@@ -22,6 +23,9 @@ Fighter::Fighter(int empire_id, int launched_from_id, const std::string& species
     this->SetOwner(empire_id);
     UniverseObject::Init();
 }
+
+Fighter::~Fighter()
+{}
 
 UniverseObjectType Fighter::ObjectType() const
 { return OBJ_FIGHTER; }
@@ -50,19 +54,19 @@ std::string Fighter::Dump() const {
     return os.str();
 }
 
-TemporaryPtr<UniverseObject> Fighter::Accept(const UniverseObjectVisitor& visitor) const
-{ return visitor.Visit(boost::const_pointer_cast<Fighter>(boost::static_pointer_cast<const Fighter>(TemporaryFromThis()))); }
+std::shared_ptr<UniverseObject> Fighter::Accept(const UniverseObjectVisitor& visitor) const
+{ return visitor.Visit(std::const_pointer_cast<Fighter>(std::static_pointer_cast<const Fighter>(shared_from_this()))); }
 
 Fighter* Fighter::Clone(int empire_id) const {
     Fighter* retval = new Fighter();
-    retval->Copy(TemporaryFromThis(), empire_id);
+    retval->Copy(shared_from_this(), empire_id);
     return retval;
 }
 
-void Fighter::Copy(TemporaryPtr<const UniverseObject> copied_object, int empire_id) {
-    if (copied_object == this)
+void Fighter::Copy(std::shared_ptr<const UniverseObject> copied_object, int empire_id) {
+    if (copied_object.get() == this)
         return;
-    TemporaryPtr<const Fighter> copied_fighter = boost::dynamic_pointer_cast<const Fighter>(copied_object);
+    std::shared_ptr<const Fighter> copied_fighter = std::dynamic_pointer_cast<const Fighter>(copied_object);
     if (!copied_fighter) {
         ErrorLogger() << "Fighter::Copy passed an object that wasn't a Fighter";
         return;

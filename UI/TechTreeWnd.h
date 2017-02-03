@@ -2,13 +2,13 @@
 #define _TechTreeWnd_h_
 
 #include <GG/Wnd.h>
-#include "../universe/Enums.h"
+#include "../universe/EnumsFwd.h"
 
 class Tech;
 class EncyclopediaDetailPanel;
 
 /** Returns a browse wnd for tech panels */
-boost::shared_ptr<GG::BrowseInfoWnd> TechPanelRowBrowseWnd(const std::string& tech_name, int empire_id);
+std::shared_ptr<GG::BrowseInfoWnd> TechPanelRowBrowseWnd(const std::string& tech_name, int empire_id);
 
 /** Contains the tech graph layout, some controls to control what is visible in
   * the tech layout, the tech navigator, and the tech detail window. */
@@ -68,7 +68,6 @@ public:
     void            TogglePedia();
     //@}
 
-    mutable TechSignalType          TechBrowsedSignal;
     mutable TechSignalType          TechSelectedSignal;
     mutable QueueAddTechsSignalType AddTechsToQueueSignal;
 
@@ -77,11 +76,8 @@ private:
     class LayoutPanel;
     class TechListBox;
 
-    void    TechBrowsedSlot(const std::string& tech_name);
     void    TechLeftClickedSlot(const std::string& tech_name,
                                 const GG::Flags<GG::ModKey>& modkeys);
-    void    TechRightClickedSlot(const std::string& tech_name,
-                                 const GG::Flags<GG::ModKey>& modkeys);
     void    TechDoubleClickedSlot(const std::string& tech_name,
                                   const GG::Flags<GG::ModKey>& modkeys);
     void    TechPediaDisplaySlot(const std::string& tech_name);

@@ -27,6 +27,7 @@
 #include "../../util/Version.h"
 #include "../../universe/Planet.h"
 #include "../../universe/Species.h"
+#include "../../universe/Enums.h"
 #include "../../Empire/Empire.h"
 #include "../../combat/CombatLogManager.h"
 #include "../../parse/Parse.h"
@@ -35,15 +36,16 @@
 #include <GG/Cursor.h>
 #include <GG/utf8/checked.h>
 
+#include <boost/algorithm/string/trim.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/format.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/algorithm/string.hpp>
 
 #include <sstream>
+
 
 namespace fs = boost::filesystem;
 
@@ -186,7 +188,6 @@ HumanClientApp::HumanClientApp(int width, int height, bool calculate_fps, const 
                                int x, int y, bool fullscreen, bool fake_mode_change) :
     ClientApp(),
     SDLGUI(width, height, calculate_fps, name, x, y, fullscreen, fake_mode_change),
-    m_fsm(nullptr),
     m_single_player_game(true),
     m_game_started(false),
     m_connected(false),
@@ -199,7 +200,7 @@ HumanClientApp::HumanClientApp(int width, int height, bool calculate_fps, const 
 #ifdef FREEORION_MACOSX
     SDL_SetHint(SDL_HINT_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK, "1");
 #endif
-    m_fsm = new HumanClientFSM(*this);
+    m_fsm.reset(new HumanClientFSM(*this));
 
     const std::string HUMAN_CLIENT_LOG_FILENAME((GetUserDataDir() / "freeorion.log").string());
 
@@ -213,8 +214,7 @@ HumanClientApp::HumanClientApp(int width, int height, bool calculate_fps, const 
 
     LogDependencyVersions();
 
-    boost::shared_ptr<GG::StyleFactory> style(new CUIStyle());
-    SetStyleFactory(style);
+    SetStyleFactory(std::make_shared<CUIStyle>());
 
     SetMinDragTime(0);
 
@@ -232,20 +232,20 @@ HumanClientApp::HumanClientApp(int width, int height, bool calculate_fps, const 
         inform_user_sound_failed = true;
     }
 
-    m_ui = boost::shared_ptr<ClientUI>(new ClientUI());
+    m_ui.reset(new ClientUI());
 
     EnableFPS();
     UpdateFPSLimit();
     GG::Connect(GetOptionsDB().OptionChangedSignal("show-fps"), &HumanClientApp::UpdateFPSLimit, this);
 
-    boost::shared_ptr<GG::BrowseInfoWnd> default_browse_info_wnd(
+    std::shared_ptr<GG::BrowseInfoWnd> default_browse_info_wnd(
         new GG::TextBoxBrowseInfoWnd(GG::X(400), ClientUI::GetFont(),
                                      GG::Clr(0, 0, 0, 200), ClientUI::WndOuterBorderColor(), ClientUI::TextColor(),
                                      GG::FORMAT_LEFT | GG::FORMAT_WORDBREAK, 1));
     GG::Wnd::SetDefaultBrowseInfoWnd(default_browse_info_wnd);
 
-    boost::shared_ptr<GG::Texture> cursor_texture = m_ui->GetTexture(ClientUI::ArtDir() / "cursors" / "default_cursor.png");
-    SetCursor(boost::shared_ptr<GG::TextureCursor>(new GG::TextureCursor(cursor_texture, GG::Pt(GG::X(6), GG::Y(3)))));
+    std::shared_ptr<GG::Texture> cursor_texture = m_ui->GetTexture(ClientUI::ArtDir() / "cursors" / "default_cursor.png");
+    SetCursor(std::make_shared<GG::TextureCursor>(cursor_texture, GG::Pt(GG::X(6), GG::Y(3))));
     RenderCursor(true);
 
     EnableKeyPressRepeat(GetOptionsDB().Get<int>("UI.keypress-repeat-delay"),
@@ -309,11 +309,11 @@ void HumanClientApp::ConnectKeyboardAcceleratorSignals() {
     HotkeyManager *hkm = HotkeyManager::GetManager();
 
     hkm->Connect(boost::bind(&HumanClientApp::ExitGame, this),          "exit",
-                 new NoModalWndsOpenCondition());
+                 NoModalWndsOpenCondition);
     hkm->Connect(boost::bind(&HumanClientApp::QuitGame, this),          "quit",
-                 new NoModalWndsOpenCondition());
+                 NoModalWndsOpenCondition);
     hkm->Connect(boost::bind(&HumanClientApp::ToggleFullscreen, this), "fullscreen",
-                 new NoModalWndsOpenCondition());
+                 NoModalWndsOpenCondition);
 
     hkm->RebuildShortcuts();
 }
@@ -322,7 +322,6 @@ HumanClientApp::~HumanClientApp() {
     if (m_networking.Connected())
         m_networking.DisconnectFromServer();
     m_server_process.RequestTermination();
-    delete m_fsm;
 }
 
 bool HumanClientApp::SinglePlayerGame() const
@@ -733,7 +732,7 @@ std::pair<int, int> HumanClientApp::GetWindowLeftTop() {
     if (std::abs(top) < 10)
         top = 0;
 
-    return std::make_pair(left, top);
+    return {left, top};
 }
 
 std::pair<int, int> HumanClientApp::GetWindowWidthHeight() {
@@ -743,14 +742,14 @@ std::pair<int, int> HumanClientApp::GetWindowWidthHeight() {
     if (!fullscreen) {
         width = GetOptionsDB().Get<int>("app-width-windowed");
         height = GetOptionsDB().Get<int>("app-height-windowed");
-        return std::make_pair(width, height);
+        return {width, height};
     }
 
     bool reset_fullscreen = GetOptionsDB().Get<bool>("reset-fullscreen-size");
     if (!reset_fullscreen) {
         width = GetOptionsDB().Get<int>("app-width");
         height = GetOptionsDB().Get<int>("app-height");
-        return std::make_pair(width, height);
+        return {width, height};
     }
 
     GetOptionsDB().Set<bool>("reset-fullscreen-size", false);
@@ -758,7 +757,7 @@ std::pair<int, int> HumanClientApp::GetWindowWidthHeight() {
     GetOptionsDB().Set("app-width", Value(default_resolution.x));
     GetOptionsDB().Set("app-height", Value(default_resolution.y));
     GetOptionsDB().Commit();
-    return std::make_pair(Value(default_resolution.x), Value(default_resolution.y));
+    return {Value(default_resolution.x), Value(default_resolution.y)};
 }
 
 void HumanClientApp::Reinitialize() {
@@ -1023,7 +1022,7 @@ namespace {
                 { continue; }
 
                 std::time_t t = last_write_time(file_path);
-                files_by_write_time.insert(std::make_pair(t, file_path));
+                files_by_write_time.insert({t, file_path});
             }
 
             //DebugLogger() << "files by write time:";

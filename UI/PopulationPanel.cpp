@@ -6,6 +6,7 @@
 #include "../util/Logger.h"
 #include "../universe/UniverseObject.h"
 #include "../universe/PopCenter.h"
+#include "../universe/Enums.h"
 #include "../client/human/HumanClientApp.h"
 #include "ClientUI.h"
 #include "CUIControls.h"
@@ -34,7 +35,7 @@ PopulationPanel::PopulationPanel(GG::X w, int object_id) :
 {
     SetName("PopulationPanel");
 
-    TemporaryPtr<const PopCenter> pop = GetPopCenter();
+    std::shared_ptr<const PopCenter> pop = GetPopCenter();
     if (!pop)
         throw std::invalid_argument("Attempted to construct a PopulationPanel with an object id is not a PopCenter");
 
@@ -112,7 +113,7 @@ bool PopulationPanel::EventFilter(GG::Wnd* w, const GG::WndEvent& event) {
     GG::MenuItem menu_contents;
     std::string species_name;
 
-    TemporaryPtr<const PopCenter> pc = GetPopCenter();
+    std::shared_ptr<const PopCenter> pc = GetPopCenter();
     if (meter_type == METER_POPULATION && pc) {
         species_name = pc->SpeciesName();
         if (!species_name.empty()) {
@@ -155,7 +156,7 @@ void PopulationPanel::Update() {
         m_multi_icon_value_indicator->ClearToolTip(meter_stat.first);
     }
 
-    TemporaryPtr<const PopCenter> pop = GetPopCenter();
+    std::shared_ptr<const PopCenter> pop = GetPopCenter();
     if (!pop) {
         ErrorLogger() << "PopulationPanel::Update couldn't get PopCenter or couldn't get UniverseObject";
         return;
@@ -166,12 +167,12 @@ void PopulationPanel::Update() {
     m_multi_icon_value_indicator->Update();
 
     // tooltips
-    boost::shared_ptr<GG::BrowseInfoWnd> browse_wnd;
+    std::shared_ptr<GG::BrowseInfoWnd> browse_wnd;
 
     for (std::pair<MeterType, StatisticIcon*>& meter_stat : m_meter_stats) {
         meter_stat.second->SetValue(pop->InitialMeterValue(meter_stat.first));
 
-        browse_wnd = boost::shared_ptr<GG::BrowseInfoWnd>(new MeterBrowseWnd(m_popcenter_id, meter_stat.first, AssociatedMeterType(meter_stat.first)));
+        browse_wnd = std::make_shared<MeterBrowseWnd>(m_popcenter_id, meter_stat.first, AssociatedMeterType(meter_stat.first));
         meter_stat.second->SetBrowseInfoWnd(browse_wnd);
         m_multi_icon_value_indicator->SetToolTip(meter_stat.first, browse_wnd);
     }
@@ -238,16 +239,16 @@ void PopulationPanel::DoLayout() {
     SetCollapsed(!s_expanded_map[m_popcenter_id]);
 }
 
-TemporaryPtr<const PopCenter> PopulationPanel::GetPopCenter() const {
-    TemporaryPtr<const UniverseObject> obj = GetUniverseObject(m_popcenter_id);
+std::shared_ptr<const PopCenter> PopulationPanel::GetPopCenter() const {
+    std::shared_ptr<const UniverseObject> obj = GetUniverseObject(m_popcenter_id);
     if (!obj) {
         ErrorLogger() << "PopulationPanel tried to get an object with an invalid m_popcenter_id";
-        return TemporaryPtr<const PopCenter>();
+        return nullptr;
     }
-    TemporaryPtr<const PopCenter> pop = boost::dynamic_pointer_cast<const PopCenter>(obj);
+    std::shared_ptr<const PopCenter> pop = std::dynamic_pointer_cast<const PopCenter>(obj);
     if (!pop) {
         ErrorLogger() << "PopulationPanel failed casting an object pointer to a PopCenter pointer";
-        return TemporaryPtr<const PopCenter>();
+        return nullptr;
     }
     return pop;
 }

@@ -4,6 +4,7 @@
 #include "CUISpin.h"
 #include "Sound.h"
 #include "../universe/Universe.h"
+#include "../universe/Enums.h"
 #include "../client/human/HumanClientApp.h"
 #include "../util/i18n.h"
 #include "../util/Logger.h"
@@ -332,7 +333,7 @@ GalaxySetupOption GalaxySetupPanel::GetNativeFrequency() const
 Aggression GalaxySetupPanel::GetAIAggression() const
 { return Aggression(m_ai_aggression_list->CurrentItemIndex()); }
 
-boost::shared_ptr<GG::Texture> GalaxySetupPanel::PreviewImage() const
+std::shared_ptr<GG::Texture> GalaxySetupPanel::PreviewImage() const
 { return m_textures[GetShape()]; }
 
 void GalaxySetupPanel::SizeMove(const GG::Pt& ul, const GG::Pt& lr) {
@@ -563,7 +564,7 @@ GalaxySetupWnd::GalaxySetupWnd() :
     m_number_ais_spin = new CUISpin<int>(GetOptionsDB().Get<int>("GameSetup.ai-players"), 1, 0, IApp::MAX_AI_PLAYERS(), true);
 
     // create a temporary texture and static graphic
-    static boost::shared_ptr<GG::Texture> temp_tex(new GG::Texture());
+    static auto temp_tex = std::make_shared<GG::Texture>();
     m_preview_image =  new GG::StaticGraphic(temp_tex, GG::GRAPHIC_FITGRAPHIC | GG::GRAPHIC_PROPSCALE); // create a blank graphic
 
     m_ok = new CUIButton(UserString("OK"));
@@ -617,7 +618,7 @@ void GalaxySetupWnd::Render() {
                       GG::CLR_BLACK, ClientUI::WndInnerBorderColor(), 1);
 }
 
-void GalaxySetupWnd::KeyPress(GG::Key key, boost::uint32_t key_code_point, GG::Flags<GG::ModKey> mod_keys) {
+void GalaxySetupWnd::KeyPress(GG::Key key, std::uint32_t key_code_point, GG::Flags<GG::ModKey> mod_keys) {
     if (!m_ok->Disabled() && (key == GG::GGK_RETURN || key == GG::GGK_KP_ENTER)) // Same behaviour as if "OK" was pressed
         OkClicked();
     else if (key == GG::GGK_ESCAPE) // Same behaviour as if "Cancel" was pressed
@@ -698,7 +699,7 @@ void GalaxySetupWnd::DoLayout() {
     m_cancel->SizeMove(button_ul, button_lr);
 }
 
-void GalaxySetupWnd::PreviewImageChanged(boost::shared_ptr<GG::Texture> new_image) {
+void GalaxySetupWnd::PreviewImageChanged(std::shared_ptr<GG::Texture> new_image) {
     if (m_preview_image)
         m_preview_image->SetTexture(new_image);
     DoLayout();

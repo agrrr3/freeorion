@@ -15,29 +15,29 @@
 UniverseObjectVisitor::~UniverseObjectVisitor()
 {}
 
-TemporaryPtr<UniverseObject> UniverseObjectVisitor::Visit(TemporaryPtr<UniverseObject> obj) const
-{ return TemporaryPtr<UniverseObject>(); }
+std::shared_ptr<UniverseObject> UniverseObjectVisitor::Visit(std::shared_ptr<UniverseObject> obj) const
+{ return nullptr; }
 
-TemporaryPtr<UniverseObject> UniverseObjectVisitor::Visit(TemporaryPtr<Building> obj) const
-{ return Visit(boost::static_pointer_cast<UniverseObject>(obj)); }
+std::shared_ptr<UniverseObject> UniverseObjectVisitor::Visit(std::shared_ptr<Building> obj) const
+{ return Visit(std::static_pointer_cast<UniverseObject>(obj)); }
 
-TemporaryPtr<UniverseObject> UniverseObjectVisitor::Visit(TemporaryPtr<Fleet> obj) const
-{ return Visit(boost::static_pointer_cast<UniverseObject>(obj)); }
+std::shared_ptr<UniverseObject> UniverseObjectVisitor::Visit(std::shared_ptr<Fleet> obj) const
+{ return Visit(std::static_pointer_cast<UniverseObject>(obj)); }
 
-TemporaryPtr<UniverseObject> UniverseObjectVisitor::Visit(TemporaryPtr<Planet> obj) const
-{ return Visit(boost::static_pointer_cast<UniverseObject>(obj)); }
+std::shared_ptr<UniverseObject> UniverseObjectVisitor::Visit(std::shared_ptr<Planet> obj) const
+{ return Visit(std::static_pointer_cast<UniverseObject>(obj)); }
 
-TemporaryPtr<UniverseObject> UniverseObjectVisitor::Visit(TemporaryPtr<Ship> obj) const
-{ return Visit(boost::static_pointer_cast<UniverseObject>(obj)); }
+std::shared_ptr<UniverseObject> UniverseObjectVisitor::Visit(std::shared_ptr<Ship> obj) const
+{ return Visit(std::static_pointer_cast<UniverseObject>(obj)); }
 
-TemporaryPtr<UniverseObject> UniverseObjectVisitor::Visit(TemporaryPtr<System> obj) const
-{ return Visit(boost::static_pointer_cast<UniverseObject>(obj)); }
+std::shared_ptr<UniverseObject> UniverseObjectVisitor::Visit(std::shared_ptr<System> obj) const
+{ return Visit(std::static_pointer_cast<UniverseObject>(obj)); }
 
-TemporaryPtr<UniverseObject> UniverseObjectVisitor::Visit(TemporaryPtr<Field> obj) const
-{ return Visit(boost::static_pointer_cast<UniverseObject>(obj)); }
+std::shared_ptr<UniverseObject> UniverseObjectVisitor::Visit(std::shared_ptr<Field> obj) const
+{ return Visit(std::static_pointer_cast<UniverseObject>(obj)); }
 
-TemporaryPtr<UniverseObject> UniverseObjectVisitor::Visit(TemporaryPtr<Fighter> obj) const
-{ return Visit(boost::static_pointer_cast<UniverseObject>(obj)); }
+std::shared_ptr<UniverseObject> UniverseObjectVisitor::Visit(std::shared_ptr<Fighter> obj) const
+{ return Visit(std::static_pointer_cast<UniverseObject>(obj)); }
 
 
 ////////////////////////////////////////////////
@@ -50,12 +50,12 @@ StationaryFleetVisitor::StationaryFleetVisitor(int empire/* = ALL_EMPIRES*/) :
     empire_id(empire)
 {}
 
-TemporaryPtr<UniverseObject> StationaryFleetVisitor::Visit(TemporaryPtr<Fleet> obj) const {
+std::shared_ptr<UniverseObject> StationaryFleetVisitor::Visit(std::shared_ptr<Fleet> obj) const {
     if ((obj->FinalDestinationID() == INVALID_OBJECT_ID ||
          obj->TravelRoute().empty()) &&
         (empire_id == ALL_EMPIRES || (!obj->Unowned() && obj->Owner() == empire_id)))
         return obj;
-    return TemporaryPtr<UniverseObject>();
+    return nullptr;
 }
 
 ////////////////////////////////////////////////
@@ -68,13 +68,13 @@ OrderedMovingFleetVisitor::OrderedMovingFleetVisitor(int empire/* = ALL_EMPIRES*
     empire_id(empire)
 {}
 
-TemporaryPtr<UniverseObject> OrderedMovingFleetVisitor::Visit(TemporaryPtr<Fleet> obj) const {
+std::shared_ptr<UniverseObject> OrderedMovingFleetVisitor::Visit(std::shared_ptr<Fleet> obj) const {
     if (obj->FinalDestinationID() != INVALID_OBJECT_ID &&
         !obj->TravelRoute().empty() &&
         obj->SystemID() != INVALID_OBJECT_ID && 
         (empire_id == ALL_EMPIRES || (!obj->Unowned() && obj->Owner() == empire_id)))
         return obj;
-    return TemporaryPtr<UniverseObject>();
+    return nullptr;
 }
 
 ////////////////////////////////////////////////
@@ -87,10 +87,10 @@ MovingFleetVisitor::MovingFleetVisitor(int empire/* = ALL_EMPIRES*/) :
     empire_id(empire)
 {}
 
-TemporaryPtr<UniverseObject> MovingFleetVisitor::Visit(TemporaryPtr<Fleet> obj) const {
+std::shared_ptr<UniverseObject> MovingFleetVisitor::Visit(std::shared_ptr<Fleet> obj) const {
     if (obj->FinalDestinationID() != INVALID_OBJECT_ID &&
         obj->SystemID() == INVALID_OBJECT_ID && 
         (empire_id == ALL_EMPIRES || (!obj->Unowned() && obj->Owner() == empire_id)))
         return obj;
-    return TemporaryPtr<UniverseObject>();
+    return nullptr;
 }

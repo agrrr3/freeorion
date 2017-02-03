@@ -31,8 +31,6 @@
 #include <GG/WndEvent.h>
 #include <GG/utf8/checked.h>
 
-#include <boost/assign/list_of.hpp>
-
 
 using namespace GG;
 
@@ -102,7 +100,7 @@ const std::size_t MultiEdit::ALL_LINES = std::numeric_limits<std::size_t>::max()
 const unsigned int MultiEdit::SCROLL_WIDTH = 14;
 const unsigned int MultiEdit::BORDER_THICK = 2;
 
-MultiEdit::MultiEdit(const std::string& str, const boost::shared_ptr<Font>& font, Clr color,
+MultiEdit::MultiEdit(const std::string& str, const std::shared_ptr<Font>& font, Clr color,
                      Flags<MultiEditStyle> style/* = MULTI_LINEWRAP*/, Clr text_color/* = CLR_BLACK*/, Clr interior/* = CLR_ZERO*/) :
     Edit(str, font, color, text_color, interior),
     m_style(style),
@@ -273,7 +271,7 @@ void MultiEdit::SelectAll()
 
     CPSize begin_cursor_pos = CharIndexOf(m_cursor_begin.first, m_cursor_begin.second);
     CPSize end_cursor_pos = CharIndexOf(m_cursor_end.first, m_cursor_end.second);
-    this->m_cursor_pos = std::make_pair(begin_cursor_pos, end_cursor_pos);
+    this->m_cursor_pos = {begin_cursor_pos, end_cursor_pos};
 }
 
 void MultiEdit::DeselectAll()
@@ -282,7 +280,7 @@ void MultiEdit::DeselectAll()
     m_cursor_end = m_cursor_begin;
 
     CPSize cursor_pos = CharIndexOf(m_cursor_begin.first, m_cursor_begin.second);
-    this->m_cursor_pos = std::make_pair(cursor_pos, cursor_pos);
+    this->m_cursor_pos = {cursor_pos, cursor_pos};
 }
 
 void MultiEdit::SetText(const std::string& str)
@@ -302,7 +300,7 @@ void MultiEdit::SetText(const std::string& str)
         if (m_max_lines_history == ALL_LINES) {
             TextControl::SetText(str);
         } else {
-            std::vector<boost::shared_ptr<Font::TextElement> > text_elements
+            std::vector<std::shared_ptr<Font::TextElement>> text_elements
                 = GetFont()->ExpensiveParseFromTextToTextElements(str, format);
             std::vector<Font::LineData> lines = GetFont()->DetermineLines(str, format, cl_sz.x, text_elements);
             if (m_max_lines_history < lines.size()) {
@@ -359,7 +357,7 @@ void MultiEdit::SetText(const std::string& str)
         m_cursor_begin = m_cursor_end; // eliminate any hiliting
 
         CPSize cursor_pos = CharIndexOf(m_cursor_end.first, m_cursor_end.second);
-        this->m_cursor_pos = std::make_pair(cursor_pos, cursor_pos);
+        this->m_cursor_pos = {cursor_pos, cursor_pos};
 
         m_contents_sz = GetFont()->TextExtent(GetLineData());
 
@@ -528,7 +526,7 @@ CPSize MultiEdit::CharIndexOf(std::size_t row, CPSize char_idx,
     // "rewind" the first position to encompass all tag text that is
     // associated with that position
     CPSize retval = line.char_data[Value(char_idx)].code_point_index;
-    for (const boost::shared_ptr<Font::FormattingTag>& tag : line.char_data[Value(char_idx)].tags)
+    for (const std::shared_ptr<Font::FormattingTag>& tag : line.char_data[Value(char_idx)].tags)
         retval -= tag->CodePointSize();
 
     return retval;
@@ -729,7 +727,7 @@ void MultiEdit::LButtonDown(const Pt& pt, Flags<ModKey> mod_keys)
 
     CPSize begin_cursor_pos = CharIndexOf(m_cursor_begin.first, m_cursor_begin.second);
     CPSize end_cursor_pos = CharIndexOf(m_cursor_end.first, m_cursor_end.second);
-    this->m_cursor_pos = std::make_pair(begin_cursor_pos, end_cursor_pos);
+    this->m_cursor_pos = {begin_cursor_pos, end_cursor_pos};
     //std::cout << "cursor pos: " << this->m_cursor_pos.first << std::endl;
 }
 
@@ -781,7 +779,7 @@ void MultiEdit::LDrag(const Pt& pt, const Pt& move, Flags<ModKey> mod_keys)
 
     //std::cout << "MultiEdit::LDrag cursor covers code points: " << begin_cursor_pos << " to " << end_cursor_pos << std::endl << std::flush;
 
-    this->m_cursor_pos = std::make_pair(begin_cursor_pos, end_cursor_pos);
+    this->m_cursor_pos = {begin_cursor_pos, end_cursor_pos};
 
     // if dragging past the currently visible text, adjust
     // the view so more text can be selected
@@ -800,7 +798,7 @@ void MultiEdit::MouseWheel(const Pt& pt, int move, Flags<ModKey> mod_keys)
     SignalScroll(*m_vscroll, true);
 }
 
-void MultiEdit::KeyPress(Key key, boost::uint32_t key_code_point, Flags<ModKey> mod_keys)
+void MultiEdit::KeyPress(Key key, std::uint32_t key_code_point, Flags<ModKey> mod_keys)
 {
     if (Disabled()) {
         TextControl::KeyPress(key, key_code_point, mod_keys);
@@ -1022,7 +1020,7 @@ void MultiEdit::KeyPress(Key key, boost::uint32_t key_code_point, Flags<ModKey> 
 
     CPSize begin_cursor_pos = CharIndexOf(m_cursor_begin.first, m_cursor_begin.second);
     CPSize end_cursor_pos = CharIndexOf(m_cursor_end.first, m_cursor_end.second);
-    this->m_cursor_pos = std::make_pair(begin_cursor_pos, end_cursor_pos);
+    this->m_cursor_pos = {begin_cursor_pos, end_cursor_pos};
 
     AdjustView();
     if (emit_signal)
@@ -1099,7 +1097,7 @@ void MultiEdit::ClearSelected()
 
     CPSize cursor_pos = CharIndexOf(m_cursor_end.first, m_cursor_end.second);
     //std::cout << "got cursor pos: " << cursor_pos << std::endl;
-    this->m_cursor_pos = std::make_pair(cursor_pos, cursor_pos);
+    this->m_cursor_pos = {cursor_pos, cursor_pos};
 }
 
 void MultiEdit::AdjustView()
@@ -1226,7 +1224,7 @@ void MultiEdit::AdjustScrolls()
 
     const int GAP = PIXEL_MARGIN - 2; // the space between the client area and the border
 
-    boost::shared_ptr<StyleFactory> style = GetStyleFactory();
+    std::shared_ptr<StyleFactory> style = GetStyleFactory();
 
     Y vscroll_min = (m_style & MULTI_TERMINAL_STYLE) ? cl_sz.y - m_contents_sz.y : Y0;
     if (cl_sz.y - m_contents_sz.y > 0 ) {
@@ -1397,7 +1395,7 @@ void MultiEdit::AcceptPastedText(const std::string& text)
 
     CPSize begin_cursor_pos = CharIndexOf(m_cursor_begin.first, m_cursor_begin.second);
     CPSize end_cursor_pos = CharIndexOf(m_cursor_end.first, m_cursor_end.second);
-    this->m_cursor_pos = std::make_pair(begin_cursor_pos, end_cursor_pos);
+    this->m_cursor_pos = {begin_cursor_pos, end_cursor_pos};
 
     //std::cout << "after converting cursor begin/end to cursor pos, cursor pos: " << m_cursor_pos.first << " - " << m_cursor_pos.second << std::endl;
 

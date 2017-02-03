@@ -117,7 +117,7 @@ void BufferStoreCircleArcVertices(GG::GL2DVertexBuffer& buffer, const GG::Pt& ul
 
     } else {    // (not a fan) store a list of complete lines / triangles
         // if storing a filled_shape, the first point in each triangle should be the centre of the arc
-        std::pair<GLfloat, GLfloat> first_point = std::make_pair(static_cast<GLfloat>(center_x), static_cast<GLfloat>(center_y));
+        std::pair<GLfloat, GLfloat> first_point = {static_cast<GLfloat>(center_x), static_cast<GLfloat>(center_y)};
         // (not used for non-filled-shape)
 
         // angles in between theta1 and theta2, if any
@@ -386,10 +386,11 @@ namespace {
     const double TWO_PI = 2.0 * 3.14159;
 }
 
-class ScanlineRenderer::ScanlineRendererImpl {
+class ScanlineRenderer::Impl {
 public:
-    ScanlineRendererImpl() :
-        m_scanline_shader(), m_failed_init(false)
+    Impl() :
+        m_scanline_shader(),
+        m_failed_init(false)
     { m_color = GG::CLR_BLACK; }
 
     void StartUsing() {
@@ -399,9 +400,12 @@ public:
         if (!m_scanline_shader) {
             boost::filesystem::path shader_path = GetRootDataDir() / "default" / "shaders" / "scanlines.frag";
             std::string shader_text;
-            ReadFile(shader_path, shader_text);
-            m_scanline_shader = boost::shared_ptr<ShaderProgram>(
-                ShaderProgram::shaderProgramFactory("", shader_text));
+            if (!ReadFile(shader_path, shader_text)) {
+                ErrorLogger() << "ScanlineRenderer failed to read shader at path " << shader_path.string();
+                m_failed_init = true;
+                return;
+            }
+            m_scanline_shader = ShaderProgram::shaderProgramFactory("", shader_text);
 
             if (!m_scanline_shader) {
                 ErrorLogger() << "ScanlineRenderer failed to initialize shader.";
@@ -435,31 +439,30 @@ public:
         StopUsing();
     }
 
-    boost::shared_ptr<ShaderProgram> m_scanline_shader;
+    std::unique_ptr<ShaderProgram> m_scanline_shader;
     bool m_failed_init;
     GG::Clr m_color;
 };
 
 
 ScanlineRenderer::ScanlineRenderer() :
-    pimpl(new ScanlineRendererImpl())
+    m_impl(new Impl())
 {}
 
 // This destructor is required here because ~ScanlineRendererImpl is declared here.
-ScanlineRenderer::~ScanlineRenderer()
-{}
+ScanlineRenderer::~ScanlineRenderer() = default;
 
 void ScanlineRenderer::RenderCircle(const GG::Pt& ul, const GG::Pt& lr)
-{ pimpl->RenderCircle(ul, lr); }
+{ m_impl->RenderCircle(ul, lr); }
 
 void ScanlineRenderer::RenderRectangle(const GG::Pt& ul, const GG::Pt& lr)
-{ pimpl->RenderRectangle(ul, lr); }
+{ m_impl->RenderRectangle(ul, lr); }
 
 void ScanlineRenderer::StartUsing()
-{ pimpl->StartUsing(); }
+{ m_impl->StartUsing(); }
 
 void ScanlineRenderer::SetColor(GG::Clr clr)
-{ pimpl->SetColor(clr); }
+{ m_impl->SetColor(clr); }
 
 void ScanlineRenderer::StopUsing()
-{ pimpl->StopUsing(); }
+{ m_impl->StopUsing(); }

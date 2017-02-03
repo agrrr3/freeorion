@@ -10,6 +10,7 @@
 #include "../Empire/Empire.h"
 #include "../Empire/EmpireManager.h"
 #include "ValueRef.h"
+#include "Enums.h"
 
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem/fstream.hpp>
@@ -79,7 +80,7 @@ void Tech::Init() {
     if (m_research_turns)
         m_research_turns->SetTopLevelContent(m_name);
 
-    for (boost::shared_ptr<Effect::EffectsGroup> effect : m_effects)
+    for (std::shared_ptr<Effect::EffectsGroup> effect : m_effects)
     { effect->SetTopLevelContent(m_name); }
 }
 
@@ -131,7 +132,7 @@ std::string Tech::Dump() const {
         } else {
             retval += DumpIndent() + "effectsgroups = [\n";
             ++g_indent;
-            for (boost::shared_ptr<Effect::EffectsGroup> effect : m_effects) {
+            for (std::shared_ptr<Effect::EffectsGroup> effect : m_effects) {
                 retval += effect->Dump();
             }
             --g_indent;
@@ -143,32 +144,9 @@ std::string Tech::Dump() const {
     return retval;
 }
 
-namespace {
-    TemporaryPtr<const UniverseObject> SourceForEmpire(int empire_id) {
-        const Empire* empire = GetEmpire(empire_id);
-        if (!empire) {
-            DebugLogger() << "SourceForEmpire: Unable to get empire with ID: " << empire_id;
-            return TemporaryPtr<const UniverseObject>();
-        }
-        // get a source object, which is owned by the empire with the passed-in
-        // empire id.  this is used in conditions to reference which empire is
-        // doing the building.  Ideally this will be the capital, but any object
-        // owned by the empire will work.
-        TemporaryPtr<const UniverseObject> source = GetUniverseObject(empire->CapitalID());
-        // no capital?  scan through all objects to find one owned by this empire
-        if (!source) {
-            for (TemporaryPtr<const UniverseObject> obj : Objects()) {
-                if (obj->OwnedBy(empire_id)) {
-                    source = obj;
-                    break;
-                }
-            }
-        }
-        return source;
-    }
-}
-
 float Tech::ResearchCost(int empire_id) const {
+    const auto arbitrary_large_number = 999999.9f;
+
     if (CHEAP_AND_FAST_TECH_RESEARCH || !m_research_cost) {
         return 1.0;
 
@@ -176,12 +154,12 @@ float Tech::ResearchCost(int empire_id) const {
         return m_research_cost->Eval();
 
     } else if (empire_id == ALL_EMPIRES) {
-        return 999999.9f;
+        return arbitrary_large_number;
 
     } else {
-        TemporaryPtr<const UniverseObject> source = SourceForEmpire(empire_id);
+        std::shared_ptr<const UniverseObject> source = Empires().GetSource(empire_id);
         if (!source && !m_research_cost->SourceInvariant())
-            return 999999.9f;
+            return arbitrary_large_number;
 
         ScriptingContext context(source);
         return m_research_cost->Eval(context);
@@ -192,6 +170,8 @@ float Tech::PerTurnCost(int empire_id) const
 { return ResearchCost(empire_id) / std::max(1, ResearchTime(empire_id)); }
 
 int Tech::ResearchTime(int empire_id) const {
+    const auto arbitrary_large_number = 9999;
+
     if (CHEAP_AND_FAST_TECH_RESEARCH || !m_research_turns) {
         return 1;
 
@@ -199,12 +179,12 @@ int Tech::ResearchTime(int empire_id) const {
             return m_research_turns->Eval();
 
     } else if (empire_id == ALL_EMPIRES) {
-        return 9999;
+        return arbitrary_large_number;
 
     } else {
-        TemporaryPtr<const UniverseObject> source = SourceForEmpire(empire_id);
+        std::shared_ptr<const UniverseObject> source = Empires().GetSource(empire_id);
         if (!source && !m_research_turns->SourceInvariant())
-            return 9999;
+            return arbitrary_large_number;
 
         ScriptingContext context(source);
 
@@ -214,8 +194,13 @@ int Tech::ResearchTime(int empire_id) const {
 
 
 ///////////////////////////////////////////////////////////
-// ItemSpec                                        //
+// ItemSpec                                              //
 ///////////////////////////////////////////////////////////
+ItemSpec::ItemSpec() :
+    type(INVALID_UNLOCKABLE_ITEM_TYPE),
+    name()
+{}
+
 std::string ItemSpec::Dump() const {
     std::string retval = "Item type = ";
     switch (type) {

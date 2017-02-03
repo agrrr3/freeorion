@@ -162,14 +162,14 @@ HueSaturationPicker::HueSaturationPicker(X x, Y y, X w, Y h) :
     const int SAMPLES = 100;
     const double INCREMENT = 1.0 / (SAMPLES + 1);
     const double VALUE = 1.0;
-    m_vertices.resize(SAMPLES, std::vector<std::pair<double, double> >(2 * (SAMPLES + 1)));
+    m_vertices.resize(SAMPLES, std::vector<std::pair<double, double>>(2 * (SAMPLES + 1)));
     m_colors.resize(SAMPLES, std::vector<Clr>(2 * (SAMPLES + 1)));
     for (int col = 0; col < SAMPLES; ++col) {
         for (int row = 0; row < SAMPLES + 1; ++row) {
-            m_vertices[col][2 * row] = std::make_pair(col * INCREMENT, row * INCREMENT);
-            m_vertices[col][2 * row + 1] = std::make_pair((col + 1) * INCREMENT, row * INCREMENT);
-            m_colors[col][2 * row] = Convert(HSVClr(col * INCREMENT, 1.0 - row * INCREMENT, VALUE));
-            m_colors[col][2 * row + 1] = Convert(HSVClr((col + 1) * INCREMENT, 1.0 - row * INCREMENT, VALUE));
+            m_vertices[col][2 * row] =      {col * INCREMENT, row * INCREMENT};
+            m_vertices[col][2 * row + 1] =  {(col + 1) * INCREMENT, row * INCREMENT};
+            m_colors[col][2 * row] =        Convert(HSVClr(col * INCREMENT, 1.0 - row * INCREMENT, VALUE));
+            m_colors[col][2 * row + 1] =    Convert(HSVClr((col + 1) * INCREMENT, 1.0 - row * INCREMENT, VALUE));
         }
     }
 }
@@ -383,7 +383,7 @@ void ValuePicker::SetValueFromPt(Pt pt)
 
 // ColorDlg::ColorButton
 ColorDlg::ColorButton::ColorButton(const Clr& color) :
-    Button("", boost::shared_ptr<Font>(), color),
+    Button("", nullptr, color),
     m_represented_color(CLR_BLACK)
 {}
 
@@ -486,23 +486,13 @@ void ColorDlg::ColorDisplay::Render()
 }
 
 
-// ColorDlg::ColorButtonClickFunctor
-ColorDlg::ColorButtonClickFunctor::ColorButtonClickFunctor(std::size_t id, ColorDlg* picker_) :
-    button_id(id),
-    picker(picker_)
-{}
-
-void ColorDlg::ColorButtonClickFunctor::operator()()
-{ picker->ColorButtonClicked(button_id); }
-
-
 // ColorDlg
 
 // static(s)
 std::vector<Clr> ColorDlg::s_custom_colors;
 const std::size_t ColorDlg::INVALID_COLOR_BUTTON = std::numeric_limits<std::size_t>::max();
 
-ColorDlg::ColorDlg(X x, Y y, Clr original_color, const boost::shared_ptr<Font>& font,
+ColorDlg::ColorDlg(X x, Y y, Clr original_color, const std::shared_ptr<Font>& font,
                    Clr dialog_color, Clr border_color, Clr text_color/* = CLR_BLACK*/) :
     Wnd(x, y, X(315), Y(300), INTERACTIVE | DRAGABLE | MODAL),
     m_original_color(original_color),
@@ -543,7 +533,7 @@ void ColorDlg::Render()
     }
 }
 
-void ColorDlg::KeyPress(Key key, boost::uint32_t key_code_point, Flags<ModKey> mod_keys)
+void ColorDlg::KeyPress(Key key, std::uint32_t key_code_point, Flags<ModKey> mod_keys)
 {
     if (key == GGK_RETURN || key == GGK_KP_ENTER)
         OkClicked();
@@ -551,35 +541,20 @@ void ColorDlg::KeyPress(Key key, boost::uint32_t key_code_point, Flags<ModKey> m
         CancelClicked();
 }
 
-void ColorDlg::Init(const boost::shared_ptr<Font>& font)
+void ColorDlg::Init(const std::shared_ptr<Font>& font)
 {
     m_current_color = m_original_color_specified ? Convert(m_original_color) : Convert(CLR_BLACK);
     Clr color = Convert(m_current_color);
 
-    boost::shared_ptr<StyleFactory> style = GetStyleFactory();
+    std::shared_ptr<StyleFactory> style = GetStyleFactory();
 
     const int COLOR_BUTTON_ROWS = 4;
     const int COLOR_BUTTON_COLS = 5;
     if (s_custom_colors.empty()) {
-        s_custom_colors.push_back(GG::CLR_WHITE);
-        s_custom_colors.push_back(GG::CLR_LIGHT_GRAY);
-        s_custom_colors.push_back(GG::CLR_GRAY);
-        s_custom_colors.push_back(GG::CLR_DARK_GRAY);
-        s_custom_colors.push_back(GG::CLR_BLACK);
-        s_custom_colors.push_back(GG::CLR_PINK);
-        s_custom_colors.push_back(GG::CLR_RED);
-        s_custom_colors.push_back(GG::CLR_DARK_RED);
-        s_custom_colors.push_back(GG::CLR_MAGENTA);
-        s_custom_colors.push_back(GG::CLR_PURPLE);
-        s_custom_colors.push_back(GG::CLR_BLUE);
-        s_custom_colors.push_back(GG::CLR_DARK_BLUE);
-        s_custom_colors.push_back(GG::CLR_TEAL);
-        s_custom_colors.push_back(GG::CLR_CYAN);
-        s_custom_colors.push_back(GG::CLR_GREEN);
-        s_custom_colors.push_back(GG::CLR_DARK_GREEN);
-        s_custom_colors.push_back(GG::CLR_OLIVE);
-        s_custom_colors.push_back(GG::CLR_YELLOW);
-        s_custom_colors.push_back(GG::CLR_ORANGE);
+        s_custom_colors = { GG::CLR_WHITE,      GG::CLR_LIGHT_GRAY, GG::CLR_GRAY,       GG::CLR_DARK_GRAY,  GG::CLR_BLACK,
+                            GG::CLR_PINK,       GG::CLR_RED,        GG::CLR_DARK_RED,   GG::CLR_MAGENTA,    GG::CLR_PURPLE,
+                            GG::CLR_BLUE,       GG::CLR_DARK_BLUE,  GG::CLR_TEAL,       GG::CLR_CYAN,       GG::CLR_GREEN,
+                            GG::CLR_DARK_GREEN, GG::CLR_OLIVE,      GG::CLR_YELLOW,     GG::CLR_ORANGE};
 
         for (unsigned int i = s_custom_colors.size(); i < COLOR_BUTTON_ROWS * COLOR_BUTTON_COLS; ++i) {
             s_custom_colors.push_back(CLR_GRAY);
@@ -718,7 +693,7 @@ void ColorDlg::Init(const boost::shared_ptr<Font>& font)
 void ColorDlg::ConnectSignals()
 {
     for (std::size_t i = 0; i < m_color_buttons.size(); ++i) {
-        Connect(m_color_buttons[i]->LeftClickedSignal, ColorButtonClickFunctor(i, this));
+        Connect(m_color_buttons[i]->LeftClickedSignal, [this, i](){ this->ColorButtonClicked(i); });
     }
     Connect(m_sliders[R]->SlidSignal, &ColorDlg::RedSliderChanged, this);
     Connect(m_sliders[G]->SlidSignal, &ColorDlg::GreenSliderChanged, this);

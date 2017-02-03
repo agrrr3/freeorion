@@ -4,6 +4,7 @@
 #include "../util/Logger.h"
 #include "../universe/ResourceCenter.h"
 #include "../universe/System.h"
+#include "../universe/Enums.h"
 #include "../Empire/Empire.h"
 #include "../client/human/HumanClientApp.h"
 #include "CUIControls.h"
@@ -12,7 +13,7 @@ namespace {
     /** Returns how much of specified \a resource_type is being consumed by the
       * empire with id \a empire_id at the location of the specified
       * object \a obj. */
-    double ObjectResourceConsumption(TemporaryPtr<const UniverseObject> obj, ResourceType resource_type, int empire_id = ALL_EMPIRES) {
+    double ObjectResourceConsumption(std::shared_ptr<const UniverseObject> obj, ResourceType resource_type, int empire_id = ALL_EMPIRES) {
         if (!obj) {
             ErrorLogger() << "ObjectResourceConsumption passed a null object";
             return 0.0;
@@ -40,9 +41,9 @@ namespace {
         }
 
 
-        //TemporaryPtr<const PopCenter> pc = 0;
+        //std::shared_ptr<const PopCenter> pc;
         double prod_queue_allocation_sum = 0.0;
-        TemporaryPtr<const Building> building;
+        std::shared_ptr<const Building> building;
 
         switch (resource_type) {
         case RE_INDUSTRY:
@@ -176,7 +177,7 @@ void SystemResourceSummaryBrowseWnd::UpdateProduction(GG::Y& top) {
     }
     m_production_labels_and_amounts.clear();
 
-    TemporaryPtr<const System> system = GetSystem(m_system_id);
+    std::shared_ptr<const System> system = GetSystem(m_system_id);
     if (!system || m_resource_type == INVALID_RESOURCE_TYPE)
         return;
 
@@ -185,15 +186,15 @@ void SystemResourceSummaryBrowseWnd::UpdateProduction(GG::Y& top) {
 
 
     // add label-value pair for each resource-producing object in system to indicate amount of resource produced
-    std::vector<TemporaryPtr<const UniverseObject> > objects =
+    std::vector<std::shared_ptr<const UniverseObject>> objects =
         Objects().FindObjects<const UniverseObject>(system->ContainedObjectIDs());
 
-    for (TemporaryPtr<const UniverseObject> obj : objects) {
+    for (std::shared_ptr<const UniverseObject> obj : objects) {
         // display information only for the requested player
         if (m_empire_id != ALL_EMPIRES && !obj->OwnedBy(m_empire_id))
             continue;   // if m_empire_id == -1, display resource production for all empires.  otherwise, skip this resource production if it's not owned by the requested player
 
-        TemporaryPtr<const ResourceCenter> rc = boost::dynamic_pointer_cast<const ResourceCenter>(obj);
+        std::shared_ptr<const ResourceCenter> rc = std::dynamic_pointer_cast<const ResourceCenter>(obj);
         if (!rc) continue;
 
         std::string name = obj->Name();
@@ -266,7 +267,7 @@ void SystemResourceSummaryBrowseWnd::UpdateAllocation(GG::Y& top) {
     }
     m_allocation_labels_and_amounts.clear();
 
-    TemporaryPtr<const System> system = GetSystem(m_system_id);
+    std::shared_ptr<const System> system = GetSystem(m_system_id);
     if (!system || m_resource_type == INVALID_RESOURCE_TYPE)
         return;
 
@@ -275,7 +276,7 @@ void SystemResourceSummaryBrowseWnd::UpdateAllocation(GG::Y& top) {
 
 
     // add label-value pair for each resource-consuming object in system to indicate amount of resource consumed
-    for (TemporaryPtr<const UniverseObject> obj : Objects().FindObjects<const UniverseObject>(system->ContainedObjectIDs())) {
+    for (std::shared_ptr<const UniverseObject> obj : Objects().FindObjects<const UniverseObject>(system->ContainedObjectIDs())) {
         // display information only for the requested player
         if (m_empire_id != ALL_EMPIRES && !obj->OwnedBy(m_empire_id))
             continue;   // if m_empire_id == ALL_EMPIRES, display resource production for all empires.  otherwise, skip this resource production if it's not owned by the requested player

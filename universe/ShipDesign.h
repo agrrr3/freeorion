@@ -1,22 +1,24 @@
 #ifndef _ShipDesign_h_
 #define _ShipDesign_h_
 
+
 #include "ValueRefFwd.h"
 
+#include <map>
+#include <memory>
+#include <set>
 #include <string>
 #include <vector>
-#include <map>
-#include <set>
 
 #include <boost/algorithm/string/case_conv.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/variant.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/nvp.hpp>
 
-#include "Enums.h"
+#include "EnumsFwd.h"
 
 #include "../util/Export.h"
+
 
 namespace Condition {
     struct ConditionBase;
@@ -45,7 +47,7 @@ struct CommonParams {
                  bool producible_,
                  const std::set<std::string>& tags_,
                  Condition::ConditionBase* location_,
-                 const std::vector<boost::shared_ptr<Effect::EffectsGroup> >& effects_,
+                 const std::vector<std::shared_ptr<Effect::EffectsGroup>>& effects_,
                  std::map<MeterType, std::pair<ValueRef::ValueRefBase<double>*, Condition::ConditionBase*> > production_meter_consumption_,
                  std::map<std::string, std::pair<ValueRef::ValueRefBase<double>*, Condition::ConditionBase*> > production_special_consumption_,
                  Condition::ConditionBase* enqueue_location_) :
@@ -73,7 +75,7 @@ struct CommonParams {
                                                             production_special_consumption;
     Condition::ConditionBase*                               location;
     Condition::ConditionBase*                               enqueue_location;
-    std::vector<boost::shared_ptr<Effect::EffectsGroup> >   effects;
+    std::vector<std::shared_ptr<Effect::EffectsGroup>> effects;
 };
 
 struct MoreCommonParams {
@@ -97,55 +99,11 @@ struct MoreCommonParams {
 class FO_COMMON_API PartType {
 public:
     /** \name Structors */ //@{
-    PartType() :
-        m_name("invalid part type"),
-        m_description("indescribable"),
-        m_class(INVALID_SHIP_PART_CLASS),
-        m_capacity(0.0f),
-        m_secondary_stat(1.0f),
-        m_production_cost(nullptr),
-        m_production_time(nullptr),
-        m_producible(false),
-        m_mountable_slot_types(),
-        m_tags(),
-        m_production_meter_consumption(),
-        m_production_special_consumption(),
-        m_location(nullptr),
-        m_exclusions(),
-        m_effects(),
-        m_icon(),
-        m_add_standard_capacity_effect(false)
-    {}
-
+    PartType();
     PartType(ShipPartClass part_class, double capacity, double stat2,
-             const CommonParams& common_params,
-             const MoreCommonParams& more_common_params,
+             const CommonParams& common_params, const MoreCommonParams& more_common_params,
              std::vector<ShipSlotType> mountable_slot_types,
-             const std::string& icon,
-             bool add_standard_capacity_effect = true) :
-        m_name(more_common_params.name),
-        m_description(more_common_params.description),
-        m_class(part_class),
-        m_capacity(capacity),
-        m_secondary_stat(stat2),
-        m_production_cost(common_params.production_cost),
-        m_production_time(common_params.production_time),
-        m_producible(common_params.producible),
-        m_mountable_slot_types(mountable_slot_types),
-        m_tags(),
-        m_production_meter_consumption(common_params.production_meter_consumption),
-        m_production_special_consumption(common_params.production_special_consumption),
-        m_location(common_params.location),
-        m_exclusions(more_common_params.exclusions),
-        m_effects(),
-        m_icon(icon),
-        m_add_standard_capacity_effect(add_standard_capacity_effect)
-    {
-        //std::cout << "part type: " << m_name << " producible: " << m_producible << std::endl;
-        Init(common_params.effects);
-        for (const std::string& tag : common_params.tags)
-            m_tags.insert(boost::to_upper_copy<std::string>(tag));
-    }
+             const std::string& icon, bool add_standard_capacity_effect = true);
 
     ~PartType();
     //@}
@@ -175,13 +133,16 @@ public:
     const std::set<std::string>& Tags() const       { return m_tags; }
     const Condition::ConditionBase* Location() const{ return m_location; }          ///< returns the condition that determines the locations where ShipDesign containing part can be produced
     const std::set<std::string>& Exclusions() const { return m_exclusions; }        ///< returns the names of other content that cannot be used in the same ship design as this part
-    const std::vector<boost::shared_ptr<Effect::EffectsGroup> >& Effects() const
-                                                    { return m_effects; }           ///< returns the EffectsGroups that encapsulate the effects this part has
+
+    /** Returns the EffectsGroups that encapsulate the effects this part has. */
+    const std::vector<std::shared_ptr<Effect::EffectsGroup>>& Effects() const
+    { return m_effects; }
+
     const std::string&      Icon() const            { return m_icon; }              ///< returns icon graphic that represents part in UI
     //@}
 
 private:
-    void                    Init(const std::vector<boost::shared_ptr<Effect::EffectsGroup> >& effects);
+    void Init(const std::vector<std::shared_ptr<Effect::EffectsGroup>>& effects);
 
     std::string                                             m_name;
     std::string                                             m_description;
@@ -199,7 +160,7 @@ private:
                                                             m_production_special_consumption;
     Condition::ConditionBase*                               m_location;
     std::set<std::string>                                   m_exclusions;
-    std::vector<boost::shared_ptr<Effect::EffectsGroup> >   m_effects;
+    std::vector<std::shared_ptr<Effect::EffectsGroup>> m_effects;
     std::string                                             m_icon;
     bool                                                    m_add_standard_capacity_effect;
 
@@ -283,9 +244,7 @@ struct HullTypeStats {
 class FO_COMMON_API HullType {
 public:
     struct Slot {
-        Slot() :
-            type(INVALID_SHIP_SLOT_TYPE), x(0.5), y(0.5)
-        {}
+        Slot();
         Slot(ShipSlotType slot_type, double x_, double y_) :
             type(slot_type), x(x_), y(y_)
         {}
@@ -380,15 +339,18 @@ public:
     const Condition::ConditionBase* Location() const
     { return m_location; }                                                      ///< returns the condition that determines the locations where ShipDesign containing hull can be produced
     const std::set<std::string>& Exclusions() const { return m_exclusions; }    ///< returns the names of other content that cannot be used in the same ship design as this part
-    const std::vector<boost::shared_ptr<Effect::EffectsGroup> >& Effects() const
-    { return m_effects; }                                                       ///< returns the EffectsGroups that encapsulate the effects this part hull has
+
+    /** Returns the EffectsGroups that encapsulate the effects this part hull
+        has. */
+    const std::vector<std::shared_ptr<Effect::EffectsGroup>>& Effects() const
+    { return m_effects; }
 
     const std::string&  Graphic() const         { return m_graphic; }           ///< returns the image that represents the hull on the design screen
     const std::string&  Icon() const            { return m_icon; }              ///< returns the small icon to represent hull
     //@}
 
 private:
-    void                Init(const std::vector<boost::shared_ptr<Effect::EffectsGroup> >& effects);
+    void Init(const std::vector<std::shared_ptr<Effect::EffectsGroup>>& effects);
 
     std::string                                             m_name;
     std::string                                             m_description;
@@ -407,7 +369,7 @@ private:
                                                             m_production_special_consumption;
     Condition::ConditionBase*                               m_location;
     std::set<std::string>                                   m_exclusions;
-    std::vector<boost::shared_ptr<Effect::EffectsGroup> >   m_effects;
+    std::vector<std::shared_ptr<Effect::EffectsGroup>> m_effects;
     std::string                                             m_graphic;
     std::string                                             m_icon;
 

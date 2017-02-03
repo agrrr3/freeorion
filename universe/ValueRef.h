@@ -11,8 +11,10 @@
 #include <boost/any.hpp>
 #include <boost/format.hpp>
 
+#include <iterator>
 #include <map>
 #include <set>
+
 
 class UniverseObject;
 
@@ -25,16 +27,16 @@ struct ScriptingContext {
     /** Context with only a source object.  Useful for evaluating effectsgroup
       * scope and activation conditions that have no external candidates or
       * effect target to propagate. */
-    explicit ScriptingContext(TemporaryPtr<const UniverseObject> source_) :
+    explicit ScriptingContext(std::shared_ptr<const UniverseObject> source_) :
         source(source_)
     {}
 
-    ScriptingContext(TemporaryPtr<const UniverseObject> source_, TemporaryPtr<UniverseObject> target_) :
+    ScriptingContext(std::shared_ptr<const UniverseObject> source_, std::shared_ptr<UniverseObject> target_) :
         source(source_),
         effect_target(target_)
     {}
 
-    ScriptingContext(TemporaryPtr<const UniverseObject> source_, TemporaryPtr<UniverseObject> target_,
+    ScriptingContext(std::shared_ptr<const UniverseObject> source_, std::shared_ptr<UniverseObject> target_,
                      const boost::any& current_value_) :
         source(source_),
         effect_target(target_),
@@ -57,7 +59,7 @@ struct ScriptingContext {
       * there is no root candidate in the parent context, then the input object
       * becomes the root candidate. */
     ScriptingContext(const ScriptingContext& parent_context,
-                     TemporaryPtr<const UniverseObject> condition_local_candidate) :
+                     std::shared_ptr<const UniverseObject> condition_local_candidate) :
         source(                     parent_context.source),
         effect_target(              parent_context.effect_target),
         condition_root_candidate(   parent_context.condition_root_candidate ?
@@ -67,20 +69,20 @@ struct ScriptingContext {
         current_value(              parent_context.current_value)
     {}
 
-    ScriptingContext(TemporaryPtr<const UniverseObject> source_, TemporaryPtr<UniverseObject> target_,
+    ScriptingContext(std::shared_ptr<const UniverseObject> source_, std::shared_ptr<UniverseObject> target_,
                      const boost::any& current_value_,
-                     TemporaryPtr<const UniverseObject> condition_root_candidate_,
-                     TemporaryPtr<const UniverseObject> condition_local_candidate_) :
+                     std::shared_ptr<const UniverseObject> condition_root_candidate_,
+                     std::shared_ptr<const UniverseObject> condition_local_candidate_) :
         source(source_),
         condition_root_candidate(condition_root_candidate_),
         condition_local_candidate(condition_local_candidate_),
         current_value(current_value_)
     {}
 
-    TemporaryPtr<const UniverseObject>  source;
-    TemporaryPtr<UniverseObject>        effect_target;
-    TemporaryPtr<const UniverseObject>  condition_root_candidate;
-    TemporaryPtr<const UniverseObject>  condition_local_candidate;
+    std::shared_ptr<const UniverseObject> source;
+    std::shared_ptr<UniverseObject> effect_target;
+    std::shared_ptr<const UniverseObject> condition_root_candidate;
+    std::shared_ptr<const UniverseObject> condition_local_candidate;
     const boost::any                    current_value;
 };
 
@@ -274,10 +276,10 @@ protected:
     /** Evaluates the property for the specified objects. */
     void    GetObjectPropertyValues(const ScriptingContext& context,
                                     const Condition::ObjectSet& objects,
-                                    std::map<TemporaryPtr<const UniverseObject>, T>& object_property_values) const;
+                                    std::map<std::shared_ptr<const UniverseObject>, T>& object_property_values) const;
 
     /** Computes the statistic from the specified set of property values. */
-    T ReduceData(const std::map<TemporaryPtr<const UniverseObject>, T>& object_property_values) const;
+    T ReduceData(const std::map<std::shared_ptr<const UniverseObject>, T>& object_property_values) const;
 
 private:
     StatisticType m_stat_type;
@@ -295,11 +297,11 @@ template <class T>
 struct FO_COMMON_API ComplexVariable : public Variable<T>
 {
     explicit ComplexVariable(const std::string& variable_name,
-                             ValueRefBase<int>* int_ref1 = 0,
-                             ValueRefBase<int>* int_ref2 = 0,
-                             ValueRefBase<int>* int_ref3 = 0,
-                             ValueRefBase<std::string>* string_ref1 = 0,
-                             ValueRefBase<std::string>* string_ref2 = 0);
+                             ValueRefBase<int>* int_ref1 = nullptr,
+                             ValueRefBase<int>* int_ref2 = nullptr,
+                             ValueRefBase<int>* int_ref3 = nullptr,
+                             ValueRefBase<std::string>* string_ref1 = nullptr,
+                             ValueRefBase<std::string>* string_ref2 = nullptr);
 
     ~ComplexVariable();
 
@@ -424,10 +426,12 @@ private:
     void serialize(Archive& ar, const unsigned int version);
 };
 
-/** Looks up a string ValueRef and returns the UserString equivalent. */
+/** Looks up a string ValueRef or vector of string ValueRefs, and returns
+  * and returns the UserString equivalent(s). */
+template <class FromType>
 struct FO_COMMON_API UserStringLookup : public Variable<std::string> {
-    UserStringLookup(Variable<std::string>* value_ref);
-    UserStringLookup(ValueRefBase<std::string>* value_ref);
+    UserStringLookup(Variable<FromType>* value_ref);
+    UserStringLookup(ValueRefBase<FromType>* value_ref);
     ~UserStringLookup();
 
     bool operator==(const ValueRefBase<std::string>& rhs) const override;
@@ -448,11 +452,11 @@ struct FO_COMMON_API UserStringLookup : public Variable<std::string> {
 
     void SetTopLevelContent(const std::string& content_name) override;
 
-    const ValueRefBase<std::string>* GetValueRef() const
+    const ValueRefBase<FromType>* GetValueRef() const
     { return m_value_ref; }
 
 private:
-    ValueRefBase<std::string>* m_value_ref;
+    ValueRefBase<FromType>* m_value_ref;
 
     friend class boost::serialization::access;
     template <class Archive>
@@ -753,6 +757,9 @@ double Variable<double>::Eval(const ScriptingContext& context) const;
 template <>
 int Variable<int>::Eval(const ScriptingContext& context) const;
 
+template <>
+std::vector<std::string> Variable<std::vector<std::string>>::Eval(const ScriptingContext& context) const;
+
 template <class T>
 template <class Archive>
 void Variable<T>::serialize(Archive& ar, const unsigned int version)
@@ -766,9 +773,8 @@ void Variable<T>::serialize(Archive& ar, const unsigned int version)
 // Statistic                                             //
 ///////////////////////////////////////////////////////////
 template <class T>
-Statistic<T>::Statistic(ValueRefBase<T>* value_ref,
-                                  StatisticType stat_type,
-                                  Condition::ConditionBase* sampling_condition) :
+Statistic<T>::Statistic(ValueRefBase<T>* value_ref, StatisticType stat_type,
+                        Condition::ConditionBase* sampling_condition) :
     Variable<T>(NON_OBJECT_REFERENCE, ""),
     m_stat_type(stat_type),
     m_sampling_condition(sampling_condition),
@@ -810,8 +816,8 @@ bool Statistic<T>::operator==(const ValueRefBase<T>& rhs) const
 
 template <class T>
 void Statistic<T>::GetConditionMatches(const ScriptingContext& context,
-                                                 Condition::ObjectSet& condition_targets,
-                                                 Condition::ConditionBase* condition) const
+                                       Condition::ObjectSet& condition_targets,
+                                       Condition::ConditionBase* condition) const
 {
     condition_targets.clear();
     if (!condition)
@@ -821,15 +827,15 @@ void Statistic<T>::GetConditionMatches(const ScriptingContext& context,
 
 template <class T>
 void Statistic<T>::GetObjectPropertyValues(const ScriptingContext& context,
-                                                     const Condition::ObjectSet& objects,
-                                                     std::map<TemporaryPtr<const UniverseObject>, T>& object_property_values) const
+                                           const Condition::ObjectSet& objects,
+                                           std::map<std::shared_ptr<const UniverseObject>, T>& object_property_values) const
 {
     object_property_values.clear();
 
     if (m_value_ref) {
         // evaluate ValueRef with each condition match as the LocalCandidate
         // TODO: Can / should this be paralleized?
-        for (TemporaryPtr<const UniverseObject> object : objects) {
+        for (std::shared_ptr<const UniverseObject> object : objects) {
             T property_value = m_value_ref->Eval(ScriptingContext(context, object));
             object_property_values[object] = property_value;
         }
@@ -925,7 +931,7 @@ T Statistic<T>::Eval(const ScriptingContext& context) const
         return T(-1);   // should be INVALID_T of enum types
 
     // evaluate property for each condition-matched object
-    std::map<TemporaryPtr<const UniverseObject>, T> object_property_values;
+    std::map<std::shared_ptr<const UniverseObject>, T> object_property_values;
     GetObjectPropertyValues(context, condition_matches, object_property_values);
 
     // count number of each result, tracking which has the most occurances
@@ -933,12 +939,12 @@ T Statistic<T>::Eval(const ScriptingContext& context) const
     typename std::map<T, unsigned int>::const_iterator most_common_property_value_it = histogram.begin();
     unsigned int max_seen(0);
 
-    for (const typename std::map<TemporaryPtr<const UniverseObject>, T>::value_type& entry : object_property_values) {
+    for (const typename std::map<std::shared_ptr<const UniverseObject>, T>::value_type& entry : object_property_values) {
         const T& property_value = entry.second;
 
         typename std::map<T, unsigned int>::iterator hist_it = histogram.find(property_value);
         if (hist_it == histogram.end())
-            hist_it = histogram.insert(std::make_pair(property_value, 0)).first;
+            hist_it = histogram.insert({property_value, 0}).first;
         unsigned int& num_seen = hist_it->second;
 
         num_seen++;
@@ -963,7 +969,7 @@ template <>
 std::string Statistic<std::string>::Eval(const ScriptingContext& context) const;
 
 template <class T>
-T Statistic<T>::ReduceData(const std::map<TemporaryPtr<const UniverseObject>, T>& object_property_values) const
+T Statistic<T>::ReduceData(const std::map<std::shared_ptr<const UniverseObject>, T>& object_property_values) const
 {
     if (object_property_values.empty())
         return T(0);
@@ -975,7 +981,7 @@ T Statistic<T>::ReduceData(const std::map<TemporaryPtr<const UniverseObject>, T>
         }
         case UNIQUE_COUNT: {
             std::set<T> observed_values;
-            for (const typename std::map<TemporaryPtr<const UniverseObject>, T>::value_type& entry : object_property_values) {
+            for (const typename std::map<std::shared_ptr<const UniverseObject>, T>::value_type& entry : object_property_values) {
                 observed_values.insert(entry.second);
             }
             return T(observed_values.size());
@@ -989,7 +995,7 @@ T Statistic<T>::ReduceData(const std::map<TemporaryPtr<const UniverseObject>, T>
         }
         case SUM: {
             T accumulator(0);
-            for (const typename std::map<TemporaryPtr<const UniverseObject>, T>::value_type& entry : object_property_values) {
+            for (const typename std::map<std::shared_ptr<const UniverseObject>, T>::value_type& entry : object_property_values) {
                 accumulator += entry.second;
             }
             return accumulator;
@@ -998,7 +1004,7 @@ T Statistic<T>::ReduceData(const std::map<TemporaryPtr<const UniverseObject>, T>
 
         case MEAN: {
             T accumulator(0);
-            for (const typename std::map<TemporaryPtr<const UniverseObject>, T>::value_type& entry : object_property_values) {
+            for (const typename std::map<std::shared_ptr<const UniverseObject>, T>::value_type& entry : object_property_values) {
                 accumulator += entry.second;
             }
             return accumulator / static_cast<T>(object_property_values.size());
@@ -1007,7 +1013,7 @@ T Statistic<T>::ReduceData(const std::map<TemporaryPtr<const UniverseObject>, T>
 
         case RMS: {
             T accumulator(0);
-            for (const typename std::map<TemporaryPtr<const UniverseObject>, T>::value_type& entry : object_property_values) {
+            for (const typename std::map<std::shared_ptr<const UniverseObject>, T>::value_type& entry : object_property_values) {
                 accumulator += (entry.second * entry.second);
             }
             accumulator /= static_cast<T>(object_property_values.size());
@@ -1023,12 +1029,12 @@ T Statistic<T>::ReduceData(const std::map<TemporaryPtr<const UniverseObject>, T>
             typename std::map<T, unsigned int>::const_iterator most_common_property_value_it = histogram.begin();
             unsigned int max_seen(0);
 
-            for (const typename std::map<TemporaryPtr<const UniverseObject>, T>::value_type& entry : object_property_values) {
+            for (const typename std::map<std::shared_ptr<const UniverseObject>, T>::value_type& entry : object_property_values) {
                 const T& property_value = entry.second;
 
                 typename std::map<T, unsigned int>::iterator hist_it = histogram.find(property_value);
                 if (hist_it == histogram.end())
-                    hist_it = histogram.insert(std::make_pair(property_value, 0)).first;
+                    hist_it = histogram.insert({property_value, 0}).first;
                 unsigned int& num_seen = hist_it->second;
 
                 num_seen++;
@@ -1045,9 +1051,9 @@ T Statistic<T>::ReduceData(const std::map<TemporaryPtr<const UniverseObject>, T>
         }
 
         case MAX: {
-            typename std::map<TemporaryPtr<const UniverseObject>, T>::const_iterator max_it = object_property_values.begin();
+            typename std::map<std::shared_ptr<const UniverseObject>, T>::const_iterator max_it = object_property_values.begin();
 
-            for (typename std::map<TemporaryPtr<const UniverseObject>, T>::const_iterator it = object_property_values.begin();
+            for (typename std::map<std::shared_ptr<const UniverseObject>, T>::const_iterator it = object_property_values.begin();
                  it != object_property_values.end(); ++it)
             {
                 const T& property_value = it->second;
@@ -1061,9 +1067,9 @@ T Statistic<T>::ReduceData(const std::map<TemporaryPtr<const UniverseObject>, T>
         }
 
         case MIN: {
-            typename std::map<TemporaryPtr<const UniverseObject>, T>::const_iterator min_it = object_property_values.begin();
+            typename std::map<std::shared_ptr<const UniverseObject>, T>::const_iterator min_it = object_property_values.begin();
 
-            for (typename std::map<TemporaryPtr<const UniverseObject>, T>::const_iterator it = object_property_values.begin();
+            for (typename std::map<std::shared_ptr<const UniverseObject>, T>::const_iterator it = object_property_values.begin();
                  it != object_property_values.end(); ++it)
             {
                 const T& property_value = it->second;
@@ -1077,10 +1083,10 @@ T Statistic<T>::ReduceData(const std::map<TemporaryPtr<const UniverseObject>, T>
         }
 
         case SPREAD: {
-            typename std::map<TemporaryPtr<const UniverseObject>, T>::const_iterator max_it = object_property_values.begin();
-            typename std::map<TemporaryPtr<const UniverseObject>, T>::const_iterator min_it = object_property_values.begin();
+            typename std::map<std::shared_ptr<const UniverseObject>, T>::const_iterator max_it = object_property_values.begin();
+            typename std::map<std::shared_ptr<const UniverseObject>, T>::const_iterator min_it = object_property_values.begin();
 
-            for (typename std::map<TemporaryPtr<const UniverseObject>, T>::const_iterator it = object_property_values.begin();
+            for (typename std::map<std::shared_ptr<const UniverseObject>, T>::const_iterator it = object_property_values.begin();
                  it != object_property_values.end(); ++it)
             {
                 const T& property_value = it->second;
@@ -1101,14 +1107,14 @@ T Statistic<T>::ReduceData(const std::map<TemporaryPtr<const UniverseObject>, T>
 
             // find sample mean
             T accumulator(0);
-            for (const typename std::map<TemporaryPtr<const UniverseObject>, T>::value_type& entry : object_property_values) {
+            for (const typename std::map<std::shared_ptr<const UniverseObject>, T>::value_type& entry : object_property_values) {
                 accumulator += entry.second;
             }
             const T MEAN(accumulator / static_cast<T>(object_property_values.size()));
 
             // find average of squared deviations from sample mean
             accumulator = T(0);
-            for (const typename std::map<TemporaryPtr<const UniverseObject>, T>::value_type& entry : object_property_values) {
+            for (const typename std::map<std::shared_ptr<const UniverseObject>, T>::value_type& entry : object_property_values) {
                 accumulator += (entry.second - MEAN) * (entry.second - MEAN);
             }
             const T MEAN_DEV2(accumulator / static_cast<T>(static_cast<int>(object_property_values.size()) - 1));
@@ -1119,7 +1125,7 @@ T Statistic<T>::ReduceData(const std::map<TemporaryPtr<const UniverseObject>, T>
 
         case PRODUCT: {
             T accumulator(1);
-            for (const typename std::map<TemporaryPtr<const UniverseObject>, T>::value_type& entry : object_property_values) {
+            for (const typename std::map<std::shared_ptr<const UniverseObject>, T>::value_type& entry : object_property_values) {
                 accumulator *= entry.second;
             }
             return accumulator;
@@ -1522,6 +1528,9 @@ std::string StringCast<double>::Eval(const ScriptingContext& context) const;
 template <>
 std::string StringCast<int>::Eval(const ScriptingContext& context) const;
 
+template <>
+std::string StringCast<std::vector<std::string>>::Eval(const ScriptingContext& context) const;
+
 template <class FromType>
 bool StringCast<FromType>::RootCandidateInvariant() const
 { return m_value_ref->RootCandidateInvariant(); }
@@ -1563,8 +1572,108 @@ void StringCast<FromType>::serialize(Archive& ar, const unsigned int version)
 ///////////////////////////////////////////////////////////
 // UserStringLookup                                      //
 ///////////////////////////////////////////////////////////
+template <class FromType>
+UserStringLookup<FromType>::UserStringLookup(Variable<FromType>* value_ref) :
+    Variable<std::string>(value_ref->GetReferenceType(), value_ref->PropertyName()),
+    m_value_ref(value_ref)
+{}
+
+template <class FromType>
+UserStringLookup<FromType>::UserStringLookup(ValueRefBase<FromType>* value_ref) :
+    Variable<std::string>(NON_OBJECT_REFERENCE),
+    m_value_ref(value_ref)
+{}
+
+template <class FromType>
+UserStringLookup<FromType>::~UserStringLookup()
+{
+    delete m_value_ref;
+}
+
+template <class FromType>
+bool UserStringLookup<FromType>::operator==(const ValueRefBase<std::string>& rhs) const {
+    if (&rhs == this)
+        return true;
+    if (typeid(rhs) != typeid(*this))
+        return false;
+    const UserStringLookup& rhs_ =
+        static_cast<const UserStringLookup&>(rhs);
+
+    if (m_value_ref == rhs_.m_value_ref) {
+        // check next member
+    }
+    else if (!m_value_ref || !rhs_.m_value_ref) {
+        return false;
+    }
+    else {
+        if (*m_value_ref != *(rhs_.m_value_ref))
+            return false;
+    }
+
+    return true;
+}
+
+template <class FromType>
+std::string UserStringLookup<FromType>::Eval(const ScriptingContext& context) const {
+    if (!m_value_ref)
+        return "";
+    std::string ref_val = boost::lexical_cast<std::string>(m_value_ref->Eval(context));
+    if (ref_val.empty() || !UserStringExists(ref_val))
+        return "";
+    return UserString(ref_val);
+}
+
+template <>
+std::string UserStringLookup<std::string>::Eval(const ScriptingContext& context) const;
+
+template <>
+std::string UserStringLookup<std::vector<std::string>>::Eval(const ScriptingContext& context) const;
+
+template <class FromType>
+bool UserStringLookup<FromType>::RootCandidateInvariant() const
+{
+    return m_value_ref->RootCandidateInvariant();
+}
+
+template <class FromType>
+bool UserStringLookup<FromType>::LocalCandidateInvariant() const
+{
+    return !m_value_ref || m_value_ref->LocalCandidateInvariant();
+}
+
+template <class FromType>
+bool UserStringLookup<FromType>::TargetInvariant() const
+{
+    return !m_value_ref || m_value_ref->TargetInvariant();
+}
+
+template <class FromType>
+bool UserStringLookup<FromType>::SourceInvariant() const
+{
+    return !m_value_ref || m_value_ref->SourceInvariant();
+}
+
+template <class FromType>
+std::string UserStringLookup<FromType>::Description() const
+{
+    return m_value_ref->Description();
+}
+
+template <class FromType>
+std::string UserStringLookup<FromType>::Dump() const
+{
+    return m_value_ref->Dump();
+}
+
+template <class FromType>
+void UserStringLookup<FromType>::SetTopLevelContent(const std::string& content_name) {
+    if (m_value_ref)
+        m_value_ref->SetTopLevelContent(content_name);
+}
+
+template <class FromType>
 template <class Archive>
-void UserStringLookup::serialize(Archive& ar, const unsigned int version)
+void UserStringLookup<FromType>::serialize(Archive& ar, const unsigned int version)
 {
     ar  & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ValueRefBase<std::string>)
         & BOOST_SERIALIZATION_NVP(m_value_ref);
@@ -1695,9 +1804,7 @@ T Operation<T>::Eval(const ScriptingContext& context) const
             if (m_operands.empty())
                 return T(-1);   // should be INVALID_T of enum types
             unsigned int idx = RandSmallInt(0, m_operands.size() - 1);
-            typename std::vector<ValueRefBase<T>*>::const_iterator it = m_operands.begin();
-            std::advance(it, idx);
-            ValueRefBase<T>* vr = *it;
+            ValueRefBase<T>* vr = *std::next(m_operands.begin(), idx);
             if (!vr)
                 return T(-1);   // should be INVALID_T of enum types
             return vr->Eval(context);
@@ -1716,10 +1823,10 @@ template <>
 std::string Operation<std::string>::Eval(const ScriptingContext& context) const;
 
 template <>
-double      Operation<double>::Eval(const ScriptingContext& context) const;
+double Operation<double>::Eval(const ScriptingContext& context) const;
 
 template <>
-int         Operation<int>::Eval(const ScriptingContext& context) const;
+int Operation<int>::Eval(const ScriptingContext& context) const;
 
 template <class T>
 bool Operation<T>::RootCandidateInvariant() const

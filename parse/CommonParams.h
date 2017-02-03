@@ -2,7 +2,7 @@
 #define _Common_Params_h_
 
 #include "Lexer.h"
-#include "../universe/Enums.h"
+#include "../universe/EnumsFwd.h"
 #include "../universe/ShipDesign.h"
 #include "../universe/Condition.h"
 #include "../universe/Effect.h"
@@ -37,7 +37,7 @@ namespace parse { namespace detail {
             bool,
             std::set<std::string>,
             Condition::ConditionBase*,
-            std::vector<boost::shared_ptr<Effect::EffectsGroup> >,
+            std::vector<std::shared_ptr<Effect::EffectsGroup>>,
             std::map<MeterType, std::pair<ValueRef::ValueRefBase<double>*, Condition::ConditionBase*> >,
             std::map<std::string, std::pair<ValueRef::ValueRefBase<double>*, Condition::ConditionBase*> >,
             Condition::ConditionBase*

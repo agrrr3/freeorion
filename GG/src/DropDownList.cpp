@@ -33,6 +33,9 @@
 
 #include <boost/optional/optional.hpp>
 
+#include <iterator>
+
+
 using namespace GG;
 
 class ModalListPicker : public Control
@@ -81,7 +84,7 @@ public:
     /** A common KeyPress() for both ModalListPicker and its DropDownList.
         Examine \p key and return the new list iterator or none.*/
     boost::optional<DropDownList::iterator> KeyPressCommon(
-        Key key, boost::uint32_t key_code_point, Flags<ModKey> mod_keys);
+        Key key, std::uint32_t key_code_point, Flags<ModKey> mod_keys);
 
     /** A common MouseWheel() for both ModalListPicker and its DropDownList.
         Examine \p pt and \p move and then return the new list iterator or none.*/
@@ -89,9 +92,9 @@ public:
         const Pt& pt, int move, Flags<ModKey> mod_keys);
 
 protected:
-    /** ModalListPicker needs to process its own key press events because modal windows in GG
-        can't have parents. */
-    void KeyPress(Key key, boost::uint32_t key_code_point, Flags<ModKey> mod_keys) override;
+    /** ModalListPicker needs to process its own key press events because modal
+        windows in GG can't have parents. */
+    void KeyPress(Key key, std::uint32_t key_code_point, Flags<ModKey> mod_keys) override;
 
     /** ModalListPicker needs to process its own mouse events because modal windows in GG can't
         have parents.*/
@@ -198,8 +201,8 @@ void ModalListPicker::ModalInit()
             m_lb_wnd->BringRowIntoView(--m_lb_wnd->end());
         } else if (current_ii >= half_shown) {
             m_lb_wnd->SetFirstRowShown(
-                boost::next(m_lb_wnd->begin(),
-                            current_ii - half_shown + even_extra_one));
+                std::next(m_lb_wnd->begin(),
+                          current_ii - half_shown + even_extra_one));
         }
     }
 
@@ -308,7 +311,7 @@ void ModalListPicker::CorrectListSize() {
 }
 
 boost::optional<DropDownList::iterator> ModalListPicker::KeyPressCommon(
-    Key key, boost::uint32_t key_code_point, Flags<ModKey> mod_keys)
+    Key key, std::uint32_t key_code_point, Flags<ModKey> mod_keys)
 {
     bool numlock_on = mod_keys & MOD_KEY_NUM;
     if (!numlock_on) {
@@ -332,14 +335,14 @@ boost::optional<DropDownList::iterator> ModalListPicker::KeyPressCommon(
     switch (key) {
     case GGK_UP: // arrow-up (not numpad arrow)
         if (CurrentItem() != LB()->end() && CurrentItem() != LB()->begin()) {
-            DropDownList::iterator prev_it(boost::prior(CurrentItem()));
+            DropDownList::iterator prev_it{std::prev(CurrentItem())};
             LB()->BringRowIntoView(prev_it);
             return prev_it;
         }
         break;
     case GGK_DOWN: // arrow-down (not numpad arrow)
         if (CurrentItem() != LB()->end() && CurrentItem() != --LB()->end()) {
-            DropDownList::iterator next_it(boost::next(CurrentItem()));
+            DropDownList::iterator next_it(std::next(CurrentItem()));
             LB()->BringRowIntoView(next_it);
             return next_it;
         }
@@ -435,7 +438,7 @@ void ModalListPicker::LBSelChangedSlot(const ListBox::SelectionSet& rows)
 void ModalListPicker::LBLeftClickSlot(ListBox::iterator it, const GG::Pt& pt, const GG::Flags<GG::ModKey>& modkeys)
 { EndRun(); }
 
-void ModalListPicker::KeyPress(Key key, boost::uint32_t key_code_point, Flags<ModKey> mod_keys)
+void ModalListPicker::KeyPress(Key key, std::uint32_t key_code_point, Flags<ModKey> mod_keys)
 {
     SignalChanged(Select(KeyPressCommon(key, key_code_point, mod_keys)));
 }
@@ -489,7 +492,7 @@ std::size_t DropDownList::IteratorToIndex(iterator it) const
 { return it == m_modal_picker->LB()->end() ? -1 : std::distance(m_modal_picker->LB()->begin(), it); }
 
 DropDownList::iterator DropDownList::IndexToIterator(std::size_t n) const
-{ return n < LB()->NumRows() ? boost::next(m_modal_picker->LB()->begin(), n) : m_modal_picker->LB()->end(); }
+{ return n < LB()->NumRows() ? std::next(m_modal_picker->LB()->begin(), n) : m_modal_picker->LB()->end(); }
 
 bool DropDownList::Empty() const
 { return LB()->Empty(); }
@@ -507,7 +510,7 @@ bool DropDownList::Selected(iterator it) const
 { return LB()->Selected(it); }
 
 bool DropDownList::Selected(std::size_t n) const
-{ return n < LB()->NumRows() ? LB()->Selected(boost::next(m_modal_picker->LB()->begin(), n)) : false; }
+{ return n < LB()->NumRows() ? LB()->Selected(std::next(m_modal_picker->LB()->begin(), n)) : false; }
 
 Clr DropDownList::InteriorColor() const
 { return LB()->InteriorColor(); }
@@ -748,7 +751,7 @@ void DropDownList::Select(iterator it)
 { m_modal_picker->Select(it); }
 
 void DropDownList::Select(std::size_t n)
-{ m_modal_picker->Select(n < LB()->NumRows() ? boost::next(LB()->begin(), n) : LB()->end()); }
+{ m_modal_picker->Select(n < LB()->NumRows() ? std::next(LB()->begin(), n) : LB()->end()); }
 
 void DropDownList::SetInteriorColor(Clr c)
 { LB()->SetInteriorColor(c); }
@@ -809,7 +812,7 @@ void DropDownList::LClick(const Pt& pt, Flags<ModKey> mod_keys)
     DropDownOpenedSignal(false);
 }
 
-void DropDownList::KeyPress(Key key, boost::uint32_t key_code_point, Flags<ModKey> mod_keys)
+void DropDownList::KeyPress(Key key, std::uint32_t key_code_point, Flags<ModKey> mod_keys)
 {
     if (!Disabled()) {
         boost::optional<DropDownList::iterator> key_selected = m_modal_picker->KeyPressCommon(key, key_code_point, mod_keys);

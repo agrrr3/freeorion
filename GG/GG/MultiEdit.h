@@ -62,7 +62,7 @@ class GG_API MultiEdit : public Edit
 public:
     /** \name Structors */ ///@{
     /** Ctor. */
-    MultiEdit(const std::string& str, const boost::shared_ptr<Font>& font,
+    MultiEdit(const std::string& str, const std::shared_ptr<Font>& font,
               Clr color, Flags<MultiEditStyle> style = MULTI_LINEWRAP, Clr text_color = CLR_BLACK,
               Clr interior = CLR_ZERO);
 
@@ -201,7 +201,7 @@ protected:
     void LButtonDown(const Pt& pt, Flags<ModKey> mod_keys) override;
     void LDrag(const Pt& pt, const Pt& move, Flags<ModKey> mod_keys) override;
     void MouseWheel(const Pt& pt, int move, Flags<ModKey> mod_keys) override;
-    void KeyPress(Key key, boost::uint32_t key_code_point, Flags<ModKey> mod_keys) override;
+    void KeyPress(Key key, std::uint32_t key_code_point, Flags<ModKey> mod_keys) override;
     void TextInput(const std::string* text) override;
 
     /** Recreates the vertical and horizontal scrolls as needed. */

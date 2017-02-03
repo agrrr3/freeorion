@@ -1,18 +1,20 @@
 #ifndef _MapWnd_h_
 #define _MapWnd_h_
 
-#include <vector>
 #include <GG/GGFwd.h>
 #include <GG/GLClientAndServerBuffer.h>
 
 #include "CUIWnd.h"
 #include "CUISlider.h"
-#include "../universe/Enums.h"
+#include "../universe/EnumsFwd.h"
 #include "../universe/Fleet.h"
 #include "FleetButton.h"
 
-#include <boost/unordered_set.hpp>
 #include <boost/unordered_map.hpp>
+
+#include <unordered_set>
+#include <vector>
+
 
 class FleetWnd;
 class MapWndPopup;
@@ -122,9 +124,9 @@ public:
 
     void MouseWheel(const GG::Pt& pt, int move, GG::Flags<GG::ModKey> mod_keys) override;
 
-    void KeyPress(GG::Key key, boost::uint32_t key_code_point, GG::Flags<GG::ModKey> mod_keys) override;
+    void KeyPress(GG::Key key, std::uint32_t key_code_point, GG::Flags<GG::ModKey> mod_keys) override;
 
-    void KeyRelease(GG::Key key, boost::uint32_t key_code_point, GG::Flags<GG::ModKey> mod_keys) override;
+    void KeyRelease(GG::Key key, std::uint32_t key_code_point, GG::Flags<GG::ModKey> mod_keys) override;
 
     void            DoLayout();
 
@@ -147,7 +149,9 @@ public:
 
     void            CenterOnMapCoord(double x, double y);                   //!< centers the map on map position (x, y)
     void            CenterOnObject(int id);                                 //!< centers the map on object with id \a id
-    void            CenterOnObject(TemporaryPtr<const UniverseObject> obj);              //!< centers the map on object \a id
+
+    /** Centers the map on object \a id. */
+    void CenterOnObject(std::shared_ptr<const UniverseObject> obj);
 
     void            ShowPlanet(int planet_id);                              //!< brings up encyclopedia panel and displays info about the planet
     void            ShowCombatLog(int log_id);                              //!< brings up encyclopedia panel and displays info about the combat
@@ -167,7 +171,10 @@ public:
     void            ReselectLastSystem();                                   //!< re-selects the most recently selected system, if a valid one exists
     void            SelectPlanet(int planetID);                             //!< programatically selects planets on sidepanels.  catches signals from production wnd or sidepanel for when the user changes the selected planet
     void            SelectFleet(int fleetID);                               //!< programatically selects fleets by ID
-    void            SelectFleet(TemporaryPtr<Fleet> fleet);                              //!< programatically selects fleets
+
+    /** Programatically selects fleets. */
+    void SelectFleet(std::shared_ptr<Fleet> fleet);
+
     void            ReselectLastFleet();                                    //!< re-selects the most recent selected fleet, if a valid one exists
 
     void            RemoveFleet(int fleet_id); //!< removes specified fleet.
@@ -245,7 +252,7 @@ private:
         type_fleet_buttons and record the fleet buttons in \p m_fleet_buttons.*/
     template <typename K>
     void            CreateFleetButtonsOfType(
-        boost::unordered_map<K, boost::unordered_set<FleetButton*> >& type_fleet_buttons,
+        boost::unordered_map<K, std::unordered_set<FleetButton*>>& type_fleet_buttons,
         const boost::unordered_map<std::pair<K, int>, std::vector<int> > &fleets_map,
         const FleetButton::SizeType& fleet_button_size);
 
@@ -255,17 +262,27 @@ private:
     void            RefreshFleetButtonSelectionIndicators();    //!< marks (only) selected fleets' buttons as selected
 
     /** Connect all \p fleets StateChangedSignal to RefreshFleetButtons. */
-    void            AddFleetsStateChangedSignal(const std::vector<TemporaryPtr<Fleet> >& fleets);
+    void AddFleetsStateChangedSignal(const std::vector<std::shared_ptr<Fleet>>& fleets);
+
     /** Disconnect all \p fleets StateChangedSignal from RefreshFleetButtons. */
-    void            RemoveFleetsStateChangedSignal(const std::vector<TemporaryPtr<Fleet> >& fleets);
-    /** Handle FleetsInsertedSignal by connecting signals and refreshing fleet buttons. */
-    void            FleetsInsertedSignalHandler(const std::vector<TemporaryPtr<Fleet> >& fleets);
-    /** Handle FleetsRemovedSignal by disconnecting signals and refreshing fleet buttons. */
-    void            FleetsRemovedSignalHandler(const std::vector<TemporaryPtr<Fleet> >& fleets);
+    void RemoveFleetsStateChangedSignal(const std::vector<std::shared_ptr<Fleet>>& fleets);
+
+    /** Handle FleetsInsertedSignal by connecting signals and refreshing fleet
+        buttons. */
+    void FleetsInsertedSignalHandler(const std::vector<std::shared_ptr<Fleet>>& fleets);
+
+    /** Handle FleetsRemovedSignal by disconnecting signals and refreshing fleet
+        buttons. */
+    void FleetsRemovedSignalHandler(const std::vector<std::shared_ptr<Fleet>>& fleets);
 
 
     void            DoFleetButtonsLayout();                     //!< does layout of fleet buttons
-    std::pair<double, double>   MovingFleetMapPositionOnLane(TemporaryPtr<const Fleet> fleet) const; //!< returns position on map where a moving fleet should be displayed.  This is different from the fleet's actual universe position due to the squishing of fleets moving along a lane into the space between the system circles at the ends of the lane
+
+    /** Returns position on map where a moving fleet should be displayed.  This
+        is different from the fleet's actual universe position due to the
+        squishing of fleets moving along a lane into the space between the
+        system circles at the ends of the lane. */
+    std::pair<double, double> MovingFleetMapPositionOnLane(std::shared_ptr<const Fleet> fleet) const;
 
     void            DoSystemIconsLayout();                      //!< does layout of system icons
     void            DoFieldIconsLayout();                       //!< does layout of field icons
@@ -346,7 +363,7 @@ private:
     void            ShipRightClicked(int fleet_id);
     void            ShipsRightClicked(const std::vector<int>& fleet_ids);
 
-    void            UniverseObjectDeleted(TemporaryPtr<const UniverseObject> obj);
+    void UniverseObjectDeleted(std::shared_ptr<const UniverseObject> obj);
 
     bool            ReturnToMap();
 
@@ -442,9 +459,17 @@ private:
 
     std::map<std::pair<int, int>, LaneEndpoints>    m_starlane_endpoints;                   //!< map from starlane start and end system IDs (stored in pair in increasing order) to the universe coordiates at which to draw the starlane ends
 
-    boost::unordered_map<int, boost::unordered_set<FleetButton*> >          m_stationary_fleet_buttons;             //!< icons representing fleets at a system that are not departing, indexed by system
-    boost::unordered_map<int, boost::unordered_set<FleetButton*> >          m_departing_fleet_buttons;              //!< icons representing fleets at a system that are departing, indexed by system
-    boost::unordered_map<std::pair<double, double>,  boost::unordered_set<FleetButton*> > m_moving_fleet_buttons;   //!< icons representing fleets not at a system
+    /** Icons representing fleets at a system that are not departing, indexed
+        by system. */
+    boost::unordered_map<int, std::unordered_set<FleetButton*>> m_stationary_fleet_buttons;
+
+    /** Icons representing fleets at a system that are departing, indexed by
+        system. */
+    boost::unordered_map<int, std::unordered_set<FleetButton*>> m_departing_fleet_buttons;
+
+    /** Icons representing fleets not at a system. */
+    boost::unordered_map<std::pair<double, double>, std::unordered_set<FleetButton*>> m_moving_fleet_buttons;
+
     boost::unordered_map<int, FleetButton*>                     m_fleet_buttons;                        //!< fleet icons, index by fleet
 
     boost::unordered_map<int, boost::signals2::connection>               m_fleet_state_change_signals;
@@ -455,8 +480,8 @@ private:
 
     std::pair<int, int>                 m_line_between_systems;                             //!< set when map should render line connecting 2 systems
 
-    std::map<boost::shared_ptr<GG::Texture>, GG::GL2DVertexBuffer>  m_star_core_quad_vertices;
-    std::map<boost::shared_ptr<GG::Texture>, GG::GL2DVertexBuffer>  m_star_halo_quad_vertices;
+    std::map<std::shared_ptr<GG::Texture>, GG::GL2DVertexBuffer> m_star_core_quad_vertices;
+    std::map<std::shared_ptr<GG::Texture>, GG::GL2DVertexBuffer> m_star_halo_quad_vertices;
     GG::GL2DVertexBuffer                m_galaxy_gas_quad_vertices;
     GG::GLTexCoordBuffer                m_galaxy_gas_texture_coords;
     GG::GLTexCoordBuffer                m_star_texture_coords;
@@ -467,7 +492,9 @@ private:
     GG::GL2DVertexBuffer                m_RC_starlane_vertices;
     GG::GLRGBAColorBuffer               m_RC_starlane_colors;
 
-    std::map<boost::shared_ptr<GG::Texture>, std::pair<GG::GL2DVertexBuffer, GG::GL2DVertexBuffer> >    m_field_vertices;   //!< first buffer is visible fields, second buffer is not visible (scanlined) fields for each texture
+    /** First buffer is visible fields, second buffer is not visible (scanlined)
+        fields for each texture. */
+    std::map<std::shared_ptr<GG::Texture>, std::pair<GG::GL2DVertexBuffer, GG::GL2DVertexBuffer>> m_field_vertices;
     GG::GL2DVertexBuffer                m_field_scanline_circles;
     GG::GLTexCoordBuffer                m_field_texture_coords;
 

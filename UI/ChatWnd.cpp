@@ -19,9 +19,10 @@
 #include "../util/OptionsDB.h"
 #include "../util/MultiplayerCommon.h"
 
-#include <boost/algorithm/string.hpp>
-#include <boost/spirit/include/classic.hpp>
 #include <GG/GUI.h>
+
+#include <boost/algorithm/string/predicate.hpp>
+#include <boost/spirit/include/classic.hpp>
 
 
 namespace {
@@ -85,7 +86,7 @@ public:
     //@}
 
     //! \name Mutators //@{
-    void KeyPress(GG::Key key, boost::uint32_t key_code_point, GG::Flags<GG::ModKey> mod_keys) override;
+    void KeyPress(GG::Key key, std::uint32_t key_code_point, GG::Flags<GG::ModKey> mod_keys) override;
     //@}
 
     /** emitted when user presses enter/return while entering text */
@@ -123,7 +124,7 @@ MessageWndEdit::MessageWndEdit() :
     m_last_game_word()
 {}
 
-void MessageWndEdit::KeyPress(GG::Key key, boost::uint32_t key_code_point,
+void MessageWndEdit::KeyPress(GG::Key key, std::uint32_t key_code_point,
                               GG::Flags<GG::ModKey> mod_keys)
 {
     switch (key) {
@@ -150,12 +151,12 @@ void MessageWndEdit::FindGameWords() {
         m_game_words.insert(entry.second->PlayerName());
     }
     // add system names
-    for (TemporaryPtr<System> system : GetUniverse().Objects().FindObjects<System>()) {
+    for (std::shared_ptr<System> system : GetUniverse().Objects().FindObjects<System>()) {
         if (system->Name() != "")
             m_game_words.insert(system->Name());
     }
      // add ship names
-    for (TemporaryPtr<Ship> ship : GetUniverse().Objects().FindObjects<Ship>()) {
+    for (std::shared_ptr<Ship> ship : GetUniverse().Objects().FindObjects<Ship>()) {
         if (ship->Name() != "")
             m_game_words.insert(ship->Name());
     }

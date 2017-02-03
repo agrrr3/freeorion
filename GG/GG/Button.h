@@ -61,7 +61,7 @@ public:
     //@}
 
     /** \name Structors */ ///@{
-    Button(const std::string& str, const boost::shared_ptr<Font>& font, Clr color,
+    Button(const std::string& str, const std::shared_ptr<Font>& font, Clr color,
            Clr text_color = CLR_BLACK, Flags<WndFlag> flags = INTERACTIVE);
     //@}
 
@@ -164,8 +164,8 @@ public:
     //@}
 
     /** \name Structors */ ///@{
-    StateButton(const std::string& str, const boost::shared_ptr<Font>& font, Flags<TextFormat> format,
-                Clr color, boost::shared_ptr<StateButtonRepresenter> representer, Clr text_color = CLR_BLACK); ///< Ctor
+    StateButton(const std::string& str, const std::shared_ptr<Font>& font, Flags<TextFormat> format,
+                Clr color, std::shared_ptr<StateButtonRepresenter> representer, Clr text_color = CLR_BLACK); ///< Ctor
     //@}
 
     /** \name Accessors */ ///@{
@@ -207,7 +207,8 @@ protected:
     //@}
 
 private:
-    boost::shared_ptr<StateButtonRepresenter> m_representer;
+    std::shared_ptr<StateButtonRepresenter> m_representer;
+
     TextControl*      m_label;       ///< Label used to display text
 
     ButtonState       m_state;       ///< Button is always in exactly one of the ButtonState states above
@@ -438,17 +439,6 @@ protected:
     //@}
 
 private:
-    class ButtonClickedFunctor // for catching button-click signals from the contained buttons
-    {
-    public:
-        ButtonClickedFunctor(RadioButtonGroup* group, StateButton* button, std::size_t index);
-        void operator()(bool checked);
-    private:
-        RadioButtonGroup* m_group;
-        StateButton*      m_button;
-        std::size_t       m_index;
-    };
-
     void ConnectSignals();
     void SetCheckImpl(std::size_t index, bool signal);
     void Reconnect();
@@ -459,8 +449,6 @@ private:
     bool                    m_expand_buttons;
     bool                    m_expand_buttons_proportionally;
     bool                    m_render_outline;
-
-    friend class ButtonClickedFunctor;
 };
 
 } // namespace GG

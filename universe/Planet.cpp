@@ -9,6 +9,7 @@
 #include "Condition.h"
 #include "Universe.h"
 #include "ValueRef.h"
+#include "Enums.h"
 #include "../util/Logger.h"
 #include "../util/OptionsDB.h"
 #include "../util/Random.h"
@@ -17,7 +18,6 @@
 #include "../Empire/Empire.h"
 #include "../Empire/EmpireManager.h"
 
-#include <boost/assign/list_of.hpp>
 
 namespace {
     // high tilt is arbitrarily taken to mean 45 degrees or more
@@ -109,14 +109,14 @@ Planet* Planet::Clone(int empire_id) const {
         return nullptr;
 
     Planet* retval = new Planet();
-    retval->Copy(TemporaryFromThis(), empire_id);
+    retval->Copy(UniverseObject::shared_from_this(), empire_id);
     return retval;
 }
 
-void Planet::Copy(TemporaryPtr<const UniverseObject> copied_object, int empire_id) {
-    if (copied_object == this)
+void Planet::Copy(std::shared_ptr<const UniverseObject> copied_object, int empire_id) {
+    if (copied_object.get() == this)
         return;
-    TemporaryPtr<const Planet> copied_planet = boost::dynamic_pointer_cast<const Planet>(copied_object);
+    std::shared_ptr<const Planet> copied_planet = std::dynamic_pointer_cast<const Planet>(copied_object);
     if (!copied_planet) {
         ErrorLogger() << "Planet::Copy passed an object that wasn't a Planet";
         return;
@@ -417,8 +417,8 @@ float Planet::RotationalPeriod() const
 float Planet::AxialTilt() const
 { return m_axial_tilt; }
 
-TemporaryPtr<UniverseObject> Planet::Accept(const UniverseObjectVisitor& visitor) const
-{ return visitor.Visit(boost::const_pointer_cast<Planet>(boost::static_pointer_cast<const Planet>(TemporaryFromThis()))); }
+std::shared_ptr<UniverseObject> Planet::Accept(const UniverseObjectVisitor& visitor) const
+{ return visitor.Visit(std::const_pointer_cast<Planet>(std::static_pointer_cast<const Planet>(UniverseObject::shared_from_this()))); }
 
 Meter* Planet::GetMeter(MeterType type)
 { return UniverseObject::GetMeter(type); }
@@ -487,7 +487,7 @@ std::string Planet::CardinalSuffix() const {
     if (Type() == PT_ASTEROIDS)
         retval.append(UserString("NEW_ASTEROIDS_SUFFIX") + " ");
 
-    TemporaryPtr<System> cur_system = GetSystem(SystemID());
+    std::shared_ptr<System> cur_system = GetSystem(SystemID());
     if (cur_system) {
         if (cur_system->OrbitOfPlanet(ID()) < 0) {
             ErrorLogger() << "Planet " << Name() << "(" << ID() << ") "
@@ -546,7 +546,7 @@ bool Planet::ContainedBy(int object_id) const
 
 std::vector<std::string> Planet::AvailableFoci() const {
     std::vector<std::string> retval;
-    TemporaryPtr<const Planet> this_planet = boost::dynamic_pointer_cast<const Planet>(TemporaryFromThis());
+    std::shared_ptr<const Planet> this_planet = std::dynamic_pointer_cast<const Planet>(UniverseObject::shared_from_this());
     if (!this_planet)
         return retval;
     ScriptingContext context(this_planet);
@@ -639,7 +639,7 @@ void Planet::Reset() {
 
     if (m_is_about_to_be_colonized && !OwnedBy(ALL_EMPIRES)) {
         for (int building_id : m_buildings)
-            if (TemporaryPtr<Building> building = GetBuilding(building_id))
+            if (std::shared_ptr<Building> building = GetBuilding(building_id))
                 building->Reset();
     }
 
@@ -668,7 +668,7 @@ void Planet::Conquer(int conquerer) {
     Empire::ConquerProductionQueueItemsAtLocation(ID(), conquerer);
 
     // deal with UniverseObjects (eg. buildings) located on this planet
-    for (TemporaryPtr<Building> building : Objects().FindObjects<Building>(m_buildings)) {
+    for (std::shared_ptr<Building> building : Objects().FindObjects<Building>(m_buildings)) {
         const BuildingType* type = GetBuildingType(building->BuildingTypeName());
 
         // determine what to do with building of this type...
@@ -681,7 +681,7 @@ void Planet::Conquer(int conquerer) {
             // destroy object
             //DebugLogger() << "Planet::Conquer destroying object: " << building->Name();
             this->RemoveBuilding(building->ID());
-            if (TemporaryPtr<System> system = GetSystem(this->SystemID()))
+            if (std::shared_ptr<System> system = GetSystem(this->SystemID()))
                 system->Remove(building->ID());
             GetUniverse().Destroy(building->ID());
         } else if (cap_result == CR_RETAIN) {
@@ -736,7 +736,7 @@ bool Planet::Colonize(int empire_id, const std::string& species_name, double pop
     } else {
         PopCenter::Reset();
         for (int building_id : m_buildings)
-            if (TemporaryPtr<Building> building = GetBuilding(building_id))
+            if (std::shared_ptr<Building> building = GetBuilding(building_id))
                 building->Reset();
         m_just_conquered = false;
         m_is_about_to_be_colonized = false;
@@ -779,7 +779,7 @@ bool Planet::Colonize(int empire_id, const std::string& species_name, double pop
     SetOwner(empire_id);
 
     // if there are buildings on the planet, set the specified empire as their owner too
-    for (TemporaryPtr<Building> building : Objects().FindObjects<Building>(BuildingIDs()))
+    for (std::shared_ptr<Building> building : Objects().FindObjects<Building>(BuildingIDs()))
     { building->SetOwner(empire_id); }
 
     return true;

@@ -323,6 +323,7 @@
 		9E632AED13AD24D1003D1874 /* libboost_regex.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EEEEA7513ACB91A0085B1A0 /* libboost_regex.a */; };
 		CE0ED5F91BCFE16E00375001 /* AIWrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CE0ED5F71BCFE16E00375001 /* AIWrapper.cpp */; };
 		CE13B48F1C8CB0CF0085A4DC /* CommonParamsParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CE13B48E1C8CB0CF0085A4DC /* CommonParamsParser.cpp */; };
+		CE2BAD8F1E3E43E40085A4DC /* Pathfinder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CE2BAD8D1E3E43E40085A4DC /* Pathfinder.cpp */; };
 		CE2C454D1C65036F0085A4DC /* ResourceBrowseWnd.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CE2C454B1C65036F0085A4DC /* ResourceBrowseWnd.cpp */; };
 		CE2C454E1C6503990085A4DC /* libz.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 822E325B19BEED6C00A7B707 /* libz.a */; };
 		CE3102B61DBFD0730085A4DC /* DeferredLayout.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CE3102B51DBFD0730085A4DC /* DeferredLayout.cpp */; };
@@ -649,7 +650,6 @@
 		471023A60CEF3AAC00A7DF2B /* ListBox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ListBox.cpp; sourceTree = "<group>"; };
 		471023A70CEF3AAC00A7DF2B /* Menu.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Menu.cpp; sourceTree = "<group>"; };
 		471023A80CEF3AAC00A7DF2B /* MultiEdit.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MultiEdit.cpp; sourceTree = "<group>"; };
-		471023B30CEF3AAC00A7DF2B /* Plugin.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Plugin.cpp; sourceTree = "<group>"; };
 		471023B50CEF3AAC00A7DF2B /* PtRect.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PtRect.cpp; sourceTree = "<group>"; };
 		471023B70CEF3AAC00A7DF2B /* Scroll.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Scroll.cpp; sourceTree = "<group>"; };
 		471023BA0CEF3AAC00A7DF2B /* SDLGUI.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SDLGUI.cpp; sourceTree = "<group>"; };
@@ -857,7 +857,6 @@
 		8257A8D61A90BA610006777D /* GLClientAndServerBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GLClientAndServerBuffer.cpp; sourceTree = "<group>"; };
 		8257A8D81A90BA8C0006777D /* Export.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Export.h; sourceTree = "<group>"; };
 		8257A8D91A90BA8C0006777D /* GLClientAndServerBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLClientAndServerBuffer.h; sourceTree = "<group>"; };
-		8258927D17BBD04400818596 /* EnableTemporaryFromThis.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EnableTemporaryFromThis.h; sourceTree = "<group>"; };
 		82592EEB147E365700B840A5 /* CUISlider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CUISlider.h; sourceTree = "<group>"; };
 		82592EEE147E37FB00B840A5 /* EffectAccounting.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EffectAccounting.h; sourceTree = "<group>"; };
 		82592EEF147E381B00B840A5 /* EffectAccounting.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EffectAccounting.cpp; sourceTree = "<group>"; };
@@ -1077,7 +1076,6 @@
 		82EC868A1B40504700D4584D /* Encyclopedia.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Encyclopedia.h; sourceTree = "<group>"; };
 		82ED913E194F5C85002F0A4A /* make_dmg.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = make_dmg.py; sourceTree = "<group>"; };
 		82ED9141194F5CDD002F0A4A /* make_versioncpp.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; name = make_versioncpp.py; path = ../cmake/make_versioncpp.py; sourceTree = "<group>"; };
-		82F06B6417B7C3BD00982965 /* TemporaryPtr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TemporaryPtr.h; sourceTree = "<group>"; };
 		8DD76F6C0486A84900D96B5E /* FreeOrion */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = FreeOrion; sourceTree = BUILT_PRODUCTS_DIR; };
 		9EEEEA7313ACB91A0085B1A0 /* libboost_filesystem.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libboost_filesystem.a; sourceTree = "<group>"; };
 		9EEEEA7413ACB91A0085B1A0 /* libboost_python.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libboost_python.a; sourceTree = "<group>"; };
@@ -1090,6 +1088,8 @@
 		CE0ED5F81BCFE16E00375001 /* AIWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AIWrapper.h; sourceTree = "<group>"; };
 		CE13B48D1C8CB0CF0085A4DC /* CommonParams.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CommonParams.h; sourceTree = "<group>"; };
 		CE13B48E1C8CB0CF0085A4DC /* CommonParamsParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CommonParamsParser.cpp; sourceTree = "<group>"; };
+		CE2BAD8D1E3E43E40085A4DC /* Pathfinder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Pathfinder.cpp; sourceTree = "<group>"; };
+		CE2BAD8E1E3E43E40085A4DC /* Pathfinder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Pathfinder.h; sourceTree = "<group>"; };
 		CE2C454B1C65036F0085A4DC /* ResourceBrowseWnd.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ResourceBrowseWnd.cpp; sourceTree = "<group>"; };
 		CE2C454C1C65036F0085A4DC /* ResourceBrowseWnd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResourceBrowseWnd.h; sourceTree = "<group>"; };
 		CE3102B41DBFD05B0085A4DC /* DeferredLayout.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DeferredLayout.h; sourceTree = "<group>"; };
@@ -1475,7 +1475,6 @@
 				471023A60CEF3AAC00A7DF2B /* ListBox.cpp */,
 				471023A70CEF3AAC00A7DF2B /* Menu.cpp */,
 				471023A80CEF3AAC00A7DF2B /* MultiEdit.cpp */,
-				471023B30CEF3AAC00A7DF2B /* Plugin.cpp */,
 				471023B50CEF3AAC00A7DF2B /* PtRect.cpp */,
 				CE61839C1BB80D2E00952BEA /* RichText */,
 				471023B70CEF3AAC00A7DF2B /* Scroll.cpp */,
@@ -1819,7 +1818,6 @@
 				471D5CF00A98A3F900DA9C21 /* Effect.h */,
 				82592EEF147E381B00B840A5 /* EffectAccounting.cpp */,
 				82592EEE147E37FB00B840A5 /* EffectAccounting.h */,
-				8258927D17BBD04400818596 /* EnableTemporaryFromThis.h */,
 				82EC86891B40504700D4584D /* Encyclopedia.cpp */,
 				82EC868A1B40504700D4584D /* Encyclopedia.h */,
 				471D5CF20A98A3F900DA9C21 /* Enums.cpp */,
@@ -1834,6 +1832,8 @@
 				471D5CF80A98A3F900DA9C21 /* Meter.h */,
 				82592EF3147E387100B840A5 /* ObjectMap.cpp */,
 				82592EF4147E387100B840A5 /* ObjectMap.h */,
+				CE2BAD8D1E3E43E40085A4DC /* Pathfinder.cpp */,
+				CE2BAD8E1E3E43E40085A4DC /* Pathfinder.h */,
 				471D5CFC0A98A3F900DA9C21 /* Planet.cpp */,
 				471D5CFD0A98A3F900DA9C21 /* Planet.h */,
 				471D5CFE0A98A3F900DA9C21 /* PopCenter.cpp */,
@@ -1854,7 +1854,6 @@
 				471D5D0B0A98A3F900DA9C21 /* System.h */,
 				471D5D0C0A98A3F900DA9C21 /* Tech.cpp */,
 				471D5D0D0A98A3F900DA9C21 /* Tech.h */,
-				82F06B6417B7C3BD00982965 /* TemporaryPtr.h */,
 				471D5D0F0A98A3F900DA9C21 /* Universe.cpp */,
 				471D5D100A98A3F900DA9C21 /* Universe.h */,
 				82B4313314A74E07003EEE42 /* UniverseGenerator.cpp */,
@@ -2598,6 +2597,7 @@
 				47103BF40CF04E5900A7DF2B /* Order.cpp in Sources */,
 				47103BF50CF04E5900A7DF2B /* OrderSet.cpp in Sources */,
 				47103BF60CF04E5900A7DF2B /* Random.cpp in Sources */,
+				CE2BAD8F1E3E43E40085A4DC /* Pathfinder.cpp in Sources */,
 				47103BF70CF04E5900A7DF2B /* SitRepEntry.cpp in Sources */,
 				47103BF80CF04E5900A7DF2B /* VarText.cpp in Sources */,
 				47103BF90CF04E5900A7DF2B /* XMLDoc.cpp in Sources */,
@@ -3014,7 +3014,6 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					FREEORION_BUILD_PARSE,
-					OGRE_GUI_GLX,
 					FREEORION_MACOSX,
 					__MACOSX__,
 					BOOST_DATE_TIME_NO_LOCALE,
@@ -3150,7 +3149,6 @@
 				GCC_OPTIMIZATION_LEVEL = s;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					FREEORION_BUILD_PARSE,
-					OGRE_GUI_GLX,
 					FREEORION_MACOSX,
 					__MACOSX__,
 					BOOST_DATE_TIME_NO_LOCALE,
@@ -3324,7 +3322,6 @@
 				GCC_OPTIMIZATION_LEVEL = s;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					FREEORION_BUILD_PARSE,
-					OGRE_GUI_GLX,
 					FREEORION_MACOSX,
 					__MACOSX__,
 					BOOST_DATE_TIME_NO_LOCALE,

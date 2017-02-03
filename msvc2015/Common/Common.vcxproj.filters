@@ -208,12 +208,6 @@
     <ClInclude Include="..\..\util\ScopedTimer.h">
       <Filter>Header Files\util</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\universe\TemporaryPtr.h">
-      <Filter>Header Files\universe</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\universe\EnableTemporaryFromThis.h">
-      <Filter>Header Files\universe</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\combat\CombatEvent.h">
       <Filter>Header Files\combat</Filter>
     </ClInclude>
@@ -228,6 +222,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Empire\Supply.h">
       <Filter>Header Files\Empire</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\universe\Pathfinder.h">
+      <Filter>Header Files\universe</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -404,6 +401,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Empire\Supply.cpp">
       <Filter>Source Files\Empire</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\universe\Pathfinder.cpp">
+      <Filter>Source Files\universe</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

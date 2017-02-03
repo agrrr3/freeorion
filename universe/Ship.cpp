@@ -9,6 +9,7 @@
 #include "ShipDesign.h"
 #include "Species.h"
 #include "Universe.h"
+#include "Enums.h"
 #include "../Empire/Empire.h"
 #include "../Empire/EmpireManager.h"
 
@@ -109,14 +110,14 @@ Ship* Ship::Clone(int empire_id) const {
         return nullptr;
 
     Ship* retval = new Ship();
-    retval->Copy(TemporaryFromThis(), empire_id);
+    retval->Copy(shared_from_this(), empire_id);
     return retval;
 }
 
-void Ship::Copy(TemporaryPtr<const UniverseObject> copied_object, int empire_id) {
-    if (copied_object == this)
+void Ship::Copy(std::shared_ptr<const UniverseObject> copied_object, int empire_id) {
+    if (copied_object.get() == this)
         return;
-    TemporaryPtr<const Ship> copied_ship = boost::dynamic_pointer_cast<const Ship>(copied_object);
+    std::shared_ptr<const Ship> copied_ship = std::dynamic_pointer_cast<const Ship>(copied_object);
     if (!copied_ship) {
         ErrorLogger() << "Ship::Copy passed an object that wasn't a Ship";
         return;
@@ -131,7 +132,7 @@ void Ship::Copy(TemporaryPtr<const UniverseObject> copied_object, int empire_id)
     if (vis >= VIS_BASIC_VISIBILITY) {
         if (this->m_fleet_id != copied_ship->m_fleet_id) {
             // as with other containers, removal from the old container is triggered by the contained Object; removal from System is handled by UniverseObject::Copy
-            if (TemporaryPtr<Fleet> oldFleet = GetFleet(this->m_fleet_id)) 
+            if (std::shared_ptr<Fleet> oldFleet = GetFleet(this->m_fleet_id))
                 oldFleet->RemoveShip(this->ID());
             this->m_fleet_id =              copied_ship->m_fleet_id; // as with other containers (Systems), actual insertion into fleet ships set is handled by the fleet
         }
@@ -359,8 +360,8 @@ const std::string& Ship::PublicName(int empire_id) const {
         return UserString("OBJ_SHIP");
 }
 
-TemporaryPtr<UniverseObject> Ship::Accept(const UniverseObjectVisitor& visitor) const
-{ return visitor.Visit(boost::const_pointer_cast<Ship>(boost::static_pointer_cast<const Ship>(TemporaryFromThis()))); }
+std::shared_ptr<UniverseObject> Ship::Accept(const UniverseObjectVisitor& visitor) const
+{ return visitor.Visit(std::const_pointer_cast<Ship>(std::static_pointer_cast<const Ship>(shared_from_this()))); }
 
 float Ship::NextTurnCurrentMeterValue(MeterType type) const {
     const Meter* meter = UniverseObject::GetMeter(type);
@@ -809,18 +810,11 @@ void Ship::ClampMeters() {
 // Free Functions //
 ////////////////////
 std::string NewMonsterName() {
-    static std::vector<std::string> monster_names;
+    static std::vector<std::string> monster_names = UserStringList("MONSTER_NAMES");
     static std::map<std::string, int> monster_names_used;
-    if (monster_names.empty()) {
-        // load monster names from stringtable
-        std::list<std::string> monster_names_list;
-        UserStringList("MONSTER_NAMES", monster_names_list);
 
-        monster_names.reserve(monster_names_list.size());
-        std::copy(monster_names_list.begin(), monster_names_list.end(), std::back_inserter(monster_names));
-        if (monster_names.empty()) // safety check to ensure not leaving list empty in case of stringtable failure
-            monster_names.push_back(UserString("MONSTER"));
-    }
+    if (monster_names.empty())
+        monster_names.push_back(UserString("MONSTER"));
 
     // select name randomly from list
     int monster_name_index = RandSmallInt(0, static_cast<int>(monster_names.size()) - 1);

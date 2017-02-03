@@ -2,9 +2,7 @@
 #define _UniverseObject_h_
 
 
-#include "Enums.h"
-#include "TemporaryPtr.h"
-#include "EnableTemporaryFromThis.h"
+#include "EnumsFwd.h"
 #include "../util/Export.h"
 #include "../util/blocking_combiner.h"
 
@@ -21,6 +19,7 @@ class Meter;
 class System;
 class SitRepEntry;
 struct UniverseObjectVisitor;
+extern const int ALL_EMPIRES;
 
 // The ID number assigned to a UniverseObject upon construction;
 // It is assigned an ID later when it is placed in the universe
@@ -44,7 +43,7 @@ FO_COMMON_API extern const int TEMPORARY_OBJECT_ID;
   * Signal.  This means that all mutators on UniverseObject and its subclasses
   * need to emit this signal.  This is how the UI becomes aware that an object
   * that is being displayed has changed.*/
-class FO_COMMON_API UniverseObject : virtual public EnableTemporaryFromThis<UniverseObject> {
+class FO_COMMON_API UniverseObject : virtual public std::enable_shared_from_this<UniverseObject> {
 public:
     /** \name Signal Types */ //@{
     typedef boost::signals2::signal<void (), blocking_combiner<boost::signals2::optional_last_value<void> > > StateChangedSignalType;
@@ -72,30 +71,30 @@ public:
     float                       SpecialCapacity(const std::string& name) const;     ///> returns the capacity of the special with name \a name or 0 if that special is not present
 
     /** Returns all tags this object has. */
-    virtual std::set<std::string> Tags() const;
+    virtual std::set<std::string>   Tags() const;
 
     /** Returns true iff this object has the tag with the indicated \a name. */
-    virtual bool HasTag(const std::string& name) const;
+    virtual bool                HasTag(const std::string& name) const;
 
-    virtual UniverseObjectType ObjectType() const;
+    virtual UniverseObjectType  ObjectType() const;
 
     /** Outputs textual description of object to logger. */
-    virtual std::string Dump() const;
+    virtual std::string         Dump() const;
 
     /** Returns id of the object that directly contains this object, if any, or
         INVALID_OBJECT_ID if this object is not contained by any other. */
-    virtual int ContainerObjectID() const;
+    virtual int                 ContainerObjectID() const;
 
     /** Returns ids of objects contained within this object. */
-    virtual const std::set<int>& ContainedObjectIDs() const;
+    virtual const std::set<int>&ContainedObjectIDs() const;
 
     /** Returns true if there is an object with id \a object_id is contained
         within this UniverseObject. */
-    virtual bool Contains(int object_id) const;
+    virtual bool                Contains(int object_id) const;
 
     /* Returns true if there is an object with id \a object_id that contains
        this UniverseObject. */
-    virtual bool ContainedBy(int object_id) const;
+    virtual bool                ContainedBy(int object_id) const;
 
     std::set<int>               VisibleContainedObjectIDs(int empire_id) const; ///< returns the subset of contained object IDs that is visible to empire with id \a empire_id
 
@@ -106,7 +105,7 @@ public:
 
     /** Returns an estimate of the next turn's current value of the specified
         meter \a type. */
-    virtual float NextTurnCurrentMeterValue(MeterType type) const;
+    virtual float               NextTurnCurrentMeterValue(MeterType type) const;
 
     Visibility                  GetVisibility(int empire_id) const; ///< returns the visibility status of this universe object relative to the input empire.
 
@@ -114,7 +113,7 @@ public:
     virtual const std::string&  PublicName(int empire_id) const;
 
     /** Accepts a visitor object \see UniverseObjectVisitor */
-    virtual TemporaryPtr<UniverseObject> Accept(const UniverseObjectVisitor& visitor) const;
+    virtual std::shared_ptr<UniverseObject> Accept(const UniverseObjectVisitor& visitor) const;
 
     int                         CreationTurn() const;               ///< returns game turn on which object was created
     int                         AgeInTurns() const;                 ///< returns elapsed number of turns between turn object was created and current game turn
@@ -126,7 +125,7 @@ public:
     /** copies data from \a copied_object to this object, limited to only copy
       * data about the copied object that is known to the empire with id
       * \a empire_id (or all data if empire_id is ALL_EMPIRES) */
-    virtual void Copy(TemporaryPtr<const UniverseObject> copied_object, int empire_id) = 0;
+    virtual void Copy(std::shared_ptr<const UniverseObject> copied_object, int empire_id) = 0;
 
     void                    SetID(int id);                      ///< sets the ID number of the object to \a id
     void                    Rename(const std::string& name);    ///< renames this object to \a name
@@ -134,11 +133,12 @@ public:
     /** moves this object by relative displacements x and y. */
     void                    Move(double x, double y);
 
-    /** calls MoveTo(TemporaryPtr<const UniverseObject>) with the object pointed to by \a object_id. */
+    /** calls MoveTo(std::shared_ptr<const UniverseObject>) with the object
+        pointed to by \a object_id. */
     void                    MoveTo(int object_id);
 
     /** moves this object to exact map coordinates of specified \a object. */
-    void                    MoveTo(TemporaryPtr<UniverseObject> object);
+    void MoveTo(std::shared_ptr<UniverseObject> object);
 
     /** moves this object to map coordinates (x, y). */
     void                    MoveTo(double x, double y);
@@ -191,16 +191,20 @@ public:
     static const int            SINCE_BEFORE_TIME_AGE;  ///< the age returned by UniverseObject::AgeInTurns() if an object was created on turn BEFORE_FIRST_TURN
 
 protected:
-    template <class T> friend void boost::python::detail::value_destroyer<false>::execute(T const volatile* p);
     friend class Universe;
     friend class ObjectMap;
-    template <class T> friend void boost::checked_delete(T* x);
 
     /** \name Structors */ //@{
     UniverseObject();
     UniverseObject(const std::string name, double x, double y);
+
+    template <typename T> friend void UniverseObjectDeleter(T*);
+    template <class T> friend void boost::python::detail::value_destroyer<false>::execute(T const volatile* p);
+
+public:
     virtual ~UniverseObject();
 
+protected:
     /** returns new copy of this UniverseObject, limited to only copy data that
       * is visible to the empire with the specified \a empire_id as determined
       * by the detection and visibility system.  Caller takes ownership of
@@ -211,8 +215,10 @@ protected:
     void                    AddMeter(MeterType meter_type); ///< inserts a meter into object as the \a meter_type meter.  Should be used by derived classes to add their specialized meters to objects
     void                    Init();                         ///< adds stealth meter
 
-    void                    Copy(TemporaryPtr<const UniverseObject> copied_object, Visibility vis,
-                                 const std::set<std::string>& visible_specials);///< used by public UniverseObject::Copy and derived classes' ::Copy methods
+    /** Used by public UniverseObject::Copy and derived classes' ::Copy methods.
+      */
+    void Copy(std::shared_ptr<const UniverseObject> copied_object, Visibility vis,
+              const std::set<std::string>& visible_specials);
 
     std::string             m_name;
 

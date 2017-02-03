@@ -16,9 +16,9 @@
 #include <boost/filesystem/fstream.hpp>
 
 namespace {
-    boost::shared_ptr<Effect::EffectsGroup>
+    std::shared_ptr<Effect::EffectsGroup>
     IncreaseMeter(MeterType meter_type, double increase) {
-        typedef boost::shared_ptr<Effect::EffectsGroup> EffectsGroupPtr;
+        typedef std::shared_ptr<Effect::EffectsGroup> EffectsGroupPtr;
         typedef std::vector<Effect::EffectBase*> Effects;
         Condition::Source* scope = new Condition::Source;
         Condition::Source* activation = nullptr;
@@ -40,6 +40,9 @@ namespace {
 Field::Field() :
     UniverseObject(),
     m_type_name("")
+{}
+
+Field::~Field()
 {}
 
 Field::Field(const std::string& field_type, double x, double y, double radius) :
@@ -67,14 +70,14 @@ Field* Field::Clone(int empire_id) const {
         return nullptr;
 
     Field* retval = new Field();
-    retval->Copy(TemporaryFromThis(), empire_id);
+    retval->Copy(shared_from_this(), empire_id);
     return retval;
 }
 
-void Field::Copy(TemporaryPtr<const UniverseObject> copied_object, int empire_id) {
-    if (copied_object == this)
+void Field::Copy(std::shared_ptr<const UniverseObject> copied_object, int empire_id) {
+    if (copied_object.get() == this)
         return;
-    TemporaryPtr<const Field> copied_field = boost::dynamic_pointer_cast<const Field>(copied_object);
+    std::shared_ptr<const Field> copied_field = std::dynamic_pointer_cast<const Field>(copied_object);
     if (!copied_field) {
         ErrorLogger() << "Field::Copy passed an object that wasn't a Field";
         return;
@@ -120,8 +123,8 @@ const std::string& Field::PublicName(int empire_id) const {
     return UserString(m_type_name);
 }
 
-TemporaryPtr<UniverseObject> Field::Accept(const UniverseObjectVisitor& visitor) const
-{ return visitor.Visit(boost::const_pointer_cast<Field>(boost::static_pointer_cast<const Field>(TemporaryFromThis()))); }
+std::shared_ptr<UniverseObject> Field::Accept(const UniverseObjectVisitor& visitor) const
+{ return visitor.Visit(std::const_pointer_cast<Field>(std::static_pointer_cast<const Field>(shared_from_this()))); }
 
 int Field::ContainerObjectID() const
 { return this->SystemID(); }
@@ -131,7 +134,7 @@ bool Field::ContainedBy(int object_id) const {
         && object_id == this->SystemID();
 }
 
-bool Field::InField(TemporaryPtr<const UniverseObject> obj) const
+bool Field::InField(std::shared_ptr<const UniverseObject> obj) const
 { return obj && InField(obj->X(), obj->Y()); }
 
 bool Field::InField(double x, double y) const {
@@ -163,7 +166,7 @@ void Field::ClampMeters() {
 /////////////////////////////////////////////////
 FieldType::FieldType(const std::string& name, const std::string& description,
                      float stealth, const std::set<std::string>& tags,
-                     const std::vector<boost::shared_ptr<Effect::EffectsGroup> >& effects,
+                     const std::vector<std::shared_ptr<Effect::EffectsGroup>>& effects,
                      const std::string& graphic) :
     m_name(name),
     m_description(description),
@@ -178,7 +181,7 @@ FieldType::FieldType(const std::string& name, const std::string& description,
     if (m_stealth != 0.0f)
         m_effects.push_back(IncreaseMeter(METER_STEALTH,    m_stealth));
 
-    for (boost::shared_ptr<Effect::EffectsGroup> effect : m_effects) {
+    for (std::shared_ptr<Effect::EffectsGroup> effect : m_effects) {
         effect->SetTopLevelContent(m_name);
     }
 }
@@ -205,7 +208,7 @@ std::string FieldType::Dump() const {
     } else {
         retval += DumpIndent() + "effectsgroups = [\n";
         ++g_indent;
-        for (boost::shared_ptr<Effect::EffectsGroup> effect : m_effects) {
+        for (std::shared_ptr<Effect::EffectsGroup> effect : m_effects) {
             retval += effect->Dump();
         }
         --g_indent;

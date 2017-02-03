@@ -36,11 +36,6 @@
 
 #include <GG/dialogs/ThreeButtonDlg.h>
 
-// HACK! MSVC #defines int64_t to be __int64, which breaks the code in boost's cstdint.hpp
-#ifdef int64_t
-#undef int64_t
-#endif
-
 #include <boost/cast.hpp>
 #include <boost/format.hpp>
 #include <boost/algorithm/string/predicate.hpp>
@@ -94,27 +89,43 @@ namespace {
 
     struct FrontStringBegin
     {
-        FrontStringBegin(const boost::shared_ptr<std::vector<std::string> >& strings) : m_strings(strings) {}
+        FrontStringBegin(const std::shared_ptr<std::vector<std::string>>& strings) :
+            m_strings(strings)
+        {}
+
         const char* operator()() const {return m_strings->front().c_str();}
-        boost::shared_ptr<std::vector<std::string> > m_strings;
+
+        std::shared_ptr<std::vector<std::string>> m_strings;
     };
     struct FrontStringEnd
     {
-        FrontStringEnd(const boost::shared_ptr<std::vector<std::string> >& strings) : m_strings(strings) {}
+        FrontStringEnd(const std::shared_ptr<std::vector<std::string>>& strings) :
+            m_strings(strings)
+        {}
+
         const char* operator()() const {return m_strings->front().c_str() + m_strings->front().size();}
-        boost::shared_ptr<std::vector<std::string> > m_strings;
+
+        std::shared_ptr<std::vector<std::string>> m_strings;
     };
     struct IndexedStringBegin
     {
-        IndexedStringBegin(const boost::shared_ptr<std::vector<std::string> >& strings) : m_strings(strings) {}
+        IndexedStringBegin(const std::shared_ptr<std::vector<std::string>>& strings) :
+            m_strings(strings)
+        {}
+
         const char* operator()() const {return (*m_strings)[Index::value].c_str();}
-        boost::shared_ptr<std::vector<std::string> > m_strings;
+
+        std::shared_ptr<std::vector<std::string>> m_strings;
     };
     struct IndexedStringEnd
     {
-        IndexedStringEnd(const boost::shared_ptr<std::vector<std::string> >& strings) : m_strings(strings) {}
+        IndexedStringEnd(const std::shared_ptr<std::vector<std::string>>& strings) :
+            m_strings(strings)
+        {}
+
         const char* operator()() const {return (*m_strings)[Index::value].c_str() + (*m_strings)[Index::value].size();}
-        boost::shared_ptr<std::vector<std::string> > m_strings;
+
+        std::shared_ptr<std::vector<std::string>> m_strings;
     };
 
     bool WindowsRoot(const std::string& root_name)
@@ -136,7 +147,7 @@ const Y FileDlg::DEFAULT_HEIGHT(450);
 
 
 FileDlg::FileDlg(const std::string& directory, const std::string& filename, bool save, bool multi,
-                 const boost::shared_ptr<Font>& font, Clr color, Clr border_color, Clr text_color/* = CLR_BLACK*/) : 
+                 const std::shared_ptr<Font>& font, Clr color, Clr border_color, Clr text_color/* = CLR_BLACK*/) :
     Wnd((GUI::GetGUI()->AppWidth() - DEFAULT_WIDTH) / 2,
         (GUI::GetGUI()->AppHeight() - DEFAULT_HEIGHT) / 2,
         DEFAULT_WIDTH, DEFAULT_HEIGHT, INTERACTIVE | DRAGABLE | MODAL),
@@ -189,7 +200,7 @@ void FileDlg::Render()
     }
 }
 
-void FileDlg::KeyPress(Key key, boost::uint32_t key_code_point, Flags<ModKey> mod_keys)
+void FileDlg::KeyPress(Key key, std::uint32_t key_code_point, Flags<ModKey> mod_keys)
 {
     if (key == GGK_RETURN || key == GGK_KP_ENTER)
         OkHandler(false);
@@ -236,7 +247,7 @@ void FileDlg::CreateChildren(bool multi)
     if (m_save)
         multi = false;
 
-    boost::shared_ptr<StyleFactory> style = GetStyleFactory();
+    std::shared_ptr<StyleFactory> style = GetStyleFactory();
 
     m_files_edit = style->NewEdit("", m_font, m_border_color, m_text_color);
     m_filter_list = style->NewDropDownList(3, m_border_color);
@@ -346,7 +357,7 @@ void FileDlg::OkHandler(bool double_click)
     parse(m_files_edit->Text().c_str(), (+anychar_p)[append(files)], space_p);
     std::sort(files.begin(), files.end());
 
-    boost::shared_ptr<StyleFactory> style = GetStyleFactory();
+    std::shared_ptr<StyleFactory> style = GetStyleFactory();
 
     if (m_save) { // file save case
         if (m_ok_button->Text() != m_save_str) {
@@ -383,7 +394,7 @@ void FileDlg::OkHandler(bool double_click)
             // check to see if file already exists; if so, ask if it's ok to overwrite
             if (fs::exists(p)) {
                 std::string msg_str = boost::str(boost::format(style->Translate("%1% exists.\nOk to overwrite it?")) % save_file);
-                boost::shared_ptr<ThreeButtonDlg> dlg(
+                std::shared_ptr<ThreeButtonDlg> dlg(
                     style->NewThreeButtonDlg(X(300), Y(125), msg_str, m_font, m_color, m_border_color, m_color, m_text_color,
                                              2, style->Translate("Ok"), style->Translate("Cancel")));
                 dlg->Run();
@@ -407,7 +418,7 @@ void FileDlg::OkHandler(bool double_click)
                     bool p_is_directory = fs::is_directory(p);
                     if (!m_select_directories && p_is_directory) {
                         std::string msg_str = boost::str(boost::format(style->Translate("\"%1%\"\nis a directory.")) % file_name);
-                        boost::shared_ptr<ThreeButtonDlg> dlg(
+                        std::shared_ptr<ThreeButtonDlg> dlg(
                             style->NewThreeButtonDlg(X(300), Y(125), msg_str, m_font, m_color, m_border_color, m_color,
                                                      m_text_color, 1, style->Translate("Ok")));
                         dlg->Run();
@@ -426,7 +437,7 @@ void FileDlg::OkHandler(bool double_click)
                     results_valid = true; // indicate validity only if at least one good file was found
                 } else {
                     std::string msg_str = boost::str(boost::format(style->Translate("File \"%1%\"\ndoes not exist.")) % file_name);
-                    boost::shared_ptr<ThreeButtonDlg> dlg(
+                    std::shared_ptr<ThreeButtonDlg> dlg(
                         style->NewThreeButtonDlg(X(300), Y(125), msg_str, m_font, m_color, m_border_color, m_color,
                                                  m_text_color, 1, style->Translate("Ok")));
                     dlg->Run();
@@ -532,7 +543,7 @@ void FileDlg::UpdateList()
         parse(m_file_filters[std::distance(m_filter_list->begin(), it)].second.c_str(), *(!ch_p(',') >> (+(anychar_p - ','))[append(filter_specs)]), space_p);
         file_filters.resize(filter_specs.size());
         for (std::size_t i = 0; i < filter_specs.size(); ++i) {
-            boost::shared_ptr<std::vector<std::string> > non_wildcards(new std::vector<std::string>); // the parts of the filter spec that are not wildcards
+            auto non_wildcards = std::make_shared<std::vector<std::string>>(); // the parts of the filter spec that are not wildcards
             parse(filter_specs[i].c_str(), *(*ch_p('*') >> (+(anychar_p - '*'))[append(*non_wildcards)]));
 
             if (non_wildcards->empty()) {
@@ -599,7 +610,7 @@ void FileDlg::UpdateList()
                     std::string row_text = "[" + it->path().filename().string() + "]";
 #endif
                     row->push_back(GetStyleFactory()->NewTextControl(row_text, m_font, m_text_color, FORMAT_NOWRAP));
-                    sorted_rows.insert(std::make_pair(row_text, row));
+                    sorted_rows.insert({row_text, row});
                 }
             } catch (const fs::filesystem_error&) {
             }
@@ -624,7 +635,7 @@ void FileDlg::UpdateList()
                         if (meets_filters) {
                             ListBox::Row* row = new ListBox::Row();
                             row->push_back(GetStyleFactory()->NewTextControl(it->path().filename().string(), m_font, m_text_color, FORMAT_NOWRAP));
-                            sorted_rows.insert(std::make_pair(it->path().filename().string(), row));
+                            sorted_rows.insert({it->path().filename().string(), row});
                         }
                     }
                 } catch (const fs::filesystem_error&) {
@@ -679,7 +690,7 @@ void FileDlg::UpdateDirectoryText()
 
 void FileDlg::OpenDirectory()
 {
-    boost::shared_ptr<StyleFactory> style = GetStyleFactory();
+    std::shared_ptr<StyleFactory> style = GetStyleFactory();
 
     // see if there is a directory selected; if so open the directory.
     // if more than one is selected, take the first one
@@ -741,7 +752,7 @@ void FileDlg::OpenDirectory()
                     m_curr_dir_text->SetText("");
                     DoLayout();
                     UpdateList();
-                    boost::shared_ptr<ThreeButtonDlg> dlg(
+                    std::shared_ptr<ThreeButtonDlg> dlg(
                         GetStyleFactory()->NewThreeButtonDlg(X(175), Y(75),
                                                              style->Translate("Device is not ready."),
                                                              m_font, m_color,

@@ -16,6 +16,8 @@
 
 #include <boost/lexical_cast.hpp>
 
+#include <iterator>
+
 
 namespace {
     const int sitrep_row_margin(1);
@@ -195,7 +197,7 @@ namespace {
     //////////////////////////////////
     class SitRepLinkText : public LinkText {
     public:
-        SitRepLinkText(GG::X x, GG::Y y, GG::X w, const std::string& str, const boost::shared_ptr<GG::Font>& font,
+        SitRepLinkText(GG::X x, GG::Y y, GG::X w, const std::string& str, const std::shared_ptr<GG::Font>& font,
                        GG::Flags<GG::TextFormat> format = GG::FORMAT_NONE, GG::Clr color = GG::CLR_BLACK) :
             LinkText(x, y, w, str, font, format, color) {}
 
@@ -281,7 +283,7 @@ namespace {
             int icon_dim = GetIconSize();
             std::string icon_texture = (m_sitrep_entry.GetIcon().empty() ?
                 "/icons/sitrep/generic.png" : m_sitrep_entry.GetIcon());
-            boost::shared_ptr<GG::Texture> icon = ClientUI::GetTexture(
+            std::shared_ptr<GG::Texture> icon = ClientUI::GetTexture(
                 ClientUI::ArtDir() / icon_texture, true);
             m_icon = new GG::StaticGraphic(icon, GG::GRAPHIC_FITGRAPHIC | GG::GRAPHIC_PROPSCALE);
             AttachChild(m_icon);
@@ -426,7 +428,7 @@ void SitRepPanel::DoLayout() {
     SetMinSize(GG::Pt(6*BUTTON_WIDTH, 6*BUTTON_HEIGHT));
 }
 
-void SitRepPanel::KeyPress(GG::Key key, boost::uint32_t key_code_point,
+void SitRepPanel::KeyPress(GG::Key key, std::uint32_t key_code_point,
                            GG::Flags<GG::ModKey> mod_keys)
 {
     switch (key) {
@@ -451,7 +453,7 @@ void SitRepPanel::SizeMove(const GG::Pt& ul, const GG::Pt& lr) {
         DoLayout();
         Update();
         if (!m_sitreps_lb->Empty())
-            m_sitreps_lb->SetFirstRowShown(boost::next(m_sitreps_lb->begin(), first_visible_queue_row));
+            m_sitreps_lb->SetFirstRowShown(std::next(m_sitreps_lb->begin(), first_visible_queue_row));
     }
 }
 
@@ -782,7 +784,7 @@ void SitRepPanel::Update() {
     { m_sitreps_lb->Insert(new SitRepRow(width, GG::Y(ClientUI::Pts()*2), sitrep)); }
 
     if (m_sitreps_lb->NumRows() > first_visible_row) {
-        m_sitreps_lb->SetFirstRowShown(boost::next(m_sitreps_lb->begin(), first_visible_row));
+        m_sitreps_lb->SetFirstRowShown(std::next(m_sitreps_lb->begin(), first_visible_row));
     } else if (!m_sitreps_lb->Empty()) {
         m_sitreps_lb->BringRowIntoView(--m_sitreps_lb->end());
     }

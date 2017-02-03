@@ -55,8 +55,11 @@ InGameMenu::InGameMenu():
     if (!HumanClientApp::GetApp()->CanSaveNow()) {
         m_save_btn->Disable();
         m_save_btn->SetBrowseModeTime(GetOptionsDB().Get<int>("UI.tooltip-delay"));
-        m_save_btn->SetBrowseInfoWnd(boost::shared_ptr<GG::BrowseInfoWnd>(
-            new TextBrowseWnd(UserString("BUTTON_DISABLED"), UserString("SAVE_DISABLED_BROWSE_TEXT"), GG::X(400))));
+        m_save_btn->SetBrowseInfoWnd(std::make_shared<TextBrowseWnd>(
+            UserString("BUTTON_DISABLED"),
+            UserString("SAVE_DISABLED_BROWSE_TEXT"),
+            GG::X(400)
+        ));
     }
 
     ResetDefaultPosition();
@@ -124,8 +127,8 @@ void InGameMenu::DoLayout() {
     m_done_btn->SizeMove(button_ul, button_lr);
 }
 
-void InGameMenu::KeyPress (GG::Key key, boost::uint32_t key_code_point,
-                           GG::Flags<GG::ModKey> mod_keys)
+void InGameMenu::KeyPress(GG::Key key, std::uint32_t key_code_point,
+                          GG::Flags<GG::ModKey> mod_keys)
 {
     // Same behaviour as if "done" was pressed
     if (key == GG::GGK_RETURN || key == GG::GGK_KP_ENTER || key == GG::GGK_ESCAPE )

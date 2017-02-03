@@ -7,6 +7,7 @@
 #include "../universe/System.h"
 #include "../universe/Planet.h"
 #include "../universe/Fleet.h"
+#include "../universe/Enums.h"
 #include "../util/AppInterface.h"
 #include "../util/Logger.h"
 
@@ -119,7 +120,7 @@ std::string SupplyManager::Dump(int empire_id) const {
                 continue;
             retval += "Supplyable systems for empire " + boost::lexical_cast<std::string>(empire_supply.first) + "\n";
             for (int system_id : empire_supply.second) {
-                TemporaryPtr<const System> sys = GetSystem(system_id);
+                std::shared_ptr<const System> sys = GetSystem(system_id);
                 if (!sys)
                     continue;
                 retval += "\n" + sys->PublicName(empire_id) + " (" + boost::lexical_cast<std::string>(sys->ID()) + ") ";
@@ -128,7 +129,7 @@ std::string SupplyManager::Dump(int empire_id) const {
 
                 for (const std::set<std::pair<int, int>>::value_type& trav : m_supply_starlane_traversals.at(empire_supply.first)) {
                     if (trav.first == sys->ID()) {
-                        TemporaryPtr<const UniverseObject> obj = GetUniverseObject(trav.second);
+                        std::shared_ptr<const UniverseObject> obj = GetUniverseObject(trav.second);
                         if (obj)
                             retval += obj->PublicName(empire_id) + " (" + boost::lexical_cast<std::string>(obj->ID()) + ")  ";
                     }
@@ -138,7 +139,7 @@ std::string SupplyManager::Dump(int empire_id) const {
                 retval += "Traversals to here from: ";
                 for (const std::set<std::pair<int, int>>::value_type& trav : m_supply_starlane_traversals.at(empire_supply.first)) {
                     if (trav.second == sys->ID()) {
-                        TemporaryPtr<const UniverseObject> obj = GetUniverseObject(trav.first);
+                        std::shared_ptr<const UniverseObject> obj = GetUniverseObject(trav.first);
                         if (obj)
                             retval += obj->PublicName(empire_id) + " (" + boost::lexical_cast<std::string>(obj->ID()) + ")  ";
                     }
@@ -148,7 +149,7 @@ std::string SupplyManager::Dump(int empire_id) const {
                 retval += "Blocked Traversals from here to: ";
                 for (const std::set<std::pair<int, int>>::value_type& trav : m_supply_starlane_obstructed_traversals.at(empire_supply.first)) {
                     if (trav.first == sys->ID()) {
-                        TemporaryPtr<const UniverseObject> obj = GetUniverseObject(trav.second);
+                        std::shared_ptr<const UniverseObject> obj = GetUniverseObject(trav.second);
                         if (obj)
                             retval += obj->PublicName(empire_id) + " (" + boost::lexical_cast<std::string>(obj->ID()) + ")  ";
                     }
@@ -158,7 +159,7 @@ std::string SupplyManager::Dump(int empire_id) const {
                 retval += "Blocked Traversals to here from: ";
                 for (const std::set<std::pair<int, int>>::value_type& trav : m_supply_starlane_obstructed_traversals.at(empire_supply.first)) {
                     if (trav.second == sys->ID()) {
-                        TemporaryPtr<const UniverseObject> obj = GetUniverseObject(trav.first);
+                        std::shared_ptr<const UniverseObject> obj = GetUniverseObject(trav.first);
                         if (obj)
                             retval += obj->PublicName(empire_id) + " (" + boost::lexical_cast<std::string>(obj->ID()) + ")  ";
                     }
@@ -174,7 +175,7 @@ std::string SupplyManager::Dump(int empire_id) const {
             for (const std::set<std::set<int>>::value_type& system_group : empire_supply.second) {
                 retval += "group: ";
                 for (int system_id : system_group) {
-                    TemporaryPtr<const System> sys = GetSystem(system_id);
+                    std::shared_ptr<const System> sys = GetSystem(system_id);
                     if (!sys)
                         continue;
                     retval += "\n" + sys->PublicName(empire_id) + " (" + boost::lexical_cast<std::string>(sys->ID()) + ") ";
@@ -232,14 +233,14 @@ void SupplyManager::Update() {
     // probably temporary: additional restriction here for supply propagation
     // but not for general system obstruction as determind within Empire::UpdateSupplyUnobstructedSystems
     /////
-    const std::vector<TemporaryPtr<Fleet> > fleets = GetUniverse().Objects().FindObjects<Fleet>();
+    const std::vector<std::shared_ptr<Fleet>> fleets = GetUniverse().Objects().FindObjects<Fleet>();
 
     for (const std::map<int, Empire*>::value_type& entry : Empires()) {
         int empire_id = entry.first;
         const std::set<int>& known_destroyed_objects = GetUniverse().EmpireKnownDestroyedObjectIDs(empire_id);
         std::set<int> systems_containing_friendly_fleets;
 
-        for (TemporaryPtr<const Fleet> fleet : fleets) {
+        for (std::shared_ptr<const Fleet> fleet : fleets) {
             int system_id = fleet->SystemID();
             if (system_id == INVALID_OBJECT_ID) {
                 continue;   // not in a system, so can't affect system obstruction
@@ -358,10 +359,10 @@ void SupplyManager::Update() {
 
                 // empires with ships / planets in system (that haven't already made it obstructed for another empire)
                 bool has_ship = false, has_outpost = false, has_colony = false;
-                if (TemporaryPtr<const System> sys = GetSystem(sys_id)) {
+                if (std::shared_ptr<const System> sys = GetSystem(sys_id)) {
                     std::vector<int> obj_ids;
                     std::copy(sys->ContainedObjectIDs().begin(), sys->ContainedObjectIDs().end(), std::back_inserter(obj_ids));
-                    for (TemporaryPtr<UniverseObject> obj : Objects().FindObjects(obj_ids)) {
+                    for (std::shared_ptr<UniverseObject> obj : Objects().FindObjects(obj_ids)) {
                         if (!obj)
                             continue;
                         if (!obj->OwnedBy(empire_id))
@@ -371,7 +372,7 @@ void SupplyManager::Update() {
                             continue;
                         }
                         if (obj->ObjectType() == OBJ_PLANET) {
-                            if (TemporaryPtr<Planet> planet = boost::dynamic_pointer_cast<Planet>(obj)) {
+                            if (std::shared_ptr<Planet> planet = std::dynamic_pointer_cast<Planet>(obj)) {
                                 if (!planet->SpeciesName().empty())
                                     has_colony = true;
                                 else

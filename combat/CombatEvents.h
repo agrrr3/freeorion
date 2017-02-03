@@ -1,16 +1,20 @@
 #ifndef COMBATEVENTS_H
 #define COMBATEVENTS_H
 
+
+#include <map>
+#include <memory>
 #include <set>
+
 #include <boost/tuple/tuple.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 
 #include "../util/Export.h"
-#include "../universe/Enums.h"
+#include "../universe/EnumsFwd.h"
 
 #include "CombatEvent.h"
+
 
 /** \file
  * Contains all combat event implementation declarations.
@@ -40,7 +44,7 @@ private:
 /** BoutEvent describes all the events that happen in one bout of combat.
    It may have some sub-events and the sub-events will be ordered.*/
 struct FO_COMMON_API BoutEvent : public CombatEvent {
-    typedef boost::shared_ptr<BoutEvent> BoutEventPtr;
+    typedef std::shared_ptr<BoutEvent> BoutEventPtr;
 
     BoutEvent();
 
@@ -80,7 +84,7 @@ private:
    It may have some sub-events and the sub-events will be shown in
    viewing empire first followed by ALL_EMPIRES and then other empires.*/
 struct FO_COMMON_API SimultaneousEvents : public CombatEvent {
-    typedef boost::shared_ptr<SimultaneousEvents> SimultaneousEventsPtr;
+    typedef std::shared_ptr<SimultaneousEvents> SimultaneousEventsPtr;
 
     SimultaneousEvents();
 
@@ -111,13 +115,13 @@ protected:
 
 
 typedef SimultaneousEvents AttacksEvent;
-typedef boost::shared_ptr<AttacksEvent> AttacksEventPtr;
+typedef std::shared_ptr<AttacksEvent> AttacksEventPtr;
 
 typedef SimultaneousEvents IncapacitationsEvent;
-typedef boost::shared_ptr<IncapacitationsEvent> IncapacitationsEventPtr;
+typedef std::shared_ptr<IncapacitationsEvent> IncapacitationsEventPtr;
 
 typedef SimultaneousEvents FighterLaunchesEvent;
-typedef boost::shared_ptr<FighterLaunchesEvent> FighterLaunchesEventPtr;
+typedef std::shared_ptr<FighterLaunchesEvent> FighterLaunchesEventPtr;
 
 
 /** InitialStealthEvent describes the initially stealthy combatants.
@@ -169,8 +173,8 @@ struct FO_COMMON_API StealthChangeEvent : public CombatEvent {
     void AddEvent(int attacker_id_, int target_id_, int attacker_empire_, int target_empire_, Visibility new_visibility_);
 
     struct StealthChangeEventDetail;
-    typedef boost::shared_ptr<StealthChangeEventDetail> StealthChangeEventDetailPtr;
-    typedef boost::shared_ptr<const StealthChangeEventDetail> ConstStealthChangeEventDetailPtr;
+    typedef std::shared_ptr<StealthChangeEventDetail> StealthChangeEventDetailPtr;
+    typedef std::shared_ptr<const StealthChangeEventDetail> ConstStealthChangeEventDetailPtr;
     struct StealthChangeEventDetail : public CombatEvent {
         StealthChangeEventDetail();
 
@@ -203,8 +207,8 @@ private:
 
 /// An event that describes a single attack by one object or fighter against another object or fighter
 struct FO_COMMON_API WeaponFireEvent : public CombatEvent {
-    typedef boost::shared_ptr<WeaponFireEvent> WeaponFireEventPtr;
-    typedef boost::shared_ptr<const WeaponFireEvent> ConstWeaponFireEventPtr;
+    typedef std::shared_ptr<WeaponFireEvent> WeaponFireEventPtr;
+    typedef std::shared_ptr<const WeaponFireEvent> ConstWeaponFireEventPtr;
 
     WeaponFireEvent();
 
@@ -280,7 +284,7 @@ private:
 
 /// Created when an fighter is destroyed
 struct FO_COMMON_API FighterAttackedEvent : public CombatEvent {
-    typedef boost::shared_ptr<FighterAttackedEvent> FighterAttackedEventPtr;
+    typedef std::shared_ptr<FighterAttackedEvent> FighterAttackedEventPtr;
 
     FighterAttackedEvent();
 
@@ -309,7 +313,7 @@ private:
 
 /// Created when an fighter is launched
 struct FO_COMMON_API FighterLaunchEvent : public CombatEvent {
-    typedef boost::shared_ptr<FighterLaunchEvent> FighterLaunchEventPtr;
+    typedef std::shared_ptr<FighterLaunchEvent> FighterLaunchEventPtr;
 
     FighterLaunchEvent();
 
@@ -338,8 +342,8 @@ private:
 /** WeaponsPlatformEvent describes a ship or planet with zero or more weapons firing its weapons in combat.
    It may have some WeaponFire sub-events.*/
 struct FO_COMMON_API WeaponsPlatformEvent : public CombatEvent {
-    typedef boost::shared_ptr<WeaponsPlatformEvent> WeaponsPlatformEventPtr;
-    typedef boost::shared_ptr<const WeaponsPlatformEvent> ConstWeaponsPlatformEventPtr;
+    typedef std::shared_ptr<WeaponsPlatformEvent> WeaponsPlatformEventPtr;
+    typedef std::shared_ptr<const WeaponsPlatformEvent> ConstWeaponsPlatformEventPtr;
 
     WeaponsPlatformEvent();
 

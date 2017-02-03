@@ -12,6 +12,7 @@
 #include "../universe/ShipDesign.h"
 #include "../universe/System.h"
 #include "../universe/Tech.h"
+#include "../universe/Enums.h"
 #include "../Empire/Empire.h"
 
 #include "../util/Directories.h"
@@ -24,9 +25,11 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/python/str.hpp>
 
+
+#include <map>
 #include <stdexcept>
 #include <string>
-#include <map>
+
 
 using boost::python::object;
 using boost::python::str;
@@ -178,7 +181,7 @@ namespace AIInterface {
     }
 
     void UpdateMeterEstimates(bool pretend_to_own_unowned_planets) {
-        std::vector<TemporaryPtr<Planet> > unowned_planets;
+        std::vector<std::shared_ptr<Planet>> unowned_planets;
         int player_id = -1;
         Universe& universe = AIClientApp::GetApp()->GetUniverse();
         if (pretend_to_own_unowned_planets) {
@@ -198,7 +201,7 @@ namespace AIInterface {
             // ownership to all, while remembering which planets this is done
             // to.
             universe.InhibitUniverseObjectSignals(true);
-            for (TemporaryPtr<Planet> planet : universe.Objects().FindObjects<Planet>()) {
+            for (std::shared_ptr<Planet> planet : universe.Objects().FindObjects<Planet>()) {
                  if (planet->Unowned()) {
                      unowned_planets.push_back(planet);
                      planet->SetOwner(player_id);
@@ -211,7 +214,7 @@ namespace AIInterface {
 
         if (pretend_to_own_unowned_planets) {
             // remove temporary ownership added above
-            for (TemporaryPtr<Planet> planet : unowned_planets)
+            for (std::shared_ptr<Planet> planet : unowned_planets)
                 planet->SetOwner(ALL_EMPIRES);
             universe.InhibitUniverseObjectSignals(false);
         }
@@ -243,7 +246,7 @@ namespace AIInterface {
     }
 
     int IssueFleetMoveOrder(int fleet_id, int destination_id) {
-        TemporaryPtr<const Fleet> fleet = GetFleet(fleet_id);
+        std::shared_ptr<const Fleet> fleet = GetFleet(fleet_id);
         if (!fleet) {
             ErrorLogger() << "IssueFleetMoveOrder : passed an invalid fleet_id";
             return 0;
@@ -274,7 +277,7 @@ namespace AIInterface {
         }
 
         int empire_id = AIClientApp::GetApp()->EmpireID();
-        TemporaryPtr<const UniverseObject> obj = GetUniverseObject(object_id);
+        std::shared_ptr<const UniverseObject> obj = GetUniverseObject(object_id);
 
         if (!obj) {
             ErrorLogger() << "IssueRenameOrder : passed an invalid object_id";
@@ -300,7 +303,7 @@ namespace AIInterface {
 
             // make sure all objects exist and are owned just by this player
             for (int object_id : object_ids) {
-                TemporaryPtr<const UniverseObject> obj = GetUniverseObject(object_id);
+                std::shared_ptr<const UniverseObject> obj = GetUniverseObject(object_id);
 
                 if (!obj) {
                     ErrorLogger() << "IssueScrapOrder : passed an invalid object_id";
@@ -336,7 +339,7 @@ namespace AIInterface {
         }
 
         int empire_id = AIClientApp::GetApp()->EmpireID();
-        TemporaryPtr<const Ship> ship = TemporaryPtr<Ship>();
+        std::shared_ptr<const Ship> ship;
 
         // make sure all ships exist and are owned just by this player
         for (int ship_id : ship_ids) {
@@ -360,7 +363,7 @@ namespace AIInterface {
 
         std::vector<int>::const_iterator it = ship_ids.begin();
         for (++it; it != ship_ids.end(); ++it) {
-            TemporaryPtr<const Ship> ship2 = GetShip(*it);
+            std::shared_ptr<const Ship> ship2 = GetShip(*it);
             if (ship2->SystemID() != system_id) {
                 ErrorLogger() << "IssueNewFleetOrder : passed ship_ids of ships at different locations";
                 return 0;
@@ -383,7 +386,7 @@ namespace AIInterface {
     int IssueFleetTransferOrder(int ship_id, int new_fleet_id) {
         int empire_id = AIClientApp::GetApp()->EmpireID();
 
-        TemporaryPtr<const Ship> ship = GetShip(ship_id);
+        std::shared_ptr<const Ship> ship = GetShip(ship_id);
         if (!ship) {
             ErrorLogger() << "IssueFleetTransferOrder : passed an invalid ship_id " << ship_id;
             return 0;
@@ -398,7 +401,7 @@ namespace AIInterface {
             return 0;
         }
 
-        TemporaryPtr<const Fleet> fleet = GetFleet(new_fleet_id);
+        std::shared_ptr<const Fleet> fleet = GetFleet(new_fleet_id);
         if (!fleet) {
             ErrorLogger() << "IssueFleetTransferOrder : passed an invalid new_fleet_id " << new_fleet_id;
             return 0;
@@ -429,14 +432,14 @@ namespace AIInterface {
         int empire_id = AIClientApp::GetApp()->EmpireID();
 
         // make sure ship_id is a ship...
-        TemporaryPtr<const Ship> ship = GetShip(ship_id);
+        std::shared_ptr<const Ship> ship = GetShip(ship_id);
         if (!ship) {
             ErrorLogger() << "IssueColonizeOrder : passed an invalid ship_id";
             return 0;
         }
 
         // get fleet of ship
-        TemporaryPtr<const Fleet> fleet = GetFleet(ship->FleetID());
+        std::shared_ptr<const Fleet> fleet = GetFleet(ship->FleetID());
         if (!fleet) {
             ErrorLogger() << "IssueColonizeOrder : ship with passed ship_id has invalid fleet_id";
             return 0;
@@ -453,7 +456,7 @@ namespace AIInterface {
         }
 
         // verify that planet exists and is un-occupied.
-        TemporaryPtr<const Planet> planet = GetPlanet(planet_id);
+        std::shared_ptr<const Planet> planet = GetPlanet(planet_id);
         if (!planet) {
             ErrorLogger() << "IssueColonizeOrder : no planet with passed planet_id";
             return 0;
@@ -482,14 +485,14 @@ namespace AIInterface {
         int empire_id = AIClientApp::GetApp()->EmpireID();
 
         // make sure ship_id is a ship...
-        TemporaryPtr<const Ship> ship = GetShip(ship_id);
+        std::shared_ptr<const Ship> ship = GetShip(ship_id);
         if (!ship) {
             ErrorLogger() << "IssueInvadeOrder : passed an invalid ship_id";
             return 0;
         }
 
         // get fleet of ship
-        TemporaryPtr<const Fleet> fleet = GetFleet(ship->FleetID());
+        std::shared_ptr<const Fleet> fleet = GetFleet(ship->FleetID());
         if (!fleet) {
             ErrorLogger() << "IssueInvadeOrder : ship with passed ship_id has invalid fleet_id";
             return 0;
@@ -506,7 +509,7 @@ namespace AIInterface {
         }
 
         // verify that planet exists and is occupied by another empire
-        TemporaryPtr<const Planet> planet = GetPlanet(planet_id);
+        std::shared_ptr<const Planet> planet = GetPlanet(planet_id);
         if (!planet) {
             ErrorLogger() << "IssueInvadeOrder : no planet with passed planet_id";
             return 0;
@@ -552,7 +555,7 @@ namespace AIInterface {
         int empire_id = AIClientApp::GetApp()->EmpireID();
 
         // make sure ship_id is a ship...
-        TemporaryPtr<const Ship> ship = GetShip(ship_id);
+        std::shared_ptr<const Ship> ship = GetShip(ship_id);
         if (!ship) {
             ErrorLogger() << "IssueBombardOrder : passed an invalid ship_id";
             return 0;
@@ -568,7 +571,7 @@ namespace AIInterface {
 
 
         // verify that planet exists and is occupied by another empire
-        TemporaryPtr<const Planet> planet = GetPlanet(planet_id);
+        std::shared_ptr<const Planet> planet = GetPlanet(planet_id);
         if (!planet) {
             ErrorLogger() << "IssueBombardOrder : no planet with passed planet_id";
             return 0;
@@ -610,7 +613,7 @@ namespace AIInterface {
     int IssueAggressionOrder(int object_id, bool aggressive) {
         int empire_id = AIClientApp::GetApp()->EmpireID();
 
-        TemporaryPtr<const Fleet> fleet = GetFleet(object_id);
+        std::shared_ptr<const Fleet> fleet = GetFleet(object_id);
         if (!fleet) {
             ErrorLogger() << "IssueAggressionOrder : no fleet with passed id";
             return 0;
@@ -639,7 +642,7 @@ namespace AIInterface {
             return 0;
         }
 
-        TemporaryPtr<UniverseObject> obj = GetUniverseObject(object_id);
+        std::shared_ptr<UniverseObject> obj = GetUniverseObject(object_id);
         if (!obj) {
             ErrorLogger() << "IssueGiveObjectToEmpireOrder : passed invalid object id";
             return 0;
@@ -655,7 +658,7 @@ namespace AIInterface {
             return 0;
         }
 
-        TemporaryPtr<System> system = GetSystem(obj->SystemID());
+        std::shared_ptr<System> system = GetSystem(obj->SystemID());
         if (!system) {
             ErrorLogger() << "IssueGiveObjectToEmpireOrder : couldn't get system of object";
             return 0;
@@ -663,9 +666,9 @@ namespace AIInterface {
 
         // can only give to empires with something present to receive the gift
         bool recipient_has_something_here = false;
-        std::vector<TemporaryPtr<const UniverseObject> > system_objects =
+        std::vector<std::shared_ptr<const UniverseObject>> system_objects =
             Objects().FindObjects<const UniverseObject>(system->ObjectIDs());
-        for (TemporaryPtr<const UniverseObject> obj : system_objects) {
+        for (std::shared_ptr<const UniverseObject> obj : system_objects) {
             if (obj->Owner() == recipient_id) {
                 recipient_has_something_here = true;
                 break;
@@ -685,7 +688,7 @@ namespace AIInterface {
     int IssueChangeFocusOrder(int planet_id, const std::string& focus) {
         int empire_id = AIClientApp::GetApp()->EmpireID();
 
-        TemporaryPtr<const Planet> planet = GetPlanet(planet_id);
+        std::shared_ptr<const Planet> planet = GetPlanet(planet_id);
         if (!planet) {
             ErrorLogger() << "IssueChangeFocusOrder : no planet with passed planet_id "<<planet_id;
             return 0;

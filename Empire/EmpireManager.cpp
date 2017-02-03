@@ -5,6 +5,7 @@
 #include "../util/Logger.h"
 #include "../util/MultiplayerCommon.h"
 #include "../util/XMLDoc.h"
+#include "../universe/Enums.h"
 
 #include <boost/filesystem/fstream.hpp>
 
@@ -43,6 +44,11 @@ const EmpireManager& EmpireManager::operator=(EmpireManager& rhs) {
 const Empire* EmpireManager::GetEmpire(int id) const {
     const_iterator it = m_empire_map.find(id);
     return it == m_empire_map.end() ? nullptr : it->second;
+}
+
+std::shared_ptr<const UniverseObject> EmpireManager::GetSource(int id) const {
+    auto it = m_empire_map.find(id);
+    return it != m_empire_map.end() ? it->second->Source() : nullptr;
 }
 
 const std::string& EmpireManager::GetEmpireName(int id) const {
@@ -305,12 +311,8 @@ const std::vector<GG::Clr>& EmpireColors() {
         }
     }
     if (colors.empty()) {
-        colors.push_back(GG::Clr(  0, 255,   0, 255));
-        colors.push_back(GG::Clr(  0,   0, 255, 255));
-        colors.push_back(GG::Clr(255,   0,   0, 255));
-        colors.push_back(GG::Clr(  0, 255, 255, 255));
-        colors.push_back(GG::Clr(255, 255,   0, 255));
-        colors.push_back(GG::Clr(255,   0, 255, 255));
+        colors = {  GG::Clr(  0, 255,   0, 255),    GG::Clr(  0,   0, 255, 255),    GG::Clr(255,   0,   0, 255),
+                    GG::Clr(  0, 255, 255, 255),    GG::Clr(255, 255,   0, 255),    GG::Clr(255,   0, 255, 255)};
     }
     return colors;
 }

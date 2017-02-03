@@ -5,6 +5,7 @@
 #include "../util/Export.h"
 #include "../universe/Meter.h"
 #include "../universe/ShipDesign.h"
+#include "../universe/UniverseObject.h"
 
 #include <GG/Clr.h>
 
@@ -16,6 +17,7 @@ class ShipDesign;
 class SitRepEntry;
 extern const int INVALID_GAME_TURN;
 extern const int INVALID_OBJECT_ID;
+extern const int ALL_EMPIRES;
 
 class Alignment {
 public:
@@ -220,7 +222,7 @@ struct FO_COMMON_API ProductionQueue {
 
     /** Returns map from sets of object ids that can share resources to amount
       * of PP available in those groups of objects */
-    std::map<std::set<int>, float>         AvailablePP(const boost::shared_ptr<ResourcePool>& industry_pool) const;
+    std::map<std::set<int>, float> AvailablePP(const std::shared_ptr<ResourcePool>& industry_pool) const;
 
     /** Returns map from sets of object ids that can share resources to amount
       * of PP allocated to production queue elements that have build locations
@@ -228,7 +230,7 @@ struct FO_COMMON_API ProductionQueue {
     const std::map<std::set<int>, float>&  AllocatedPP() const;
 
     /** Returns sets of object ids that have more available than allocated PP */
-    std::set<std::set<int> >                ObjectsWithWastedPP(const boost::shared_ptr<ResourcePool>& industry_pool) const;
+    std::set<std::set<int>> ObjectsWithWastedPP(const std::shared_ptr<ResourcePool>& industry_pool) const;
 
 
     // STL container-like interface
@@ -305,24 +307,29 @@ public:
     //@}
 
     /** \name Accessors */ //@{
-    const std::string&      Name() const;                                           ///< Returns the Empire's name
-    const std::string&      PlayerName() const;                                     ///< Returns the Empire's player's name
+    const std::string&      Name() const;                               ///< Returns the Empire's name
+    const std::string&      PlayerName() const;                         ///< Returns the Empire's player's name
 
-    int                     EmpireID() const;                                       ///< Returns the Empire's unique numeric ID
+    int                     EmpireID() const;                           ///< Returns the Empire's unique numeric ID
 
-    const GG::Clr&          Color() const;                                          ///< Returns the Empire's color
+    const GG::Clr&          Color() const;                              ///< Returns the Empire's color
 
-    int                     CapitalID() const;                                      ///< Returns the numeric ID of the empire's capital
-    int                     StockpileID(ResourceType res = INVALID_RESOURCE_TYPE) const;///< Returns the numeric ID of the empire's stockpile location for the resource of type \a res
+    int                     CapitalID() const;                          ///< Returns the numeric ID of the empire's capital
+    int                     StockpileID(ResourceType res) const;        ///< Returns the numeric ID of the empire's stockpile location for the resource of type \a res
+
+    /** Return an object id that is owned by the empire or INVALID_OBJECT_ID. */
+    int                     SourceID() const;
+    /** Return an object that is owned by the empire or null.*/
+    std::shared_ptr<const UniverseObject> Source() const;
 
     std::string             Dump() const;
 
-    const std::set<std::string>&    AvailableTechs() const;                         ///< Returns the set of all available techs.
-    const std::set<std::string>&    AvailableBuildingTypes() const;                 ///< Returns the set of all available building types.
-    std::set<int>                   AvailableShipDesigns() const;                   ///< Returns the set of ship design ids of this empire that the empire can actually build
-    const std::set<int>&            ShipDesigns() const;                            ///< Returns the set of all ship design ids of this empire
-    const std::set<std::string>&    AvailableShipParts() const;                     ///< Returns the set of ship part names this empire that the empire can currently build
-    const std::set<std::string>&    AvailableShipHulls() const;                     ///< Returns the set of ship hull names that that the empire can currently build
+    const std::set<std::string>&    AvailableTechs() const;             ///< Returns the set of all available techs.
+    const std::set<std::string>&    AvailableBuildingTypes() const;     ///< Returns the set of all available building types.
+    std::set<int>                   AvailableShipDesigns() const;       ///< Returns the set of ship design ids of this empire that the empire can actually build
+    const std::set<int>&            ShipDesigns() const;                ///< Returns the set of all ship design ids of this empire
+    const std::set<std::string>&    AvailableShipParts() const;         ///< Returns the set of ship part names this empire that the empire can currently build
+    const std::set<std::string>&    AvailableShipHulls() const;         ///< Returns the set of ship hull names that that the empire can currently build
 
     const std::string&              TopPriorityEnqueuedTech() const;
     const std::string&              MostExpensiveEnqueuedTech() const;
@@ -406,7 +413,10 @@ public:
 
     float                   ProductionPoints() const;           ///< Returns the number of production points available to the empire (this is available industry)
 
-    const boost::shared_ptr<ResourcePool>   GetResourcePool(ResourceType resource_type) const;  ///< Returns ResourcePool for \a resource_type or 0 if no such ResourcePool exists
+    /** Returns ResourcePool for \a resource_type or 0 if no such ResourcePool
+        exists. */
+    const std::shared_ptr<ResourcePool> GetResourcePool(ResourceType resource_type) const;
+
     float                   ResourceStockpile(ResourceType type) const;         ///< returns current stockpiled amount of resource \a type
     float                   ResourceOutput(ResourceType type) const;            ///< returns amount of resource \a type being generated by ResourceCenters
     float                   ResourceAvailable(ResourceType type) const;         ///< returns amount of resource \a type immediately available.  This = production + stockpile
@@ -622,6 +632,10 @@ private:
     GG::Clr                         m_color;                    ///< Empire's color
     int                             m_capital_id;               ///< the ID of the empire's capital planet
 
+    /** The source id is the id of any object owned by the empire.  It is
+        mutable so that Source() can be const and still cache its result. */
+    mutable int                     m_source_id;
+
     bool                            m_eliminated;               ///< Whether the empire has lost
     std::set<std::string>           m_victories;                ///< The ways that the empire has won, if any
 
@@ -643,7 +657,8 @@ private:
 
     std::vector<SitRepEntry>        m_sitrep_entries;           ///< The Empire's sitrep entries
 
-    std::map<ResourceType, boost::shared_ptr<ResourcePool> >    m_resource_pools;
+    std::map<ResourceType, std::shared_ptr<ResourcePool>> m_resource_pools;
+
     PopulationPool                                              m_population_pool;
 
     std::map<std::string, int>      m_ship_names_used;          ///< map from name to number of times used

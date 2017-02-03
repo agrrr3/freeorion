@@ -6,6 +6,7 @@
 #include "Ship.h"
 #include "UniverseObject.h"
 #include "ValueRef.h"
+#include "Enums.h"
 #include "../parse/Parse.h"
 #include "../util/OptionsDB.h"
 #include "../util/Logger.h"
@@ -13,6 +14,9 @@
 #include "../util/AppInterface.h"
 
 #include <boost/filesystem/fstream.hpp>
+
+#include <iterator>
+
 
 /////////////////////////////////////////////////
 // FocusType                                   //
@@ -77,7 +81,7 @@ Species::~Species()
 void Species::Init() {
     if (m_location)
         m_location->SetTopLevelContent(this->m_name);
-    for (boost::shared_ptr<Effect::EffectsGroup> effect : m_effects) {
+    for (std::shared_ptr<Effect::EffectsGroup> effect : m_effects) {
         effect->SetTopLevelContent(m_name);
     }
 }
@@ -116,7 +120,7 @@ std::string Species::Dump() const {
     } else {
         retval += DumpIndent() + "effectsgroups = [\n";
         ++g_indent;
-        for (boost::shared_ptr<Effect::EffectsGroup> effect : m_effects) {
+        for (std::shared_ptr<Effect::EffectsGroup> effect : m_effects) {
             retval += effect->Dump();
         }
         --g_indent;
@@ -152,7 +156,7 @@ std::string Species::GameplayDescription() const {
 
     bool requires_separator = true;
 
-    for (boost::shared_ptr<Effect::EffectsGroup> effect : m_effects) {
+    for (std::shared_ptr<Effect::EffectsGroup> effect : m_effects) {
         const std::string& description = effect->GetDescription();
         if (description.empty())
             continue;
@@ -405,9 +409,7 @@ const std::string& SpeciesManager::RandomSpeciesName() const {
         return EMPTY_STRING;
 
     int species_idx = RandSmallInt(0, static_cast<int>(m_species.size()) - 1);
-    std::map<std::string, Species*>::const_iterator it = m_species.begin();
-    std::advance(it, species_idx);
-    return it->first;
+    return std::next(m_species.begin(), species_idx)->first;
 }
 
 const std::string& SpeciesManager::RandomPlayableSpeciesName() const {
@@ -415,9 +417,7 @@ const std::string& SpeciesManager::RandomPlayableSpeciesName() const {
         return EMPTY_STRING;
 
     int species_idx = RandSmallInt(0, NumPlayableSpecies() - 1);
-    playable_iterator it = playable_begin();
-    std::advance(it, species_idx);
-    return it->first;
+    return std::next(playable_begin(), species_idx)->first;
 }
 
 const std::string& SpeciesManager::SequentialPlayableSpeciesName(int id) const {
@@ -426,9 +426,7 @@ const std::string& SpeciesManager::SequentialPlayableSpeciesName(int id) const {
 
     int species_idx = id % NumPlayableSpecies();
     DebugLogger() << "SpeciesManager::SequentialPlayableSpeciesName has " << NumPlayableSpecies() << " and is given id " << id << " yielding index " << species_idx;
-    playable_iterator it = playable_begin();
-    std::advance(it, species_idx);
-    return it->first;
+    return std::next(playable_begin(), species_idx)->first;
 }
 
 void SpeciesManager::ClearSpeciesHomeworlds() {
@@ -518,14 +516,14 @@ void SpeciesManager::ClearSpeciesOpinions() {
 void SpeciesManager::UpdatePopulationCounter() {
     // ships of each species and design
     m_species_object_populations.clear();
-    for (std::map<int, TemporaryPtr<UniverseObject> >::iterator obj_it = Objects().ExistingObjectsBegin();
+    for (std::map<int, std::shared_ptr<UniverseObject>>::iterator obj_it = Objects().ExistingObjectsBegin();
          obj_it != Objects().ExistingObjectsEnd(); ++obj_it)
     {
-        TemporaryPtr<UniverseObject> obj = obj_it->second;
+        std::shared_ptr<UniverseObject> obj = obj_it->second;
         if (obj->ObjectType() != OBJ_PLANET && obj->ObjectType() != OBJ_POP_CENTER)
             continue;
 
-        TemporaryPtr<PopCenter> pop_center = boost::dynamic_pointer_cast<PopCenter>(obj);
+        std::shared_ptr<PopCenter> pop_center = std::dynamic_pointer_cast<PopCenter>(obj);
         if (!pop_center)
             continue;
 

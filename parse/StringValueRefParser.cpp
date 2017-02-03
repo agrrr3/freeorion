@@ -34,7 +34,7 @@ void initialize_nonnumeric_expression_parsers<std::string>(
                     [ _val = new_<ValueRef::Operation<std::string> >(_c, _d) ] >   ')'
                 )
             |   (
-                    tok.UserString_ >   '(' >   expr[ _val = new_<ValueRef::UserStringLookup>(_1) ] >   ')'
+                    tok.UserString_ >   '(' >   expr[ _val = new_<ValueRef::UserStringLookup<std::string>>(_1) ] >   ')'
                 )
             |   (
                     primary_expr [ _val = _1 ]
@@ -67,7 +67,10 @@ void initialize_nonnumeric_expression_parsers<std::string>(
         ;
 }
 
-namespace { struct string_parser_rules {
+namespace {
+    const std::string TOK_CURRENT_CONTENT{"CurrentContent"};
+
+    struct string_parser_rules {
         string_parser_rules() {
             qi::_1_type _1;
             qi::_val_type _val;
@@ -93,7 +96,7 @@ namespace { struct string_parser_rules {
                     |   tok.ThisTech_
                     |   tok.ThisSpecies_
                     |   tok.ThisSpecial_
-                   ) [ _val = new_<ValueRef::Constant<std::string> >("CurrentContent") ]
+                   ) [ _val = new_<ValueRef::Constant<std::string> >(TOK_CURRENT_CONTENT) ]
                 ;
 
             free_variable

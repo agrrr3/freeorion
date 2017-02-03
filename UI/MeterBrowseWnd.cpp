@@ -11,6 +11,7 @@
 #include "../universe/Ship.h"
 #include "../universe/ShipDesign.h"
 #include "../universe/UniverseObject.h"
+#include "../universe/Enums.h"
 #include "../Empire/Empire.h"
 #include "../client/human/HumanClientApp.h"
 #include "ClientUI.h"
@@ -79,7 +80,11 @@ namespace {
     { return FighterBrowseLabelWidth() + MeterBrowseQtyWidth() + MeterBrowseValueWidth() + (EDGE_PAD * 4); }
 }
 
-MeterBrowseWnd::MeterBrowseWnd(int object_id, MeterType primary_meter_type, MeterType secondary_meter_type/* = INVALID_METER_TYPE*/) :
+MeterBrowseWnd::MeterBrowseWnd(int object_id, MeterType primary_meter_type) :
+    MeterBrowseWnd(object_id, primary_meter_type, INVALID_METER_TYPE)
+{}
+
+MeterBrowseWnd::MeterBrowseWnd(int object_id, MeterType primary_meter_type, MeterType secondary_meter_type) :
     GG::BrowseInfoWnd(GG::X0, GG::Y0, MeterBrowseLabelWidth() + MeterBrowseValueWidth(), GG::Y1),
     m_primary_meter_type(primary_meter_type),
     m_secondary_meter_type(secondary_meter_type),
@@ -127,7 +132,7 @@ void MeterBrowseWnd::Initialize() {
     const GG::X TOTAL_WIDTH = MeterBrowseLabelWidth() + MeterBrowseValueWidth();
 
     // get objects and meters to verify that they exist
-    TemporaryPtr<const UniverseObject> obj = GetUniverseObject(m_object_id);
+    std::shared_ptr<const UniverseObject> obj = GetUniverseObject(m_object_id);
     if (!obj) {
         ErrorLogger() << "MeterBrowseWnd couldn't get object with id " << m_object_id;
         return;
@@ -146,7 +151,7 @@ void MeterBrowseWnd::Initialize() {
         std::string summary_title_text;
         if (m_primary_meter_type == METER_POPULATION) {
             std::string human_readable_species_name;
-            if (TemporaryPtr<const PopCenter> pop = boost::dynamic_pointer_cast<const PopCenter>(obj)) {
+            if (std::shared_ptr<const PopCenter> pop = std::dynamic_pointer_cast<const PopCenter>(obj)) {
                 const std::string& species_name = pop->SpeciesName();
                 if (!species_name.empty())
                     human_readable_species_name = UserString(species_name);
@@ -233,7 +238,7 @@ namespace {
         int obj_id, const MeterType& meter_type)
     {
         // get object and meter, aborting if not valid
-        TemporaryPtr<const UniverseObject> obj = GetUniverseObject(obj_id);
+        std::shared_ptr<const UniverseObject> obj = GetUniverseObject(obj_id);
         if (!obj) {
             ErrorLogger() << "Couldn't get object with id " << obj_id;
             return boost::none;
@@ -304,12 +309,12 @@ namespace DualMeter {
         if (!target_meter)
             projected = current;
 
-        return boost::make_tuple(current, projected, target);
+        return {current, projected, target};
     }
 }
 
 void MeterBrowseWnd::UpdateSummary() {
-    TemporaryPtr<const UniverseObject> obj = GetUniverseObject(m_object_id);
+    std::shared_ptr<const UniverseObject> obj = GetUniverseObject(m_object_id);
     if (!obj)
         return;
 
@@ -385,12 +390,12 @@ void MeterBrowseWnd::UpdateEffectLabelsAndValues(GG::Y& top) {
 
     // add label-value pairs for each alteration recorded for this meter
     for (const Effect::AccountingInfo& info : *maybe_info_vec) {
-        TemporaryPtr<const UniverseObject> source = GetUniverseObject(info.source_id);
+        std::shared_ptr<const UniverseObject> source = GetUniverseObject(info.source_id);
 
         const Empire*   empire = nullptr;
-        TemporaryPtr<const Building> building;
-        TemporaryPtr<const Planet>   planet;
-        //TemporaryPtr<const Ship>     ship;
+        std::shared_ptr<const Building> building;
+        std::shared_ptr<const Planet> planet;
+        //std::shared_ptr<const Ship> ship;
         std::string     text;
         std::string     name;
         if (source)
@@ -411,7 +416,7 @@ void MeterBrowseWnd::UpdateEffectLabelsAndValues(GG::Y& top) {
         }
         case ECT_BUILDING: {
             name.clear();
-            if (building = boost::dynamic_pointer_cast<const Building>(source))
+            if (building = std::dynamic_pointer_cast<const Building>(source))
                 if (planet = GetPlanet(building->PlanetID()))
                     name = planet->Name();
             const std::string& label_template = (info.custom_label.empty()
@@ -489,7 +494,7 @@ void MeterBrowseWnd::UpdateEffectLabelsAndValues(GG::Y& top) {
         value->MoveTo(GG::Pt(MeterBrowseLabelWidth(), top));
         value->Resize(GG::Pt(MeterBrowseValueWidth(), m_row_height));
         AttachChild(value);
-        m_effect_labels_and_values.push_back(std::make_pair(label, value));
+        m_effect_labels_and_values.push_back({label, value});
 
         top += m_row_height;
     }
@@ -505,7 +510,7 @@ void ShipDamageBrowseWnd::Initialize() {
     const GG::X TOTAL_WIDTH = MeterBrowseLabelWidth() + MeterBrowseValueWidth();
 
     // get objects and meters to verify that they exist
-    TemporaryPtr<const UniverseObject> ship = GetShip(m_object_id);
+    std::shared_ptr<const UniverseObject> ship = GetShip(m_object_id);
     if (!ship) {
         ErrorLogger() << "ShipDamageBrowseWnd couldn't get ship with id " << m_object_id;
         return;
@@ -543,7 +548,7 @@ void ShipDamageBrowseWnd::UpdateImpl(std::size_t mode, const Wnd* target) {
 }
 
 void ShipDamageBrowseWnd::UpdateSummary() {
-    TemporaryPtr<const Ship> ship = GetShip(m_object_id);
+    std::shared_ptr<const Ship> ship = GetShip(m_object_id);
     if (!ship)
         return;
 
@@ -568,7 +573,7 @@ void ShipDamageBrowseWnd::UpdateEffectLabelsAndValues(GG::Y& top) {
     m_effect_labels_and_values.clear();
 
     // get object and meter, aborting if not valid
-    TemporaryPtr<const Ship> ship = GetShip(m_object_id);
+    std::shared_ptr<const Ship> ship = GetShip(m_object_id);
     if (!ship) {
         ErrorLogger() << "ShipDamageBrowseWnd::UpdateEffectLabelsAndValues couldn't get ship with id " << m_object_id;
         return;
@@ -604,7 +609,7 @@ void ShipDamageBrowseWnd::UpdateEffectLabelsAndValues(GG::Y& top) {
         value->MoveTo(GG::Pt(MeterBrowseLabelWidth(), top));
         value->Resize(GG::Pt(MeterBrowseValueWidth(), m_row_height));
         AttachChild(value);
-        m_effect_labels_and_values.push_back(std::make_pair(label, value));
+        m_effect_labels_and_values.push_back({label, value});
 
         top += m_row_height;
     }
@@ -670,7 +675,7 @@ void ShipFightersBrowseWnd::Initialize() {
     const GG::Clr BG_COLOR = ClientUI::WndColor();
 
     // get objects and meters to verify that they exist
-    TemporaryPtr<const UniverseObject> ship = GetShip(m_object_id);
+    std::shared_ptr<const UniverseObject> ship = GetShip(m_object_id);
     if (!ship) {
         ErrorLogger() << "Couldn't get ship with id " << m_object_id;
         return;
@@ -725,7 +730,7 @@ void ShipFightersBrowseWnd::UpdateImpl(std::size_t mode, const Wnd* target) {
 }
 
 void ShipFightersBrowseWnd::UpdateSummary() {
-    TemporaryPtr<const Ship> ship = GetShip(m_object_id);
+    std::shared_ptr<const Ship> ship = GetShip(m_object_id);
     if (!ship)
         return;
 
@@ -797,7 +802,7 @@ void ShipFightersBrowseWnd::UpdateEffectLabelsAndValues(GG::Y& top) {
     m_hangar_list->DeleteChildren();
 
     // early return if no valid ship, ship design, or no parts in the design
-    TemporaryPtr<const Ship> ship = GetShip(m_object_id);
+    std::shared_ptr<const Ship> ship = GetShip(m_object_id);
     if (!ship) {
         ErrorLogger() << "Couldn't get ship with id " << m_object_id;
         return;
@@ -882,7 +887,7 @@ void ShipFightersBrowseWnd::UpdateEffectLabelsAndValues(GG::Y& top) {
     hangar_summary->MoveTo(GG::Pt(ROW_WIDTH + EDGE_PAD, top));
     hangar_summary->Resize(GG::Pt(ROW_WIDTH, m_row_height));
     AttachChild(hangar_summary);
-    m_effect_labels_and_values.push_back(std::make_pair(bay_summary, hangar_summary));
+    m_effect_labels_and_values.push_back({bay_summary, hangar_summary});
 
     top += m_row_height;
 
@@ -911,7 +916,7 @@ void ShipFightersBrowseWnd::UpdateEffectLabelsAndValues(GG::Y& top) {
         damage_value->Resize(GG::Pt(VALUE_WIDTH, m_row_height));
         damage_value->SetFont(ClientUI::GetBoldFont());
         AttachChild(damage_value);
-        m_effect_labels_and_values.push_back(std::make_pair(damage_label, damage_value));
+        m_effect_labels_and_values.push_back({damage_label, damage_value});
 
         top += m_row_height;
     } else {
@@ -968,7 +973,7 @@ void ShipFightersBrowseWnd::UpdateEffectLabelsAndValues(GG::Y& top) {
         detail_summary_launch->Resize(GG::Pt(VALUE_WIDTH + EDGE_PAD + (LABEL_WIDTH / 2), m_row_height));
         detail_summary_launch->SetFont(ClientUI::GetBoldFont());
         AttachChild(detail_summary_launch);
-        m_effect_labels_and_values.push_back(std::make_pair(detail_summary_damage, detail_summary_launch));
+        m_effect_labels_and_values.push_back({detail_summary_damage, detail_summary_launch});
 
         top += m_row_height;
 
@@ -1002,7 +1007,7 @@ void ShipFightersBrowseWnd::UpdateEffectLabelsAndValues(GG::Y& top) {
             formula_value->MoveTo(GG::Pt(left, top));
             formula_value->Resize(GG::Pt(VALUE_WIDTH, m_row_height));
             AttachChild(formula_value);
-            m_effect_labels_and_values.push_back(std::make_pair(formula_label, formula_value));
+            m_effect_labels_and_values.push_back({formula_label, formula_value});
             left += VALUE_WIDTH + EDGE_PAD;
 
             // launched fighters label
@@ -1020,7 +1025,7 @@ void ShipFightersBrowseWnd::UpdateEffectLabelsAndValues(GG::Y& top) {
             launch_value->MoveTo(GG::Pt(left, top));
             launch_value->Resize(GG::Pt(VALUE_WIDTH, m_row_height));
             AttachChild(launch_value);
-            m_effect_labels_and_values.push_back(std::make_pair(launch_label, launch_value));
+            m_effect_labels_and_values.push_back({launch_label, launch_value});
 
             top += m_row_height;
             left = GG::X0;

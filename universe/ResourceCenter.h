@@ -1,9 +1,7 @@
 #ifndef _ResourceCenter_h_
 #define _ResourceCenter_h_
 
-#include "Enums.h"
-#include "EnableTemporaryFromThis.h"
-#include "TemporaryPtr.h"
+#include "EnumsFwd.h"
 #include <boost/signals2/signal.hpp>
 #include <boost/serialization/nvp.hpp>
 
@@ -21,7 +19,7 @@ class UniverseObject;
   * classes could be made from it as well (e.g., a trade-ship or mining vessel,
   * or a non-Planet UniverseObject- and PopCenter- derived object of some
   * sort. */
-class FO_COMMON_API ResourceCenter : virtual public EnableTemporaryFromThis<UniverseObject> {
+class FO_COMMON_API ResourceCenter : virtual public std::enable_shared_from_this<UniverseObject> {
 public:
     /** \name Structors */ //@{
     ResourceCenter();
@@ -48,7 +46,9 @@ public:
     //@}
 
     /** \name Mutators */ //@{
-    void            Copy(TemporaryPtr<const ResourceCenter> copied_object, Visibility vis = VIS_FULL_VISIBILITY);
+    void Copy(std::shared_ptr<const ResourceCenter> copied_object, Visibility vis);
+
+    void Copy(std::shared_ptr<const ResourceCenter> copied_object);
 
     void            SetFocus(const std::string& focus);
     void            ClearFocus();

@@ -4,7 +4,6 @@
 #include "../universe/Universe.h"
 #include "../util/AppInterface.h"
 #include "CombatEvent.h"
-#include "CombatEvents.h"
 
 #include <boost/serialization/version.hpp>
 
@@ -18,12 +17,17 @@ public:
     //@}
 
     /** \name Accessors */ //@{
-    TemporaryPtr<const System>  GetSystem() const;  ///< returns System object in this CombatInfo's objects if one exists with id system_id
+    /** Returns System object in this CombatInfo's objects if one exists with
+        id system_id. */
+    std::shared_ptr<const System> GetSystem() const;
     //@}
 
     /** \name Mutators */ //@{
     //void                        Clear();            ///< cleans up contents
-    TemporaryPtr<System>        GetSystem();        ///< returns System object in this CombatInfo's objects if one exists with id system_id
+
+    /** Returns System object in this CombatInfo's objects if one exists with
+        id system_id. */
+    std::shared_ptr<System> GetSystem();
 
     /** Reveal stealthed attacker to their target's empires. */
     void ForceAtLeastBasicVisibility(int attacker_id, int target_id);

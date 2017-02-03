@@ -33,6 +33,7 @@
 
 #include <boost/cast.hpp>
 
+#include <iterator>
 #include <numeric>
 
 
@@ -634,7 +635,7 @@ ListBox::const_iterator ListBox::end() const
 const ListBox::Row& ListBox::GetRow(std::size_t n) const
 {
     assert(n < m_rows.size());
-    return **boost::next(m_rows.begin(), n);
+    return **std::next(m_rows.begin(), n);
 }
 
 ListBox::iterator ListBox::Caret() const
@@ -759,7 +760,7 @@ void ListBox::StartingChildDragDrop(const Wnd* wnd, const Pt& offset)
     // and adjusting all the dragged rows relative to wnd.
     std::map<GG::Y, SelectionSet::iterator> selections_Y_sorted;
     for (SelectionSet::iterator sel_it = m_selections.begin(); sel_it != m_selections.end(); ++sel_it) {
-        selections_Y_sorted.insert(std::make_pair((**sel_it)->Top(), sel_it));
+        selections_Y_sorted.insert({(**sel_it)->Top(), sel_it});
     }
 
     Y vertical_offset = offset.y;
@@ -1035,7 +1036,10 @@ void ListBox::Clear()
     m_first_col_shown = 0;
     m_selections.clear();
     m_old_sel_row = m_rows.end();
+    m_old_rdown_row = m_rows.end();
     m_lclick_row = m_rows.end();
+    m_rclick_row = m_rows.end();
+    m_last_row_browsed = m_rows.end();
 
     if (!m_keep_col_widths) { // remove column widths and alignments, if needed
         m_col_widths.clear();
@@ -1136,7 +1140,7 @@ ListBox::iterator ListBox::end()
 ListBox::Row& ListBox::GetRow(std::size_t n)
 {
     assert(n < m_rows.size());
-    return **boost::next(m_rows.begin(), n);
+    return **std::next(m_rows.begin(), n);
 }
 
 void ListBox::SetSelections(const SelectionSet& s, bool signal/* = false*/)
@@ -1186,7 +1190,7 @@ void ListBox::BringRowIntoView(iterator it)
         {
             last_row_found = true;
             if (it2 != m_rows.begin())
-                last_row_y_offset = y_offset - (*boost::prior(it2))->Height();
+                last_row_y_offset = y_offset - (*std::prev(it2))->Height();
         }
 
         y_offset += (*it2)->Height();
@@ -1465,7 +1469,7 @@ bool ListBox::AutoScrollingLeft() const
 bool ListBox::AutoScrollingRight() const
 { return m_auto_scrolling_right; }
 
-void ListBox::KeyPress(Key key, boost::uint32_t key_code_point, Flags<ModKey> mod_keys)
+void ListBox::KeyPress(Key key, std::uint32_t key_code_point, Flags<ModKey> mod_keys)
 {
     if (!Disabled()) {
         bool bring_caret_into_view = true;
@@ -1507,7 +1511,7 @@ void ListBox::KeyPress(Key key, boost::uint32_t key_code_point, Flags<ModKey> mo
         case GGK_PAGEUP: // page up key (not numpad key)
             if (m_caret != m_rows.end()) {
                 Y space = ClientSize().y;
-                while (m_caret != m_rows.begin() && 0 < (space -= (*boost::prior(m_caret))->Height())) {
+                while (m_caret != m_rows.begin() && 0 < (space -= (*std::prev(m_caret))->Height())) {
                     --m_caret;
                 }
             }
@@ -1536,7 +1540,7 @@ void ListBox::KeyPress(Key key, boost::uint32_t key_code_point, Flags<ModKey> mo
 
             --m_first_col_shown;
             std::list<GG::Wnd*>::const_iterator first_row_first_child((*m_first_row_shown)->GetLayout()->Children().begin());
-            GG::Wnd* first_shown_cell(*boost::next(first_row_first_child, m_first_col_shown));
+            GG::Wnd* first_shown_cell{*std::next(first_row_first_child, m_first_col_shown)};
             GG::X new_scroll_offset(first_shown_cell->UpperLeft().x - UpperLeft().x - GG::X(BORDER_THICK));
             m_hscroll->ScrollTo(Value(new_scroll_offset));
             SignalScroll(*m_hscroll, true);
@@ -1550,7 +1554,7 @@ void ListBox::KeyPress(Key key, boost::uint32_t key_code_point, Flags<ModKey> mo
 
             ++m_first_col_shown;
             std::list<GG::Wnd*>::const_iterator first_row_first_child((*m_first_row_shown)->GetLayout()->Children().begin());
-            GG::Wnd* first_shown_cell(*boost::next(first_row_first_child, m_first_col_shown));
+            GG::Wnd* first_shown_cell{*std::next(first_row_first_child, m_first_col_shown)};
             GG::X new_scroll_offset(first_shown_cell->UpperLeft().x - UpperLeft().x - GG::X(BORDER_THICK));
             m_hscroll->ScrollTo(Value(new_scroll_offset));
             SignalScroll(*m_hscroll, true);
@@ -1632,7 +1636,7 @@ void ListBox::TimerFiring(unsigned int ticks, Timer* timer)
                 m_first_row_shown != m_rows.end() &&
                 m_first_row_shown != m_rows.begin()) {
                 m_vscroll->ScrollTo(m_vscroll->PosnRange().first -
-                                    Value((*boost::prior(m_first_row_shown))->Height()));
+                                    Value((*std::prev(m_first_row_shown))->Height()));
                 SignalScroll(*m_vscroll, true);
             }
             if (m_auto_scrolling_down) {
@@ -2044,9 +2048,9 @@ struct ListBox::SelectionCache
 };
 
 // TODO: change to unique_ptr with move mechanics or more the entire definition into the cpp file.
-boost::shared_ptr<ListBox::SelectionCache> ListBox::CacheSelections()
+std::shared_ptr<ListBox::SelectionCache> ListBox::CacheSelections()
 {
-    boost::shared_ptr<ListBox::SelectionCache> cache(new ListBox::SelectionCache());
+    auto cache = std::make_shared<ListBox::SelectionCache>();
     cache->caret = SafeDeref(m_caret, m_rows.end());
     for (const SelectionSet::value_type& sel : m_selections) {
         cache->selections.insert(*sel);
@@ -2087,7 +2091,7 @@ void ListBox::RestoreCachedSelections(const ListBox::SelectionCache& cache)
 
 void ListBox::Resort()
 {
-    boost::shared_ptr<ListBox::SelectionCache> cached_selections = CacheSelections();
+    std::shared_ptr<ListBox::SelectionCache> cached_selections = CacheSelections();
 
     std::vector<Row*> rows_vec(m_rows.size());
     std::copy(m_rows.begin(), m_rows.end(), rows_vec.begin());
@@ -2183,7 +2187,7 @@ void ListBox::AdjustScrolls(bool adjust_for_resize)
             total_y_extent += cl_sz.y - m_rows.back()->Height();
     }
 
-    boost::shared_ptr<StyleFactory> style = GetStyleFactory();
+    std::shared_ptr<StyleFactory> style = GetStyleFactory();
 
     bool vscroll_added_or_removed(false);
 
@@ -2423,7 +2427,7 @@ ListBox::iterator ListBox::FirstRowShownWhenBottomIs(iterator bottom_row, Y clie
 {
     Y available_space = client_height - (*bottom_row)->Height();
     iterator it = bottom_row;
-    while (it != m_rows.begin() && (*boost::prior(it))->Height() <= available_space) {
+    while (it != m_rows.begin() && (*std::prev(it))->Height() <= available_space) {
         available_space -= (*--it)->Height();
     }
     return it;
