@@ -27,9 +27,16 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/timer.hpp>
+// #include <boost/coroutine2/all.hpp>
+#include <boost/coroutine2/coroutine.hpp>
+#include <boost/coroutine2/fixedsize_stack.hpp>
 #include "boost/date_time/posix_time/posix_time.hpp"
 
+
 namespace {
+    // Coroutine for simulating production (partial return if item needs PP from imperial stockpile)
+    // Parameter is item and turn of simulation
+    typedef boost::coroutines2::coroutine<std::pair<int, ProductionQueue::Element&>> coro_t;
     const float EPSILON = 0.01f;
     const std::string EMPTY_STRING;
 
@@ -991,6 +998,9 @@ ProductionQueue::const_iterator ProductionQueue::UnderfundedProject() const {
     return end();
 }
 
+void testCoroutine() {
+
+}
 void ProductionQueue::Update() {
     const Empire* empire = GetEmpire(m_empire_id);
     if (!empire) {
@@ -1168,7 +1178,44 @@ void ProductionQueue::Update() {
     }
 
 
-    // within each group, allocate PP to queue items
+    // for each supply group, set up coroutines to allocate group PP to queue items
+    // TODO check set order
+    std::list<std::pair<coro_t::pull_type, std::map<std::set<int>, float>::value_type&>> orchester;
+    std::list<coro_t::pull_type> coros;
+    for (const std::map<std::set<int>, float>::value_type& group : available_pp) {
+        coro_t::pull_type source(
+            [&](coro_t::push_type& sink) {
+            // fund queue items from supply group PP stuff until unfunded and imperial PP available and allowed
+            int turn_dist = 0;
+            // for turn
+            //   for queue element
+
+            //boost::shared_ptr<ProductionQueue::Element> queue_element(ProductionQueue::Element());
+            std::pair<int, ProductionQueue::Element&> turn_and_element(turn_dist, ProductionQueue::Element());
+            sink(turn_and_element);
+            //   end for element
+            // end for turn
+        });
+        coros.push_back(std::move(source)); // vs emplace_back??
+        //orchester.push_back(std::make_pair(std::move(source), group));
+        //std::pair<float, int> third_result = orchester.back().first().get();
+        coro_t::pull_type& coro_tp = source;
+    }
+    // synchronize the coroutines and fund projects from imperial PP stockpile
+    for (auto it = coros.begin(); it != coros.end(); ++it) {
+        //std::pair<int, ProductionQueue::Element&> p = it->get();
+        int turn_diff = it->get().first;
+        auto element = it->get().second;
+    }
+    /*
+    for (auto coro_and_group_it = orchester.begin(); coro_and_group_it != orchester.end(); ++coro_and_group_it) {
+        auto coro = coro_and_group_it->first;
+        auto group = coro_and_group_it->second;
+        std::pair<float, int> p = coro.get();
+        // find lowest turn and order in the
+    }
+    */
+
     for (const std::map<std::set<int>, float>::value_type& group : available_pp) {
         unsigned int first_turn_pp_available = 1; //the first turn any pp in this resource group is available to the next item for this group
         unsigned int turn_jump = 0;
@@ -1178,7 +1225,6 @@ void ProductionQueue::Update() {
         std::vector<int> &this_group_elements = elements_by_group[group.first];
         std::vector<int>::const_iterator group_begin = this_group_elements.begin();
         std::vector<int>::const_iterator group_end = this_group_elements.end();
-
         // cycle through items on queue, if in this resource group then allocate production costs over time against those available to group
         for (std::vector<int>::const_iterator el_it = group_begin;
              (el_it != group_end) && ((boost::posix_time::ptime(boost::posix_time::microsec_clock::local_time())-dp_time_start).total_microseconds()*1e-6 < DP_TOO_LONG_TIME);
