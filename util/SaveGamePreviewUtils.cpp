@@ -11,12 +11,10 @@
 #include "ScopedTimer.h"
 #include "Version.h"
 
-#include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/graph/graph_concepts.hpp>
 #include <boost/iostreams/filter/zlib.hpp>
 #include <boost/iostreams/filtering_streambuf.hpp>
@@ -31,7 +29,9 @@ namespace fs = boost::filesystem;
 
 namespace {
     const std::string UNABLE_TO_OPEN_FILE("Unable to open file");
-    const std::string SAVE_FILE_DESCRIPTION("This is an XML archive FreeOrion saved game. Initial header information is uncompressed, and the main gamestate information is stored as zlib-comprssed XML archive in the last entry in the main archive.");
+    const std::string XML_SAVE_FILE_DESCRIPTION("This is an XML archive FreeOrion saved game. Initial header information is uncompressed, and the main gamestate information is stored as zlib-comprssed XML archive in the last entry in the main archive.");
+    const std::string BIN_SAVE_FILE_DESCRIPTION("This is binary archive FreeOrion saved game.");
+
     /// Splits time and date on separate lines for an ISO datetime string
     std::string split_time(const std::string& time) {
         std::string result = time;
@@ -105,7 +105,7 @@ namespace {
 
 SaveGamePreviewData::SaveGamePreviewData() :
     magic_number(PREVIEW_PRESENT_MARKER),
-    description(SAVE_FILE_DESCRIPTION),
+    description(),
     freeorion_version(UserString("UNKNOWN_VALUE_SYMBOL_2")),
     main_player_name(UserString("UNKNOWN_VALUE_SYMBOL_2")),
     main_player_empire_name(UserString("UNKNOWN_VALUE_SYMBOL_2")),
@@ -117,12 +117,14 @@ SaveGamePreviewData::SaveGamePreviewData() :
 bool SaveGamePreviewData::Valid() const
 { return magic_number == SaveGamePreviewData::PREVIEW_PRESENT_MARKER && current_turn >= -1; }
 
+void SaveGamePreviewData::SetBinary(bool bin)
+{ description = bin ? BIN_SAVE_FILE_DESCRIPTION : XML_SAVE_FILE_DESCRIPTION; }
+
 template<class Archive>
 void SaveGamePreviewData::serialize(Archive& ar, unsigned int version)
 {
     if (version >= 2) {
         if (Archive::is_saving::value) {
-            description = SAVE_FILE_DESCRIPTION;
             freeorion_version = FreeOrionVersionString();
         }
         ar & BOOST_SERIALIZATION_NVP(description)
@@ -178,7 +180,7 @@ std::string ColumnInPreview(const FullPreview& full, const std::string& name, bo
     } else if (name == "empire") {
         return full.preview.main_player_empire_name;
     } else if (name == "turn") {
-        return boost::lexical_cast<std::string>(full.preview.current_turn);
+        return std::to_string(full.preview.current_turn);
     } else if (name == "time") {
         if (thin) {
             return split_time(full.preview.save_time);
@@ -188,7 +190,7 @@ std::string ColumnInPreview(const FullPreview& full, const std::string& name, bo
     } else if (name == "file") {
         return full.filename;
     } else if (name == "galaxy_size") {
-        return boost::lexical_cast<std::string>(full.galaxy.m_size);
+        return std::to_string(full.galaxy.m_size);
     } else if (name == "seed") {
         return full.galaxy.m_seed;
     } else if (name == "galaxy_age") {
@@ -208,9 +210,9 @@ std::string ColumnInPreview(const FullPreview& full, const std::string& name, bo
     } else if (name == "ai_aggression") {
         return TextForAIAggression(full.galaxy.m_ai_aggr);
     } else if (name == "number_of_empires") {
-        return boost::lexical_cast<std::string>(full.preview.number_of_empires);
+        return std::to_string(full.preview.number_of_empires);
     } else if (name == "number_of_humans") {
-        return boost::lexical_cast<std::string>(full.preview.number_of_human_players);
+        return std::to_string(full.preview.number_of_human_players);
     } else {
         ErrorLogger() << "FullPreview::Value Error: no such preview field: " << name;
         return "??";

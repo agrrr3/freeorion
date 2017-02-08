@@ -771,7 +771,7 @@ std::string ProductionQueue::ProductionItem::Dump() const {
     if (!name.empty())
         retval += "name: " + name;
     if (design_id != ShipDesign::INVALID_DESIGN_ID)
-        retval += "id: " + boost::lexical_cast<std::string>(design_id);
+        retval += "id: " + std::to_string(design_id);
     return retval;
 }
 
@@ -851,8 +851,8 @@ ProductionQueue::Element::Element(BuildType build_type, int design_id, int empir
 
 std::string ProductionQueue::Element::Dump() const {
     std::string retval = "ProductionQueue::Element (" + item.Dump() + ") (" +
-        boost::lexical_cast<std::string>(blocksize) + ") x" + boost::lexical_cast<std::string>(ordered) + " ";
-    retval += " (remaining: " + boost::lexical_cast<std::string>(remaining) + ") ";
+        std::to_string(blocksize) + ") x" + std::to_string(ordered) + " ";
+    retval += " (remaining: " + std::to_string(remaining) + ") ";
     return retval;
 }
 
@@ -1506,8 +1506,8 @@ std::shared_ptr<const UniverseObject> Empire::Source() const {
 
 std::string Empire::Dump() const {
     std::string retval = "Empire name: " + m_name +
-                         " ID: "+ boost::lexical_cast<std::string>(m_id) +
-                         " Capital ID: " + boost::lexical_cast<std::string>(m_capital_id);
+                         " ID: " + std::to_string(m_id) +
+                         " Capital ID: " + std::to_string(m_capital_id);
     retval += " meters:\n";
     for (const std::map<std::string, Meter>::value_type& meter : m_meters) {
         retval += UserString(meter.first) + ": " +
@@ -1753,6 +1753,9 @@ std::set<int> Empire::AvailableShipDesigns() const {
     }
     return retval;
 }
+
+const std::vector<int>& Empire::OrderedShipDesigns() const
+{ return m_ship_designs_ordered; }
 
 bool Empire::ShipDesignAvailable(int ship_design_id) const {
     //// if design isn't kept by this empire, it can't be built.
@@ -2004,8 +2007,8 @@ void Empire::UpdateSystemSupplyRanges(const std::set<int>& known_objects) {
             float supply_range = obj->NextTurnCurrentMeterValue(METER_SUPPLY);
 
             // if this object can provide more supply range than the best previously checked object in this system, record its range as the new best for the system
-            std::map<int, float>::iterator system_it = m_supply_system_ranges.find(system_id);               // try to find a previous entry for this system's supply range
-            if (system_it == m_supply_system_ranges.end() || supply_range > system_it->second) {  // if there is no previous entry, or the previous entry is shorter than the new one, add or replace the entry
+            std::map<int, float>::iterator system_it = m_supply_system_ranges.find(system_id);  // try to find a previous entry for this system's supply range
+            if (system_it == m_supply_system_ranges.end() || supply_range > system_it->second) {// if there is no previous entry, or the previous entry is shorter than the new one, add or replace the entry
                 //std::cout << " ... object " << obj->Name() << " has resource supply range: " << resource_supply_range << std::endl;
                 m_supply_system_ranges[system_id] = supply_range;
             }
@@ -2213,18 +2216,6 @@ const bool Empire::UnrestrictedLaneTravel(int start_system_id, int dest_system_i
     return false;
 }
 
-Empire::TechItr Empire::TechBegin() const
-{ return m_techs.begin(); }
-
-Empire::TechItr Empire::TechEnd() const
-{ return m_techs.end(); }
-
-Empire::TechItr Empire::AvailableBuildingTypeBegin() const
-{ return m_available_building_types.begin(); }
-
-Empire::TechItr Empire::AvailableBuildingTypeEnd() const
-{ return m_available_building_types.end(); }
-
 const std::set<int>& Empire::ExploredSystems() const
 { return m_explored_systems; }
 
@@ -2283,12 +2274,6 @@ const std::map<int, std::set<int> > Empire::VisibleStarlanes() const {
 
     return retval;
 }
-
-Empire::ShipDesignItr Empire::ShipDesignBegin() const
-{ return m_ship_designs_ordered.begin(); }
-
-Empire::ShipDesignItr Empire::ShipDesignEnd() const
-{ return m_ship_designs_ordered.end(); }
 
 Empire::SitRepItr Empire::SitRepBegin() const
 { return m_sitrep_entries.begin(); }
@@ -2737,7 +2722,7 @@ void Empire::AddShipDesign(int ship_design_id, int next_design_id) {
     if (ship_design) {  // don't check if design is producible; adding a ship design is useful for more than just producing it
         // design is valid, so just add the id to empire's set of ids that it knows about
         if (m_ship_designs.find(ship_design_id) == m_ship_designs.end()) {
-            std::list<int>::iterator point = m_ship_designs_ordered.end();
+            std::vector<int>::iterator point = m_ship_designs_ordered.end();
             bool is_at_end_of_list = (next_design_id == ShipDesign::INVALID_DESIGN_ID);
             if (!is_at_end_of_list)
                 point = std::find(m_ship_designs_ordered.begin(), m_ship_designs_ordered.end(), next_design_id);
@@ -2796,7 +2781,8 @@ int Empire::AddShipDesign(ShipDesign* ship_design) {
 void Empire::RemoveShipDesign(int ship_design_id) {
     if (m_ship_designs.find(ship_design_id) != m_ship_designs.end()) {
         m_ship_designs.erase(ship_design_id);
-        m_ship_designs_ordered.remove(ship_design_id);
+        m_ship_designs_ordered.erase(
+            std::remove(m_ship_designs_ordered.begin(), m_ship_designs_ordered.end(), ship_design_id), m_ship_designs_ordered.end());
         ShipDesignsChangedSignal();
     } else {
         DebugLogger() << "Empire::RemoveShipDesign: this empire did not have design with id " << ship_design_id;
@@ -2981,7 +2967,7 @@ void Empire::CheckProductionProgress() {
                 break;
             }
             case BT_SHIP: {
-                build_description = "Ships(s) with design id " + boost::lexical_cast<std::string>(elem.item.design_id);
+                build_description = "Ships(s) with design id " + std::to_string(elem.item.design_id);
                 break;
             }
             default: 
@@ -3314,20 +3300,16 @@ void Empire::SetPlayerName(const std::string& player_name)
 void Empire::InitResourcePools() {
     // get this empire's owned resource centers and ships (which can both produce resources)
     std::vector<int> res_centers;
-    res_centers.reserve(Objects().NumExistingResourceCenters());
-    for (std::map<int, std::shared_ptr<UniverseObject>>::iterator it = Objects().ExistingResourceCentersBegin();
-         it != Objects().ExistingResourceCentersEnd(); ++it)
-    {
-        if (!it->second->OwnedBy(m_id))
+    res_centers.reserve(Objects().ExistingResourceCenters().size());
+    for (const std::map<int, std::shared_ptr<UniverseObject>>::value_type& entry : Objects().ExistingResourceCenters()) {
+        if (!entry.second->OwnedBy(m_id))
             continue;
-        res_centers.push_back(it->first);
+        res_centers.push_back(entry.first);
     }
-    for (std::map<int, std::shared_ptr<UniverseObject>>::iterator it = Objects().ExistingShipsBegin();
-         it != Objects().ExistingShipsEnd(); ++it)
-    {
-        if (!it->second->OwnedBy(m_id))
+    for (const std::map<int, std::shared_ptr<UniverseObject>>::value_type& entry : Objects().ExistingShips()) {
+        if (!entry.second->OwnedBy(m_id))
             continue;
-        res_centers.push_back(it->first);
+        res_centers.push_back(entry.first);
     }
     m_resource_pools[RE_RESEARCH]->SetObjects(res_centers);
     m_resource_pools[RE_INDUSTRY]->SetObjects(res_centers);
@@ -3335,12 +3317,10 @@ void Empire::InitResourcePools() {
 
     // get this empire's owned population centers
     std::vector<int> pop_centers;
-    pop_centers.reserve(Objects().NumExistingPopCenters());
-    for (std::map<int, std::shared_ptr<UniverseObject>>::iterator it = Objects().ExistingPopCentersBegin();
-         it != Objects().ExistingPopCentersEnd(); ++it)
-    {
-        if (it->second->OwnedBy(m_id))
-            pop_centers.push_back(it->first);
+    pop_centers.reserve(Objects().ExistingPopCenters().size());
+    for (const std::map<int, std::shared_ptr<UniverseObject>>::value_type& entry : Objects().ExistingPopCenters()) {
+        if (entry.second->OwnedBy(m_id))
+            pop_centers.push_back(entry.first);
     }
     m_population_pool.SetPopCenters(pop_centers);
 
@@ -3351,10 +3331,8 @@ void Empire::InitResourcePools() {
     // set non-blockadeable resource pools to share resources between all systems
     std::set<std::set<int> > sets_set;
     std::set<int> all_systems_set;
-    for (std::map<int, std::shared_ptr<UniverseObject>>::iterator it = Objects().ExistingSystemsBegin();
-         it != Objects().ExistingSystemsEnd(); ++it)
-    {
-        all_systems_set.insert(it->first);
+    for (const std::map<int, std::shared_ptr<UniverseObject>>::value_type& entry : Objects().ExistingSystems()) {
+        all_systems_set.insert(entry.first);
     }
     sets_set.insert(all_systems_set);
     m_resource_pools[RE_RESEARCH]->SetConnectedSupplyGroups(sets_set);
@@ -3413,12 +3391,10 @@ void Empire::UpdateOwnedObjectCounters() {
     // ships of each species and design
     m_species_ships_owned.clear();
     m_ship_designs_owned.clear();
-    for (std::map<int, std::shared_ptr<UniverseObject>>::iterator ship_it = Objects().ExistingShipsBegin();
-         ship_it != Objects().ExistingShipsEnd(); ++ship_it)
-    {
-        if (!ship_it->second->OwnedBy(this->EmpireID()))
+    for (const std::map<int, std::shared_ptr<UniverseObject>>::value_type& entry : Objects().ExistingShips()) {
+        if (!entry.second->OwnedBy(this->EmpireID()))
             continue;
-        std::shared_ptr<const Ship> ship = std::dynamic_pointer_cast<const Ship>(ship_it->second);
+        std::shared_ptr<const Ship> ship = std::dynamic_pointer_cast<const Ship>(entry.second);
         if (!ship)
             continue;
         if (!ship->SpeciesName().empty())
@@ -3446,12 +3422,10 @@ void Empire::UpdateOwnedObjectCounters() {
     // colonies of each species, and unspecified outposts
     m_species_colonies_owned.clear();
     m_outposts_owned = 0;
-    for (std::map<int, std::shared_ptr<UniverseObject>>::iterator planet_it = Objects().ExistingPlanetsBegin();
-         planet_it != Objects().ExistingPlanetsEnd(); ++planet_it)
-    {
-        if (!planet_it->second->OwnedBy(this->EmpireID()))
+    for (const std::map<int, std::shared_ptr<UniverseObject>>::value_type& entry : Objects().ExistingPlanets()) {
+        if (!entry.second->OwnedBy(this->EmpireID()))
             continue;
-        std::shared_ptr<const Planet> planet = std::dynamic_pointer_cast<const Planet>(planet_it->second);
+        std::shared_ptr<const Planet> planet = std::dynamic_pointer_cast<const Planet>(entry.second);
         if (!planet)
             continue;
         if (planet->SpeciesName().empty())
@@ -3462,12 +3436,10 @@ void Empire::UpdateOwnedObjectCounters() {
 
     // buildings of each type
     m_building_types_owned.clear();
-    for (std::map<int, std::shared_ptr<UniverseObject>>::iterator building_it = Objects().ExistingBuildingsBegin();
-         building_it != Objects().ExistingBuildingsEnd(); ++building_it)
-    {
-        if (!building_it->second->OwnedBy(this->EmpireID()))
+    for (const std::map<int, std::shared_ptr<UniverseObject>>::value_type& entry : Objects().ExistingBuildings()) {
+        if (!entry.second->OwnedBy(this->EmpireID()))
             continue;
-        std::shared_ptr<const Building> building = std::dynamic_pointer_cast<const Building>(building_it->second);
+        std::shared_ptr<const Building> building = std::dynamic_pointer_cast<const Building>(entry.second);
         if (!building)
             continue;
         m_building_types_owned[building->BuildingTypeName()]++;

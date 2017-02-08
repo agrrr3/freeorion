@@ -78,9 +78,15 @@ namespace {
                      UserStringNop("OPTIONS_DB_UI_COMBAT_SUMMARY_GRAPH_HEIGHT_PROPORTIONAL"),
                      false);
 
-        db.Add<StreamableColor>("UI.combat.summary.dead-color", UserStringNop("OPTIONS_DB_UI_COMBAT_SUMMARY_DEAD_COLOR"), StreamableColor(GG::Clr(128, 0, 0, 255)));
-        db.Add<StreamableColor>("UI.combat.summary.wound-color", UserStringNop("OPTIONS_DB_UI_COMBAT_SUMMARY_WOUND_COLOR"), StreamableColor(GG::CLR_RED));
-        db.Add<StreamableColor>("UI.combat.summary.health-color", UserStringNop("OPTIONS_DB_UI_COMBAT_SUMMARY_HEALTH_COLOR"), StreamableColor(GG::CLR_GREEN));
+        db.Add<GG::Clr>("UI.combat.summary.dead-color",
+                        UserStringNop("OPTIONS_DB_UI_COMBAT_SUMMARY_DEAD_COLOR"),
+                        GG::Clr(128, 0, 0, 255));
+        db.Add<GG::Clr>("UI.combat.summary.wound-color",
+                        UserStringNop("OPTIONS_DB_UI_COMBAT_SUMMARY_WOUND_COLOR"),
+                        GG::CLR_RED);
+        db.Add<GG::Clr>("UI.combat.summary.health-color",
+                        UserStringNop("OPTIONS_DB_UI_COMBAT_SUMMARY_HEALTH_COLOR"),
+                        GG::CLR_GREEN);
     }
     bool temp_bool = RegisterOptions(&AddOptions);
 
@@ -273,9 +279,9 @@ public:
         SetBrowseModeTime(GetOptionsDB().Get<int>("UI.tooltip-delay"));
 
         OptionsDB& options = GetOptionsDB();
-        m_dead_color = options.Get<StreamableColor>("UI.combat.summary.dead-color").ToClr();
-        m_wound_color = options.Get<StreamableColor>("UI.combat.summary.wound-color").ToClr();
-        m_health_color = options.Get<StreamableColor>("UI.combat.summary.health-color").ToClr();
+        m_dead_color = options.Get<GG::Clr>("UI.combat.summary.dead-color");
+        m_wound_color = options.Get<GG::Clr>("UI.combat.summary.wound-color");
+        m_health_color = options.Get<GG::Clr>("UI.combat.summary.health-color");
     }
 
     void Render() override {
@@ -528,7 +534,7 @@ class OptionsBar : public GG::Wnd {
 public:
     boost::signals2::signal<void ()> ChangedSignal;
 
-    OptionsBar(boost::scoped_ptr<BarSizer>& sizer) :
+    OptionsBar(std::unique_ptr<BarSizer>& sizer) :
         GG::Wnd(),
         m_sizer(sizer)
     {
@@ -592,7 +598,7 @@ public:
     }
 
 private:
-    boost::scoped_ptr<BarSizer>& m_sizer;
+    std::unique_ptr<BarSizer>& m_sizer;
     std::vector<ToggleData*> m_toggles;
 
     struct ToggleData : public boost::signals2::trackable {
@@ -604,7 +610,7 @@ private:
         std::string tip_true;
         std::string tip_false;
         std::string option_key;
-        boost::scoped_ptr<BarSizer>* sizer;
+        std::unique_ptr<BarSizer>* sizer;
         OptionsBar* parent;
         GG::Button* button;
 
@@ -625,7 +631,7 @@ private:
         ToggleData(const std::string& label_true, const std::string& label_false,
                    const std::string& tip_true, const std::string& tip_false,
                    std::string option_key,
-                   boost::scoped_ptr<BarSizer>* sizer, OptionsBar* parent) :
+                   std::unique_ptr<BarSizer>* sizer, OptionsBar* parent) :
             label_true(label_true),
             label_false(label_false),
             tip_true(tip_true),

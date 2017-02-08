@@ -505,6 +505,7 @@ OptionsWnd::OptionsWnd():
     BoolOption(current_page,   0, "UI.dump-effects-descriptions",          UserString("OPTIONS_DUMP_EFFECTS_GROUPS_DESC"));
     BoolOption(current_page,   0, "verbose-logging",                       UserString("OPTIONS_VERBOSE_LOGGING_DESC"));
     BoolOption(current_page,   0, "verbose-sitrep",                        UserString("OPTIONS_VERBOSE_SITREP_DESC"));
+    BoolOption(current_page,   0, "UI.show-id-after-names",                UserString("OPTIONS_SHOW_IDS_AFTER_NAMES"));
 
     m_tabs->SetCurrentWnd(0);
 
@@ -555,10 +556,10 @@ OptionsWnd::OptionsWnd():
     current_page = CreatePage(UserString("OPTIONS_PAGE_OBJECTS_WINDOW"));
     CreateSectionHeader(current_page, 0, UserString("OPTIONS_COLUMNS"));
     for (unsigned int i = 0; i < 12u; ++i) {
-        std::string col_width_opt_name = "UI.objects-list-width-col-" + boost::lexical_cast<std::string>(i);
+        std::string col_width_opt_name = "UI.objects-list-width-col-" + std::to_string(i);
         if (!GetOptionsDB().OptionExists(col_width_opt_name))
             break;
-        std::string col_opt_name = "UI.objects-list-info-col-" + boost::lexical_cast<std::string>(i);
+        std::string col_opt_name = "UI.objects-list-info-col-" + std::to_string(i);
         if (!GetOptionsDB().OptionExists(col_opt_name))
             break;
         std::string col_contents = GetOptionsDB().GetValueString(col_opt_name);
@@ -956,8 +957,8 @@ void OptionsWnd::DirectoryOption(GG::ListBox* page, int indentation_level, const
 void OptionsWnd::ColorOption(GG::ListBox* page, int indentation_level, const std::string& option_name, const std::string& text) {
     GG::ListBox::Row* row = new GG::ListBox::Row();
     GG::Label* text_control = new CUILabel(text, GG::FORMAT_LEFT | GG::FORMAT_NOWRAP, GG::INTERACTIVE);
-    ColorSelector* color_selector = new ColorSelector(GetOptionsDB().Get<StreamableColor>(option_name).ToClr(),
-                                                      GetOptionsDB().GetDefault<StreamableColor>(option_name).ToClr());
+    ColorSelector* color_selector = new ColorSelector(GetOptionsDB().Get<GG::Clr>(option_name),
+                                                      GetOptionsDB().GetDefault<GG::Clr>(option_name));
     color_selector->Resize(GG::Pt(color_selector->Width(), GG::Y(ClientUI::Pts() + 4)));
     color_selector->SetMaxSize(GG::Pt(color_selector->MaxSize().x, color_selector->Size().y));
     GG::Layout* layout = new GG::Layout(GG::X0, GG::Y0, GG::X1, GG::Y1, 1, 2);
@@ -973,7 +974,7 @@ void OptionsWnd::ColorOption(GG::ListBox* page, int indentation_level, const std
     text_control->SetBrowseModeTime(GetOptionsDB().Get<int>("UI.tooltip-delay"));
     text_control->SetBrowseText(UserString(GetOptionsDB().GetDescription(option_name)));
     GG::Connect(color_selector->ColorChangedSignal, [option_name](const GG::Clr& clr) {
-        GetOptionsDB().Set<StreamableColor>(option_name, clr);
+        GetOptionsDB().Set<GG::Clr>(option_name, clr);
     });
 }
 

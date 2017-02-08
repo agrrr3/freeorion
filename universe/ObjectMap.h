@@ -275,68 +275,32 @@ public:
 
     /**  */
     std::shared_ptr<UniverseObject> ExistingObject(int id);
-    std::map<int, std::shared_ptr<UniverseObject>>::iterator ExistingObjectsBegin()
-    { return m_existing_objects.begin(); }
-    std::map<int, std::shared_ptr<UniverseObject>>::iterator ExistingObjectsEnd()
-    { return m_existing_objects.end(); }
-    int NumExistingObjects()
-    {return m_existing_objects.size(); }
+    const std::map<int, std::shared_ptr<UniverseObject>>& ExistingObjects()
+    { return m_existing_objects; }
 
-    std::map<int, std::shared_ptr<UniverseObject>>::iterator ExistingResourceCentersBegin()
-    { return m_existing_resource_centers.begin(); }
-    std::map<int, std::shared_ptr<UniverseObject>>::iterator ExistingResourceCentersEnd()
-    { return m_existing_resource_centers.end(); }
-    int NumExistingResourceCenters()
-    {return m_existing_resource_centers.size(); }
+    const std::map<int, std::shared_ptr<UniverseObject>>& ExistingResourceCenters()
+    { return m_existing_resource_centers; }
 
-    std::map<int, std::shared_ptr<UniverseObject>>::iterator ExistingPopCentersBegin()
-    { return m_existing_pop_centers.begin(); }
-    std::map<int, std::shared_ptr<UniverseObject>>::iterator ExistingPopCentersEnd()
-    { return m_existing_pop_centers.end(); }
-    int NumExistingPopCenters()
-    {return m_existing_pop_centers.size(); }
+    const std::map<int, std::shared_ptr<UniverseObject>>& ExistingPopCenters()
+    { return m_existing_pop_centers; }
 
-    std::map<int, std::shared_ptr<UniverseObject>>::iterator ExistingShipsBegin()
-    { return m_existing_ships.begin(); }
-    std::map<int, std::shared_ptr<UniverseObject>>::iterator ExistingShipsEnd()
-    { return m_existing_ships.end(); }
-    int NumExistingShips()
-    {return m_existing_ships.size(); }
+    const std::map<int, std::shared_ptr<UniverseObject>>& ExistingShips()
+    { return m_existing_ships; }
 
-    std::map<int, std::shared_ptr<UniverseObject>>::iterator ExistingFleetsBegin()
-    { return m_existing_fleets.begin(); }
-    std::map<int, std::shared_ptr<UniverseObject>>::iterator ExistingFleetsEnd()
-    { return m_existing_fleets.end(); }
-    int NumExistingFleets()
-    {return m_existing_fleets.size(); }
+    const std::map<int, std::shared_ptr<UniverseObject>>& ExistingFleets()
+    { return m_existing_fleets; }
 
-    std::map<int, std::shared_ptr<UniverseObject>>::iterator ExistingPlanetsBegin()
-    { return m_existing_planets.begin(); }
-    std::map<int, std::shared_ptr<UniverseObject>>::iterator ExistingPlanetsEnd()
-    { return m_existing_planets.end(); }
-    int NumExistingPlanets()
-    {return m_existing_planets.size(); }
+    const std::map<int, std::shared_ptr<UniverseObject>>& ExistingPlanets()
+    { return m_existing_planets; }
 
-    std::map<int, std::shared_ptr<UniverseObject>>::iterator ExistingSystemsBegin()
-    { return m_existing_systems.begin(); }
-    std::map<int, std::shared_ptr<UniverseObject>>::iterator ExistingSystemsEnd()
-    { return m_existing_systems.end(); }
-    int NumExistingSystems()
-    {return m_existing_systems.size(); }
+    const std::map<int, std::shared_ptr<UniverseObject>>& ExistingSystems()
+    { return m_existing_systems; }
 
-    std::map<int, std::shared_ptr<UniverseObject>>::iterator ExistingBuildingsBegin()
-    { return m_existing_buildings.begin(); }
-    std::map<int, std::shared_ptr<UniverseObject>>::iterator ExistingBuildingsEnd()
-    { return m_existing_buildings.end(); }
-    int NumExistingBuildings()
-    {return m_existing_buildings.size(); }
+    const std::map<int, std::shared_ptr<UniverseObject>>& ExistingBuildings()
+    { return m_existing_buildings; }
 
-    std::map<int, std::shared_ptr<UniverseObject>>::iterator ExistingFieldsBegin()
-    { return m_existing_fields.begin(); }
-    std::map<int, std::shared_ptr<UniverseObject>>::iterator ExistingFieldsEnd()
-    { return m_existing_fields.end(); }
-    int NumExistingFields()
-    {return m_existing_fields.size(); }
+    const std::map<int, std::shared_ptr<UniverseObject>>& ExistingFields()
+    { return m_existing_fields; }
 
     //@}
 

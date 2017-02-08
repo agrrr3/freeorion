@@ -139,20 +139,20 @@ bool operator!=(const Message& lhs, const Message& rhs)
 void swap(Message& lhs, Message& rhs)
 { lhs.Swap(rhs); }
 
-void BufferToHeader(const int* header_buf, Message& message) {
-    message.m_type = static_cast<Message::MessageType>(header_buf[0]);
-    message.m_sending_player = header_buf[1];
-    message.m_receiving_player = header_buf[2];
-    message.m_synchronous_response = (header_buf[3] != 0);
-    message.m_message_size = header_buf[4];
+void BufferToHeader(const Message::HeaderBuffer& buffer, Message& message) {
+    message.m_type = static_cast<Message::MessageType>(buffer[0]);
+    message.m_sending_player = buffer[1];
+    message.m_receiving_player = buffer[2];
+    message.m_synchronous_response = (buffer[3] != 0);
+    message.m_message_size = buffer[4];
 }
 
-void HeaderToBuffer(const Message& message, int* header_buf) {
-    header_buf[0] = message.Type();
-    header_buf[1] = message.SendingPlayer();
-    header_buf[2] = message.ReceivingPlayer();
-    header_buf[3] = message.SynchronousResponse();
-    header_buf[4] = message.Size();
+void HeaderToBuffer(const Message& message, Message::HeaderBuffer& buffer) {
+    buffer[0] = message.Type();
+    buffer[1] = message.SendingPlayer();
+    buffer[2] = message.ReceivingPlayer();
+    buffer[3] = message.SynchronousResponse();
+    buffer[4] = message.Size();
 }
 
 ////////////////////////////////////////////////
@@ -215,7 +215,7 @@ Message JoinGameMessage(const std::string& player_name, Networking::ClientType c
 
 Message HostIDMessage(int host_player_id) {
     return Message(Message::HOST_ID, Networking::INVALID_PLAYER_ID, Networking::INVALID_PLAYER_ID,
-                   boost::lexical_cast<std::string>(host_player_id));
+                   std::to_string(host_player_id));
 }
 
 Message GameStartMessage(int player_id, bool single_player_game, int empire_id,
@@ -517,7 +517,7 @@ Message RequestNewObjectIDMessage(int sender)
 
 Message DispatchObjectIDMessage(int player_id, int new_id) {
     return Message(Message::DISPATCH_NEW_OBJECT_ID, Networking::INVALID_PLAYER_ID, player_id,
-                   boost::lexical_cast<std::string>(new_id), true);
+                   std::to_string(new_id), true);
 }
 
 Message RequestNewDesignIDMessage(int sender)
@@ -525,7 +525,7 @@ Message RequestNewDesignIDMessage(int sender)
 
 Message DispatchDesignIDMessage(int player_id, int new_id) {
     return Message(Message::DISPATCH_NEW_DESIGN_ID, Networking::INVALID_PLAYER_ID, player_id,
-                   boost::lexical_cast<std::string>(new_id), true);
+                   std::to_string(new_id), true);
 }
 
 Message HostSaveGameInitiateMessage(int sender, const std::string& filename)

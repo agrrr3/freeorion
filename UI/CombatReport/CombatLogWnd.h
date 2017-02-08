@@ -2,7 +2,9 @@
 #define COMBATLOGWND_H
 
 #include "../CUIControls.h"
-#include <boost/scoped_ptr.hpp>
+
+#include <memory>
+
 
 /// Display a log of combat events with expandable log sections with more details of a combat event
 class CombatLogWnd : public GG::Wnd {
@@ -36,11 +38,11 @@ public:
     /* The window may have becomem visible.*/
     void HandleMadeVisible();
 
-    class CombatLogWndImpl;
+    class Impl;
+
 private:
-    //TODO C++11 unique_ptr
-    friend class CombatLogWndImpl;
-    const boost::scoped_ptr<CombatLogWndImpl> pimpl;
+    friend class Impl;
+    std::unique_ptr<Impl> const m_impl;
 
     /// The number of pixels to leave between the text and the frame.
     static const int MARGIN = 5;

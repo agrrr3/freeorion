@@ -429,7 +429,7 @@ void Universe::ApplyAllEffectsAndUpdateMeters(bool do_accounting) {
 void Universe::ApplyMeterEffectsAndUpdateMeters(const std::vector<int>& object_ids, bool do_accounting) {
     if (object_ids.empty())
         return;
-    ScopedTimer timer("Universe::ApplyMeterEffectsAndUpdateMeters on " + boost::lexical_cast<std::string>(object_ids.size()) + " objects");
+    ScopedTimer timer("Universe::ApplyMeterEffectsAndUpdateMeters on " + std::to_string(object_ids.size()) + " objects");
     if (do_accounting) {
         // override if disabled
         do_accounting = GetOptionsDB().Get<bool>("effect-accounting");
@@ -504,7 +504,7 @@ void Universe::ApplyMeterEffectsAndUpdateTargetMaxUnpairedMeters(bool do_account
 void Universe::ApplyAppearanceEffects(const std::vector<int>& object_ids) {
     if (object_ids.empty())
         return;
-    ScopedTimer timer("Universe::ApplyAppearanceEffects on " + boost::lexical_cast<std::string>(object_ids.size()) + " objects");
+    ScopedTimer timer("Universe::ApplyAppearanceEffects on " + std::to_string(object_ids.size()) + " objects");
 
     // cache all activation and scoping condition results before applying
     // Effects, since the application of these Effects may affect the
@@ -650,15 +650,15 @@ void Universe::UpdateMeterEstimates(const std::vector<int>& objects_vec) {
 }
 
 void Universe::UpdateMeterEstimatesImpl(const std::vector<int>& objects_vec) {
-    ScopedTimer timer("Universe::UpdateMeterEstimatesImpl on " + boost::lexical_cast<std::string>(objects_vec.size()) + " objects", true);
+    ScopedTimer timer("Universe::UpdateMeterEstimatesImpl on " + std::to_string(objects_vec.size()) + " objects", true);
     bool do_accounting = GetOptionsDB().Get<bool>("effect-accounting");
 
     // get all pointers to objects once, to avoid having to do so repeatedly
     // when iterating over the list in the following code
     std::vector<std::shared_ptr<UniverseObject>> object_ptrs = m_objects.FindObjects(objects_vec);
     if (objects_vec.empty()) {
-        object_ptrs.reserve(m_objects.NumExistingObjects());
-        std::transform(Objects().ExistingObjectsBegin(), Objects().ExistingObjectsEnd(),
+        object_ptrs.reserve(m_objects.ExistingObjects().size());
+        std::transform(Objects().ExistingObjects().begin(), Objects().ExistingObjects().end(),
                        std::back_inserter(object_ptrs),
                        boost::bind(&std::map<int, std::shared_ptr<UniverseObject>>::value_type::second, _1));
     }
@@ -957,7 +957,7 @@ namespace {
             boost::unique_lock<boost::shared_mutex> guard(*m_global_mutex);
             std::string sources_ids;
             for (std::shared_ptr<const UniverseObject> obj : *m_sources) {
-                sources_ids += obj->Name() + " (" + boost::lexical_cast<std::string>(obj->ID()) + ")  ";
+                sources_ids += obj->Name() + " (" + std::to_string(obj->ID()) + ")  ";
             }
             DebugLogger() << "StoreTargetsAndCausesOfEffectsGroups: effects_group: " << m_effects_group->AccountingLabel()
                           << "  specific_cause: " << m_specific_cause_name
@@ -976,7 +976,7 @@ namespace {
             ScriptingContext source_context(source);
             int source_object_id = (source ? source->ID() : INVALID_OBJECT_ID);
             ScopedTimer update_timer("... StoreTargetsAndCausesOfEffectsGroups done processing source " +
-                                     boost::lexical_cast<std::string>(source_object_id) +
+                                     std::to_string(source_object_id) +
                                      " cause: " + m_specific_cause_name);
 
             // skip inactive sources
@@ -1187,8 +1187,8 @@ void Universe::GetEffectsAndTargets(Effect::TargetsCauses& targets_causes,
             continue;
 
         tech_sources.push_back(std::vector<std::shared_ptr<const UniverseObject>>(1U, source));
-        for (Empire::TechItr tech_it = empire->TechBegin(); tech_it != empire->TechEnd(); ++tech_it) {
-            const Tech* tech = GetTech(*tech_it);
+        for (const std::string& tech_name : empire->AvailableTechs()) {
+            const Tech* tech = GetTech(tech_name);
             if (!tech) continue;
 
             for (std::shared_ptr<Effect::EffectsGroup> effects_group : tech->Effects()) {
@@ -1438,7 +1438,7 @@ void Universe::ExecuteEffects(const Effect::TargetsCauses& targets_causes,
             std::string             stacking_group       = effects_group->StackingGroup();
             ScopedTimer update_timer(
                 "Universe::ExecuteEffects effgrp (" + effects_group->AccountingLabel() + ") from "
-                + boost::lexical_cast<std::string>(group_targets_causes.size()) + " sources"
+                + std::to_string(group_targets_causes.size()) + " sources"
             );
 
             // if other EffectsGroups or sources with the same stacking group have affected some of the

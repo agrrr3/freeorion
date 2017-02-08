@@ -35,64 +35,64 @@ bool UserStringExists(const std::string& str);
 
 namespace {
     void AddAllObjectsSet(Condition::ObjectSet& condition_non_targets) {
-        condition_non_targets.reserve(condition_non_targets.size() + Objects().NumExistingObjects());
-        std::transform( Objects().ExistingObjectsBegin(), Objects().ExistingObjectsEnd(),
-                        std::back_inserter(condition_non_targets),
-                        boost::bind(&std::map<int, std::shared_ptr<UniverseObject>>::value_type::second,_1));
+        condition_non_targets.reserve(condition_non_targets.size() + Objects().ExistingObjects().size());
+        std::transform(Objects().ExistingObjects().begin(), Objects().ExistingObjects().end(),
+                       std::back_inserter(condition_non_targets),
+                       boost::bind(&std::map<int, std::shared_ptr<UniverseObject>>::value_type::second,_1));
     }
 
     void AddBuildingSet(Condition::ObjectSet& condition_non_targets) {
-        condition_non_targets.reserve(condition_non_targets.size() + Objects().NumExistingBuildings());
-        std::transform( Objects().ExistingBuildingsBegin(), Objects().ExistingBuildingsEnd(),
-                        std::back_inserter(condition_non_targets),
-                        boost::bind(&std::map<int, std::shared_ptr<UniverseObject>>::value_type::second,_1));
+        condition_non_targets.reserve(condition_non_targets.size() + Objects().ExistingBuildings().size());
+        std::transform(Objects().ExistingBuildings().begin(), Objects().ExistingBuildings().end(),
+                       std::back_inserter(condition_non_targets),
+                       boost::bind(&std::map<int, std::shared_ptr<UniverseObject>>::value_type::second,_1));
     }
 
     void AddFieldSet(Condition::ObjectSet& condition_non_targets) {
-        condition_non_targets.reserve(condition_non_targets.size() + Objects().NumExistingFields());
-        std::transform( Objects().ExistingFieldsBegin(), Objects().ExistingFieldsEnd(),
+        condition_non_targets.reserve(condition_non_targets.size() + Objects().ExistingFields().size());
+        std::transform( Objects().ExistingFields().begin(), Objects().ExistingFields().end(),
                         std::back_inserter(condition_non_targets),
                         boost::bind(&std::map<int, std::shared_ptr<UniverseObject>>::value_type::second,_1));
     }
 
     void AddFleetSet(Condition::ObjectSet& condition_non_targets) {
-        condition_non_targets.reserve(condition_non_targets.size() + Objects().NumExistingFleets());
-        std::transform( Objects().ExistingFleetsBegin(), Objects().ExistingFleetsEnd(),
-                        std::back_inserter(condition_non_targets),
-                        boost::bind(&std::map<int, std::shared_ptr<UniverseObject>>::value_type::second,_1));
+        condition_non_targets.reserve(condition_non_targets.size() + Objects().ExistingFleets().size());
+        std::transform(Objects().ExistingFleets().begin(), Objects().ExistingFleets().end(),
+                       std::back_inserter(condition_non_targets),
+                       boost::bind(&std::map<int, std::shared_ptr<UniverseObject>>::value_type::second,_1));
     }
 
     void AddPlanetSet(Condition::ObjectSet& condition_non_targets) {
-        condition_non_targets.reserve(condition_non_targets.size() + Objects().NumExistingPlanets());
-        std::transform( Objects().ExistingPlanetsBegin(), Objects().ExistingPlanetsEnd(),
-                        std::back_inserter(condition_non_targets),
-                        boost::bind(&std::map<int, std::shared_ptr<UniverseObject>>::value_type::second,_1));
+        condition_non_targets.reserve(condition_non_targets.size() + Objects().ExistingPlanets().size());
+        std::transform(Objects().ExistingPlanets().begin(), Objects().ExistingPlanets().end(),
+                       std::back_inserter(condition_non_targets),
+                       boost::bind(&std::map<int, std::shared_ptr<UniverseObject>>::value_type::second,_1));
     }
 
     void AddPopCenterSet(Condition::ObjectSet& condition_non_targets) {
-        condition_non_targets.reserve(condition_non_targets.size() + Objects().NumExistingPopCenters());
-        std::transform( Objects().ExistingPopCentersBegin(), Objects().ExistingPopCentersEnd(),
-                        std::back_inserter(condition_non_targets),
-                        boost::bind(&std::map<int, std::shared_ptr<UniverseObject>>::value_type::second,_1));
+        condition_non_targets.reserve(condition_non_targets.size() + Objects().ExistingPopCenters().size());
+        std::transform(Objects().ExistingPopCenters().begin(), Objects().ExistingPopCenters().end(),
+                       std::back_inserter(condition_non_targets),
+                       boost::bind(&std::map<int, std::shared_ptr<UniverseObject>>::value_type::second,_1));
     }
 
     void AddResCenterSet(Condition::ObjectSet& condition_non_targets) {
-        condition_non_targets.reserve(condition_non_targets.size() + Objects().NumExistingResourceCenters());
-        std::transform( Objects().ExistingResourceCentersBegin(), Objects().ExistingResourceCentersEnd(),
-                        std::back_inserter(condition_non_targets),
-                        boost::bind(&std::map<int, std::shared_ptr<UniverseObject>>::value_type::second,_1));
+        condition_non_targets.reserve(condition_non_targets.size() + Objects().ExistingResourceCenters().size());
+        std::transform(Objects().ExistingResourceCenters().begin(), Objects().ExistingResourceCenters().end(),
+                       std::back_inserter(condition_non_targets),
+                       boost::bind(&std::map<int, std::shared_ptr<UniverseObject>>::value_type::second,_1));
     }
 
     void AddShipSet(Condition::ObjectSet& condition_non_targets) {
-        condition_non_targets.reserve(condition_non_targets.size() + Objects().NumExistingShips());
-        std::transform( Objects().ExistingShipsBegin(), Objects().ExistingShipsEnd(),
-                        std::back_inserter(condition_non_targets),
-                        boost::bind(&std::map<int, std::shared_ptr<UniverseObject>>::value_type::second,_1));
+        condition_non_targets.reserve(condition_non_targets.size() + Objects().ExistingShips().size());
+        std::transform(Objects().ExistingShips().begin(), Objects().ExistingShips().end(),
+                       std::back_inserter(condition_non_targets),
+                       boost::bind(&std::map<int, std::shared_ptr<UniverseObject>>::value_type::second,_1));
     }
 
     void AddSystemSet(Condition::ObjectSet& condition_non_targets) {
-        condition_non_targets.reserve(condition_non_targets.size() + Objects().NumExistingSystems());
-        std::transform( Objects().ExistingSystemsBegin(), Objects().ExistingSystemsEnd(),
+        condition_non_targets.reserve(condition_non_targets.size() + Objects().ExistingSystems().size());
+        std::transform( Objects().ExistingSystems().begin(), Objects().ExistingSystems().end(),
                         std::back_inserter(condition_non_targets),
                         boost::bind(&std::map<int, std::shared_ptr<UniverseObject>>::value_type::second,_1));
     }
@@ -339,13 +339,13 @@ bool Number::operator==(const ConditionBase& rhs) const {
 
 std::string Number::Description(bool negated/* = false*/) const {
     std::string low_str = (m_low ? (m_low->ConstantExpr() ?
-                                    boost::lexical_cast<std::string>(m_low->Eval()) :
+                                    std::to_string(m_low->Eval()) :
                                     m_low->Description())
                                  : "0");
     std::string high_str = (m_high ? (m_high->ConstantExpr() ?
-                                      boost::lexical_cast<std::string>(m_high->Eval()) :
+                                      std::to_string(m_high->Eval()) :
                                       m_high->Description())
-                                   : boost::lexical_cast<std::string>(INT_MAX));
+                                   : std::to_string(INT_MAX));
 
     const std::string& description_str = (!negated)
         ? UserString("DESC_NUMBER")
@@ -547,12 +547,12 @@ std::string Turn::Description(bool negated/* = false*/) const {
     std::string low_str;
     if (m_low)
         low_str = (m_low->ConstantExpr() ?
-                   boost::lexical_cast<std::string>(m_low->Eval()) :
+                   std::to_string(m_low->Eval()) :
                    m_low->Description());
     std::string high_str;
     if (m_high)
         high_str = (m_high->ConstantExpr() ?
-                    boost::lexical_cast<std::string>(m_high->Eval()) :
+                    std::to_string(m_high->Eval()) :
                     m_high->Description());
     std::string description_str;
     if (m_low && m_high)
@@ -914,7 +914,7 @@ bool SortedNumberOf::SourceInvariant() const
           (!m_condition || m_condition->SourceInvariant())); }
 
 std::string SortedNumberOf::Description(bool negated/* = false*/) const {
-    std::string number_str = m_number->ConstantExpr() ? boost::lexical_cast<std::string>(m_number->Dump()) : m_number->Description();
+    std::string number_str = m_number->ConstantExpr() ? m_number->Dump() : m_number->Description();
 
     if (m_sorting_method == SORT_RANDOM) {
         return str(FlexibleFormat((!negated)
@@ -924,7 +924,7 @@ std::string SortedNumberOf::Description(bool negated/* = false*/) const {
                    % number_str
                    % m_condition->Description());
     } else {
-        std::string sort_key_str = m_sort_key->ConstantExpr() ? boost::lexical_cast<std::string>(m_sort_key->Dump()) : m_sort_key->Description();
+        std::string sort_key_str = m_sort_key->ConstantExpr() ? m_sort_key->Dump() : m_sort_key->Description();
 
         std::string description_str, temp;
         switch (m_sorting_method) {
@@ -1481,7 +1481,7 @@ std::string Homeworld::Description(bool negated/* = false*/) const {
     std::string values_str;
     for (unsigned int i = 0; i < m_names.size(); ++i) {
         values_str += m_names[i]->ConstantExpr() ?
-                        UserString(boost::lexical_cast<std::string>(m_names[i]->Eval())) :
+                        UserString(m_names[i]->Eval()) :
                         m_names[i]->Description();
         if (2 <= m_names.size() && i < m_names.size() - 2) {
             values_str += ", ";
@@ -1945,7 +1945,7 @@ std::string Building::Description(bool negated/* = false*/) const {
     std::string values_str;
     for (unsigned int i = 0; i < m_names.size(); ++i) {
         values_str += m_names[i]->ConstantExpr() ?
-                        UserString(boost::lexical_cast<std::string>(m_names[i]->Eval())) :
+                        UserString(m_names[i]->Eval()) :
                         m_names[i]->Description();
         if (2 <= m_names.size() && i < m_names.size() - 2) {
             values_str += ", ";
@@ -2141,11 +2141,11 @@ std::string HasSpecial::Description(bool negated/* = false*/) const {
 
     if (m_since_turn_low || m_since_turn_high) {
         // turn range has been specified; must indicate in description
-        std::string low_str = boost::lexical_cast<std::string>(BEFORE_FIRST_TURN);
+        std::string low_str = std::to_string(BEFORE_FIRST_TURN);
         if (m_since_turn_low)
             low_str = m_since_turn_low->Description();
 
-        std::string high_str = boost::lexical_cast<std::string>(IMPOSSIBLY_LARGE_TURN);
+        std::string high_str = std::to_string(IMPOSSIBLY_LARGE_TURN);
         if (m_since_turn_high)
             high_str = m_since_turn_high->Description();
 
@@ -2185,8 +2185,8 @@ std::string HasSpecial::Dump() const {
     std::string name_str = (m_name ? m_name->Dump() : "");
 
     if (m_since_turn_low || m_since_turn_high) {
-        std::string low_dump = (m_since_turn_low ? m_since_turn_low->Dump() : boost::lexical_cast<std::string>(BEFORE_FIRST_TURN));
-        std::string high_dump = (m_since_turn_high ? m_since_turn_high->Dump() : boost::lexical_cast<std::string>(IMPOSSIBLY_LARGE_TURN));
+        std::string low_dump = (m_since_turn_low ? m_since_turn_low->Dump() : std::to_string(BEFORE_FIRST_TURN));
+        std::string high_dump = (m_since_turn_high ? m_since_turn_high->Dump() : std::to_string(IMPOSSIBLY_LARGE_TURN));
         return DumpIndent() + "HasSpecialSinceTurn name = \"" + name_str + "\" low = " + low_dump + " high = " + high_dump;
     }
 
@@ -2421,13 +2421,13 @@ bool CreatedOnTurn::SourceInvariant() const
 
 std::string CreatedOnTurn::Description(bool negated/* = false*/) const {
     std::string low_str = (m_low ? (m_low->ConstantExpr() ?
-                                    boost::lexical_cast<std::string>(m_low->Eval()) :
+                                    std::to_string(m_low->Eval()) :
                                     m_low->Description())
-                                 : boost::lexical_cast<std::string>(BEFORE_FIRST_TURN));
+                                 : std::to_string(BEFORE_FIRST_TURN));
     std::string high_str = (m_high ? (m_high->ConstantExpr() ?
-                                      boost::lexical_cast<std::string>(m_high->Eval()) :
+                                      std::to_string(m_high->Eval()) :
                                       m_high->Description())
-                                   : boost::lexical_cast<std::string>(IMPOSSIBLY_LARGE_TURN));
+                                   : std::to_string(IMPOSSIBLY_LARGE_TURN));
     return str(FlexibleFormat((!negated)
             ? UserString("DESC_CREATED_ON_TURN")
             : UserString("DESC_CREATED_ON_TURN_NOT"))
@@ -3831,7 +3831,7 @@ std::string Species::Description(bool negated/* = false*/) const {
         values_str = "(" + UserString("CONDITION_ANY") +")";
     for (unsigned int i = 0; i < m_names.size(); ++i) {
         values_str += m_names[i]->ConstantExpr() ?
-                        UserString(boost::lexical_cast<std::string>(m_names[i]->Eval())) :
+                        UserString(m_names[i]->Eval()) :
                         m_names[i]->Description();
         if (2 <= m_names.size() && i < m_names.size() - 2) {
             values_str += ", ";
@@ -4126,13 +4126,13 @@ std::string Enqueued::Description(bool negated/* = false*/) const {
     std::string low_str = "1";
     if (m_low) {
         low_str = m_low->ConstantExpr() ?
-                    boost::lexical_cast<std::string>(m_low->Eval()) :
+                    std::to_string(m_low->Eval()) :
                     m_low->Description();
     }
-    std::string high_str = boost::lexical_cast<std::string>(INT_MAX);
+    std::string high_str = std::to_string(INT_MAX);
     if (m_high) {
         high_str = m_high->ConstantExpr() ?
-                    boost::lexical_cast<std::string>(m_high->Eval()) :
+                    std::to_string(m_high->Eval()) :
                     m_high->Description();
     }
     std::string what_str;
@@ -4142,7 +4142,7 @@ std::string Enqueued::Description(bool negated/* = false*/) const {
             what_str = UserString(what_str);
     } else if (m_design_id) {
         what_str = m_design_id->ConstantExpr() ?
-                    boost::lexical_cast<std::string>(m_design_id->Eval()) :
+                    std::to_string(m_design_id->Eval()) :
                     m_design_id->Description();
     }
     std::string description_str;
@@ -4335,7 +4335,7 @@ std::string FocusType::Description(bool negated/* = false*/) const {
     std::string values_str;
     for (unsigned int i = 0; i < m_names.size(); ++i) {
         values_str += m_names[i]->ConstantExpr() ?
-            UserString(boost::lexical_cast<std::string>(m_names[i]->Eval())) :
+            UserString(m_names[i]->Eval()) :
             m_names[i]->Description();
         if (2 <= m_names.size() && i < m_names.size() - 2) {
             values_str += ", ";
@@ -4777,13 +4777,13 @@ std::string DesignHasPart::Description(bool negated/* = false*/) const {
     std::string low_str = "1";
     if (m_low) {
         low_str = m_low->ConstantExpr() ?
-                    boost::lexical_cast<std::string>(m_low->Eval()) :
+                    std::to_string(m_low->Eval()) :
                     m_low->Description();
     }
-    std::string high_str = boost::lexical_cast<std::string>(INT_MAX);
+    std::string high_str = std::to_string(INT_MAX);
     if (m_high) {
         high_str = m_high->ConstantExpr() ?
-                    boost::lexical_cast<std::string>(m_high->Eval()) :
+                    std::to_string(m_high->Eval()) :
                     m_high->Description();
     };
     std::string name_str;
@@ -4937,10 +4937,10 @@ std::string DesignHasPartClass::Description(bool negated/* = false*/) const {
     std::string low_str = "1";
     if (m_low) {
         low_str = m_low->ConstantExpr() ?
-                    boost::lexical_cast<std::string>(m_low->Eval()) :
+                    std::to_string(m_low->Eval()) :
                     m_low->Description();
     }
-    std::string high_str = boost::lexical_cast<std::string>(INT_MAX);
+    std::string high_str = std::to_string(INT_MAX);
     if (m_high) {
         high_str = m_high->ConstantExpr() ?
                     boost::lexical_cast<std::string>(m_high->Eval()) :
@@ -5187,7 +5187,7 @@ bool NumberedShipDesign::SourceInvariant() const
 
 std::string NumberedShipDesign::Description(bool negated/* = false*/) const {
     std::string id_str = m_design_id->ConstantExpr() ?
-                            boost::lexical_cast<std::string>(m_design_id->Eval()) :
+                            std::to_string(m_design_id->Eval()) :
                             m_design_id->Description();
 
     return str(FlexibleFormat((!negated)
@@ -5515,11 +5515,11 @@ bool MeterValue::SourceInvariant() const
 
 std::string MeterValue::Description(bool negated/* = false*/) const {
     std::string low_str = (m_low ? (m_low->ConstantExpr() ?
-                                    boost::lexical_cast<std::string>(m_low->Eval()) :
+                                    std::to_string(m_low->Eval()) :
                                     m_low->Description())
                                  : boost::lexical_cast<std::string>(-Meter::LARGE_VALUE));
     std::string high_str = (m_high ? (m_high->ConstantExpr() ?
-                                      boost::lexical_cast<std::string>(m_high->Eval()) :
+                                      std::to_string(m_high->Eval()) :
                                       m_high->Description())
                                    : boost::lexical_cast<std::string>(Meter::LARGE_VALUE));
 
@@ -5844,11 +5844,11 @@ std::string EmpireMeterValue::Description(bool negated/* = false*/) const {
             empire_str = m_empire_id->Description();
     }
     std::string low_str = (m_low ? (m_low->ConstantExpr() ?
-                                    boost::lexical_cast<std::string>(m_low->Eval()) :
+                                    std::to_string(m_low->Eval()) :
                                     m_low->Description())
                                  : boost::lexical_cast<std::string>(-Meter::LARGE_VALUE));
     std::string high_str = (m_high ? (m_high->ConstantExpr() ?
-                                      boost::lexical_cast<std::string>(m_high->Eval()) :
+                                      std::to_string(m_high->Eval()) :
                                       m_high->Description())
                                    : boost::lexical_cast<std::string>(Meter::LARGE_VALUE));
     return str(FlexibleFormat((!negated)
@@ -5984,10 +5984,10 @@ bool EmpireStockpileValue::SourceInvariant() const
 
 std::string EmpireStockpileValue::Description(bool negated/* = false*/) const {
     std::string low_str = m_low->ConstantExpr() ?
-                            boost::lexical_cast<std::string>(m_low->Eval()) :
+                            std::to_string(m_low->Eval()) :
                             m_low->Description();
     std::string high_str = m_high->ConstantExpr() ?
-                            boost::lexical_cast<std::string>(m_high->Eval()) :
+                            std::to_string(m_high->Eval()) :
                             m_high->Description();
     return str(FlexibleFormat((!negated)
         ? UserString("DESC_EMPIRE_STOCKPILE_VALUE")
@@ -6591,36 +6591,6 @@ bool WithinStarlaneJumps::operator==(const ConditionBase& rhs) const {
     return true;
 }
 
-namespace {
-    struct WithinStarlaneJumpsSimpleMatch {
-        WithinStarlaneJumpsSimpleMatch(const ObjectSet& from_objects, int jump_limit) :
-            m_from_objects(from_objects),
-            m_jump_limit(jump_limit)
-        {}
-
-        bool operator()(std::shared_ptr<const UniverseObject> candidate) const {
-            if (!candidate)
-                return false;
-            if (m_from_objects.empty())
-                return false;
-            if (m_jump_limit < 0)
-                return false;
-
-            // is candidate object close enough to any subcondition matches?
-            for (std::shared_ptr<const UniverseObject> obj : m_from_objects) {
-                int jumps = GetPathfinder()->JumpDistanceBetweenObjects(obj->ID(), candidate->ID());
-                if (jumps != -1 && jumps <= m_jump_limit)
-                    return true;
-            }
-
-            return false;
-        }
-
-        const ObjectSet& m_from_objects;
-        int m_jump_limit;
-    };
-}
-
 void WithinStarlaneJumps::Eval(const ScriptingContext& parent_context,
                                ObjectSet& matches, ObjectSet& non_matches,
                                SearchDomain search_domain/* = NON_MATCHES*/) const
@@ -6636,8 +6606,10 @@ void WithinStarlaneJumps::Eval(const ScriptingContext& parent_context,
         ObjectSet subcondition_matches;
         m_condition->Eval(local_context, subcondition_matches);
         int jump_limit = m_jumps->Eval(local_context);
+        ObjectSet &from_set(search_domain == Condition::MATCHES ? matches : non_matches);
 
-        EvalImpl(matches, non_matches, search_domain, WithinStarlaneJumpsSimpleMatch(subcondition_matches, jump_limit));
+        std::tie(matches, non_matches) = GetPathfinder()->WithinJumpsOfOthers(jump_limit, from_set, subcondition_matches);
+
     } else {
         // re-evaluate contained objects for each candidate object
         ConditionBase::Eval(parent_context, matches, non_matches, search_domain);
@@ -6654,7 +6626,7 @@ bool WithinStarlaneJumps::SourceInvariant() const
 { return m_jumps->SourceInvariant() && m_condition->SourceInvariant(); }
 
 std::string WithinStarlaneJumps::Description(bool negated/* = false*/) const {
-    std::string value_str = m_jumps->ConstantExpr() ? boost::lexical_cast<std::string>(m_jumps->Eval()) : m_jumps->Description();
+    std::string value_str = m_jumps->ConstantExpr() ? std::to_string(m_jumps->Eval()) : m_jumps->Description();
     return str(FlexibleFormat((!negated)
         ? UserString("DESC_WITHIN_STARLANE_JUMPS")
         : UserString("DESC_WITHIN_STARLANE_JUMPS_NOT"))
@@ -6680,9 +6652,21 @@ bool WithinStarlaneJumps::Match(const ScriptingContext& local_context) const {
     // get subcondition matches
     ObjectSet subcondition_matches;
     m_condition->Eval(local_context, subcondition_matches);
-    int jump_limit = m_jumps->Eval(local_context);
+    if (subcondition_matches.empty())
+        return false;
 
-    return WithinStarlaneJumpsSimpleMatch(subcondition_matches, jump_limit)(candidate);
+    int jump_limit = m_jumps->Eval(local_context);
+    if (jump_limit < 0)
+        return false;
+
+    ObjectSet candidate_set{candidate};
+
+    // candidate objects within jumps of subcondition_matches objects
+    ObjectSet near_objs;
+
+    std::tie(near_objs, std::ignore) =
+        GetPathfinder()->WithinJumpsOfOthers(jump_limit, candidate_set, subcondition_matches);
+    return !near_objs.empty();
 }
 
 void WithinStarlaneJumps::SetTopLevelContent(const std::string& content_name) {

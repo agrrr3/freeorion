@@ -27,6 +27,7 @@
 #include <boost/algorithm/string/split.hpp>
 
 #include <iterator>
+#include <iomanip>
 
 
 std::string DoubleToString(double val, int digits, bool always_show_sign);
@@ -125,7 +126,7 @@ namespace {
         }
         if (obj) {
             retval += UserString(boost::lexical_cast<std::string>(obj->ObjectType())) + " "
-                    + boost::lexical_cast<std::string>(obj->ID()) + " ( " + obj->Name() + " ) ";
+                    + std::to_string(obj->ID()) + " ( " + obj->Name() + " ) ";
             initial_obj = obj;
         }
         retval += " | ";
@@ -137,18 +138,18 @@ namespace {
             retval += " " + property_name + " ";
             if (property_name == "Planet") {
                 if (std::shared_ptr<const Building> b = std::dynamic_pointer_cast<const Building>(obj)) {
-                    retval += "(" + boost::lexical_cast<std::string>(b->PlanetID()) + "): ";
+                    retval += "(" + std::to_string(b->PlanetID()) + "): ";
                     obj = GetPlanet(b->PlanetID());
                 } else
                     obj = nullptr;
             } else if (property_name == "System") {
                 if (obj) {
-                    retval += "(" + boost::lexical_cast<std::string>(obj->SystemID()) + "): ";
+                    retval += "(" + std::to_string(obj->SystemID()) + "): ";
                     obj = GetSystem(obj->SystemID());
                 }
             } else if (property_name == "Fleet") {
                 if (std::shared_ptr<const Ship> s = std::dynamic_pointer_cast<const Ship>(obj))  {
-                    retval += "(" + boost::lexical_cast<std::string>(s->FleetID()) + "): ";
+                    retval += "(" + std::to_string(s->FleetID()) + "): ";
                     obj = GetFleet(s->FleetID());
                 } else
                     obj = nullptr;
@@ -158,7 +159,7 @@ namespace {
 
             if (obj && initial_obj != obj) {
                 retval += "  Referenced Object: " + UserString(boost::lexical_cast<std::string>(obj->ObjectType())) + " "
-                        + boost::lexical_cast<std::string>(obj->ID()) + " ( " + obj->Name() + " )";
+                        + std::to_string(obj->ID()) + " ( " + obj->Name() + " )";
             }
             retval += " | ";
         }
@@ -285,7 +286,7 @@ template <>
 std::string Constant<int>::Description() const
 {
     if (std::abs(m_value) < 1000)
-        return boost::lexical_cast<std::string>(m_value);
+        return std::to_string(m_value);
     return DoubleToString(m_value, 3, false);
 }
 
@@ -618,7 +619,7 @@ StarType Variable<StarType>::Eval(const ScriptingContext& context) const
     ErrorLogger() << "Variable<StarType>::Eval unrecognized object property: " << TraceReference(m_property_name, m_ref_type, context);
     if (context.source)
         ErrorLogger() << "source: " << context.source->ObjectType() << " "
-                      << boost::lexical_cast<std::string>(context.source->ID()) << " ( " << context.source->Name() << " ) ";
+                      << std::to_string(context.source->ID()) << " ( " << context.source->Name() << " ) ";
     else
         ErrorLogger() << "source (none)";
 
@@ -705,6 +706,13 @@ double Variable<double>::Eval(const ScriptingContext& context) const
 
     } else if (property_name == "PropagatedSupplyRange") {
         const std::map<int, float>& ranges = GetSupplyManager().PropagatedSupplyRanges();
+        std::map<int, float>::const_iterator range_it = ranges.find(object->SystemID());
+        if (range_it == ranges.end())
+            return 0.0;
+        return range_it->second;
+
+    } else if (property_name == "PropagatedSupplyDistance") {
+        const std::map<int, float>& ranges = GetSupplyManager().PropagatedSupplyDistances();
         std::map<int, float>::const_iterator range_it = ranges.find(object->SystemID());
         if (range_it == ranges.end())
             return 0.0;
@@ -1273,10 +1281,12 @@ namespace {
         if (!empire)
             return EMPTY_INT_FLOAT_MAP;
 
-        if (parsed_map_name == "PropegatedSystemSupplyRange")
+        if (parsed_map_name == "PropagatedSystemSupplyRange")
             return GetSupplyManager().PropagatedSupplyRanges(empire_id);
         if (parsed_map_name == "SystemSupplyRange")
             return empire->SystemSupplyRanges();
+        if (parsed_map_name == "PropagatedSystemSupplyDistance")
+            return GetSupplyManager().PropagatedSupplyDistances(empire_id);
 
         return EMPTY_INT_FLOAT_MAP;
     }
@@ -1749,8 +1759,9 @@ double ComplexVariable<double>::Eval(const ScriptingContext& context) const
     const std::string& variable_name = m_property_name.back();
 
     // empire properties indexed by integers
-    if (variable_name == "PropegatedSystemSupplyRange" ||
-        variable_name == "SystemSupplyRange")
+    if (variable_name == "PropagatedSystemSupplyRange" ||
+        variable_name == "SystemSupplyRange" ||
+        variable_name == "PropagatedSystemSupplyDistance")
     {
         int empire_id = ALL_EMPIRES;
         if (m_int_ref1) {
@@ -2288,6 +2299,19 @@ std::string StringCast<double>::Eval(const ScriptingContext& context) const
     if (!m_value_ref)
         return "";
     double temp = m_value_ref->Eval(context);
+
+    // special case for a few sub-value-refs to help with UI representation
+    if (Variable<double>* int_var = dynamic_cast<Variable<double>*>(m_value_ref)) {
+        if (int_var->PropertyName().back() == "X" || int_var->PropertyName().back() == "Y") {
+            if (temp == UniverseObject::INVALID_POSITION)
+                return UserString("INVALID_POSITION");
+
+            std::stringstream ss;
+            ss << std::setprecision(6) << temp;
+            return ss.str();
+        }
+    }
+
     return DoubleToString(temp, 3, false);
 }
 
@@ -2311,7 +2335,7 @@ std::string StringCast<int>::Eval(const ScriptingContext& context) const
         }
     }
 
-    return boost::lexical_cast<std::string>(temp);
+    return std::to_string(temp);
 }
 
 template <>

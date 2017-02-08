@@ -71,6 +71,8 @@ namespace {
     const std::string ITALIC_TAG = "i";
     const std::string SHADOW_TAG = "s";
     const std::string UNDERLINE_TAG = "u";
+    const std::string SUPERSCRIPT_TAG = "sup";
+    const std::string SUBSCRIPT_TAG = "sub";
     const std::string RGBA_TAG = "rgba";
     const std::string ALIGN_LEFT_TAG = "left";
     const std::string ALIGN_CENTER_TAG = "center";
@@ -649,10 +651,12 @@ namespace {
     // Registers the default action and known tags.
     int RegisterDefaultTags()
     {
-        StaticTagHandler().Insert("i");
-        StaticTagHandler().Insert("s");
-        StaticTagHandler().Insert("u");
-        StaticTagHandler().Insert("rgba");
+        StaticTagHandler().Insert(ITALIC_TAG);
+        StaticTagHandler().Insert(SHADOW_TAG);
+        StaticTagHandler().Insert(UNDERLINE_TAG);
+        StaticTagHandler().Insert(SUPERSCRIPT_TAG);
+        StaticTagHandler().Insert(SUBSCRIPT_TAG);
+        StaticTagHandler().Insert(RGBA_TAG);
         StaticTagHandler().Insert(ALIGN_LEFT_TAG);
         StaticTagHandler().Insert(ALIGN_CENTER_TAG);
         StaticTagHandler().Insert(ALIGN_RIGHT_TAG);
@@ -748,10 +752,10 @@ bool Font::FormattingTag::operator==(const TextElement &rhs) const
 ///////////////////////////////////////
 // class GG::Font::TextAndElementsAssembler
 ///////////////////////////////////////
-class Font::TextAndElementsAssembler::TextAndElementsAssemblerImpl
+class Font::TextAndElementsAssembler::Impl
 {
 public:
-    TextAndElementsAssemblerImpl(const Font& font) :
+    Impl(const Font& font) :
         m_font(font),
         m_text(),
         m_text_elements(),
@@ -873,10 +877,10 @@ public:
     /** Add open color tag.*/
     void AddOpenTag(const Clr& color)
     {
-        std::vector<std::string> params = { boost::lexical_cast<std::string>(static_cast<int>(color.r)),
-                                            boost::lexical_cast<std::string>(static_cast<int>(color.g)),
-                                            boost::lexical_cast<std::string>(static_cast<int>(color.b)),
-                                            boost::lexical_cast<std::string>(static_cast<int>(color.a)) };
+        std::vector<std::string> params = { std::to_string(color.r),
+                                            std::to_string(color.g),
+                                            std::to_string(color.b),
+                                            std::to_string(color.a) };
 
         AddOpenTag("rgba", &params);
     }
@@ -890,7 +894,7 @@ private:
 
 
 Font::TextAndElementsAssembler::TextAndElementsAssembler(const Font& font) :
-    pimpl(new TextAndElementsAssemblerImpl(font))
+    m_impl(new Impl(font))
 {}
 
 // Required because Impl is defined here
@@ -898,51 +902,51 @@ Font::TextAndElementsAssembler::~TextAndElementsAssembler()
 {}
 
 const std::string& Font::TextAndElementsAssembler::Text()
-{ return pimpl->Text(); }
+{ return m_impl->Text(); }
 
 const std::vector<std::shared_ptr<Font::TextElement>>& Font::TextAndElementsAssembler::Elements()
-{ return pimpl->Elements(); }
+{ return m_impl->Elements(); }
 
 Font::TextAndElementsAssembler& Font::TextAndElementsAssembler::AddOpenTag(const std::string& tag)
 {
-    pimpl->AddOpenTag(tag);
+    m_impl->AddOpenTag(tag);
     return *this;
 }
 
 Font::TextAndElementsAssembler& Font::TextAndElementsAssembler::AddOpenTag(
     const std::string& tag, const std::vector<std::string>& params)
 {
-    pimpl->AddOpenTag(tag, &params);
+    m_impl->AddOpenTag(tag, &params);
     return *this;
 }
 
 Font::TextAndElementsAssembler& Font::TextAndElementsAssembler::AddCloseTag(const std::string& tag)
 {
-    pimpl->AddCloseTag(tag);
+    m_impl->AddCloseTag(tag);
     return *this;
 }
 
 Font::TextAndElementsAssembler& Font::TextAndElementsAssembler::AddText(const std::string& text)
 {
-    pimpl->AddText(text);
+    m_impl->AddText(text);
     return *this;
 }
 
 Font::TextAndElementsAssembler& Font::TextAndElementsAssembler::AddWhitespace(const std::string& whitespace)
 {
-    pimpl->AddWhitespace(whitespace);
+    m_impl->AddWhitespace(whitespace);
     return *this;
 }
 
 Font::TextAndElementsAssembler& Font::TextAndElementsAssembler::AddNewline()
 {
-    pimpl->AddNewline();
+    m_impl->AddNewline();
     return *this;
 }
 
 Font::TextAndElementsAssembler& Font::TextAndElementsAssembler::AddOpenTag(const Clr& color)
 {
-    pimpl->AddOpenTag(color);
+    m_impl->AddOpenTag(color);
     return *this;
 }
 
@@ -965,7 +969,8 @@ bool Font::LineData::Empty() const
 Font::RenderState::RenderState() :
     use_italics(0),
     use_shadow(0),
-    draw_underline(0)
+    draw_underline(0),
+    super_sub_shift(0)
 {
     // Initialize the color stack with the current color
     GLfloat current[4];
@@ -976,7 +981,8 @@ Font::RenderState::RenderState() :
 Font::RenderState::RenderState (Clr color):
     use_italics(0),
     use_shadow(0),
-    draw_underline(0)
+    draw_underline(0),
+    super_sub_shift(0)
 {
     PushColor(color.r, color.g, color.b, color.a);
 }
@@ -1903,6 +1909,8 @@ void Font::Init(FT_Face& face)
     m_italics_offset = Value(ITALICS_FACTOR * m_height / 2.0);
     // shadow info
     m_shadow_offset = 1.0;
+    // super/subscript
+    m_super_sub_offset = Value(m_height / 4.0);
 
     // we always need these whitespace, number, and punctuation characters
     std::vector<std::pair<std::uint32_t, std::uint32_t>> range_vec(
@@ -2066,22 +2074,26 @@ void Font::ValidateFormat(Flags<TextFormat>& format) const
         format &= ~FORMAT_LINEWRAP;
 }
 
-void Font::StoreGlyphImpl(Font::RenderCache& cache, GG::Clr color, const Pt& pt, const Glyph& glyph, int x_top_offset) const {
+void Font::StoreGlyphImpl(Font::RenderCache& cache, GG::Clr color, const Pt& pt,
+                          const Glyph& glyph, int x_top_offset, int y_shift) const
+{
     cache.coordinates->store(glyph.sub_texture.TexCoords()[0], glyph.sub_texture.TexCoords()[1]);
-    cache.vertices->store(pt.x + glyph.left_bearing + x_top_offset, pt.y + glyph.y_offset);
+    cache.vertices->store(pt.x + glyph.left_bearing + x_top_offset, pt.y + glyph.y_offset + y_shift);
     cache.colors->store(color);
 
     cache.coordinates->store(glyph.sub_texture.TexCoords()[2], glyph.sub_texture.TexCoords()[1]);
-    cache.vertices->store(pt.x + glyph.sub_texture.Width() + glyph.left_bearing + x_top_offset, pt.y + glyph.y_offset);
+    cache.vertices->store(pt.x + glyph.sub_texture.Width() + glyph.left_bearing + x_top_offset,
+                          pt.y + glyph.y_offset + y_shift);
     cache.colors->store(color);
 
     cache.coordinates->store(glyph.sub_texture.TexCoords()[2], glyph.sub_texture.TexCoords()[3]);
     cache.vertices->store(pt.x + glyph.sub_texture.Width() + glyph.left_bearing - x_top_offset,
-                                        pt.y + glyph.sub_texture.Height() + glyph.y_offset);
+                          pt.y + glyph.sub_texture.Height() + glyph.y_offset + y_shift);
     cache.colors->store(color);
 
     cache.coordinates->store(glyph.sub_texture.TexCoords()[0], glyph.sub_texture.TexCoords()[3]);
-    cache.vertices->store(pt.x + glyph.left_bearing - x_top_offset, pt.y + glyph.sub_texture.Height() + glyph.y_offset);
+    cache.vertices->store(pt.x + glyph.left_bearing - x_top_offset,
+                          pt.y + glyph.sub_texture.Height() + glyph.y_offset + y_shift);
     cache.colors->store(color);
 }
 
@@ -2108,6 +2120,7 @@ X Font::StoreGlyph(const Pt& pt, const Glyph& glyph, const Font::RenderState* re
 {
     int italic_top_offset = 0;
     int shadow_offset = 0;
+    int super_sub_offset = 0;
 
     if (render_state && render_state->use_italics) {
         // Should we enable sub pixel italics offsets?
@@ -2116,23 +2129,29 @@ X Font::StoreGlyph(const Pt& pt, const Glyph& glyph, const Font::RenderState* re
     if (render_state && render_state->use_shadow) {
         shadow_offset = static_cast<int>(m_shadow_offset);
     }
+    if (render_state) {
+        super_sub_offset = -static_cast<int>(render_state->super_sub_shift * m_super_sub_offset);
+    }
 
     // render shadows?
     if (shadow_offset > 0) {
-        StoreGlyphImpl(cache, GG::CLR_BLACK, pt + GG::Pt(X1, Y0), glyph, italic_top_offset);
-        StoreGlyphImpl(cache, GG::CLR_BLACK, pt + GG::Pt(X0, Y1), glyph, italic_top_offset);
-        StoreGlyphImpl(cache, GG::CLR_BLACK, pt + GG::Pt(-X1, Y0), glyph, italic_top_offset);
-        StoreGlyphImpl(cache, GG::CLR_BLACK, pt + GG::Pt(X0, -Y1), glyph, italic_top_offset);
+        StoreGlyphImpl(cache, GG::CLR_BLACK, pt + GG::Pt(X1, Y0), glyph, italic_top_offset, super_sub_offset);
+        StoreGlyphImpl(cache, GG::CLR_BLACK, pt + GG::Pt(X0, Y1), glyph, italic_top_offset, super_sub_offset);
+        StoreGlyphImpl(cache, GG::CLR_BLACK, pt + GG::Pt(-X1, Y0), glyph, italic_top_offset, super_sub_offset);
+        StoreGlyphImpl(cache, GG::CLR_BLACK, pt + GG::Pt(X0, -Y1), glyph, italic_top_offset, super_sub_offset);
         if (render_state && render_state->draw_underline) {
-            StoreUnderlineImpl(cache, GG::CLR_BLACK, pt + GG::Pt(X0, Y1), glyph, m_descent, m_height, Y(m_underline_height), Y(m_underline_offset));
-            StoreUnderlineImpl(cache, GG::CLR_BLACK, pt + GG::Pt(X0, -Y1), glyph, m_descent, m_height, Y(m_underline_height), Y(m_underline_offset));
+            StoreUnderlineImpl(cache, GG::CLR_BLACK, pt + GG::Pt(X0, Y1), glyph, m_descent,
+                               m_height, Y(m_underline_height), Y(m_underline_offset));
+            StoreUnderlineImpl(cache, GG::CLR_BLACK, pt + GG::Pt(X0, -Y1), glyph, m_descent,
+                               m_height, Y(m_underline_height), Y(m_underline_offset));
         }
     }
 
     // render main text
-    StoreGlyphImpl(cache, render_state->CurrentColor(), pt, glyph, italic_top_offset);
+    StoreGlyphImpl(cache, render_state->CurrentColor(), pt, glyph, italic_top_offset, super_sub_offset);
     if (render_state && render_state->draw_underline) {
-        StoreUnderlineImpl(cache, render_state->CurrentColor(), pt, glyph, m_descent, m_height, Y(m_underline_height), Y(m_underline_offset));
+        StoreUnderlineImpl(cache, render_state->CurrentColor(), pt, glyph, m_descent,
+                           m_height, Y(m_underline_height), Y(m_underline_offset));
     }
 
     return glyph.advance;
@@ -2164,6 +2183,18 @@ void Font::HandleTag(const std::shared_ptr<FormattingTag>& tag, double* orig_col
             }
         } else {
             ++render_state.use_shadow;
+        }
+    } else if (tag->tag_name == SUPERSCRIPT_TAG) {
+        if (tag->close_tag) {
+            --render_state.super_sub_shift;
+        } else {
+            ++render_state.super_sub_shift;
+        }
+    } else if (tag->tag_name == SUBSCRIPT_TAG) {
+        if (tag->close_tag) {
+            ++render_state.super_sub_shift;
+        } else {
+            --render_state.super_sub_shift;
         }
     } else if (tag->tag_name == RGBA_TAG) {
         if (tag->close_tag) {

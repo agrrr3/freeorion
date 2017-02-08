@@ -3,7 +3,6 @@
 
 #include "Message.h"
 
-#include <boost/array.hpp>
 #include <boost/asio.hpp>
 #include <boost/function.hpp>
 #include <boost/iterator/filter_iterator.hpp>
@@ -219,7 +218,6 @@ public:
                   MessageAndConnectionFn player_message_callback, ConnectionFn disconnected_callback);
 
 private:
-    typedef boost::array<int, 5> MessageHeaderBuffer;
 
     PlayerConnection(boost::asio::io_service& io_service, MessageAndConnectionFn nonplayer_message_callback,
                      MessageAndConnectionFn player_message_callback, ConnectionFn disconnected_callback);
@@ -228,7 +226,7 @@ private:
     void AsyncReadMessage();
 
     boost::asio::ip::tcp::socket    m_socket;
-    MessageHeaderBuffer             m_incoming_header_buffer;
+    Message::HeaderBuffer           m_incoming_header_buffer;
     Message                         m_incoming_message;
     int                             m_ID;
     std::string                     m_player_name;
@@ -239,11 +237,6 @@ private:
     MessageAndConnectionFn          m_nonplayer_message_callback;
     MessageAndConnectionFn          m_player_message_callback;
     ConnectionFn                    m_disconnected_callback;
-
-    enum {
-        HEADER_SIZE =
-        MessageHeaderBuffer::static_size * sizeof(MessageHeaderBuffer::value_type)
-    };
 
     friend class ServerNetworking;
 };

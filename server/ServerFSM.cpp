@@ -100,7 +100,7 @@ namespace {
         DebugLogger() << "PlayerSetupData:";
         for (const std::pair<int, PlayerSetupData>& entry : psd) {
             std::stringstream ss;
-            ss << boost::lexical_cast<std::string>(entry.first) << " : "
+            ss << std::to_string(entry.first) << " : "
                << entry.second.m_player_name << ", ";
             switch (entry.second.m_client_type) {
             case Networking::CLIENT_TYPE_AI_PLAYER:         ss << "AI_PLAYER, ";    break;
@@ -644,6 +644,11 @@ sc::result MPLobby::react(const LobbyUpdate& msg) {
 
     static int AI_count = 1;
     static int nameless_player_count = 1;
+    std::map<GG::Clr, int> psd_colors;
+    // std::map<std::string, int> psd_player_names;
+    std::map<std::string, int> psd_empire_names;
+    std::set<int> conflicted_psd_ids;
+    const GG::Clr CLR_NONE = GG::Clr(0, 0, 0, 0);
 
     // assign unique names / colours to any lobby entry that lacks them, or
     // remove empire / colours from observers
@@ -652,7 +657,7 @@ sc::result MPLobby::react(const LobbyUpdate& msg) {
         if (psd.m_client_type == Networking::CLIENT_TYPE_HUMAN_OBSERVER ||
             psd.m_client_type == Networking::CLIENT_TYPE_HUMAN_MODERATOR)
         {
-            psd.m_empire_color = GG::Clr(0, 0, 0, 0);
+            psd.m_empire_color = CLR_NONE;
             // On OSX the following two lines must not be included.
             // Clearing empire name and starting species name from
             // PlayerSetupData causes a weird crash (bus error) deep
@@ -665,10 +670,10 @@ sc::result MPLobby::react(const LobbyUpdate& msg) {
             psd.m_save_game_empire_id = ALL_EMPIRES;
 
         } else if (psd.m_client_type == Networking::CLIENT_TYPE_AI_PLAYER) {
-            if (psd.m_empire_color == GG::Clr(0, 0, 0, 0))
+            if (psd.m_empire_color == CLR_NONE)
                 psd.m_empire_color = GetUnusedEmpireColour(m_lobby_data->m_players);
             if (psd.m_player_name.empty())
-                psd.m_player_name = UserString("AI_PLAYER") + "_" + boost::lexical_cast<std::string>(AI_count++);
+                psd.m_player_name = UserString("AI_PLAYER") + "_" + std::to_string(AI_count++);
             if (psd.m_empire_name.empty())
                 psd.m_empire_name = GenerateEmpireName(m_lobby_data->m_players);
             if (psd.m_starting_species_name.empty()) {
@@ -679,17 +684,43 @@ sc::result MPLobby::react(const LobbyUpdate& msg) {
             }
 
         } else if (psd.m_client_type == Networking::CLIENT_TYPE_HUMAN_PLAYER) {
-            if (psd.m_empire_color == GG::Clr(0, 0, 0, 0))
+            if (psd.m_empire_color == CLR_NONE)
                 psd.m_empire_color = GetUnusedEmpireColour(m_lobby_data->m_players);
             if (psd.m_player_name.empty())
-                psd.m_player_name = UserString("PLAYER") + "_" + boost::lexical_cast<std::string>(nameless_player_count++);
+                psd.m_player_name = UserString("PLAYER") + "_" + std::to_string(nameless_player_count++);
             if (psd.m_empire_name.empty())
                 psd.m_empire_name = psd.m_player_name;
             if (psd.m_starting_species_name.empty())
                 psd.m_starting_species_name = GetSpeciesManager().RandomPlayableSpeciesName();
         }
+
+        if (psd.m_empire_color != CLR_NONE) {
+            if (!psd_colors.emplace(psd.m_empire_color, entry.first).second) {
+                conflicted_psd_ids.insert(psd_colors.at(psd.m_empire_color));
+                conflicted_psd_ids.insert(entry.first);
+            }
+        }
+        /* TODO require unique names, see: MPLobby::react(const JoinGame& msg)
+        if (!psd.m_player_name.empty()) {
+            if (!psd_player_names.emplace(psd.m_player_name, entry.first).second) {
+                conflicted_psd_ids.insert(psd_player_names.at(psd.m_player_name));
+                conflicted_psd_ids.insert(entry.first);
+            }
+        }
+        */
+        if (!psd.m_empire_name.empty()) {
+            if (!psd_empire_names.emplace(psd.m_empire_name, entry.first).second) {
+                conflicted_psd_ids.insert(psd_empire_names.at(psd.m_empire_name));
+                conflicted_psd_ids.insert(entry.first);
+            }
+        }
     }
 
+    // set a player as "not ready" if they have a non-unique setting (from those required as unique)
+    for (std::pair<int, PlayerSetupData>& player : m_lobby_data->m_players) {
+        if (conflicted_psd_ids.count(player.first))
+            player.second.m_player_ready = false;
+    }
 
     // to determine if a new save file was selected, check if the selected file
     // index is different, and the new file index is in the valid range
@@ -925,15 +956,15 @@ WaitingForSPGameJoiners::WaitingForSPGameJoiners(my_context c) :
     for (PlayerSetupData& psd : players) {
         if (psd.m_player_name.empty()) {
             if (psd.m_client_type == Networking::CLIENT_TYPE_AI_PLAYER)
-                psd.m_player_name = "AI_" + boost::lexical_cast<std::string>(player_num++);
+                psd.m_player_name = "AI_" + std::to_string(player_num++);
             else if (psd.m_client_type == Networking::CLIENT_TYPE_HUMAN_PLAYER)
-                psd.m_player_name = "Human_Player_" + boost::lexical_cast<std::string>(player_num++);
+                psd.m_player_name = "Human_Player_" + std::to_string(player_num++);
             else if (psd.m_client_type == Networking::CLIENT_TYPE_HUMAN_OBSERVER)
-                psd.m_player_name = "Observer_" + boost::lexical_cast<std::string>(player_num++);
+                psd.m_player_name = "Observer_" + std::to_string(player_num++);
             else if (psd.m_client_type == Networking::CLIENT_TYPE_HUMAN_MODERATOR)
-                psd.m_player_name = "Moderator_" + boost::lexical_cast<std::string>(player_num++);
+                psd.m_player_name = "Moderator_" + std::to_string(player_num++);
             else
-                psd.m_player_name = "Player_" + boost::lexical_cast<std::string>(player_num++);
+                psd.m_player_name = "Player_" + std::to_string(player_num++);
         }
     }
 

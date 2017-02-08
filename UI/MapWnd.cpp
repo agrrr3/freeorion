@@ -65,6 +65,7 @@
 #include <unordered_set>
 #include <valarray>
 #include <vector>
+#include <unordered_map>
 
 namespace {
     const double    ZOOM_STEP_SIZE = std::pow(2.0, 1.0/4.0);
@@ -116,14 +117,14 @@ namespace {
         db.Add("UI.fleet-supply-line-width",        UserStringNop("OPTIONS_DB_FLEET_SUPPLY_LINE_WIDTH"),            3.0,        RangedStepValidator<double>(0.25, 0.25, 10.0));
         db.Add("UI.fleet-supply-line-dot-spacing",  UserStringNop("OPTIONS_DB_FLEET_SUPPLY_LINE_DOT_SPACING"),      20,         RangedStepValidator<int>(1, 3, 40));
         db.Add("UI.fleet-supply-line-dot-rate",     UserStringNop("OPTIONS_DB_FLEET_SUPPLY_LINE_DOT_RATE"),         0.02,       RangedStepValidator<double>(0.01, 0.01, 0.1));
-        db.Add("UI.unowned-starlane-colour",        UserStringNop("OPTIONS_DB_UNOWNED_STARLANE_COLOUR"),            StreamableColor(GG::Clr(72,  72,  72,  255)),   Validator<StreamableColor>());
+        db.Add("UI.unowned-starlane-colour",        UserStringNop("OPTIONS_DB_UNOWNED_STARLANE_COLOUR"),            GG::Clr(72,  72,  72,  255),    Validator<GG::Clr>());
 
         db.Add("UI.show-detection-range",           UserStringNop("OPTIONS_DB_GALAXY_MAP_DETECTION_RANGE"),         true,       Validator<bool>());
 
         db.Add("UI.system-fog-of-war",              UserStringNop("OPTIONS_DB_UI_SYSTEM_FOG"),                      true,       Validator<bool>());
         db.Add("UI.system-fog-of-war-spacing",      UserStringNop("OPTIONS_DB_UI_SYSTEM_FOG_SPACING"),              4.0,        RangedStepValidator<double>(0.25, 1.5, 8.0));
-        db.Add("UI.system-fog-of-war-clr",          UserStringNop("OPTIONS_DB_UI_SYSTEM_FOG_CLR"),                  StreamableColor(GG::Clr(36, 36, 36, 192)),      Validator<StreamableColor>());
-        db.Add("UI.field-fog-of-war-clr",           UserStringNop("OPTIONS_DB_UI_FIELD_FOG_CLR"),                   StreamableColor(GG::Clr(0, 0, 0, 64)),          Validator<StreamableColor>());
+        db.Add("UI.system-fog-of-war-clr",          UserStringNop("OPTIONS_DB_UI_SYSTEM_FOG_CLR"),                  GG::Clr(36, 36, 36, 192),       Validator<GG::Clr>());
+        db.Add("UI.field-fog-of-war-clr",           UserStringNop("OPTIONS_DB_UI_FIELD_FOG_CLR"),                   GG::Clr(0, 0, 0, 64),           Validator<GG::Clr>());
 
         db.Add("UI.system-icon-size",               UserStringNop("OPTIONS_DB_UI_SYSTEM_ICON_SIZE"),                14,         RangedValidator<int>(8, 50));
 
@@ -135,7 +136,7 @@ namespace {
         db.Add("UI.system-selection-indicator-size",UserStringNop("OPTIONS_DB_UI_SYSTEM_SELECTION_INDICATOR_SIZE"), 1.625,      RangedStepValidator<double>(0.125, 0.5, 5));
         db.Add("UI.system-selection-indicator-rpm", UserStringNop("OPTIONS_DB_UI_SYSTEM_SELECTION_INDICATOR_FPS"),  12,         RangedValidator<int>(1, 60));
 
-        db.Add("UI.system-name-unowned-color",      UserStringNop("OPTIONS_DB_UI_SYSTEM_NAME_UNOWNED_COLOR"),       StreamableColor(GG::Clr(160, 160, 160, 255)),   Validator<StreamableColor>());
+        db.Add("UI.system-name-unowned-color",      UserStringNop("OPTIONS_DB_UI_SYSTEM_NAME_UNOWNED_COLOR"),       GG::Clr(160, 160, 160, 255),    Validator<GG::Clr>());
 
         db.Add("UI.tiny-fleet-button-minimum-zoom", UserStringNop("OPTIONS_DB_UI_TINY_FLEET_BUTTON_MIN_ZOOM"),      0.75,       RangedStepValidator<double>(0.125, 0.125, 4.0));
         db.Add("UI.small-fleet-button-minimum-zoom",UserStringNop("OPTIONS_DB_UI_SMALL_FLEET_BUTTON_MIN_ZOOM"),     1.50,       RangedStepValidator<double>(0.125, 0.125, 4.0));
@@ -284,6 +285,223 @@ namespace {
         GetOptionsDB().Set(option_name, !initially_enabled);
         return !initially_enabled;
     }
+
+    const std::string FLEET_DETAIL_SHIP_COUNT{UserStringNop("MAP_FLEET_SHIP_COUNT")};
+    const std::string FLEET_DETAIL_ARMED_COUNT{UserStringNop("MAP_FLEET_ARMED_COUNT")};
+    const std::string FLEET_DETAIL_SLOT_COUNT{UserStringNop("MAP_FLEET_SLOT_COUNT")};
+    const std::string FLEET_DETAIL_PART_COUNT{UserStringNop("MAP_FLEET_PART_COUNT")};
+    const std::string FLEET_DETAIL_UNARMED_COUNT{UserStringNop("MAP_FLEET_UNARMED_COUNT")};
+    const std::string FLEET_DETAIL_COLONY_COUNT{UserStringNop("MAP_FLEET_COLONY_COUNT")};
+    const std::string FLEET_DETAIL_CARRIER_COUNT{UserStringNop("MAP_FLEET_CARRIER_COUNT")};
+    const std::string FLEET_DETAIL_TROOP_COUNT{UserStringNop("MAP_FLEET_TROOP_COUNT")};
+
+
+    /** BrowseInfoWnd for the fleet icon tooltip */
+    class FleetDetailBrowseWnd : public GG::BrowseInfoWnd {
+    public:
+        FleetDetailBrowseWnd(int empire_id, GG::X width) :
+            GG::BrowseInfoWnd(GG::X0, GG::Y0, width, GG::Y(ClientUI::Pts())),
+            m_empire_id(empire_id),
+            m_margin(5)
+        {
+            GG::X value_col_width{(m_margin * 3) + (ClientUI::Pts() * 3)};
+            m_col_widths = {width - value_col_width, value_col_width};
+
+            RequirePreRender();
+        }
+
+        void PreRender() override {
+            SetChildClippingMode(ClipToClient);
+
+            NewLabelValue(FLEET_DETAIL_SHIP_COUNT, true);
+            NewLabelValue(FLEET_DETAIL_ARMED_COUNT);
+            NewLabelValue(FLEET_DETAIL_SLOT_COUNT);
+            NewLabelValue(FLEET_DETAIL_PART_COUNT);
+            NewLabelValue(FLEET_DETAIL_UNARMED_COUNT);
+            NewLabelValue(FLEET_DETAIL_COLONY_COUNT);
+            NewLabelValue(FLEET_DETAIL_CARRIER_COUNT);
+            NewLabelValue(FLEET_DETAIL_TROOP_COUNT);
+
+            UpdateLabels();
+            DoLayout();
+        }
+
+        typedef std::pair<CUILabel*, CUILabel*>         LabelValueType;
+
+        bool WndHasBrowseInfo(const Wnd* wnd, std::size_t mode) const override {
+            assert(mode <= wnd->BrowseModes().size());
+            return true;
+        }
+
+        void Render() override {
+            const GG::Y row_height{ClientUI::Pts() + (m_margin * 2)};
+            const GG::Y offset{32};
+            const GG::Clr& BG_CLR = ClientUI::WndColor();
+            const GG::Clr& BORDER_CLR = ClientUI::WndOuterBorderColor();
+            const GG::Pt& UL = GG::Pt(UpperLeft().x, UpperLeft().y + offset);
+            const GG::Pt& LR = LowerRight();
+
+            // main background
+            GG::FlatRectangle(UL, LR, BG_CLR, BORDER_CLR);
+
+            // summary text background
+            GG::FlatRectangle(UL, GG::Pt(LR.x, row_height + offset), BORDER_CLR, BORDER_CLR);
+
+            // Seperation line between armed/unarmed and utility ships
+            GG::Y line_ht(UL.y + (row_height * 2) + (row_height * 5 / 4));
+            GG::Pt line_ul(UL.x + (m_margin * 2), line_ht);
+            GG::Pt line_lr(LR.x - (m_margin * 2), line_ht);
+            GG::Line(line_ul, line_lr, BORDER_CLR);
+
+            // inset border for parts/slots
+            GG::Pt part_ul(UL.x + m_margin, LR.y - ((m_margin + row_height) * 2));
+            GG::Pt part_lr(LR.x - m_margin, LR.y - m_margin);
+            GG::BeveledRoundedRectangle(part_ul, part_lr, BG_CLR, BORDER_CLR, false);
+        }
+
+        void DoLayout() {
+            const GG::Y row_height{ClientUI::Pts()};
+            const GG::Y offset{32};
+            const GG::X descr_width{m_col_widths.at(0) - (m_margin * 2)};
+            const GG::X value_width{m_col_widths.at(1) - (m_margin * 3)};
+
+            GG::Pt descr_ul{GG::X{m_margin}, offset + m_margin};
+            GG::Pt descr_lr{descr_ul.x + descr_width, offset + row_height};
+            GG::Pt value_ul{descr_lr.x + m_margin, descr_ul.y};
+            GG::Pt value_lr{value_ul.x + value_width, descr_lr.y};
+
+            const GG::Pt next_row{GG::X0, row_height + (m_margin * 2)};
+            const GG::Pt space_row{next_row * 5 / 4};
+
+            LayoutRow(FLEET_DETAIL_SHIP_COUNT,
+                      descr_ul, descr_lr, value_ul, value_lr, space_row);
+            LayoutRow(FLEET_DETAIL_ARMED_COUNT,
+                      descr_ul, descr_lr, value_ul, value_lr, next_row);
+            LayoutRow(FLEET_DETAIL_UNARMED_COUNT,
+                      descr_ul, descr_lr, value_ul, value_lr, space_row);
+            LayoutRow(FLEET_DETAIL_CARRIER_COUNT,
+                      descr_ul, descr_lr, value_ul, value_lr, next_row);
+            LayoutRow(FLEET_DETAIL_TROOP_COUNT,
+                      descr_ul, descr_lr, value_ul, value_lr, next_row);
+            LayoutRow(FLEET_DETAIL_COLONY_COUNT,
+                      descr_ul, descr_lr, value_ul, value_lr, space_row);
+            LayoutRow(FLEET_DETAIL_PART_COUNT,
+                      descr_ul, descr_lr, value_ul, value_lr, next_row);
+            LayoutRow(FLEET_DETAIL_SLOT_COUNT,
+                      descr_ul, descr_lr, value_ul, value_lr, GG::Pt(GG::X0, GG::Y0));
+
+            Resize(GG::Pt(value_lr.x + (m_margin * 3), value_lr.y + (m_margin * 3)));
+        }
+
+        /** Constructs and attaches new description and value labels
+         *  for the given description row @p descr. */
+        void NewLabelValue(const std::string& descr, bool title = false) {
+            if (m_labels.find(descr) != m_labels.end())
+                return;
+
+            GG::Y height{ClientUI::Pts()};
+            // center format for title label
+            m_labels.emplace(descr, std::make_pair(
+                new CUILabel{UserString(descr),
+                    title ? GG::FORMAT_CENTER : GG::FORMAT_RIGHT,
+                    GG::NO_WND_FLAGS, GG::X0, GG::Y0,
+                    m_col_widths.at(0) - (m_margin * 2), height
+                },
+                new CUILabel{"0", GG::FORMAT_RIGHT,
+                    GG::NO_WND_FLAGS, GG::X0, GG::Y0,
+                    m_col_widths.at(1) - (m_margin * 2), height
+                }
+            ));
+
+            if (title) {  // utilize bold font for title label and value
+                m_labels.at(descr).first->SetFont(ClientUI::GetBoldFont());
+                m_labels.at(descr).second->SetFont(ClientUI::GetBoldFont());
+            }
+
+            AttachChild(m_labels.at(descr).first);
+            AttachChild(m_labels.at(descr).second);
+        }
+
+        /** Updates the text displayed for the value of each label */
+        void UpdateLabels() {
+            UpdateValues();
+            for (const std::unordered_map<std::string, int>::value_type& value : m_values) {
+                std::unordered_map<std::string, LabelValueType>::iterator label_it = m_labels.find(value.first);
+                if (label_it == m_labels.end())
+                    continue;
+                label_it->second.second->ChangeTemplatedText(std::to_string(value.second), 0);
+            }
+        }
+
+    protected:
+        /** Updates the value for display with each label */
+        void UpdateValues() {
+            m_values.clear();
+            m_values[FLEET_DETAIL_SHIP_COUNT] = 0;
+            if (m_empire_id == ALL_EMPIRES)
+                return;
+
+            const std::set<int>& destroyed_objects = GetUniverse().EmpireKnownDestroyedObjectIDs(m_empire_id);
+            for (std::shared_ptr<const Ship> ship : Objects().FindObjects<Ship>()) {
+                if (!ship->OwnedBy(m_empire_id) || destroyed_objects.find(ship->ID()) != destroyed_objects.end())
+                    continue;
+                m_values[FLEET_DETAIL_SHIP_COUNT]++;
+
+                if (ship->IsArmed())
+                    m_values[FLEET_DETAIL_ARMED_COUNT]++;
+                else
+                    m_values[FLEET_DETAIL_UNARMED_COUNT]++;
+
+                if (ship->CanColonize())
+                    m_values[FLEET_DETAIL_COLONY_COUNT]++;
+
+                if (ship->HasTroops())
+                    m_values[FLEET_DETAIL_TROOP_COUNT]++;
+
+                if (ship->HasFighters())
+                    m_values[FLEET_DETAIL_CARRIER_COUNT]++;
+
+                const ShipDesign* design = ship->Design();
+                if (!design)
+                    continue;
+                for (const std::string& part : design->Parts()) {
+                    m_values[FLEET_DETAIL_SLOT_COUNT] ++;
+                    if (!part.empty())
+                        m_values[FLEET_DETAIL_PART_COUNT] ++;
+                }
+            }
+
+        }
+
+        /** Resize/Move controls for row @p descr
+         *  and then advance sizes by @p row_advance */
+        void LayoutRow(const std::string& descr,
+                       GG::Pt& descr_ul, GG::Pt& descr_lr,
+                       GG::Pt& value_ul, GG::Pt& value_lr,
+                       const GG::Pt& row_advance)
+        {
+            if (m_labels.find(descr) == m_labels.end()) {
+                ErrorLogger() << "Unable to find expected label key " << descr;
+                return;
+            }
+
+            m_labels.at(descr).first->SizeMove(descr_ul, descr_lr);
+            m_labels.at(descr).second->SizeMove(value_ul, value_lr);
+            descr_ul += row_advance;
+            descr_lr += row_advance;
+            value_ul += row_advance;
+            value_lr += row_advance;
+        }
+
+    private:
+        void UpdateImpl(size_t mode, const Wnd* target) override { UpdateLabels(); }
+
+        std::unordered_map<std::string, int>                    m_values;       ///< Internal value for display with a description
+        std::unordered_map<std::string, LabelValueType>         m_labels;       ///< Label controls mapped to the description key
+        int                                                     m_empire_id;    ///< ID of the viewing empire
+        std::vector<GG::X>                                      m_col_widths;   ///< widths of each column
+        int                                                     m_margin;       ///< margin between controls
+    };
 }
 
 
@@ -1574,7 +1792,7 @@ void MapWnd::RenderFields() {
         glBindTexture(GL_TEXTURE_2D, 0);
         //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-        m_scanline_shader.SetColor(GetOptionsDB().Get<StreamableColor>("UI.field-fog-of-war-clr").ToClr()); 
+        m_scanline_shader.SetColor(GetOptionsDB().Get<GG::Clr>("UI.field-fog-of-war-clr"));
         m_scanline_shader.StartUsing();
 
         glDrawArrays(GL_TRIANGLES, 0, m_field_scanline_circles.size());
@@ -1703,7 +1921,7 @@ void MapWnd::RenderSystems() {
         glDisable(GL_TEXTURE_2D);
         glEnable(GL_LINE_SMOOTH);
         glLineWidth(1.5f);
-        glColor(GetOptionsDB().Get<StreamableColor>("UI.unowned-starlane-colour").ToClr());
+        glColor(GetOptionsDB().Get<GG::Clr>("UI.unowned-starlane-colour"));
 
         for (const boost::unordered_map<int, SystemIcon*>::value_type& system_icon : m_system_icons) {
             const SystemIcon* icon = system_icon.second;
@@ -1724,7 +1942,7 @@ void MapWnd::RenderSystems() {
             if (fog_scanlines
                 && (universe.GetObjectVisibilityByEmpire(system_icon.first, empire_id) <= VIS_BASIC_VISIBILITY))
             {
-                m_scanline_shader.SetColor(GetOptionsDB().Get<StreamableColor>("UI.system-fog-of-war-clr").ToClr());
+                m_scanline_shader.SetColor(GetOptionsDB().Get<GG::Clr>("UI.system-fog-of-war-clr"));
                 m_scanline_shader.RenderCircle(circle_ul, circle_lr);
             }
 
@@ -1732,7 +1950,7 @@ void MapWnd::RenderSystems() {
             if (circles) {
                 if (std::shared_ptr<const System> system = GetSystem(system_icon.first)) {
                     if (system->NumStarlanes() > 0) {
-                        glColor(GetOptionsDB().Get<StreamableColor>("UI.unowned-starlane-colour").ToClr());
+                        glColor(GetOptionsDB().Get<GG::Clr>("UI.unowned-starlane-colour"));
 
                         int empire_id = GetSupplyManager().EmpireThatCanSupplyAt(system_icon.first);
                         if (empire_id != ALL_EMPIRES) {
@@ -1766,7 +1984,7 @@ void MapWnd::RenderStarlanes(GG::GL2DVertexBuffer& vertices, GG::GLRGBAColorBuff
                              double thickness, bool coloured, bool doBase) {
     if (vertices.size() && (colours.size() || !coloured) && (coloured || doBase)) {
         // render starlanes with vertex buffer (and possibly colour buffer)
-        const GG::Clr UNOWNED_LANE_COLOUR = GetOptionsDB().Get<StreamableColor>("UI.unowned-starlane-colour").ToClr();
+        const GG::Clr UNOWNED_LANE_COLOUR = GetOptionsDB().Get<GG::Clr>("UI.unowned-starlane-colour");
 
         glDisable(GL_TEXTURE_2D);
         glEnable(GL_LINE_SMOOTH);
@@ -2032,7 +2250,7 @@ void MapWnd::RenderMovementLineETAIndicators(const MapWnd::MovementLineData& mov
 
 
         // render ETA number in white with black shadows
-        std::string text = "<s>" + boost::lexical_cast<std::string>(vert.eta) + "</s>";
+        std::string text = "<s>" + std::to_string(vert.eta) + "</s>";
         glColor(GG::CLR_WHITE);
         // TODO cache the text_elements
         std::vector<std::shared_ptr<GG::Font::TextElement>> text_elements = font->ExpensiveParseFromTextToTextElements(text, flags);
@@ -2343,7 +2561,7 @@ void MapWnd::InitTurn() {
 
     // set turn button to current turn
     m_btn_turn->SetText(boost::io::str(FlexibleFormat(UserString("MAP_BTN_TURN_UPDATE")) %
-                                       boost::lexical_cast<std::string>(turn_number)));
+                                       std::to_string(turn_number)));
     MoveChildUp(m_btn_turn);
 
 
@@ -3003,7 +3221,7 @@ void MapWnd::InitStarlaneRenderingBuffers() {
     // temp storage
     std::set<std::pair<int, int> >  rendered_half_starlanes;    // stored as unaltered pairs, so that a each direction of traversal can be shown separately
 
-    const GG::Clr UNOWNED_LANE_COLOUR = GetOptionsDB().Get<StreamableColor>("UI.unowned-starlane-colour").ToClr();
+    const GG::Clr UNOWNED_LANE_COLOUR = GetOptionsDB().Get<GG::Clr>("UI.unowned-starlane-colour");
 
     int client_empire_id = HumanClientApp::GetApp()->EmpireID();
 
@@ -3033,7 +3251,7 @@ void MapWnd::InitStarlaneRenderingBuffers() {
 
             // std::string this_pool = "( ";
             for (int object_id : available_pp_group.first) {
-                // this_pool += boost::lexical_cast<std::string>(object_id) +", ";
+                // this_pool += std::to_string(object_id) +", ";
 
                 std::shared_ptr<const Planet> planet = GetPlanet(object_id);
                 if (!planet)
@@ -4305,11 +4523,9 @@ void MapWnd::DeferredRefreshFleetButtons() {
     SystemXEmpireToFleetsMap   stationary_fleets;
     LocationXEmpireToFleetsMap moving_fleets;
 
-    for (std::map<int, std::shared_ptr<UniverseObject>>::const_iterator candidate_it = Objects().ExistingFleetsBegin();
-         candidate_it != Objects().ExistingFleetsEnd(); ++candidate_it)
-    {
+    for (const std::map<int, std::shared_ptr<UniverseObject>>::value_type& entry : Objects().ExistingFleets()) {
         std::shared_ptr<const Fleet> fleet = IsQualifiedFleet(
-            candidate_it->second, client_empire_id,
+            entry.second, client_empire_id,
             this_client_known_destroyed_objects, this_client_stale_object_info);
 
         if (!fleet)
@@ -5789,8 +6005,8 @@ void MapWnd::RefreshFleetResourceIndicator() {
     m_fleet->SetValue(total_fleet_count);
     m_fleet->ClearBrowseInfoWnd();
     m_fleet->SetBrowseModeTime(GetOptionsDB().Get<int>("UI.tooltip-delay"));
-    m_fleet->SetBrowseInfoWnd(std::make_shared<TextBrowseWnd>(
-        UserString("MAP_FLEET_TITLE"), UserString("MAP_FLEET_TEXT")));
+    m_fleet->SetBrowseInfoWnd(std::make_shared<FleetDetailBrowseWnd>(
+        empire_id, GG::X(FontBasedUpscale(200))));
 }
 
 void MapWnd::RefreshResearchResourceIndicator() {

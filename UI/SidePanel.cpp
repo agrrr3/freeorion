@@ -409,7 +409,7 @@ namespace {
         db.Add("UI.sidepanel-planet-max-diameter",   UserStringNop("OPTIONS_DB_UI_SIDEPANEL_PLANET_MAX_DIAMETER"),  128,    RangedValidator<int>(16, 512));
         db.Add("UI.sidepanel-planet-min-diameter",   UserStringNop("OPTIONS_DB_UI_SIDEPANEL_PLANET_MIN_DIAMETER"),  24,     RangedValidator<int>(8,  128));
         db.Add("UI.sidepanel-planet-shown",          UserStringNop("OPTIONS_DB_UI_SIDEPANEL_PLANET_SHOWN"),         true,   Validator<bool>());
-        db.Add("UI.sidepanel-planet-fog-of-war-clr", UserStringNop("OPTIONS_DB_UI_PLANET_FOG_CLR"),                 StreamableColor(GG::Clr(0, 0, 0, 128)), Validator<StreamableColor>());
+        db.Add("UI.sidepanel-planet-fog-of-war-clr", UserStringNop("OPTIONS_DB_UI_PLANET_FOG_CLR"),                 GG::Clr(0, 0, 0, 128),  Validator<GG::Clr>());
     }
     bool temp_bool = RegisterOptions(&AddOptions);
 
@@ -665,7 +665,7 @@ public:
 
         // render fog of war over planet if it's not visible to this client's player
         if ((m_visibility <= VIS_BASIC_VISIBILITY) && GetOptionsDB().Get<bool>("UI.system-fog-of-war")) {
-            s_scanline_shader.SetColor(GetOptionsDB().Get<StreamableColor>("UI.sidepanel-planet-fog-of-war-clr").ToClr());
+            s_scanline_shader.SetColor(GetOptionsDB().Get<GG::Clr>("UI.sidepanel-planet-fog-of-war-clr"));
             s_scanline_shader.RenderCircle(ul, lr);
         }
     }
@@ -765,7 +765,7 @@ namespace {
         int SystemID() const { return m_system_id; }
 
         SortKeyType SortKey(std::size_t column) const override
-        { return GetSystem(m_system_id)->Name() + boost::lexical_cast<std::string>(m_system_id); }
+        { return GetSystem(m_system_id)->Name() + std::to_string(m_system_id); }
 
     private:
         int m_system_id;
@@ -1568,6 +1568,9 @@ void SidePanel::PlanetPanel::Refresh() {
         wrapped_planet_name = "<i>" + wrapped_planet_name + "</i>";
     if (has_shipyard)
         wrapped_planet_name = "<u>" + wrapped_planet_name + "</u>";
+    if (GetOptionsDB().Get<bool>("UI.show-id-after-names")) {
+        wrapped_planet_name = wrapped_planet_name + " (" + std::to_string(m_planet_id) + ")";
+    }
 
     // set name
     m_planet_name->SetText("<s>" + wrapped_planet_name + "</s>");
@@ -1851,7 +1854,7 @@ void SidePanel::PlanetPanel::Refresh() {
             Universe::VisibilityTurnMap::const_iterator last_turn_visible_it = visibility_turn_map.find(VIS_BASIC_VISIBILITY);
             if (last_turn_visible_it != visibility_turn_map.end() && last_turn_visible_it->second > 0) {
                 visibility_info += "  " + boost::io::str(FlexibleFormat(UserString("PL_LAST_TURN_SEEN")) %
-                                                                        boost::lexical_cast<std::string>(last_turn_visible_it->second));
+                                                                        std::to_string(last_turn_visible_it->second));
             }
             else {
                 visibility_info += "  " + UserString("PL_NEVER_SEEN");
@@ -1882,7 +1885,7 @@ void SidePanel::PlanetPanel::Refresh() {
             Universe::VisibilityTurnMap::const_iterator last_turn_visible_it = visibility_turn_map.find(VIS_PARTIAL_VISIBILITY);
             if (last_turn_visible_it != visibility_turn_map.end() && last_turn_visible_it->second > 0) {
                 visibility_info += "  " + boost::io::str(FlexibleFormat(UserString("PL_LAST_TURN_SCANNED")) %
-                                                                        boost::lexical_cast<std::string>(last_turn_visible_it->second));
+                                                                        std::to_string(last_turn_visible_it->second));
             }
             else {
                 visibility_info += "  " + UserString("PL_NEVER_SCANNED");
@@ -2387,12 +2390,7 @@ void SidePanel::PlanetPanel::FocusDropListSelectionChangedSlot(GG::DropDownList:
         return;
     }
 
-    std::shared_ptr<const UniverseObject> obj = GetUniverseObject(m_planet_id);
-    if (!obj) {
-        ErrorLogger() << "PlanetPanel::FocusDropListSelectionChanged couldn't get object with id " << m_planet_id;
-        return;
-    }
-    std::shared_ptr<const ResourceCenter> res = std::dynamic_pointer_cast<const ResourceCenter>(obj);
+    std::shared_ptr<const ResourceCenter> res = GetResourceCenter(m_planet_id);
     if (!res) {
         ErrorLogger() << "PlanetPanel::FocusDropListSelectionChanged couldn't convert object with id " << m_planet_id << " to a ResourceCenter";
         return;

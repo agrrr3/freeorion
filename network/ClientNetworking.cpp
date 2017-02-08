@@ -10,7 +10,6 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string/erase.hpp>
 #include <boost/bind.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/thread/condition.hpp>
 #include <boost/thread/thread.hpp>
 
@@ -20,9 +19,6 @@ using namespace Networking;
 
 namespace {
     const bool TRACE_EXECUTION = false;
-
-    const int HEADER_SIZE = ClientNetworking::MessageHeaderBuffer::static_size *
-                            sizeof(ClientNetworking::MessageHeaderBuffer::value_type);
 
     /** A simple client that broadcasts UDP datagrams on the local network for
         FreeOrion servers, and reports any it finds. */
@@ -46,7 +42,7 @@ namespace {
             using namespace boost::asio::ip;
             udp::resolver resolver(*m_io_service);
             udp::resolver::query query(udp::v4(), "255.255.255.255",
-                                       boost::lexical_cast<std::string>(Networking::DiscoveryPort()),
+                                       std::to_string(Networking::DiscoveryPort()),
                                        resolver_query_base::address_configured |
                                        resolver_query_base::numeric_service);
             udp::resolver::iterator end_it;
@@ -112,7 +108,9 @@ namespace {
         boost::asio::io_service*       m_io_service;
         boost::asio::deadline_timer    m_timer;
         boost::asio::ip::udp::socket   m_socket;
-        boost::array<char, 1024>       m_recv_buf;
+
+        std::array<char, 1024> m_recv_buf;
+
         boost::asio::ip::udp::endpoint m_sender_endpoint;
         bool                           m_receive_successful;
         std::string                    m_server_name;
@@ -170,7 +168,7 @@ bool ClientNetworking::ConnectToServer(
     using namespace boost::asio::ip;
     tcp::resolver resolver(m_io_service);
     tcp::resolver::query query(tcp::v4(), ip_address,
-                               boost::lexical_cast<std::string>(Networking::MessagePort()),
+                               std::to_string(Networking::MessagePort()),
                                boost::asio::ip::resolver_query_base::numeric_service);
 
     tcp::resolver::iterator end_it;
@@ -367,11 +365,11 @@ void ClientNetworking::HandleMessageHeaderRead(boost::system::error_code error, 
         throw boost::system::system_error(error);
         return;
     }
-    assert(static_cast<int>(bytes_transferred) <= HEADER_SIZE);
-    if (static_cast<int>(bytes_transferred) != HEADER_SIZE)
+    assert(bytes_transferred <= Message::HeaderBufferSize);
+    if (bytes_transferred != Message::HeaderBufferSize)
         return;
 
-    BufferToHeader(m_incoming_header.c_array(), m_incoming_message);
+    BufferToHeader(m_incoming_header, m_incoming_message);
     m_incoming_message.Resize(m_incoming_header[4]);
     boost::asio::async_read(
         m_socket,
@@ -395,8 +393,8 @@ void ClientNetworking::HandleMessageWrite(boost::system::error_code error, std::
         return;
     }
 
-    assert(static_cast<int>(bytes_transferred) <= HEADER_SIZE + m_outgoing_header[4]);
-    if (static_cast<int>(bytes_transferred) != HEADER_SIZE + m_outgoing_header[4])
+    assert(static_cast<int>(bytes_transferred) <= static_cast<int>(Message::HeaderBufferSize) + m_outgoing_header[4]);
+    if (static_cast<int>(bytes_transferred) != static_cast<int>(Message::HeaderBufferSize) + m_outgoing_header[4])
         return;
 
     m_outgoing_messages.pop_front();
@@ -405,7 +403,7 @@ void ClientNetworking::HandleMessageWrite(boost::system::error_code error, std::
 }
 
 void ClientNetworking::AsyncWriteMessage() {
-    HeaderToBuffer(m_outgoing_messages.front(), m_outgoing_header.c_array());
+    HeaderToBuffer(m_outgoing_messages.front(), m_outgoing_header);
     std::vector<boost::asio::const_buffer> buffers;
     buffers.push_back(boost::asio::buffer(m_outgoing_header));
     buffers.push_back(boost::asio::buffer(m_outgoing_messages.front().Data(),
