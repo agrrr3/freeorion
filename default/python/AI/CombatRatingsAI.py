@@ -216,6 +216,11 @@ class ShipCombatStats(object):
         """
         return self.get_basic_stats(hashable=hashable) + self.get_fighter_stats()
 
+    @property
+    def raw_attack(self):
+        attacks, _, _ = self.get_basic_stats()
+        return sum(n*dmg for dmg, n in attacks.iteritems())
+
 
 class FleetCombatStats(object):
     """Stores combat related stats of the fleet."""
@@ -248,6 +253,9 @@ class FleetCombatStats(object):
         :rtype: float
         """
         return combine_ratings_list(map(lambda x: x.get_rating(enemy_stats), self.__ship_stats))
+
+    def get_total_raw_attack(self):
+        return sum(ship.raw_attack for ship in self.get_ship_combat_stats())
 
     def __get_stats_from_fleet(self):
         """Calculate fleet combat stats (i.e. the stats of all its ships)."""

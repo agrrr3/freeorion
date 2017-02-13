@@ -143,6 +143,9 @@ def get_fleets_for_mission(target_stats, min_stats, cur_stats, starting_system,
             cur_stats['rating'] = CombatRatingsAI.combine_ratings(cur_stats.get('rating', 0), this_rating)
             if 'troopCapacity' in target_stats:
                 cur_stats['troopCapacity'] = cur_stats.get('troopCapacity', 0) + troop_capacity
+            if 'rawAttack' in target_stats:
+                cur_stats['rawAttack'] = (cur_stats.get('rawAttack', 0)
+                                          + CombatRatingsAI.FleetCombatStats(fleet_id).get_total_raw_attack())
             # if we already meet the requirements, we can stop looking for more ships
             if (sum(len(universe.getFleet(fid).shipIDs) for fid in fleet_list) >= 1) \
                     and stats_meet_reqs(cur_stats, target_stats):
