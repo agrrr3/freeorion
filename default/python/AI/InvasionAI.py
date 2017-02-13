@@ -383,7 +383,7 @@ def evaluate_invasion_planet(planet_id, empire, secure_fleet_missions, verbose=T
         troop_cost = ships_needed * cost_per_ship  # fleet upkeep is already included in query from server
 
     # apply some negative bias to expensive operations
-    normalized_cost = troop_cost / empire.productionPoints
+    normalized_cost = float(troop_cost) / max(empire.productionPoints, 1)
     if normalized_cost < 1:
         cost_score = 0
     else:
