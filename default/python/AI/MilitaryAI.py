@@ -798,7 +798,7 @@ def get_military_support_for_invasion(system_id):
         # for now, we just assume worst case max meter values
         total_defense += planet.currentMeterValue(fo.meterType.maxDefense)
         total_shields += planet.currentMeterValue(fo.meterType.maxShield)
-    fleet_threat = foAI.foAIstate.systemStatus.get(system_id, {}).get('fleetThret', 0)
+    fleet_threat = foAI.foAIstate.systemStatus.get(system_id, {}).get('fleetThreat', 0)
 
     all_military_fleet_ids = FleetUtilsAI.get_empire_fleet_ids_by_role(MissionType.MILITARY)
     if not all_military_fleet_ids:
