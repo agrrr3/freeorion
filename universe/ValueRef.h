@@ -177,9 +177,8 @@ struct FO_COMMON_API Constant : public ValueRefBase<T>
     T Value() const;
 
 private:
-    T m_value;
-
-    std::string m_top_level_content;
+    T           m_value;
+    std::string m_top_level_content;    // in the special case that T is std::string and m_value is "CurrentContent", return this instead
 
     friend class boost::serialization::access;
     template <class Archive>
@@ -215,9 +214,8 @@ struct FO_COMMON_API Variable : public ValueRefBase<T>
     const std::vector<std::string>& PropertyName() const;
 
 protected:
-    mutable ReferenceType m_ref_type;
-
-    std::vector<std::string> m_property_name;
+    mutable ReferenceType       m_ref_type;
+    std::vector<std::string>    m_property_name;
 
 private:
     friend class boost::serialization::access;
@@ -539,7 +537,8 @@ struct FO_COMMON_API Operation : public ValueRefBase<T>
 
     bool SimpleIncrement() const override;
 
-    bool ConstantExpr() const override;
+    bool ConstantExpr() const override
+    { return m_constant_expr; }
 
     std::string Description() const override;
 
@@ -559,8 +558,14 @@ struct FO_COMMON_API Operation : public ValueRefBase<T>
     const std::vector<ValueRefBase<T>*>& Operands() const;
 
 private:
-    OpType m_op_type;
-    std::vector<ValueRefBase<T>*> m_operands;
+    void    DetermineIfConstantExpr();
+    void    CacheConstValue();
+    T       EvalImpl(const ScriptingContext& context) const;
+
+    OpType                          m_op_type;
+    std::vector<ValueRefBase<T>*>   m_operands;
+    bool                            m_constant_expr = false;
+    T                               m_cached_const_value;
 
     friend class boost::serialization::access;
     template <class Archive>
@@ -1701,6 +1706,8 @@ Operation<T>::Operation(OpType op_type, ValueRefBase<T>* operand1, ValueRefBase<
         m_operands.push_back(operand1);
     if (operand2)
         m_operands.push_back(operand2);
+    DetermineIfConstantExpr();
+    CacheConstValue();
 }
 
 template <class T>
@@ -1710,13 +1717,45 @@ Operation<T>::Operation(OpType op_type, ValueRefBase<T>* operand) :
 {
     if (operand)
         m_operands.push_back(operand);
+    DetermineIfConstantExpr();
+    CacheConstValue();
 }
 
 template <class T>
 Operation<T>::Operation(OpType op_type, const std::vector<ValueRefBase<T>*>& operands) :
     m_op_type(op_type),
     m_operands(operands)
-{}
+{
+    DetermineIfConstantExpr();
+    CacheConstValue();
+}
+
+template <class T>
+void Operation<T>::DetermineIfConstantExpr()
+{
+    if (m_op_type == RANDOM_UNIFORM || m_op_type == RANDOM_PICK) {
+        m_constant_expr = false;
+        return;
+    }
+
+    m_constant_expr = true; // may be overridden...
+
+    for (ValueRefBase<T>* operand : m_operands) {
+        if (operand && !operand->ConstantExpr()) {
+            m_constant_expr = false;
+            return;
+        }
+    }
+}
+
+template <class T>
+void Operation<T>::CacheConstValue()
+{
+    if (!m_constant_expr)
+        return;
+
+    m_cached_const_value = this->EvalImpl(ScriptingContext());
+}
 
 template <class T>
 Operation<T>::~Operation()
@@ -1749,6 +1788,10 @@ bool Operation<T>::operator==(const ValueRefBase<T>& rhs) const
             return false;
     }
 
+    // should be redundant...
+    if (m_constant_expr != rhs_.m_constant_expr)
+        return false;
+
     return true;
 }
 
@@ -1778,6 +1821,14 @@ const std::vector<ValueRefBase<T>*>& Operation<T>::Operands() const
 
 template <class T>
 T Operation<T>::Eval(const ScriptingContext& context) const
+{
+    if (m_constant_expr)
+        return m_cached_const_value;
+    return this->EvalImpl(context);
+}
+
+template <class T>
+T Operation<T>::EvalImpl(const ScriptingContext& context) const
 {
     switch (m_op_type) {
         if (m_operands.empty())
@@ -1819,13 +1870,13 @@ T Operation<T>::Eval(const ScriptingContext& context) const
 }
 
 template <>
-std::string Operation<std::string>::Eval(const ScriptingContext& context) const;
+std::string Operation<std::string>::EvalImpl(const ScriptingContext& context) const;
 
 template <>
-double Operation<double>::Eval(const ScriptingContext& context) const;
+double Operation<double>::EvalImpl(const ScriptingContext& context) const;
 
 template <>
-int Operation<int>::Eval(const ScriptingContext& context) const;
+int Operation<int>::EvalImpl(const ScriptingContext& context) const;
 
 template <class T>
 bool Operation<T>::RootCandidateInvariant() const
@@ -1870,18 +1921,6 @@ bool Operation<T>::SourceInvariant() const
         return false;
     for (ValueRefBase<T>* operand : m_operands) {
         if (operand && !operand->SourceInvariant())
-            return false;
-    }
-    return true;
-}
-
-template <class T>
-bool Operation<T>::ConstantExpr() const
-{
-    if (m_op_type == RANDOM_UNIFORM || m_op_type == RANDOM_PICK)
-        return false;
-    for (ValueRefBase<T>* operand : m_operands) {
-        if (operand && !operand->ConstantExpr())
             return false;
     }
     return true;
@@ -2147,7 +2186,9 @@ void Operation<T>::serialize(Archive& ar, const unsigned int version)
 {
     ar  & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ValueRefBase)
         & BOOST_SERIALIZATION_NVP(m_op_type)
-        & BOOST_SERIALIZATION_NVP(m_operands);
+        & BOOST_SERIALIZATION_NVP(m_operands)
+        & BOOST_SERIALIZATION_NVP(m_constant_expr)
+        & BOOST_SERIALIZATION_NVP(m_cached_const_value);
 }
 
 } // namespace ValueRef

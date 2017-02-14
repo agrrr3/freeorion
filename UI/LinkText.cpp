@@ -174,6 +174,7 @@ struct TextLinker::Link {
 // static(s)
 const std::string TextLinker::ENCYCLOPEDIA_TAG("encyclopedia");
 const std::string TextLinker::GRAPH_TAG("graph");
+const std::string TextLinker::URL_TAG("url");
 
 TextLinker::TextLinker() :
     m_links(),
@@ -340,7 +341,8 @@ void TextLinker::FindLinks() {
                     tag->tag_name == VarText::FIELD_TYPE_TAG ||
                     tag->tag_name == VarText::METER_TYPE_TAG ||
                     tag->tag_name == TextLinker::ENCYCLOPEDIA_TAG ||
-                    tag->tag_name == TextLinker::GRAPH_TAG)
+                    tag->tag_name == TextLinker::GRAPH_TAG ||
+                    tag->tag_name == TextLinker::URL_TAG)
                 {
                     link.type = tag->tag_name;
                     if (tag->close_tag) {
@@ -348,7 +350,10 @@ void TextLinker::FindLinks() {
                         m_links.push_back(link);
                         link = Link();
                     } else {
-                        link.data = tag->params[0];
+                        if (!tag->params.empty())
+                            link.data = tag->params[0];
+                        else
+                            link.data.clear();
                         link.text_posn.first = Value(curr_char.string_index);
                         for (std::shared_ptr<GG::Font::FormattingTag> itag : curr_char.tags) {
                             link.text_posn.first -= Value(itag->StringSize());
@@ -528,4 +533,5 @@ void RegisterLinkTags() {
 
     GG::Font::RegisterKnownTag(TextLinker::ENCYCLOPEDIA_TAG);
     GG::Font::RegisterKnownTag(TextLinker::GRAPH_TAG);
+    GG::Font::RegisterKnownTag(TextLinker::URL_TAG);
 }

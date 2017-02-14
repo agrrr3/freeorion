@@ -1,3 +1,28 @@
+/* GG is a GUI for SDL and OpenGL.
+
+   Copyright (C) 2015 Mitten-O
+
+   This library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public License
+   as published by the Free Software Foundation; either version 2.1
+   of the License, or (at your option) any later version.
+
+   This library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with this library; if not, write to the Free
+   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+   02111-1307 USA
+
+   If you do not wish to comply with the terms of the LGPL please
+   contact the author as other terms are available for a fee.
+
+   Zach Laine
+   whatwasthataddress@gmail.com */
+
 #include "TagParser.h"
 
 
@@ -32,11 +57,13 @@ namespace GG {
     class TagParserImpl {
         public:
             //! Create a new parser that will consider the given tags as known, others as plaintext.
-          TagParserImpl(const std::set<std::string>& known_tags) : m_known_tags(known_tags) {}
+            TagParserImpl(const std::set<std::string>& known_tags) :
+                m_known_tags(known_tags)
+            {}
 
             //! Parses \a text into tags. All text is considered part of some tag, text outside known tags will be put in plaintext tags.
-          std::vector<RichTextTag> ParseTags(const std::string& text)
-          {
+            std::vector<RichTextTag> ParseTags(const std::string& text)
+            {
                 // A vector of all tags in the text.
                 std::vector<RichTextTag> tags;
 
@@ -44,7 +71,7 @@ namespace GG {
                     // Parse all text into tags.
                     ParseTagsImpl(text.begin(), text.end(), &tags);
                 } catch (const std::exception& ex) {
-                    // If an error was encountered, diaplay it in the text box.
+                    // If an error was encountered, display it in the text box.
                     tags.clear();
                     tags.push_back(CreateErrorTag(ex.what()));
                     return tags;
@@ -77,7 +104,7 @@ namespace GG {
                 boost::match_flag_type flags = boost::match_default;
 
                 // The regular expression for matching begin and end tags. Also extracts parameters from start tags.
-                typedef boost::basic_regex<char, boost::regex_traits<char> > regex;
+                typedef boost::basic_regex<char, boost::regex_traits<char>> regex;
                 const static regex tag("<(?<begin_tag>\\w+)( "
                                        "(?<params>[^>]+))?>|</"
                                        "(?<end_tag>\\w+)>");

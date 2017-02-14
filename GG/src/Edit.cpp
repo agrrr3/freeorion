@@ -348,7 +348,8 @@ void Edit::LButtonDown(const Pt& pt, Flags<ModKey> mod_keys)
     X click_xpos = ScreenToClient(pt).x; // x coord of click within text space
     CPSize idx = CharIndexOf(click_xpos);
     //std::cout << "Edit::LButtonDown got idx: " << idx << std::endl;
-    m_cursor_pos.first = m_cursor_pos.second = idx;
+    m_cursor_pos = {idx, idx};
+
     std::pair<CPSize, CPSize> word_indices = GetDoubleButtonDownWordIndices(idx);
     //std::cout << "Edit::LButtonDown got word indices: " << word_indices.first << ", " << word_indices.second << std::endl;
     if (word_indices.first != word_indices.second)
@@ -571,8 +572,8 @@ std::pair<CPSize, CPSize> Edit::GetDoubleButtonDownDragWordIndices(CPSize char_i
 {
     std::pair<CPSize, CPSize> retval(char_index, char_index);
 
-    std::set<std::pair<CPSize, CPSize> > words = GUI::GetGUI()->FindWords(Text());
-    std::set<std::pair<CPSize, CPSize> >::const_iterator it =
+    std::set<std::pair<CPSize, CPSize>> words = GUI::GetGUI()->FindWords(Text());
+    std::set<std::pair<CPSize, CPSize>>::const_iterator it =
         std::find_if(words.begin(), words.end(), InRange(char_index));
 
     if (it != words.end())
@@ -652,7 +653,7 @@ void GG::GetTranslatedCodePoint(Key key, std::uint32_t key_code_point, Flags<Mod
 }
 
 CPSize GG::NextWordEdgeFrom(const std::string& text, CPSize from_position, bool search_right) {
-    std::set<std::pair<CPSize, CPSize> > words = GUI::GetGUI()->FindWords(text);
+    std::set<std::pair<CPSize, CPSize>> words = GUI::GetGUI()->FindWords(text);
     CPSize retval = CP0;
 
     if (!search_right) {
@@ -700,7 +701,7 @@ CPSize GG::NextWordEdgeFrom(const std::string& text, CPSize from_position, bool 
 
         // start and the rightmost end, traverse the words leftwards
         // until past the reference point
-        for (std::set<std::pair<CPSize, CPSize> >::const_reverse_iterator rit = words.rbegin();
+        for (std::set<std::pair<CPSize, CPSize>>::const_reverse_iterator rit = words.rbegin();
             rit != words.rend(); ++rit)
         {
             if (rit->second < from_position) {
