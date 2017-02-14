@@ -66,9 +66,6 @@ namespace {
     GG::Y ListRowHeight()
     { return std::max(DataPanelIconSpace().y, LabelHeight() + StatIconSize().y) + 2*DATA_PANEL_BORDER + PAD; }
 
-    std::shared_ptr<GG::Texture> SpeedIcon()
-    { return ClientUI::GetTexture(ClientUI::ArtDir() / "icons" / "meter" / "speed.png", true); }
-
     std::shared_ptr<GG::Texture> DamageIcon()
     { return ClientUI::GetTexture(ClientUI::ArtDir() / "icons" / "meter" / "damage.png", true); }
 
@@ -1355,44 +1352,6 @@ void FleetDataPanel::SizeMove(const GG::Pt& ul, const GG::Pt& lr) {
     //std::cout << "FleetDataPanel::SizeMove new size: (" << Value(Width()) << ", " << Value(Height()) << ")" << std::endl;
     if (old_size != Size())
         DoLayout();
-}
-
-namespace {
-    std::string EventTypeName(const GG::WndEvent& event) {
-        switch(event.Type()) {
-        case GG::WndEvent::LButtonDown:     return "(LButtonDown)";
-        case GG::WndEvent::LDrag:           return "(LDrag)";
-        case GG::WndEvent::LButtonUp:       return "(LButtonUp)";
-        case GG::WndEvent::LClick:          return "(LClick)";
-        case GG::WndEvent::LDoubleClick:    return "(LDoubleClick)";
-        case GG::WndEvent::MButtonDown:     return "(MButtonDown)";
-        case GG::WndEvent::MDrag:           return "(MDrag)";
-        case GG::WndEvent::MButtonUp:       return "(MButtonUp)";
-        case GG::WndEvent::MClick:          return "(MClick)";
-        case GG::WndEvent::MDoubleClick:    return "(MDoubleClick)";
-        case GG::WndEvent::RButtonDown:     return "(RButtonDown)";
-        case GG::WndEvent::RDrag:           return "(RDrag)";
-        case GG::WndEvent::RButtonUp:       return "(RButtonUp)";
-        case GG::WndEvent::RClick:          return "(RClick)";
-        case GG::WndEvent::RDoubleClick:    return "(RDoubleClick)";
-        case GG::WndEvent::MouseEnter:      return "(MouseEnter)";
-        case GG::WndEvent::MouseHere:       return "(MouseHere)";
-        case GG::WndEvent::MouseLeave:      return "(MouseLeave)";
-        case GG::WndEvent::MouseWheel:      return "(MouseWheel)";
-        case GG::WndEvent::DragDropEnter:   return "(DragDropEnter)";
-        case GG::WndEvent::DragDropHere:    return "(DragDropHere)";
-        case GG::WndEvent::CheckDrops:      return "(CheckDrops)";
-        case GG::WndEvent::DragDropLeave:   return "(DragDropLeave)";
-        case GG::WndEvent::DragDroppedOn:   return "(DragDroppedOn)";
-        case GG::WndEvent::KeyPress:        return "(KeyPress)";
-        case GG::WndEvent::KeyRelease:      return "(KeyRelease)";
-        case GG::WndEvent::TextInput:       return "(TextInput)";
-        case GG::WndEvent::GainingFocus:    return "(GainingFocus)";
-        case GG::WndEvent::LosingFocus:     return "(LosingFocus)";
-        case GG::WndEvent::TimerFiring:     return "(TimerFiring)";
-        default:                            return "(Unknown Event Type)";
-        }
-    }
 }
 
 bool FleetDataPanel::EventFilter(GG::Wnd* w, const GG::WndEvent& event) {
@@ -3359,8 +3318,9 @@ void FleetWnd::FleetRightClicked(GG::ListBox::iterator it, const GG::Pt& pt, con
                 continue;
             if (peaceful_empires_in_system.find(obj->Owner()) != peaceful_empires_in_system.end())
                 continue;
-            if (Empires().GetDiplomaticStatus(client_empire_id, obj->Owner()) != DIPLO_PEACE)
-                continue;
+            if (Empires().GetDiplomaticStatus(client_empire_id, obj->Owner()) != DIPLO_PEACE &&
+                Empires().GetDiplomaticStatus(client_empire_id, obj->Owner()) != DIPLO_ALLIED)
+            { continue; }
             peaceful_empires_in_system.insert(obj->Owner());
         }
     }
