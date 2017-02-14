@@ -458,6 +458,7 @@ def send_invasion_fleets(fleet_ids, evaluated_planets, mission_type):
             fleet_mission.clear_target()
             fleet_mission.set_target(MissionType.SECURE, target)
 
+
 def assign_invasion_fleets_to_invade():
     """Assign fleet targets to invadable planets."""
     universe = fo.getUniverse()
