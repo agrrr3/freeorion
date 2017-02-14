@@ -808,12 +808,12 @@ def get_military_support_for_invasion(system_id):
     found_fleets = []
     found_stats = {}
     min_stats = {
-        'rating': (total_defense * total_shields + fleet_threat) * 2 + 1,
-        'rawAttack': total_shields / 3,
+        'rating': (total_defense * (total_shields + total_defense) + fleet_threat) * 2 + 1,
+        'rawAttack': (total_shields + total_defense) / 3,
     }
     target_stats = {
-        'rating': (total_defense * total_shields + fleet_threat) * 5 + 1,
-        'rawAttack': total_shields,
+        'rating': (total_defense * (total_shields + total_defense) + fleet_threat) * 5 + 1,
+        'rawAttack': total_shields + total_defense,
     }
     chosen_fleets = FleetUtilsAI.get_fleets_for_mission(target_stats, min_stats, found_stats, system_id,
                                                         avail_mil_fleet_ids, found_fleets)
