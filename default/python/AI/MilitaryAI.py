@@ -804,7 +804,7 @@ def get_military_support_for_invasion(system_id):
     if not all_military_fleet_ids:
         return []
 
-    avail_mil_fleet_ids = list(FleetUtilsAI.extract_fleet_ids_without_mission_types(all_military_fleet_ids))
+    avail_mil_fleet_ids = set(FleetUtilsAI.extract_fleet_ids_without_mission_types(all_military_fleet_ids))
     found_fleets = []
     found_stats = {}
     min_stats = {
