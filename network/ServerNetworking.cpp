@@ -170,7 +170,6 @@ namespace {
         case Message::JOIN_GAME:                return "Join Game";
         case Message::HOST_ID:                  return "Host ID";
         case Message::LOBBY_UPDATE:             return "Lobby Update";
-        case Message::LOBBY_CHAT:               return "Lobby Chat";
         case Message::LOBBY_EXIT:               return "Lobby Exit";
         case Message::START_MP_GAME:            return "Start MP Game";
         case Message::SAVE_GAME_INITIATE:       return "Save Game";
@@ -212,10 +211,10 @@ void PlayerConnection::HandleMessageBodyRead(boost::system::error_code error,
             ErrorLogger() << "PlayerConnection::HandleMessageBodyRead(): error \"" << error << "\"";
         }
     } else {
-        assert(static_cast<int>(bytes_transferred) <= m_incoming_header_buffer[4]);
-        if (static_cast<int>(bytes_transferred) == m_incoming_header_buffer[4]) {
+        assert(static_cast<int>(bytes_transferred) <= m_incoming_header_buffer[2]);
+        if (static_cast<int>(bytes_transferred) == m_incoming_header_buffer[2]) {
             if (TRACE_EXECUTION && m_incoming_message.Type() != Message::REQUEST_NEW_DESIGN_ID) {   // new design id messages ignored due to log spam
-                DebugLogger() << "Server received message from player id: " << m_incoming_message.SendingPlayer()
+                DebugLogger() << "Server received message from player id: " << m_ID
                               << " of type " << MessageTypeName(m_incoming_message.Type())
                               << " and size " << m_incoming_message.Size();
                 //DebugLogger() << "     Full message: " << m_incoming_message;
@@ -264,7 +263,7 @@ void PlayerConnection::HandleMessageHeaderRead(boost::system::error_code error,
         assert(bytes_transferred <= Message::HeaderBufferSize);
         if (bytes_transferred == Message::HeaderBufferSize) {
             BufferToHeader(m_incoming_header_buffer, m_incoming_message);
-            m_incoming_message.Resize(m_incoming_header_buffer[4]);
+            m_incoming_message.Resize(m_incoming_header_buffer[2]);
             boost::asio::async_read(
                 m_socket,
                 boost::asio::buffer(m_incoming_message.Data(), m_incoming_message.Size()),
@@ -277,7 +276,7 @@ void PlayerConnection::HandleMessageHeaderRead(boost::system::error_code error,
 
 void PlayerConnection::AsyncReadMessage() {
     boost::asio::async_read(m_socket, boost::asio::buffer(m_incoming_header_buffer),
-                            boost::bind(&PlayerConnection::HandleMessageHeaderRead, 
+                            boost::bind(&PlayerConnection::HandleMessageHeaderRead,
                                         shared_from_this(),
                                         boost::asio::placeholders::error,
                                         boost::asio::placeholders::bytes_transferred));
@@ -345,7 +344,7 @@ std::size_t ServerNetworking::size() const
 ServerNetworking::const_iterator ServerNetworking::begin() const
 { return m_player_connections.begin(); }
 
-ServerNetworking::const_iterator ServerNetworking::end() const 
+ServerNetworking::const_iterator ServerNetworking::end() const
 { return m_player_connections.end(); }
 
 std::size_t ServerNetworking::NumEstablishedPlayers() const
@@ -399,27 +398,11 @@ void ServerNetworking::SendMessage(const Message& message,
     player_connection->SendMessage(message);
 }
 
-void ServerNetworking::SendMessage(const Message& message) {
-    if (message.ReceivingPlayer() == Networking::INVALID_PLAYER_ID) {
-        // if recipient is INVALID_PLAYER_ID send message to all players
-        for (ServerNetworking::const_established_iterator player_it = established_begin();
-            player_it != established_end(); ++player_it)
-        {
-            (*player_it)->SendMessage(message);
-        }
-    } else {
-        // send message to single player
-        established_iterator it = GetPlayer(message.ReceivingPlayer());
-        if (it == established_end()) {
-            ErrorLogger() << "ServerNetworking::SendMessage couldn't find player with id " << message.ReceivingPlayer() << " to disconnect.  aborting";
-            return;
-        }
-        PlayerConnectionPtr player = *it;
-        if (player->PlayerID() != message.ReceivingPlayer()) {
-            ErrorLogger() << "ServerNetworking::SendMessage got PlayerConnectionPtr with inconsistent player id (" << message.ReceivingPlayer() << ") to what was requrested (" << message.ReceivingPlayer() << ")";
-            return;
-        }
-        player->SendMessage(message);
+void ServerNetworking::SendMessageAll(const Message& message) {
+    for (ServerNetworking::const_established_iterator player_it = established_begin();
+        player_it != established_end(); ++player_it)
+    {
+        (*player_it)->SendMessage(message);
     }
 }
 

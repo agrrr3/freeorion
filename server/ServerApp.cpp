@@ -205,7 +205,7 @@ void ServerApp::CreateAIClients(const std::vector<PlayerSetupData>& player_setup
         }
     }
     if (need_AIs)
-        m_networking.SendMessage(TurnProgressMessage(Message::STARTING_AIS));
+        m_networking.SendMessageAll(TurnProgressMessage(Message::STARTING_AIS));
 
 
     // disconnect any old AI clients
@@ -396,12 +396,6 @@ void ServerApp::SetAIsProcessPriorityToLow(bool set_to_low) {
 }
 
 void ServerApp::HandleMessage(const Message& msg, PlayerConnectionPtr player_connection) {
-    if (msg.SendingPlayer() != player_connection->PlayerID()) {
-        ErrorLogger() << "ServerApp::HandleMessage : Received an message with a sender ID ("
-                      << msg.SendingPlayer() << ") that differs from the sending player connection ID: "
-                      << player_connection->PlayerID() << ".  Ignoring.";
-        return;
-    }
 
     //DebugLogger() << "ServerApp::HandleMessage type " << boost::lexical_cast<std::string>(msg.Type());
 
@@ -409,7 +403,6 @@ void ServerApp::HandleMessage(const Message& msg, PlayerConnectionPtr player_con
     case Message::HOST_SP_GAME:             m_fsm->process_event(HostSPGame(msg, player_connection));       break;
     case Message::START_MP_GAME:            m_fsm->process_event(StartMPGame(msg, player_connection));      break;
     case Message::LOBBY_UPDATE:             m_fsm->process_event(LobbyUpdate(msg, player_connection));      break;
-    case Message::LOBBY_CHAT:               m_fsm->process_event(LobbyChat(msg, player_connection));        break;
     case Message::SAVE_GAME_INITIATE:       m_fsm->process_event(SaveGameRequest(msg, player_connection));  break;
     case Message::TURN_ORDERS:              m_fsm->process_event(TurnOrders(msg, player_connection));       break;
     case Message::CLIENT_SAVE_DATA:         m_fsm->process_event(ClientSaveData(msg, player_connection));   break;
@@ -489,7 +482,7 @@ void ServerApp::SelectNewHost() {
     if (new_host_id == Networking::INVALID_PLAYER_ID) {
         // couldn't find a host... abort
         DebugLogger() << "ServerApp::SelectNewHost : Host disconnected and couldn't find a replacement.";
-        m_networking.SendMessage(ErrorMessage(UserStringNop("SERVER_UNABLE_TO_SELECT_HOST"), false));
+        m_networking.SendMessageAll(ErrorMessage(UserStringNop("SERVER_UNABLE_TO_SELECT_HOST"), false));
     }
 
     // set new host ID
@@ -618,7 +611,7 @@ void ServerApp::NewGameInitConcurrentWithJoiners(
 
     if (active_players_id_setup_data.empty()) {
         ErrorLogger() << "ServerApp::NewGameInitConcurrentWithJoiners found no active players!";
-        m_networking.SendMessage(ErrorMessage(UserStringNop("SERVER_FOUND_NO_ACTIVE_PLAYERS"), true));
+        m_networking.SendMessageAll(ErrorMessage(UserStringNop("SERVER_FOUND_NO_ACTIVE_PLAYERS"), true));
         return;
     }
 
@@ -632,7 +625,7 @@ void ServerApp::NewGameInitConcurrentWithJoiners(
 
     // create universe and empires for players
     DebugLogger() << "ServerApp::NewGameInitConcurrentWithJoiners: Creating Universe";
-    m_networking.SendMessage(TurnProgressMessage(Message::GENERATING_UNIVERSE));
+    m_networking.SendMessageAll(TurnProgressMessage(Message::GENERATING_UNIVERSE));
 
 
     // m_current_turn set above so that every UniverseObject created before game
@@ -726,7 +719,7 @@ bool ServerApp::NewGameInitVerifyJoiners(
     // ensure some reasonable inputs
     if (player_id_setup_data.empty()) {
         ErrorLogger() << "ServerApp::NewGameInitVerifyJoiners passed empty player_id_setup_data.  Aborting";
-        m_networking.SendMessage(ErrorMessage(UserStringNop("SERVER_FOUND_NO_ACTIVE_PLAYERS"), true));
+        m_networking.SendMessageAll(ErrorMessage(UserStringNop("SERVER_FOUND_NO_ACTIVE_PLAYERS"), true));
         return false;
     }
 
@@ -1082,7 +1075,7 @@ void ServerApp::LoadGameInit(const std::vector<PlayerSaveGameData>& player_save_
     // ensure some reasonable inputs
     if (player_save_game_data.empty()) {
         ErrorLogger() << "ServerApp::LoadGameInit passed empty player save game data.  Aborting";
-        m_networking.SendMessage(ErrorMessage(UserStringNop("SERVER_FOUND_NO_ACTIVE_PLAYERS"), true));
+        m_networking.SendMessageAll(ErrorMessage(UserStringNop("SERVER_FOUND_NO_ACTIVE_PLAYERS"), true));
         return;
     }
 
@@ -1323,7 +1316,7 @@ void ServerApp::GenerateUniverse(std::map<int, PlayerSetupData>& player_setup_da
     }
 
     if (!success)
-        ServerApp::GetApp()->Networking().SendMessage(ErrorMessage(UserStringNop("SERVER_UNIVERSE_GENERATION_ERRORS"), false));
+        ServerApp::GetApp()->Networking().SendMessageAll(ErrorMessage(UserStringNop("SERVER_UNIVERSE_GENERATION_ERRORS"), false));
 
 
     DebugLogger() << "Applying first turn effects and updating meters";
@@ -1378,7 +1371,7 @@ void ServerApp::ExecuteScriptedTurnEvents() {
 
     if (!success) {
         ErrorLogger() << "Python scripted turn events failed.";
-        ServerApp::GetApp()->Networking().SendMessage(ErrorMessage(UserStringNop("SERVER_TURN_EVENTS_ERRORS"), false));
+        ServerApp::GetApp()->Networking().SendMessageAll(ErrorMessage(UserStringNop("SERVER_TURN_EVENTS_ERRORS"), false));
     }
 }
 
@@ -2664,7 +2657,7 @@ void ServerApp::PreCombatProcessTurns() {
     DebugLogger() << "ServerApp::ProcessTurns executing orders";
 
     // inform players of order execution
-    m_networking.SendMessage(TurnProgressMessage(Message::PROCESSING_ORDERS));
+    m_networking.SendMessageAll(TurnProgressMessage(Message::PROCESSING_ORDERS));
 
     // clear bombardment state before executing orders, so result after is only
     // determined by what orders set.
@@ -2698,7 +2691,7 @@ void ServerApp::PreCombatProcessTurns() {
     }
 
     // player notifications
-    m_networking.SendMessage(TurnProgressMessage(Message::COLONIZE_AND_SCRAP));
+    m_networking.SendMessageAll(TurnProgressMessage(Message::COLONIZE_AND_SCRAP));
 
     DebugLogger() << "ServerApp::ProcessTurns colonization";
     HandleColonization();
@@ -2717,7 +2710,7 @@ void ServerApp::PreCombatProcessTurns() {
     // process movement phase
 
     // player notifications
-    m_networking.SendMessage(TurnProgressMessage(Message::FLEET_MOVEMENT));
+    m_networking.SendMessageAll(TurnProgressMessage(Message::FLEET_MOVEMENT));
 
 
     // fleet movement
@@ -2751,7 +2744,7 @@ void ServerApp::PreCombatProcessTurns() {
     }
 
     // indicate that the clients are waiting for their new Universes
-    m_networking.SendMessage(TurnProgressMessage(Message::DOWNLOADING));
+    m_networking.SendMessageAll(TurnProgressMessage(Message::DOWNLOADING));
 
     // send partial turn updates to all players after orders and movement
     for (ServerNetworking::const_established_iterator player_it = m_networking.established_begin();
@@ -2768,7 +2761,7 @@ void ServerApp::PreCombatProcessTurns() {
 void ServerApp::ProcessCombats() {
     ScopedTimer timer("ServerApp::ProcessCombats", true);
     DebugLogger() << "ServerApp::ProcessCombats";
-    m_networking.SendMessage(TurnProgressMessage(Message::COMBAT));
+    m_networking.SendMessageAll(TurnProgressMessage(Message::COMBAT));
 
     std::set<int> human_controlled_empire_ids = HumanControlledEmpires(this, m_networking);
     std::vector<CombatInfo> combats;   // map from system ID to CombatInfo for that system
@@ -2901,7 +2894,7 @@ void ServerApp::PostCombatProcessTurns() {
     // process production and growth phase
 
     // notify players that production and growth is being processed
-    m_networking.SendMessage(TurnProgressMessage(Message::EMPIRE_PRODUCTION));
+    m_networking.SendMessageAll(TurnProgressMessage(Message::EMPIRE_PRODUCTION));
     DebugLogger() << "ServerApp::PostCombatProcessTurns effects and meter updates";
 
 
@@ -3073,7 +3066,7 @@ void ServerApp::PostCombatProcessTurns() {
 
 
     // indicate that the clients are waiting for their new gamestate
-    m_networking.SendMessage(TurnProgressMessage(Message::DOWNLOADING));
+    m_networking.SendMessageAll(TurnProgressMessage(Message::DOWNLOADING));
 
 
     // compile map of PlayerInfo, indexed by player ID

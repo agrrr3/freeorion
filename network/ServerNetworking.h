@@ -91,8 +91,8 @@ public:
     /** Sends message \a message to \a player_connection. */
     void SendMessage(const Message& message, PlayerConnectionPtr player_connection);
 
-    /** Sends message \a message to the player indicated in the message. */
-    void SendMessage(const Message& message);
+    /** Sends message \a message to the all players. */
+    void SendMessageAll(const Message& message);
 
     /** Disconnects the server from player \a id. */
     void Disconnect(int id);
