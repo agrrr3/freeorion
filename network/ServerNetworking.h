@@ -88,9 +88,6 @@ public:
     //@}
 
     /** \name Mutators */ //@{
-    /** Sends message \a message to \a player_connection. */
-    void SendMessage(const Message& message, PlayerConnectionPtr player_connection);
-
     /** Sends message \a message to the all players. */
     void SendMessageAll(const Message& message);
 
