@@ -109,7 +109,7 @@ boost::statechart::result WaitingForSPHostAck::react(const HostSPGame& msg) {
 
         return transit<PlayingGame>();
     } catch (const boost::bad_lexical_cast& ex) {
-        ErrorLogger() << "WaitingForSPHostAck::react(const HostSPGame& msg) couldn't parse message text: " << msg.m_message.Text() << " Error: " << ex.what();
+        ErrorLogger() << "WaitingForSPHostAck::react(const HostSPGame& msg) Host id " << msg.m_message.Text() << " is not a number: " << ex.what();
         return transit<IntroMenu>();
     }
 }
@@ -161,7 +161,7 @@ boost::statechart::result WaitingForMPHostAck::react(const HostMPGame& msg) {
 
         return transit<MPLobby>();
     } catch (const boost::bad_lexical_cast& ex) {
-        ErrorLogger() << "WaitingForMPHostAck::react(const HostMPGame& msg) couldn't parse message text: " << msg.m_message.Text() << " Error: " << ex.what();
+        ErrorLogger() << "WaitingForMPHostAck::react(const HostMPGame& msg) Host id " << msg.m_message.Text() << " is not a number: " << ex.what();
         return transit<IntroMenu>();
     }
 }
@@ -212,7 +212,7 @@ boost::statechart::result WaitingForMPJoinAck::react(const JoinGame& msg) {
 
         return transit<MPLobby>();
     } catch (const boost::bad_lexical_cast& ex) {
-        ErrorLogger() << "WaitingForMPJoinAck::react(const JoinGame& msg) couldn't parse message text: " << msg.m_message.Text() << " Error: " << ex.what();
+        ErrorLogger() << "WaitingForMPJoinAck::react(const JoinGame& msg) Host id " << msg.m_message.Text() << " is not a number: " << ex.what();
         return transit<IntroMenu>();
     }
 }
