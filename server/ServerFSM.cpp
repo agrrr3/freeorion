@@ -232,7 +232,7 @@ void ServerFSM::HandleNonLobbyDisconnection(const Disconnection& d) {
                 if ((*it)->PlayerID() == id)
                     continue;
                 // in the future we may find a way to recover from this, but for now we will immediately send a game ending message as well
-                (*it)->SendMessage(EndGameMessage((*it)->PlayerID(), Message::PLAYER_DISCONNECT, player_connection->PlayerName()));
+                (*it)->SendMessage(EndGameMessage(Message::PLAYER_DISCONNECT, player_connection->PlayerName()));
             }
         }
     }
@@ -361,7 +361,7 @@ MPLobby::MPLobby(my_context c) :
     // leaving save game empire id as default
     player_setup_data.m_client_type =           player_connection->GetClientType();
 
-    player_connection->SendMessage(ServerLobbyUpdateMessage(host_id, *m_lobby_data));
+    player_connection->SendMessage(ServerLobbyUpdateMessage(*m_lobby_data));
 }
 
 MPLobby::~MPLobby()
@@ -416,7 +416,7 @@ sc::result MPLobby::react(const Disconnection& d) {
     for (ServerNetworking::const_established_iterator it = server.m_networking.established_begin();
          it != server.m_networking.established_end(); ++it)
     {
-        (*it)->SendMessage(ServerLobbyUpdateMessage((*it)->PlayerID(), *m_lobby_data));
+        (*it)->SendMessage(ServerLobbyUpdateMessage(*m_lobby_data));
     }
 
     return discard_event();
@@ -548,7 +548,7 @@ sc::result MPLobby::react(const JoinGame& msg) {
 
     for (ServerNetworking::const_established_iterator it = server.m_networking.established_begin();
          it != server.m_networking.established_end(); ++it)
-    { (*it)->SendMessage(ServerLobbyUpdateMessage((*it)->PlayerID(), *m_lobby_data)); }
+    { (*it)->SendMessage(ServerLobbyUpdateMessage(*m_lobby_data)); }
 
     return discard_event();
 }
@@ -918,7 +918,7 @@ sc::result MPLobby::react(const LobbyUpdate& msg) {
         // responding to.  TODO: check for add/drop
         if (new_save_file_selected || player_setup_data_changed ||
             player_id != sender->PlayerID() || has_important_changes )
-            player_connection->SendMessage(ServerLobbyUpdateMessage(player_id, *m_lobby_data));
+            player_connection->SendMessage(ServerLobbyUpdateMessage(*m_lobby_data));
     }
 
     return discard_event();
@@ -937,12 +937,12 @@ sc::result MPLobby::react(const PlayerChat& msg) {
     if (receiver == Networking::INVALID_PLAYER_ID) { // the receiver is everyone (except the sender)
         for (ServerNetworking::const_established_iterator it = server.m_networking.established_begin(); it != server.m_networking.established_end(); ++it) {
             if ((*it)->PlayerID() != sender->PlayerID())
-                (*it)->SendMessage(ServerPlayerChatMessage(sender->PlayerID(), (*it)->PlayerID(), data));
+                (*it)->SendMessage(ServerPlayerChatMessage(sender->PlayerID(), data));
         }
     } else {
         ServerNetworking::const_established_iterator it = server.m_networking.GetPlayer(receiver);
         if (it != server.m_networking.established_end())
-            (*it)->SendMessage(ServerPlayerChatMessage(sender->PlayerID(), receiver, data));
+            (*it)->SendMessage(ServerPlayerChatMessage(sender->PlayerID(), data));
     }
 
     return discard_event();
@@ -1392,7 +1392,6 @@ sc::result PlayingGame::react(const PlayerChat& msg) {
             receiver == (*it)->PlayerID())
         {
             (*it)->SendMessage(ServerPlayerChatMessage(sender->PlayerID(),
-                                                       (*it)->PlayerID(),
                                                        data));
         }
     }
@@ -1436,7 +1435,7 @@ sc::result PlayingGame::react(const ModeratorAct& msg) {
         // update player(s) of changed gamestate as result of action
         bool use_binary_serialization = sender->ClientVersionStringMatchesThisServer();
         sender->SendMessage(TurnProgressMessage(Message::DOWNLOADING));
-        sender->SendMessage(TurnPartialUpdateMessage(player_id, server.PlayerEmpireID(player_id),
+        sender->SendMessage(TurnPartialUpdateMessage(server.PlayerEmpireID(player_id),
                                                      GetUniverse(), use_binary_serialization));
     }
 
@@ -1543,9 +1542,7 @@ sc::result WaitingForTurnEnd::react(const TurnOrders& msg) {
          player_it != server.m_networking.established_end(); ++player_it)
     {
         PlayerConnectionPtr player_ctn = *player_it;
-        player_ctn->SendMessage(PlayerStatusMessage(player_ctn->PlayerID(),
-                                                    player_id,
-                                                    Message::WAITING));
+        player_ctn->SendMessage(PlayerStatusMessage(player_id, Message::WAITING));
     }
 
     // inform player who just submitted of their new status.  Note: not sure why
@@ -1571,13 +1568,13 @@ sc::result WaitingForTurnEnd::react(const TurnOrders& msg) {
 
 sc::result WaitingForTurnEnd::react(const RequestObjectID& msg) {
     //if (TRACE_EXECUTION) DebugLogger() << "(ServerFSM) WaitingForTurnEnd.RequestObjectID";
-    msg.m_player_connection->SendMessage(DispatchObjectIDMessage(msg.m_player_connection->PlayerID(), GetUniverse().GenerateObjectID()));
+    msg.m_player_connection->SendMessage(DispatchObjectIDMessage(GetUniverse().GenerateObjectID()));
     return discard_event();
 }
 
 sc::result WaitingForTurnEnd::react(const RequestDesignID& msg) {
     //if (TRACE_EXECUTION) DebugLogger() << "(ServerFSM) WaitingForTurnEnd.RequestDesignID";
-    msg.m_player_connection->SendMessage(DispatchDesignIDMessage(msg.m_player_connection->PlayerID(), GetUniverse().GenerateDesignID()));
+    msg.m_player_connection->SendMessage(DispatchDesignIDMessage(GetUniverse().GenerateDesignID()));
     return discard_event();
 }
 
@@ -1647,7 +1644,7 @@ WaitingForSaveData::WaitingForSaveData(my_context c) :
     {
         PlayerConnectionPtr player = *player_it;
         int player_id = player->PlayerID();
-        player->SendMessage(ServerSaveGameDataRequestMessage(player_id, false));
+        player->SendMessage(ServerSaveGameDataRequestMessage(false));
         m_needed_reponses.insert(player_id);
     }
 }
@@ -1784,8 +1781,7 @@ sc::result ProcessingTurn::react(const ProcessTurn& u) {
                 ++recipient_player_it)
             {
                 const PlayerConnectionPtr& recipient_player_ctn = *recipient_player_it;
-                recipient_player_ctn->SendMessage(PlayerStatusMessage(recipient_player_ctn->PlayerID(),
-                                                                      player_ctn->PlayerID(),
+                recipient_player_ctn->SendMessage(PlayerStatusMessage(player_ctn->PlayerID(),
                                                                       Message::PLAYING_TURN));
             }
         }

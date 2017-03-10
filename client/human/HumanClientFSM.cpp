@@ -313,7 +313,7 @@ boost::statechart::result MPLobby::react(const StartMPGameClicked& a) {
     if (TRACE_EXECUTION) DebugLogger() << "(HumanClientFSM) MPLobby.StartMPGameClicked";
 
     if (Client().Networking().PlayerIsHost(Client().Networking().PlayerID()))
-        Client().Networking().SendMessage(StartMPGameMessage(Client().PlayerID()));
+        Client().Networking().SendMessage(StartMPGameMessage());
     else
         ErrorLogger() << "MPLobby::react received start MP game event but this client is not the host.  Ignoring";
 
