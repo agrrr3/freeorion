@@ -1177,12 +1177,13 @@ void ProductionQueue::Update() {
             queue_item_costs_and_times[key] = empire->ProductionCostAndTime(elem);
     }
 
-
+    DebugLogger() << "ProductionQueue::Update: Set up coroutines";
     // for each supply group, set up coroutines to allocate group PP to queue items
     // TODO check set order
     std::list<std::pair<coro_t::pull_type, std::map<std::set<int>, float>::value_type&>> orchester;
     std::list<coro_t::pull_type> coros;
     for (const std::map<std::set<int>, float>::value_type& group : available_pp) {
+        DebugLogger() << "ProductionQueue::Update: Set up coroutines for a supply group";
         coro_t::pull_type source(
             [&](coro_t::push_type& sink) {
             // fund queue items from supply group PP stuff until unfunded and imperial PP available and allowed
@@ -1192,6 +1193,7 @@ void ProductionQueue::Update() {
 
             //boost::shared_ptr<ProductionQueue::Element> queue_element(ProductionQueue::Element());
             std::pair<int, ProductionQueue::Element&> turn_and_element(turn_dist, ProductionQueue::Element());
+            DebugLogger() << "ProductionQueue::Update: sink " << turn_and_element.second.Dump();
             sink(turn_and_element);
             //   end for element
             // end for turn
@@ -1199,14 +1201,20 @@ void ProductionQueue::Update() {
         coros.push_back(std::move(source)); // vs emplace_back??
         //orchester.push_back(std::make_pair(std::move(source), group));
         //std::pair<float, int> third_result = orchester.back().first().get();
-        coro_t::pull_type& coro_tp = source;
+        //coro_t::pull_type& coro_tp = source;
     }
+    DebugLogger() << "ProductionQueue::Update: Run and Synchronize coroutines";
     // synchronize the coroutines and fund projects from imperial PP stockpile
     for (auto it = coros.begin(); it != coros.end(); ++it) {
         //std::pair<int, ProductionQueue::Element&> p = it->get();
+        DebugLogger() << "ProductionQueue::Update: get().first";
         int turn_diff = it->get().first;
-        auto element = it->get().second;
+        DebugLogger() << "ProductionQueue::Update: get().second";
+        ProductionQueue::Element& element = it->get().second;
+        DebugLogger() << "ProductionQueue::Update: got something";
+        DebugLogger() << "ProductionQueue::Update: got (" << turn_diff <<", "<< element.Dump() << ")";
     }
+    DebugLogger() << "ProductionQueue::Update: run old code";
     /*
     for (auto coro_and_group_it = orchester.begin(); coro_and_group_it != orchester.end(); ++coro_and_group_it) {
         auto coro = coro_and_group_it->first;
