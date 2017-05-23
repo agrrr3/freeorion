@@ -1241,7 +1241,7 @@ void ProductionQueue::Update() {
                 continue;
 
 
-            //DebugLogger()  << "     checking element " << element.item.name << " " << element.item.design_id << " at planet id " << element.location;
+            DebugLogger()  << "     checking element " << element.item.name << " " << element.item.design_id << " at planet id " << element.location;
 
             // get cost and time from cache
             int location_id = (element.item.CostIsProductionLocationInvariant() ? INVALID_OBJECT_ID : element.location);
@@ -1254,7 +1254,7 @@ void ProductionQueue::Update() {
             float additional_pp_to_complete_element = total_item_cost * (1.0f - element.progress); // additional PP, beyond already-accumulated PP to finish this element once
             //DebugLogger()  << " element total cost: " << element_total_cost << "; progress: " << element.progress;
             if (additional_pp_to_complete_element < EPSILON) {
-                //DebugLogger()  << "     will complete next turn";
+                DebugLogger()  << "     will complete next turn";
                 m_queue[sim_queue_original_indices[i]].turns_left_to_next_item = 1;
                 m_queue[sim_queue_original_indices[i]].turns_left_to_completion = 1;
                 continue;
@@ -1267,11 +1267,11 @@ void ProductionQueue::Update() {
             max_turns *= 2;  // double the turns for simulations, because of uncertainties around frontloading
 
             max_turns = std::min(max_turns, static_cast<int>(DP_TURNS - first_turn_pp_available + 1));
-            //DebugLogger() << "     max turns simulated: "<< max_turns << "first turn pp avail: " << (first_turn_pp_available-1);
+            DebugLogger() << "     max turns simulated: "<< max_turns << "first turn pp avail: " << (first_turn_pp_available-1);
 
             float allocation;
             float element_this_turn_limit;
-            //DebugLogger() << "ProductionQueue::Update Queue index   Queue Item: " << element.item.name;
+            DebugLogger() << "ProductionQueue::Update Queue index   Queue Item: " << element.item.name;
 
             // iterate over the turns necessary to complete item
             for (int j = 0; j < max_turns; j++) {
@@ -1287,7 +1287,7 @@ void ProductionQueue::Update() {
                 element.progress += allocation / std::max(EPSILON, total_item_cost);    // add turn's progress due to allocation
                 additional_pp_to_complete_element -= allocation;
                 float item_cost_remaining = total_item_cost*(1.0f - element.progress);
-                //DebugLogger()  << "     allocation: " << allocation << "; new progress: "<< element.progress << " with " << item_cost_remaining << " remaining";
+                DebugLogger()  << "     allocation: " << allocation << "; new progress: "<< element.progress << " with " << item_cost_remaining << " remaining";
                 pp_still_available[first_turn_pp_available+j-1] -= allocation;
                 if (pp_still_available[first_turn_pp_available+j-1] <= 0 ) {
                     pp_still_available[first_turn_pp_available+j-1] = 0;
@@ -1296,7 +1296,7 @@ void ProductionQueue::Update() {
 
                 // check if additional turn's PP allocation was enough to finish next item in element
                 if (item_cost_remaining < EPSILON ) {
-                    //DebugLogger()  << "     finished an item";
+                    DebugLogger()  << "     finished an item";
                     // an item has been completed. 
                     // deduct cost of one item from accumulated PP.  don't set
                     // accumulation to zero, as this would eliminate any partial
@@ -1304,7 +1304,7 @@ void ProductionQueue::Update() {
                     element.progress = std::max(0.0f, element.progress - 1.0f);
                     --element.remaining;  //pretty sure this just effects the dp version & should do even if also doing ORIG_SIMULATOR
 
-                    //DebugLogger() << "ProductionQueue::Recording DP sim results for item " << element.item.name;
+                    DebugLogger() << "ProductionQueue::Recording DP sim results for item " << element.item.name;
 
                     // if this was the first item in the element to be completed in
                     // this simuation, update the original queue element with the
@@ -1316,7 +1316,7 @@ void ProductionQueue::Update() {
                     }
                 }
                 if (!element.remaining) {
-                    //DebugLogger()  << "     finished this element";
+                    DebugLogger()  << "     finished this element";
                     break; // this element all done
                 }
             } //j-loop : turns relative to first_turn_pp_available
