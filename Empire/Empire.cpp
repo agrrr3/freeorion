@@ -1203,17 +1203,6 @@ void ProductionQueue::Update() {
         //std::pair<float, int> third_result = orchester.back().first().get();
         //coro_t::pull_type& coro_tp = source;
     }
-    DebugLogger() << "ProductionQueue::Update: Run and Synchronize coroutines";
-    // synchronize the coroutines and fund projects from imperial PP stockpile
-    for (auto it = coros.begin(); it != coros.end(); ++it) {
-        //std::pair<int, ProductionQueue::Element&> p = it->get();
-        DebugLogger() << "ProductionQueue::Update: get().first";
-        int turn_diff = it->get().first;
-        DebugLogger() << "ProductionQueue::Update: get().second";
-        ProductionQueue::Element& element = it->get().second;
-        DebugLogger() << "ProductionQueue::Update: got something";
-        DebugLogger() << "ProductionQueue::Update: got (" << turn_diff <<", "<< element.Dump() << ")";
-    }
     DebugLogger() << "ProductionQueue::Update: run old code";
     /*
     for (auto coro_and_group_it = orchester.begin(); coro_and_group_it != orchester.end(); ++coro_and_group_it) {
@@ -1333,6 +1322,18 @@ void ProductionQueue::Update() {
             } //j-loop : turns relative to first_turn_pp_available
         } // queue element loop
     } // resource groups loop
+
+    DebugLogger() << "ProductionQueue::Update: Run and Synchronize coroutines";
+    // synchronize the coroutines and fund projects from imperial PP stockpile
+    for (auto it = coros.begin(); it != coros.end(); ++it) {
+        //std::pair<int, ProductionQueue::Element&> p = it->get();
+        DebugLogger() << "ProductionQueue::Update: get().first";
+        int turn_diff = it->get().first;
+        DebugLogger() << "ProductionQueue::Update: get().second";
+        ProductionQueue::Element& element = it->get().second;
+        DebugLogger() << "ProductionQueue::Update: got something";
+        DebugLogger() << "ProductionQueue::Update: got (" << turn_diff << ", " << element.Dump() << ")";
+    }
 
     dp_time_end = boost::posix_time::ptime(boost::posix_time::microsec_clock::local_time()); 
     dp_time = (dp_time_end - dp_time_start).total_microseconds();
