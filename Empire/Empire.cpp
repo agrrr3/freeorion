@@ -1186,23 +1186,24 @@ void ProductionQueue::Update() {
         DebugLogger() << "ProductionQueue::Update: Set up coroutines for a supply group";
         coro_t::pull_type source(
             [&](coro_t::push_type& sink) {
-            // fund queue items from supply group PP stuff until unfunded and imperial PP available and allowed
-            int turn_dist = 0;
-            // for turn
-            //   for queue element
+//          // fund queue items from supply group PP stuff until unfunded and imperial PP available and allowed
+//          int turn_dist = 0;
+//          // for turn
+//          //   for queue element
+//
+//          //boost::shared_ptr<ProductionQueue::Element> queue_element(ProductionQueue::Element());
+//          std::pair<int, ProductionQueue::Element&> turn_and_element(turn_dist, ProductionQueue::Element());
+//          DebugLogger() << "ProductionQueue::Update: sink " << turn_and_element.second.Dump();
+//          sink(turn_and_element);
+//          //   end for element
+//          // end for turn
+//      });
 
-            //boost::shared_ptr<ProductionQueue::Element> queue_element(ProductionQueue::Element());
-            std::pair<int, ProductionQueue::Element&> turn_and_element(turn_dist, ProductionQueue::Element());
-            DebugLogger() << "ProductionQueue::Update: sink " << turn_and_element.second.Dump();
-            sink(turn_and_element);
-            //   end for element
-            // end for turn
-        });
-        coros.push_back(std::move(source)); // vs emplace_back??
+        //coros.push_back(std::move(source)); // vs emplace_back??
         //orchester.push_back(std::make_pair(std::move(source), group));
         //std::pair<float, int> third_result = orchester.back().first().get();
         //coro_t::pull_type& coro_tp = source;
-    }
+//    }
     DebugLogger() << "ProductionQueue::Update: run old code";
     /*
     for (auto coro_and_group_it = orchester.begin(); coro_and_group_it != orchester.end(); ++coro_and_group_it) {
@@ -1213,7 +1214,7 @@ void ProductionQueue::Update() {
     }
     */
 
-    for (const std::map<std::set<int>, float>::value_type& group : available_pp) {
+//    for (const std::map<std::set<int>, float>::value_type& group : available_pp) {
         unsigned int first_turn_pp_available = 1; //the first turn any pp in this resource group is available to the next item for this group
         unsigned int turn_jump = 0;
         //pp_still_available[turn-1] gives the PP still available in this resource pool at turn "turn"
@@ -1232,6 +1233,7 @@ void ProductionQueue::Update() {
             if (first_turn_pp_available > DP_TURNS) {
                 DebugLogger()  << "ProductionQueue::Update: Projections for Resource Group halted at " 
                                << DP_TURNS << " turns; remaining items in this RG marked completing 'Never'.";
+// XXX probably do something
                 break; // this resource group is allocated-out for span of simulation; remaining items in group left as never completing
             }
 
@@ -1284,6 +1286,10 @@ void ProductionQueue::Update() {
                 //DebugLogger()  << "     turn: " << j << "; max_pp_needed: " << additional_pp_to_complete_element << "; per turn limit: " << element_per_turn_limit << "; pp stil avail: " << pp_still_available[first_turn_pp_available+j-1];
                 element_this_turn_limit = CalculateProductionPerTurnLimit(element, item_cost, build_turns);
                 allocation = std::max(0.0f, std::min(element_this_turn_limit, pp_still_available[first_turn_pp_available+j-1]));
+// XXX probably add imperial reserve
+std::pair<int, ProductionQueue::Element&> turn_and_element(first_turn_pp_available + j - 1, element);
+DebugLogger() << "ProductionQueue::Update: sink " << turn_and_element.second.Dump();
+sink(turn_and_element);
                 element.progress += allocation / std::max(EPSILON, total_item_cost);    // add turn's progress due to allocation
                 additional_pp_to_complete_element -= allocation;
                 float item_cost_remaining = total_item_cost*(1.0f - element.progress);
@@ -1321,6 +1327,8 @@ void ProductionQueue::Update() {
                 }
             } //j-loop : turns relative to first_turn_pp_available
         } // queue element loop
+}); // closing the coroutine setup
+coros.push_back(std::move(source)); // vs emplace_back?? // remember the coroutine
     } // resource groups loop
 
     DebugLogger() << "ProductionQueue::Update: Run and Synchronize coroutines";
