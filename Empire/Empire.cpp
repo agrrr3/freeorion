@@ -1286,10 +1286,6 @@ void ProductionQueue::Update() {
                 //DebugLogger()  << "     turn: " << j << "; max_pp_needed: " << additional_pp_to_complete_element << "; per turn limit: " << element_per_turn_limit << "; pp stil avail: " << pp_still_available[first_turn_pp_available+j-1];
                 element_this_turn_limit = CalculateProductionPerTurnLimit(element, item_cost, build_turns);
                 allocation = std::max(0.0f, std::min(element_this_turn_limit, pp_still_available[first_turn_pp_available+j-1]));
-// XXX probably add imperial reserve
-std::pair<int, ProductionQueue::Element&> turn_and_element(first_turn_pp_available + j - 1, element);
-DebugLogger() << "ProductionQueue::Update: sink " << turn_and_element.second.Dump();
-sink(turn_and_element);
                 element.progress += allocation / std::max(EPSILON, total_item_cost);    // add turn's progress due to allocation
                 additional_pp_to_complete_element -= allocation;
                 float item_cost_remaining = total_item_cost*(1.0f - element.progress);
@@ -1299,7 +1295,13 @@ sink(turn_and_element);
                     pp_still_available[first_turn_pp_available+j-1] = 0;
                     ++turn_jump;
                 }
-
+if (allocation < element_this_turn_limit) { // item not finished
+    // FIXME multiple items in the element most certainly are wrong
+    // XXX probably add imperial reserve
+    std::pair<int, ProductionQueue::Element&> turn_and_element(first_turn_pp_available + j - 1, element);
+    DebugLogger() << "ProductionQueue::Update: sink " << turn_and_element.second.Dump();
+    sink(turn_and_element);
+}
                 // check if additional turn's PP allocation was enough to finish next item in element
                 if (item_cost_remaining < EPSILON ) {
                     DebugLogger()  << "     finished an item";
@@ -1327,6 +1329,11 @@ sink(turn_and_element);
                 }
             } //j-loop : turns relative to first_turn_pp_available
         } // queue element loop
+{ // return control using an element(?)
+    std::pair<int, ProductionQueue::Element&> turn_and_element(-1, ProductionQueue::Element());
+    DebugLogger() << "ProductionQueue::Update: sink " << turn_and_element.second.Dump();
+    sink(turn_and_element);
+}
 }); // closing the coroutine setup
 coros.push_back(std::move(source)); // vs emplace_back?? // remember the coroutine
     } // resource groups loop
@@ -1334,8 +1341,16 @@ coros.push_back(std::move(source)); // vs emplace_back?? // remember the corouti
     DebugLogger() << "ProductionQueue::Update: Run and Synchronize coroutines";
     // synchronize the coroutines and fund projects from imperial PP stockpile
     for (auto it = coros.begin(); it != coros.end(); ++it) {
+        //XXX problem: how do i check if no element was sunk
+        //coro_t::pull_type
+        //     typedef boost::coroutines2::coroutine<std::pair<int, ProductionQueue::Element&>> coro_t;
         //std::pair<int, ProductionQueue::Element&> p = it->get();
+        if (!&*it) { // didnt help preventing nullptr on it-get()
+            DebugLogger() << "ProductionQueue::Update: Skip coroutine without result";
+            continue;
+        }
         DebugLogger() << "ProductionQueue::Update: get().first";
+        std::pair<int, ProductionQueue::Element&> p = it->get();
         int turn_diff = it->get().first;
         DebugLogger() << "ProductionQueue::Update: get().second";
         ProductionQueue::Element& element = it->get().second;
