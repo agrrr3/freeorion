@@ -1329,23 +1329,15 @@ if (allocation < element_this_turn_limit) { // item not finished
                 }
             } //j-loop : turns relative to first_turn_pp_available
         } // queue element loop
-{ // return control using an element(?)
-    std::pair<int, ProductionQueue::Element&> turn_and_element(-1, ProductionQueue::Element());
-    DebugLogger() << "ProductionQueue::Update: sink " << turn_and_element.second.Dump();
-    sink(turn_and_element);
-}
 }); // closing the coroutine setup
 coros.push_back(std::move(source)); // vs emplace_back?? // remember the coroutine
     } // resource groups loop
 
     DebugLogger() << "ProductionQueue::Update: Run and Synchronize coroutines";
     // synchronize the coroutines and fund projects from imperial PP stockpile
-    for (auto it = coros.begin(); it != coros.end(); ++it) {
-        //XXX problem: how do i check if no element was sunk
-        //coro_t::pull_type
-        //     typedef boost::coroutines2::coroutine<std::pair<int, ProductionQueue::Element&>> coro_t;
-        //std::pair<int, ProductionQueue::Element&> p = it->get();
-        if (!&*it) { // didnt help preventing nullptr on it-get()
+    for (std::list<coro_t::pull_type>::iterator it = coros.begin(); it != coros.end(); ++it) {
+        coro_t::pull_type& ptp = *it;
+        if (!ptp) { 
             DebugLogger() << "ProductionQueue::Update: Skip coroutine without result";
             continue;
         }
