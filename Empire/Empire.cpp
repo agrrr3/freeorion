@@ -1335,9 +1335,8 @@ coros.push_back(std::move(source)); // vs emplace_back?? // remember the corouti
 
     DebugLogger() << "ProductionQueue::Update: Run and Synchronize coroutines";
     // synchronize the coroutines and fund projects from imperial PP stockpile
-    for (std::list<coro_t::pull_type>::iterator it = coros.begin(); it != coros.end(); ++it) {
-        coro_t::pull_type& ptp = *it;
-        if (!ptp) { 
+    for (auto it = coros.begin(); it != coros.end(); ++it) {
+        if (!*it) { 
             DebugLogger() << "ProductionQueue::Update: Skip coroutine without result";
             continue;
         }
