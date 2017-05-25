@@ -1224,6 +1224,7 @@ void ProductionQueue::Update() {
         std::vector<int>::const_iterator group_begin = this_group_elements.begin();
         std::vector<int>::const_iterator group_end = this_group_elements.end();
         // cycle through items on queue, if in this resource group then allocate production costs over time against those available to group
+        DebugLogger() << "ProductionQueue::Update: this_group_elements " << this_group_elements.size();
         for (std::vector<int>::const_iterator el_it = group_begin;
              (el_it != group_end) && ((boost::posix_time::ptime(boost::posix_time::microsec_clock::local_time())-dp_time_start).total_microseconds()*1e-6 < DP_TOO_LONG_TIME);
              ++el_it)
@@ -1301,6 +1302,7 @@ if (allocation < element_this_turn_limit) { // item not finished
     std::pair<int, ProductionQueue::Element&> turn_and_element(first_turn_pp_available + j - 1, element);
     DebugLogger() << "ProductionQueue::Update: sink " << turn_and_element.second.Dump();
     sink(turn_and_element);
+    DebugLogger() << "ProductionQueue::Update: Carry on after sink " << turn_and_element.second.Dump();
 }
                 // check if additional turn's PP allocation was enough to finish next item in element
                 if (item_cost_remaining < EPSILON ) {
@@ -1335,11 +1337,16 @@ coros.push_back(std::move(source)); // vs emplace_back?? // remember the corouti
 
     DebugLogger() << "ProductionQueue::Update: Run and Synchronize coroutines";
     // synchronize the coroutines and fund projects from imperial PP stockpile
+    bool finished = false;
+    while (!finished) {
+        finished = true;
+        DebugLogger() << "ProductionQueue::Update: Running a round of coroutine computation for all supply groups";
     for (auto it = coros.begin(); it != coros.end(); ++it) {
         if (!*it) { 
             DebugLogger() << "ProductionQueue::Update: Skip coroutine without result";
             continue;
         }
+        finished = false;
         DebugLogger() << "ProductionQueue::Update: get().first";
         std::pair<int, ProductionQueue::Element&> p = it->get();
         int turn_diff = it->get().first;
@@ -1347,6 +1354,8 @@ coros.push_back(std::move(source)); // vs emplace_back?? // remember the corouti
         ProductionQueue::Element& element = it->get().second;
         DebugLogger() << "ProductionQueue::Update: got something";
         DebugLogger() << "ProductionQueue::Update: got (" << turn_diff << ", " << element.Dump() << ")";
+        (*it)(); // return control
+    }
     }
 
     dp_time_end = boost::posix_time::ptime(boost::posix_time::microsec_clock::local_time()); 
