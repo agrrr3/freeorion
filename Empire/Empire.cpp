@@ -1340,11 +1340,20 @@ coros.push_back(std::move(source)); // vs emplace_back?? // remember the corouti
     if (empire->GetResourcePool(RE_INDUSTRY)) {
         imperial_pp_available = empire->GetResourcePool(RE_INDUSTRY)->Stockpile();
     }
-    std::vector<ProductionQueue::Element &> imperial_projects;
+// better to use std::reference_wrapper (?) than copying all that queue elements?
+//  ProductionQueue::QueueType imperial_projects;
+    std::vector<std::reference_wrapper<ProductionQueue::Element>> imperial_projects;
     if (imperial_pp_available > 0.0f) {
-        imperial_projects = std::vector<ProductionQueue::Element &>(m_queue.size());
-        auto is_imperial_project = [](ProductionQueue::Element& queue_element) { return queue_element.allowed_imperial_stockpile_use; };
-//        std::copy_if(m_queue.begin(), m_queue.end(), imperial_projects, is_imperial_project);
+//      imperial_projects = std::vector<ProductionQueue::Element *>(m_queue.size());
+//      auto is_imperial_project = [](ProductionQueue::Element queue_element) { return queue_element.allowed_imperial_stockpile_use; };
+//      std::copy_if(m_queue.begin(), m_queue.end(), imperial_projects, is_imperial_project);
+        for (auto queue_element : imperial_projects) {
+//          if (queue_element.allowed_imperial_stockpile_use) {
+//              imperial_projects.push_back(queue_element);
+            if (queue_element.get().allowed_imperial_stockpile_use) {
+                  imperial_projects.push_back(std::ref(queue_element));
+            }
+        }
     }
     bool skip_imperial_pp = imperial_pp_available > 0.0f || imperial_projects.size() == 0;
 
@@ -1366,7 +1375,7 @@ coros.push_back(std::move(source)); // vs emplace_back?? // remember the corouti
             }
         }
 
-        std::vector<ProductionQueue::Element&> eligible_imperial_projects;
+        std::vector<std::reference_wrapper<ProductionQueue::Element>> eligible_imperial_projects;
     for (auto it = coros.begin(); it != coros.end(); ++it) {
         if (!*it) {
             DebugLogger() << "ProductionQueue::Update: Skip coroutine without result";
@@ -1381,7 +1390,7 @@ coros.push_back(std::move(source)); // vs emplace_back?? // remember the corouti
         DebugLogger() << "ProductionQueue::Update: get().second";
         ProductionQueue::Element& element = it->get().second;
                 if (turn_diff == minimal_turn) {
-//                    eligible_imperial_projects.push_back(element);
+                    eligible_imperial_projects.push_back(std::ref(element));
                 }
         DebugLogger() << "ProductionQueue::Update: got something";
         DebugLogger() << "ProductionQueue::Update: got (" << turn_diff << ", " << element.Dump() << ")";
