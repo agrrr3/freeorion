@@ -1335,28 +1335,82 @@ if (allocation < element_this_turn_limit) { // item not finished
 coros.push_back(std::move(source)); // vs emplace_back?? // remember the coroutine
     } // resource groups loop
 
+    DebugLogger() << "ProductionQueue::Update: Prepare imperial stockpile use";
+    float imperial_pp_available = 0.0f;
+    if (empire->GetResourcePool(RE_INDUSTRY)) {
+        imperial_pp_available = empire->GetResourcePool(RE_INDUSTRY)->Stockpile();
+    }
+    std::vector<ProductionQueue::Element &> imperial_projects;
+    if (imperial_pp_available > 0.0f) {
+        imperial_projects = std::vector<ProductionQueue::Element &>(m_queue.size());
+        auto is_imperial_project = [](ProductionQueue::Element& queue_element) { return queue_element.allowed_imperial_stockpile_use; };
+//        std::copy_if(m_queue.begin(), m_queue.end(), imperial_projects, is_imperial_project);
+    }
+    bool skip_imperial_pp = imperial_pp_available > 0.0f || imperial_projects.size() == 0;
+
     DebugLogger() << "ProductionQueue::Update: Run and Synchronize coroutines";
     // synchronize the coroutines and fund projects from imperial PP stockpile
     bool finished = false;
     while (!finished) {
         finished = true;
         DebugLogger() << "ProductionQueue::Update: Running a round of coroutine computation for all supply groups";
+        DebugLogger() << "Find minimal turn";
+        int minimal_turn = INT_MAX;
+        if (imperial_pp_available > 0.0f && !skip_imperial_pp) {
+            for (auto it = coros.begin(); it != coros.end(); ++it) {
+                if (!*it) {
+                    DebugLogger() << "ProductionQueue::Update: Skip coroutine without result";
+                    continue;
+                }
+                int minimal_turn = std::min(minimal_turn, it->get().first);
+            }
+        }
+
+        std::vector<ProductionQueue::Element&> eligible_imperial_projects;
     for (auto it = coros.begin(); it != coros.end(); ++it) {
-        if (!*it) { 
+        if (!*it) {
             DebugLogger() << "ProductionQueue::Update: Skip coroutine without result";
             continue;
         }
+            DebugLogger() << "ProductionQueue::Update: Encountered unfunded production item";
         finished = false;
+            if (imperial_pp_available > 0.0f && !skip_imperial_pp) {
         DebugLogger() << "ProductionQueue::Update: get().first";
         std::pair<int, ProductionQueue::Element&> p = it->get();
         int turn_diff = it->get().first;
         DebugLogger() << "ProductionQueue::Update: get().second";
         ProductionQueue::Element& element = it->get().second;
+                if (turn_diff == minimal_turn) {
+//                    eligible_imperial_projects.push_back(element);
+                }
         DebugLogger() << "ProductionQueue::Update: got something";
         DebugLogger() << "ProductionQueue::Update: got (" << turn_diff << ", " << element.Dump() << ")";
+        }
+            else {
+                DebugLogger() << "ProductionQueue::Update: No imperial funding. Either no PP left, or no projects to fund.";
+            }
+        }
+        DebugLogger() << "ProductionQueue::Update: Finished collecting projects eligible for funding this turn.";
+
+        DebugLogger() << "ProductionQueue::Update: Fund imperial projects in queue order";
+        for (auto imperial_project = imperial_projects.begin(); imperial_project != imperial_projects.end(); ++imperial_project) {
+//          auto imperial_project_to_fund = std::find(eligible_imperial_projects.begin(), eligible_imperial_projects.end(), imperial_project);
+//          DebugLogger() << "ProductionQueue::Update: Will fund " << imperial_project_to_fund->Dump() << " imperial project in turn " << minimal_turn << ".";
+        }
+
+        for (auto it = coros.begin(); it != coros.end(); ++it) {
+            if (!*it) {
+                DebugLogger() << "ProductionQueue::Update: Skip coroutine without result";
+                continue;
+            }
+
+            if (it->get().first == minimal_turn) {
+                DebugLogger() << "ProductionQueue::Update: Returning control to coroutine.";
         (*it)(); // return control
     }
     }
+    } 
+    DebugLogger() << "ProductionQueue::Update: All coroutines are finished";
 
     dp_time_end = boost::posix_time::ptime(boost::posix_time::microsec_clock::local_time()); 
     dp_time = (dp_time_end - dp_time_start).total_microseconds();
