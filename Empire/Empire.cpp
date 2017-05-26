@@ -1371,7 +1371,7 @@ coros.push_back(std::move(source)); // vs emplace_back?? // remember the corouti
                     DebugLogger() << "ProductionQueue::Update: Skip coroutine without result";
                     continue;
                 }
-                int minimal_turn = std::min(minimal_turn, it->get().first);
+                minimal_turn = std::min(minimal_turn, it->get().first);
             }
         }
 
@@ -1406,6 +1406,7 @@ coros.push_back(std::move(source)); // vs emplace_back?? // remember the corouti
 //          auto imperial_project_to_fund = std::find(eligible_imperial_projects.begin(), eligible_imperial_projects.end(), imperial_project);
 //          DebugLogger() << "ProductionQueue::Update: Will fund " << imperial_project_to_fund->Dump() << " imperial project in turn " << minimal_turn << ".";
         }
+        DebugLogger() << "ProductionQueue::Update: Finished funding imperial projects";
 
         for (auto it = coros.begin(); it != coros.end(); ++it) {
             if (!*it) {
