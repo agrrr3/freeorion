@@ -36,7 +36,18 @@
 namespace {
     // Coroutine for simulating production (partial return if item needs PP from imperial stockpile)
     // Parameter is item and turn of simulation
-    typedef boost::coroutines2::coroutine<std::pair<int, ProductionQueue::Element&>> coro_t;
+    typedef boost::coroutines2::coroutine<std::tuple<int, ProductionQueue::Element&, float>> coro_t;
+    typedef struct   {
+        ProductionQueue::Element & project; 
+        float todo_pp;
+//        eligible_imperial_project_t(ProductionQueue::Element project, float todo_pp);
+    } eligible_imperial_project_t ;
+    /*
+    eligible_imperial_project_t::eligible_imperial_project_t(ProductionQueue::Element project, float todo_pp) {
+        project = project;
+        todo_pp = todo_pp;
+    }
+    */
     const float EPSILON = 0.01f;
     const std::string EMPTY_STRING;
 
@@ -334,6 +345,13 @@ namespace {
         }
         DebugLogger() << "========= XXX After SetProdQueueElementSpending stockpile is " << empire->GetResourcePool(RE_INDUSTRY)->StockpileAssigned() << " PP) ========";
     }
+    /*
+    eligible_imperial_project_t::eligible_imperial_project_t(ProductionQueue::Element project2, float todo_pp2)
+    {
+        project = project2;
+        todo_pp = todo_pp2;
+    }
+    */
 }
 
 ////////////////////////////////////////
@@ -1177,6 +1195,36 @@ void ProductionQueue::Update() {
             queue_item_costs_and_times[key] = empire->ProductionCostAndTime(elem);
     }
 
+    DebugLogger() << "ProductionQueue::Update: Prepare imperial stockpile use";
+    float imperial_pp_available = 0.0f;
+    if (empire->GetResourcePool(RE_INDUSTRY)) {
+        imperial_pp_available = empire->GetResourcePool(RE_INDUSTRY)->Stockpile();
+    }
+    // better to use std::reference_wrapper (?) than copying all that queue elements?
+    //  ProductionQueue::QueueType imperial_projects;
+    std::vector<std::reference_wrapper<ProductionQueue::Element>> imperial_projects;
+    // Limit use of imperial stockpile to the current extraction limit
+    float max_imperial_pp_allocations = empire->GetMeter("METER_IMPERIAL_PP_EXTRACT_LIMIT")->Current();
+    if (imperial_pp_available > 0.0f) {
+        //      imperial_projects = std::vector<ProductionQueue::Element *>(m_queue.size());
+        //      auto is_imperial_project = [](ProductionQueue::Element queue_element) { return queue_element.allowed_imperial_stockpile_use; };
+        //      std::copy_if(m_queue.begin(), m_queue.end(), imperial_projects, is_imperial_project);
+        for (auto queue_element : dpsim_queue) {
+            //          if (queue_element.allowed_imperial_stockpile_use) {
+            //              imperial_projects.push_back(queue_element);
+            if (queue_element.allowed_imperial_stockpile_use) {
+                DebugLogger() << "ProductionQueue::Update: There is a very imperial project " << queue_element.Dump();
+
+                imperial_projects.push_back(std::ref(queue_element));
+                if (imperial_projects.back().get().Dump() != queue_element.Dump()) {
+                    ErrorLogger() << "ProductionQueue::Update: FIXME seems imperial project was wrongly saved: " << imperial_projects.back().get().Dump();
+                }
+            }
+        }
+
+    }
+    bool skip_imperial_pp = imperial_pp_available <= 0.0f || imperial_projects.size() == 0;
+
     DebugLogger() << "ProductionQueue::Update: Set up coroutines";
     // for each supply group, set up coroutines to allocate group PP to queue items
     // TODO check set order
@@ -1204,7 +1252,7 @@ void ProductionQueue::Update() {
         //std::pair<float, int> third_result = orchester.back().first().get();
         //coro_t::pull_type& coro_tp = source;
 //    }
-    DebugLogger() << "ProductionQueue::Update: run old code";
+    DebugLogger() << "ProductionQueue::Update: running coroutine code for a supply group";
     /*
     for (auto coro_and_group_it = orchester.begin(); coro_and_group_it != orchester.end(); ++coro_and_group_it) {
         auto coro = coro_and_group_it->first;
@@ -1226,9 +1274,12 @@ void ProductionQueue::Update() {
         // cycle through items on queue, if in this resource group then allocate production costs over time against those available to group
         DebugLogger() << "ProductionQueue::Update: this_group_elements " << this_group_elements.size();
         for (std::vector<int>::const_iterator el_it = group_begin;
-             (el_it != group_end) && ((boost::posix_time::ptime(boost::posix_time::microsec_clock::local_time())-dp_time_start).total_microseconds()*1e-6 < DP_TOO_LONG_TIME);
+             (el_it != group_end)
+//            && ((boost::posix_time::ptime(boost::posix_time::microsec_clock::local_time())-dp_time_start).total_microseconds()*1e-6 < DP_TOO_LONG_TIME
+;
              ++el_it)
         {
+
             first_turn_pp_available += turn_jump;
             turn_jump = 0;
             if (first_turn_pp_available > DP_TURNS) {
@@ -1298,11 +1349,30 @@ void ProductionQueue::Update() {
                 }
 if (allocation < element_this_turn_limit) { // item not finished
     // FIXME multiple items in the element most certainly are wrong
-    // XXX probably add imperial reserve
-    std::pair<int, ProductionQueue::Element&> turn_and_element(first_turn_pp_available + j - 1, element);
-    DebugLogger() << "ProductionQueue::Update: sink " << turn_and_element.second.Dump();
-    sink(turn_and_element);
-    DebugLogger() << "ProductionQueue::Update: Carry on after sink " << turn_and_element.second.Dump();
+//TODO sink all (or first?) imperial projects in this turn in this group 
+// FIXME should only sink current element; should do sth with turn updates instead
+    std::vector<int>::const_iterator el_it_copy = el_it;
+    for (; el_it_copy != group_end ; ++el_it_copy) {
+    unsigned int imp_i = *el_it_copy;
+    ProductionQueue::Element& imp_element = dpsim_queue[imp_i];
+    if (imp_element.paused) {
+    } else
+    if (!imp_element.allowed_imperial_stockpile_use) {
+        DebugLogger() << "ProductionQueue::Update: Project not eligible for imperial funding, carry on.";
+    } else 
+    if (skip_imperial_pp || imperial_pp_available <= 0.0f) {
+        DebugLogger() << "ProductionQueue::Update: No more imperial funding.";
+    } else {
+    DebugLogger() << "ProductionQueue::Update: Fundable imperial project.";
+    int turn_diff = first_turn_pp_available + j - 1;
+// FIXME this wrong
+    float todo_pp = element_this_turn_limit - allocation;
+    std::tuple<int, ProductionQueue::Element &,float> turn__element__cost(turn_diff, imp_element, todo_pp);
+    DebugLogger() << "ProductionQueue::Update: sink (" << turn_diff << ",  " << imp_element.Dump() << ", " << todo_pp << "PP)";
+    sink(turn__element__cost);
+    DebugLogger() << "ProductionQueue::Update: Carry on after sink (" << turn_diff << ",  " << imp_element.Dump() << ", " << todo_pp << "PP)";
+    }
+    } // end for
 }
                 // check if additional turn's PP allocation was enough to finish next item in element
                 if (item_cost_remaining < EPSILON ) {
@@ -1335,28 +1405,6 @@ if (allocation < element_this_turn_limit) { // item not finished
 coros.push_back(std::move(source)); // vs emplace_back?? // remember the coroutine
     } // resource groups loop
 
-    DebugLogger() << "ProductionQueue::Update: Prepare imperial stockpile use";
-    float imperial_pp_available = 0.0f;
-    if (empire->GetResourcePool(RE_INDUSTRY)) {
-        imperial_pp_available = empire->GetResourcePool(RE_INDUSTRY)->Stockpile();
-    }
-// better to use std::reference_wrapper (?) than copying all that queue elements?
-//  ProductionQueue::QueueType imperial_projects;
-    std::vector<std::reference_wrapper<ProductionQueue::Element>> imperial_projects;
-    if (imperial_pp_available > 0.0f) {
-//      imperial_projects = std::vector<ProductionQueue::Element *>(m_queue.size());
-//      auto is_imperial_project = [](ProductionQueue::Element queue_element) { return queue_element.allowed_imperial_stockpile_use; };
-//      std::copy_if(m_queue.begin(), m_queue.end(), imperial_projects, is_imperial_project);
-        for (auto queue_element : imperial_projects) {
-//          if (queue_element.allowed_imperial_stockpile_use) {
-//              imperial_projects.push_back(queue_element);
-            if (queue_element.get().allowed_imperial_stockpile_use) {
-                  imperial_projects.push_back(std::ref(queue_element));
-            }
-        }
-    }
-    bool skip_imperial_pp = imperial_pp_available > 0.0f || imperial_projects.size() == 0;
-
     DebugLogger() << "ProductionQueue::Update: Run and Synchronize coroutines";
     // synchronize the coroutines and fund projects from imperial PP stockpile
     bool finished = false;
@@ -1364,18 +1412,21 @@ coros.push_back(std::move(source)); // vs emplace_back?? // remember the corouti
         finished = true;
         DebugLogger() << "ProductionQueue::Update: Running a round of coroutine computation for all supply groups";
         DebugLogger() << "Find minimal turn";
-        int minimal_turn = INT_MAX;
+        int minimal_turn = INT_MAX; // max_turns; 
         if (imperial_pp_available > 0.0f && !skip_imperial_pp) {
             for (auto it = coros.begin(); it != coros.end(); ++it) {
                 if (!*it) {
                     DebugLogger() << "ProductionQueue::Update: Skip coroutine without result";
                     continue;
                 }
-                minimal_turn = std::min(minimal_turn, it->get().first);
+                DebugLogger() << "Coroutine stopped for turn " << std::get<0>(it->get());
+                minimal_turn = std::min(minimal_turn, std::get<0>(it->get()));
             }
         }
+        DebugLogger() << "Found minimal turn " << minimal_turn;
 
-        std::vector<std::reference_wrapper<ProductionQueue::Element>> eligible_imperial_projects;
+        //std::vector<std::reference_wrapper<ProductionQueue::Element>> eligible_imperial_projects;
+        std::vector<eligible_imperial_project_t> eligible_imperial_projects;
     for (auto it = coros.begin(); it != coros.end(); ++it) {
         if (!*it) {
             DebugLogger() << "ProductionQueue::Update: Skip coroutine without result";
@@ -1385,12 +1436,14 @@ coros.push_back(std::move(source)); // vs emplace_back?? // remember the corouti
         finished = false;
             if (imperial_pp_available > 0.0f && !skip_imperial_pp) {
         DebugLogger() << "ProductionQueue::Update: get().first";
-        std::pair<int, ProductionQueue::Element&> p = it->get();
-        int turn_diff = it->get().first;
+        auto p = it->get();
+        int turn_diff;
+        float todo_pp;
+        std::tie(turn_diff, std::ignore, todo_pp) = it->get();
+        ProductionQueue::Element& element = std::get<1>(it->get());
         DebugLogger() << "ProductionQueue::Update: get().second";
-        ProductionQueue::Element& element = it->get().second;
                 if (turn_diff == minimal_turn) {
-                    eligible_imperial_projects.push_back(std::ref(element));
+                    eligible_imperial_projects.push_back(eligible_imperial_project_t{ element, todo_pp });
                 }
         DebugLogger() << "ProductionQueue::Update: got something";
         DebugLogger() << "ProductionQueue::Update: got (" << turn_diff << ", " << element.Dump() << ")";
@@ -1402,22 +1455,53 @@ coros.push_back(std::move(source)); // vs emplace_back?? // remember the corouti
         DebugLogger() << "ProductionQueue::Update: Finished collecting projects eligible for funding this turn.";
 
         DebugLogger() << "ProductionQueue::Update: Fund imperial projects in queue order";
-        for (auto imperial_project = imperial_projects.begin(); imperial_project != imperial_projects.end(); ++imperial_project) {
-//          auto imperial_project_to_fund = std::find(eligible_imperial_projects.begin(), eligible_imperial_projects.end(), imperial_project);
-//          DebugLogger() << "ProductionQueue::Update: Will fund " << imperial_project_to_fund->Dump() << " imperial project in turn " << minimal_turn << ".";
+        float dp_imperial_pp_allocations = 0.0f;
+        for (auto imperial_project_ref : imperial_projects) {
+            if (imperial_pp_available <= 0.0f) {
+                break;
+            }
+          //auto imperial_project_to_fund = std::find(eligible_imperial_projects.begin(), eligible_imperial_projects.end(), imperial_project);
+            auto imperial_project = imperial_project_ref.get();
+            for (auto eligible_project__todo_pp : eligible_imperial_projects) {
+                ProductionQueue::Element* eligible_project;
+                float dp_imperial_allocation_requested;
+                //std::tie(eligible_project, dp_imperial_allocation_requested) = eligible_project__todo_pp;
+                eligible_project = &eligible_project__todo_pp.project;
+                dp_imperial_allocation_requested = eligible_project__todo_pp.todo_pp;
+// FIXME actually i'd need queue indices here
+                if (imperial_project.Dump() == eligible_project->Dump()) {
+                    DebugLogger() << "ProductionQueue::Update: Will fund " << imperial_project.Dump() << " imperial project in turn " << minimal_turn << ".";      
+///             element.progress += allocation / std::max(EPSILON, total_item_cost);    // add turn's progress due to allocation
+//              additional_pp_to_complete_element -= allocation;
+//              float item_cost_remaining = total_item_cost*(1.0f - element.progress);
+                //bugLogger()  << "     allocation: " << allocation << "; new progress: "<< element.progress << " with " << item_cost_remaining << " remaining";
+                    float max_imperial_allocation = std::max(0.0f, max_imperial_pp_allocations - dp_imperial_pp_allocations);
+                    float dp_imperial_allocation = std::max(0.0f, std::min(dp_imperial_allocation_requested, max_imperial_pp_allocations));
+                    dp_imperial_pp_allocations += dp_imperial_allocation;
+                    DebugLogger() << "... allocating from imperial PP stockpile" << dp_imperial_allocation << " (Sum of allocations " << dp_imperial_pp_allocations << "/" << max_imperial_pp_allocations << ")";
+                    // allocate pp
+                    imperial_project.allocated_pp = std::max(imperial_project.allocated_pp + dp_imperial_allocation, EPSILON);
+
+                } else {
+                    DebugLogger() << "ProductionQueue::Update: Will not fund " << imperial_project.Dump() << " imperial project in turn " << minimal_turn << ".";
+                }
+            }
         }
         DebugLogger() << "ProductionQueue::Update: Finished funding imperial projects";
 
-        for (auto it = coros.begin(); it != coros.end(); ++it) {
-            if (!*it) {
+        for (auto exe = coros.begin(); exe != coros.end(); ++exe) {
+            if (!*exe) {
                 DebugLogger() << "ProductionQueue::Update: Skip coroutine without result";
                 continue;
             }
 
-            if (it->get().first == minimal_turn) {
+            if (std::get<0>(exe->get()) <= minimal_turn) {
                 DebugLogger() << "ProductionQueue::Update: Returning control to coroutine.";
-        (*it)(); // return control
+        (*exe)(); // return control
     }
+            else {
+                DebugLogger() << "Not yet returning control to coroutine. Will in turn " << std::get<0>(exe->get()) << " item " << std::get<1>(exe->get()).Dump() << " needs " << std::get<2>(exe->get()) << " PP";
+            }
     }
     } 
     DebugLogger() << "ProductionQueue::Update: All coroutines are finished";
