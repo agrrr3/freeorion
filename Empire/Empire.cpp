@@ -1209,21 +1209,33 @@ void ProductionQueue::Update() {
         //      imperial_projects = std::vector<ProductionQueue::Element *>(m_queue.size());
         //      auto is_imperial_project = [](ProductionQueue::Element queue_element) { return queue_element.allowed_imperial_stockpile_use; };
         //      std::copy_if(m_queue.begin(), m_queue.end(), imperial_projects, is_imperial_project);
+        Element* last_one;
         for (auto queue_element : dpsim_queue) {
             //          if (queue_element.allowed_imperial_stockpile_use) {
             //              imperial_projects.push_back(queue_element);
             if (queue_element.allowed_imperial_stockpile_use) {
                 DebugLogger() << "ProductionQueue::Update: There is a very imperial project " << queue_element.Dump();
-
+//shared pointer??
                 imperial_projects.push_back(std::ref(queue_element));
-                if (imperial_projects.back().get().Dump() != queue_element.Dump()) {
+                const bool inequal = imperial_projects.back().get().Dump() != queue_element.Dump();
+                if (inequal) {
                     ErrorLogger() << "ProductionQueue::Update: FIXME seems imperial project was wrongly saved: " << imperial_projects.back().get().Dump();
                 }
+                const bool equal = imperial_projects.back().get().Dump() == queue_element.Dump();
+                if (!equal) {
+                    ErrorLogger() << "ProductionQueue::Update: FIXME2 seems imperial project was wrongly saved: " << imperial_projects.back().get().Dump();
+                }
             }
+            last_one = &queue_element;
+            if (imperial_projects.size() > 0)    DebugLogger() << "ProductionQueue::Update: 3      seems imperial project was saved: " << imperial_projects.back().get().Dump();
+            if (last_one)    DebugLogger() << "ProductionQueue::Update: 3 last seems imperial project was saved: " << (*last_one).Dump();
         }
-
+        if (imperial_projects.size() > 0) DebugLogger() << "ProductionQueue::Update: 4      seems imperial project was saved: " << imperial_projects.back().get().Dump();
+        if (last_one)    DebugLogger() << "ProductionQueue::Update: 4 last seems imperial project was saved: " << (*last_one).Dump();
     }
     bool skip_imperial_pp = imperial_pp_available <= 0.0f || imperial_projects.size() == 0;
+    if (imperial_projects.size() > 0 )
+    DebugLogger() << "ProductionQueue::Update:  5     seems imperial project was saved: " << imperial_projects.back().get().Dump();
 
     DebugLogger() << "ProductionQueue::Update: Set up coroutines";
     // for each supply group, set up coroutines to allocate group PP to queue items
@@ -1469,7 +1481,12 @@ coros.push_back(std::move(source)); // vs emplace_back?? // remember the corouti
                 eligible_project = &eligible_project__todo_pp.project;
                 dp_imperial_allocation_requested = eligible_project__todo_pp.todo_pp;
 // FIXME actually i'd need queue indices here
-                if (imperial_project.Dump() == eligible_project->Dump()) {
+                if (
+                    //imperial_project.Dump() == eligible_project->Dump()
+                    (imperial_project.item.build_type == eligible_project->item.build_type)
+                    // Only ships: XXX need equality 
+                    && (imperial_project.item.design_id == eligible_project->item.design_id)
+                    ) {
                     DebugLogger() << "ProductionQueue::Update: Will fund " << imperial_project.Dump() << " imperial project in turn " << minimal_turn << ".";      
 ///             element.progress += allocation / std::max(EPSILON, total_item_cost);    // add turn's progress due to allocation
 //              additional_pp_to_complete_element -= allocation;
