@@ -1,0 +1,34 @@
+BuildingType
+    name = "BLD_IMPERIAL_GOVERNMENT_WARLORD"
+    description = "BLD_IMPERIAL_GOVERNMENT_WARLORD_DESC"
+    captureresult = destroy
+    buildcost = 1
+    buildtime = 1
+    tags = [ "GOVERNMENT_TYPE" ]
+    location = And [
+        Capital
+        OwnedBy empire = Source.Owner
+        Not HasTag name = "GOVERNMENT_TYPE"
+        TargetPopulation low = 1
+        Number low = 0 high = 0 condition = And [
+            Building
+            HasTag name = "GOVERNMENT_TYPE"
+            OwnedBy empire = Source.Owner
+            ProducedByEmpire empire = Source.Owner
+        ]
+    ]
+    enqueuelocation = And [
+        // must own production location planet
+        Capital
+        OwnedBy empire = Source.Owner
+
+        // can't build if already a type of government exists
+        Not HasTag name = "GOVERNMENT_TYPE"
+
+        // must have a non-trivial population
+        TargetPopulation low = 1
+
+    ]
+    icon = "icons/building/palace.png"
+
+#include "/scripting/common/priorities.macros"
