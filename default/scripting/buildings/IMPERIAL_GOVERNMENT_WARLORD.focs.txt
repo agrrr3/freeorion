@@ -29,8 +29,8 @@ BuildingType
         // must have a non-trivial population
         TargetPopulation low = 1
 
-        // can't enqueue if already have an enqueued palace anywhere
-        [[ENQUEUE_BUILD_ONE_PER_EMPIRE]]
+        // can't enqueue if already have an enqueued government type anywhere
+        [[ENQUEUE_BUILD_ONE_PER_EMPIRE(BLD_IMPERIAL_GOVERNMENT_TYPE_WARLORD)]]
     ]
     icon = "icons/flags/emblem/skull.png"
 
@@ -50,7 +50,7 @@ BuildingType
         [[CONDITION_GOVERNMENT_TYPE_IS(WARLORD)]]
         [[CONDITION_NO_SUCH_GOVERNMENT_SEAT_EXISTS(WARLORD)]]
     ]
-    enqueuelocation = [[ENQUEUELOCATION_GOVERNMENT_SEAT_DEFAULT]]
+    enqueuelocation = [[ENQUEUELOCATION_GOVERNMENT_SEAT(WARLORD)]]
     effectsgroups = [
         [[EFFECT_GROUPS_GOVERNMENT_FUNCTION_DEFENSE]]
     ]
@@ -70,7 +70,7 @@ BuildingType
         [[CONDITION_GOVERNMENT_TYPE_IS(WARLORD)]]
         [[CONDITION_NO_SUCH_GOVERNMENT_SEAT_EXISTS(NEGOTIATOR)]]
     ]
-    enqueuelocation = [[ENQUEUELOCATION_GOVERNMENT_SEAT_DEFAULT]]
+    enqueuelocation = [[ENQUEUELOCATION_GOVERNMENT_SEAT(NEGOTIATOR)]]
     effectsgroups = [
         [[EFFECT_GROUPS_GOVERNMENT_FUNCTION_FOREIGN]]
     ]

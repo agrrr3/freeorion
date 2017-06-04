@@ -73,7 +73,7 @@ EFFECT_GROUPS_GOVERNMENT_FUNCTION_PROPAGANDA
 
 '''
 
-ENQUEUELOCATION_GOVERNMENT_SEAT_DEFAULT
+ENQUEUELOCATION_GOVERNMENT_SEAT
 '''And [
         // On one of your planets
         Planet
@@ -83,7 +83,7 @@ ENQUEUELOCATION_GOVERNMENT_SEAT_DEFAULT
         TargetPopulation low = 1
 
         // can't enqueue if this building is enqueued anywhere
-        [[ENQUEUE_BUILD_ONE_PER_EMPIRE]]
+        [[ENQUEUE_BUILD_ONE_PER_EMPIRE(BLD_IMPERIAL_GOVERNMENT_SEAT_@1@)]]
     ]'''
 
 #include "/scripting/common/priorities.macros"

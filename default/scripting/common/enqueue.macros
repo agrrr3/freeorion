@@ -10,7 +10,7 @@ ENQUEUE_BUILD_ONE_PER_EMPIRE
             Planet
             Enqueued
                 type = Building
-                name = ThisBuilding
+                name = "@1@"
                 empire = Source.Owner
                 low = 1
         ]'''
