@@ -1,5 +1,13 @@
+NO_DEFENSE_TROOPS_MULTIPLICATOR
+'''0.0'''
+BAD_DEFENSE_TROOPS_MULTIPLICATOR
+'''0.5'''
 GOOD_DEFENSE_TROOPS_MULTIPLICATOR
 '''1.5'''
+GREAT_DEFENSE_TROOPS_MULTIPLICATOR
+'''2'''
+ULTIMATE_DEFENSE_TROOPS_MULTIPLICATOR
+'''3'''
 
 BASIC_DEFENSE_TROOPS
 '''EffectsGroup
@@ -75,7 +83,7 @@ EffectsGroup
             scope = Source
             activation = Planet
             priority = [[DEFAULT_PRIORITY]]
-            effects = SetMaxTroops value = Value * 0.5 accountinglabel = "BAD_TROOPS_LABEL"
+            effects = SetMaxTroops value = Value * [[BAD_DEFENSE_TROOPS_MULTIPLICATOR]] accountinglabel = "BAD_TROOPS_LABEL"
 
     [[AFTER_SPECIES_MULTIPLICATOR_TROOPS]]
 '''
@@ -107,7 +115,7 @@ EffectsGroup
             scope = Source
             activation = Planet
             priority = [[DEFAULT_PRIORITY]]
-            effects = SetMaxTroops value = Value * 2 accountinglabel = "GREAT_TROOPS_LABEL"
+            effects = SetMaxTroops value = Value * [[GREAT_DEFENSE_TROOPS_MULTIPLICATOR]] accountinglabel = "GREAT_TROOPS_LABEL"
 
     [[AFTER_SPECIES_MULTIPLICATOR_TROOPS]]
 '''
@@ -120,7 +128,7 @@ EffectsGroup
             scope = Source
             activation = Planet
             priority = [[DEFAULT_PRIORITY]]
-            effects = SetMaxTroops value = Value * 3 accountinglabel = "ULTIMATE_TROOPS_LABEL"
+            effects = SetMaxTroops value = Value * [[ULTIMATE_DEFENSE_TROOPS_MULTIPLICATOR]] accountinglabel = "ULTIMATE_TROOPS_LABEL"
 
     [[AFTER_SPECIES_MULTIPLICATOR_TROOPS]]
 '''

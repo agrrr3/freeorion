@@ -1,4 +1,4 @@
-/* Every planet/outpost gets troops send by the SEAT of DEFENSE. This value determines the base garrison. */
+/* Every outpost gets troops send by the SEAT of DEFENSE. This value determines the base garrison. */
 MINIMAL_IMPERIAL_GARRISON
 '''3'''
 
@@ -25,32 +25,32 @@ CONDITION_NO_SUCH_GOVERNMENT_SEAT_EXISTS
 // OwnerHasTech name = "DEF_GARRISON_1"
 
 EFFECT_GROUPS_GOVERNMENT_FUNCTION_DEFENSE
-'''/* EFFECT_GOVERNMENT_FUNCTION_DEFENSE: use troop indicator for garrison/bunker */ // /*
+'''/* EFFECT_GOVERNMENT_FUNCTION_DEFENSE: on outposts use troop indicator for garrison/bunker */ // /*
+[[EFFECT_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(NO)]]
+[[EFFECT_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(BAD)]]
+[[EFFECT_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(GOOD)]]
+[[EFFECT_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(GREAT)]]
+[[EFFECT_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(ULTIMATE)]]
+'''
+
+EFFECT_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS
+'''/* EFFECT_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(@1@) */
 EffectsGroup
             scope = And [
                 Planet
                 OwnedBy empire = Source.Owner
-                // Population high = 0.0
+                Population high = 0.0
             ]
             activation = ContainedBy And [
                 Planet
                 Species
+                HasTag name = "@1@_DEFENSE_TROOPS"
             ]
             priority = [[DEFAULT_PRIORITY]]
             effects = [
-                SetMaxTroops value = Max ([[MINIMAL_IMPERIAL_GARRISON]] * [[GOOD_DEFENSE_TROOPS_MULTIPLICATOR]], Value * [[GOOD_DEFENSE_TROOPS_MULTIPLICATOR]] )
-                    accountinglabel = "GOVERNMENT_FUNCTION_DEFENSE_LABEL"
-                GenerateSitRepMessage
-                    message = "SITREP_POP_THRESHOLD"
-                    label = "SITREP_POP_THRESHOLD_LABEL"
-                    icon = "icons/sitrep/colony_growth.png"
-                    parameters = [
-                        tag = "planet" data = Target.ID
-                    ]
-                    empire = Source.Owner
- 
-            ]
-'''
+                SetMaxTroops value = Max ([[MINIMAL_IMPERIAL_GARRISON]] * [[@1@_DEFENSE_TROOPS_MULTIPLICATOR]], Value * [[@1@_DEFENSE_TROOPS_MULTIPLICATOR]] )
+                    accountinglabel = "GOVERNMENT_FUNCTION_DEFENSE_LABEL" 
+            ]'''
 
 EFFECT_GROUPS_GOVERNMENT_FUNCTION_EDUCATION
 '''/* EFFECT_GOVERNMENT_FUNCTION_EDUCATION: ?? */ // /*
