@@ -47,25 +47,18 @@ BuildingType
         Planet
         OwnedBy empire = Source.Owner
         TargetPopulation low = 1
-        // Only may build if the government type is WARLORD
-        Number low = 1 condition = And [
-            Capital
-            Contains condition = Building name = "BLD_IMPERIAL_GOVERNMENT_WARLORD"
-            OwnedBy empire = Source.Owner
-        ]
-        // No "BLD_IMPERIAL_GOVERNMENT_SEAT_WARLORD" building exists in the empire
-        Number low = 0 high = 0 condition = Building name = "BLD_IMPERIAL_GOVERNMENT_SEAT_WARLORD"
+        [[CONDITION_GOVERNMENT_TYPE_IS(WARLORD)]]
+        [[CONDITION_NO_SUCH_GOVERNMENT_SEAT_EXISTS(WARLORD)]]
     ]
     enqueuelocation = And [
         // On one of your planets
         Planet
         OwnedBy empire = Source.Owner
 
-
         // must have a non-trivial population
         TargetPopulation low = 1
 
-        // can't enqueue if already have an enqueued palace anywhere
+        // can't enqueue if this building is enqueued anywhere
         [[ENQUEUE_BUILD_ONE_PER_EMPIRE]]
     ]
     icon = "icons/building/palace.png"

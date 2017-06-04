@@ -5,6 +5,16 @@ ENQUEUE_BUILD_ONE_PER_PLANET
         OwnedBy empire = Source.Owner
     ]'''
 
+ENQUEUE_BUILD_ONE_PER_EMPIRE
+'''Number low = 0 high = 0 condition = And [
+            Planet
+            Enqueued
+                type = Building
+                name = CurrentContent
+                empire = Source.Owner
+                low = 1
+        ]'''
+
 ENQUEUE_ARTIFICIAL_PLANET_EXCLUSION
 '''And [
         Not Contains Building name = "BLD_ART_PLANET"

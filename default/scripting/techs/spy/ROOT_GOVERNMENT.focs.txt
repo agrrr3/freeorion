@@ -1,0 +1,12 @@
+Tech
+    name = "GOV_ROOT_GOVERNMENTS"
+    description = "GOV_ROOT_GOVERNMENTS_DESC"
+    short_description = "THEORY_SHORT_DESC"
+    category = "SPY_CATEGORY"
+    researchcost = 1
+    researchturns = 1
+    tags = [ "PEDIA_SPY_CATEGORY" "THEORY" ]
+    /* this is not working - bug? */
+    unlock = Item type = Building name = "BLD_IMPERIAL_GOVERNMENT_WARLORD"
+    unlock = Item type = Building name = "BLD_IMPERIAL_GOVERNMENT_SEAT_WARLORD"
+    graphic = "icons/ship_parts/distortion_modulator.png"

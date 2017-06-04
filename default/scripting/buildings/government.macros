@@ -5,15 +5,15 @@
       [[NEXT_TURN_POPULATION_REDUCE_BY(2)]]
 */
 
-GOVERNMENT_SEAT_LOCATION_N1
-'''And [
-        Planet
+CONDITION_GOVERNMENT_TYPE_IS
+'''/* Only may build if the government type is @1@ */ // /*
+    Number low = 1 condition = And [
+        Capital
+        Contains condition = Building name = "BLD_IMPERIAL_GOVERNMENT_@1@"
         OwnedBy empire = Source.Owner
-        TargetPopulation low = 1
-        Number low = 1 condition = And [
-            Capital
-            Building name = "BLD_IMPERIAL_GOVERNMENT_WARLORD"
-            OwnedBy empire = Source.Owner
-        ]
-        Number low = 0 high = 0 condition = Building name = "BLD_IMPERIAL_GOVERNMENT_SEAT_WARLORD"
     ]'''
+
+CONDITION_NO_SUCH_GOVERNMENT_SEAT_EXISTS
+'''/* No building for the @1@ government seat exists in the empire */ // /*
+    Number low = 0 high = 0 condition = Building name = "BLD_IMPERIAL_GOVERNMENT_SEAT_WARLORD"
+'''
