@@ -13527,6 +13527,35 @@ Independent Homeworld
 MEGALITH_LABEL
 Megalith
 
+BLD_IMPERIAL_GOVERNMENT_TYPE_WARLORD
+Imperial Warlord Constitution 
+
+BLD_IMPERIAL_GOVERNMENT_SEAT_WARLORD
+The Warlords Camp
+
+BLD_IMPERIAL_GOVERNMENT_SEAT_NEGOTIATOR
+The Negotiators Mansion
+
+BLD_IMPERIAL_GOVERNMENT_TYPE_WARLORD_DESC
+The empire is ruled by the warlord and the negotiator. The warlord seats at [[buildingtype BLD_IMPERIAL_GOVERNMENT_SEAT_WARLORD]]. The negotiator seats at [[buildingtype BLD_IMPERIAL_GOVERNMENT_SEAT_NEGOTIATOR]]
+
+BLD_IMPERIAL_GOVERNMENT_SEAT_WARLORD_DESC
+From this camp the warlord rules most government functions when the [[buildingtype BLD_IMPERIAL_GOVERNMENT_TYPE_WARLORD]] is in effect. Only foreign policies and espionage are determined by the negotiator at the [[buildingtype BLD_IMPERIAL_GOVERNMENT_SEAT_NEGOTIATOR]].
+
+BLD_IMPERIAL_GOVERNMENT_SEAT_NEGOTIATOR_DESC
+In this comfortable mansion the negotiator hosts foreign leaders and coordinates the deep space intelligence network when the [[buildingtype BLD_IMPERIAL_GOVERNMENT_TYPE_WARLORD]] is in effect. The warlord seats at [[buildingtype BLD_IMPERIAL_GOVERNMENT_TYPE_WARLORD]].
+
+
+
+
+#GOVERNMENT_FUNCTION_DEFENSE_@1@_LABEL
+#The troops send by the imperial seat of defense from <i>%1%</i> - %2%
+
+# %1% FIXME
+# %2% FIXME
+GOVERNMENT_FUNCTION_DEFENSE_LABEL
+Garrison manned by om <i>%1%</i>
+
 OUTPOST_TROOP_LABEL
 Outpost
 

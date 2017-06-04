@@ -1,6 +1,6 @@
 BuildingType
-    name = "BLD_IMPERIAL_GOVERNMENT_WARLORD"
-    description = "BLD_IMPERIAL_GOVERNMENT_WARLORD_DESC"
+    name = "BLD_IMPERIAL_GOVERNMENT_TYPE_WARLORD"
+    description = "BLD_IMPERIAL_GOVERNMENT_TYPE_WARLORD_DESC"
     captureresult = destroy
     buildcost = 1
     buildtime = 1
@@ -32,7 +32,7 @@ BuildingType
         // can't enqueue if already have an enqueued palace anywhere
         [[ENQUEUE_BUILD_ONE_PER_EMPIRE]]
     ]
-    icon = "icons/building/palace.png"
+    icon = "icons/flags/emblem/skull.png"
 
     
 BuildingType
@@ -50,18 +50,31 @@ BuildingType
         [[CONDITION_GOVERNMENT_TYPE_IS(WARLORD)]]
         [[CONDITION_NO_SUCH_GOVERNMENT_SEAT_EXISTS(WARLORD)]]
     ]
-    enqueuelocation = And [
-        // On one of your planets
+    enqueuelocation = [[ENQUEUELOCATION_GOVERNMENT_SEAT_DEFAULT]]
+    effectsgroups = [
+        [[EFFECT_GROUPS_GOVERNMENT_FUNCTION_DEFENSE]]
+    ]
+    icon = "icons/building/camp.png"
+
+BuildingType
+    name = "BLD_IMPERIAL_GOVERNMENT_SEAT_NEGOTIATOR"
+    description = "BLD_IMPERIAL_GOVERNMENT_SEAT_NEGOTIATOR_DESC"
+    captureresult = destroy
+    buildcost = 1
+    buildtime = 1
+    tags = [ "GOVERNMENT_FUNCTION_FOREIGN" ]
+    location = And [
         Planet
         OwnedBy empire = Source.Owner
-
-        // must have a non-trivial population
         TargetPopulation low = 1
-
-        // can't enqueue if this building is enqueued anywhere
-        [[ENQUEUE_BUILD_ONE_PER_EMPIRE]]
+        [[CONDITION_GOVERNMENT_TYPE_IS(WARLORD)]]
+        [[CONDITION_NO_SUCH_GOVERNMENT_SEAT_EXISTS(NEGOTIATOR)]]
     ]
-    icon = "icons/building/palace.png"
+    enqueuelocation = [[ENQUEUELOCATION_GOVERNMENT_SEAT_DEFAULT]]
+    effectsgroups = [
+        [[EFFECT_GROUPS_GOVERNMENT_FUNCTION_FOREIGN]]
+    ]
+    icon = "icons/building/shield.png"
 
 #include "/scripting/common/enqueue.macros"
 #include "/scripting/common/priorities.macros"

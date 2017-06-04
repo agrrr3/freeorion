@@ -6,7 +6,8 @@ Tech
     researchcost = 1
     researchturns = 1
     tags = [ "PEDIA_SPY_CATEGORY" "THEORY" ]
-    /* this is not working - bug? */
-    unlock = Item type = Building name = "BLD_IMPERIAL_GOVERNMENT_WARLORD"
+    /* Intended to unlock the items as starting items - this is not working - bug? */
+    unlock = Item type = Building name = "BLD_IMPERIAL_GOVERNMENT_TYPE_WARLORD"
     unlock = Item type = Building name = "BLD_IMPERIAL_GOVERNMENT_SEAT_WARLORD"
-    graphic = "icons/ship_parts/distortion_modulator.png"
+    unlock = Item type = Building name = "BLD_IMPERIAL_GOVERNMENT_SEAT_NEGOTIATOR"
+    graphic = "icons/flags/emblem/mask.png"

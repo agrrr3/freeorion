@@ -1,3 +1,7 @@
+/* Every planet/outpost gets troops send by the SEAT of DEFENSE. This value determines the base garrison. */
+MINIMAL_IMPERIAL_GARRISON
+'''3'''
+
 /* Complicated population formula necessary to actually peg pop reduction at a specific value such as -2, not just 2 less growth than it would have been
    the fixed amount for pop reduction per turn is 'k' towards the beginning and the end of the comment line immediately below
       SetPopulation value = min(Value - k, Value + 0.5*(101+Target.TargetPopulation-2*Value - Max(0,(101+Target.TargetPopulation-2*Value)^2 -4*(Value*(Value-1-Target.TargetPopulation)-k*100))^0.5))
@@ -9,11 +13,80 @@ CONDITION_GOVERNMENT_TYPE_IS
 '''/* Only may build if the government type is @1@ */ // /*
     Number low = 1 condition = And [
         Capital
-        Contains condition = Building name = "BLD_IMPERIAL_GOVERNMENT_@1@"
+        Contains condition = Building name = "BLD_IMPERIAL_GOVERNMENT_TYPE_@1@"
         OwnedBy empire = Source.Owner
     ]'''
 
 CONDITION_NO_SUCH_GOVERNMENT_SEAT_EXISTS
 '''/* No building for the @1@ government seat exists in the empire */ // /*
-    Number low = 0 high = 0 condition = Building name = "BLD_IMPERIAL_GOVERNMENT_SEAT_WARLORD"
+    Number low = 0 high = 0 condition = Building name = "BLD_IMPERIAL_GOVERNMENT_SEAT_@1@"
 '''
+
+// OwnerHasTech name = "DEF_GARRISON_1"
+
+EFFECT_GROUPS_GOVERNMENT_FUNCTION_DEFENSE
+'''/* EFFECT_GOVERNMENT_FUNCTION_DEFENSE: use troop indicator for garrison/bunker */ // /*
+EffectsGroup
+            scope = And [
+                Planet
+                OwnedBy empire = Source.Owner
+                // Population high = 0.0
+            ]
+            activation = ContainedBy And [
+                Planet
+                Species
+            ]
+            priority = [[DEFAULT_PRIORITY]]
+            effects = [
+                SetMaxTroops value = Max ([[MINIMAL_IMPERIAL_GARRISON]] * [[GOOD_DEFENSE_TROOPS_MULTIPLICATOR]], Value * [[GOOD_DEFENSE_TROOPS_MULTIPLICATOR]] )
+                    accountinglabel = "GOVERNMENT_FUNCTION_DEFENSE_LABEL"
+                GenerateSitRepMessage
+                    message = "SITREP_POP_THRESHOLD"
+                    label = "SITREP_POP_THRESHOLD_LABEL"
+                    icon = "icons/sitrep/colony_growth.png"
+                    parameters = [
+                        tag = "planet" data = Target.ID
+                    ]
+                    empire = Source.Owner
+ 
+            ]
+'''
+
+EFFECT_GROUPS_GOVERNMENT_FUNCTION_EDUCATION
+'''/* EFFECT_GOVERNMENT_FUNCTION_EDUCATION: ?? */ // /*
+EffectsGroup
+            scope = Source
+            activation = None
+            effects = NoOp
+'''
+
+EFFECT_GROUPS_GOVERNMENT_FUNCTION_FOREIGN
+'''/* EFFECT_GOVERNMENT_FUNCTION_FOREIGN: ?? */ // /*
+EffectsGroup
+            scope = Source
+            activation = None
+            effects = NoOp
+'''
+
+EFFECT_GROUPS_GOVERNMENT_FUNCTION_PROPAGANDA
+'''/* EFFECT_GOVERNMENT_FUNCTION_PROPAGANDA: ?? */ // /*
+
+'''
+
+ENQUEUELOCATION_GOVERNMENT_SEAT_DEFAULT
+'''And [
+        // On one of your planets
+        Planet
+        OwnedBy empire = Source.Owner
+
+        // must have a non-trivial population
+        TargetPopulation low = 1
+
+        // can't enqueue if this building is enqueued anywhere
+        [[ENQUEUE_BUILD_ONE_PER_EMPIRE]]
+    ]'''
+
+#include "/scripting/common/priorities.macros"
+// troops.macro needs base_prod.macros
+#include "/scripting/common/base_prod.macros" 
+#include "/scripting/species/common/troops.macros"

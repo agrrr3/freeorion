@@ -1,3 +1,6 @@
+GOOD_DEFENSE_TROOPS_MULTIPLICATOR
+'''1.5'''
+
 BASIC_DEFENSE_TROOPS
 '''EffectsGroup
             scope = Source
@@ -91,7 +94,7 @@ EffectsGroup
             scope = Source
             activation = Planet
             priority = [[DEFAULT_PRIORITY]]
-            effects = SetMaxTroops value = Value * 1.5 accountinglabel = "GOOD_TROOPS_LABEL"
+            effects = SetMaxTroops value = Value * [[GOOD_DEFENSE_TROOPS_MULTIPLICATOR]] accountinglabel = "GOOD_TROOPS_LABEL"
 
     [[AFTER_SPECIES_MULTIPLICATOR_TROOPS]]
 '''
@@ -177,7 +180,7 @@ AVERAGE_OFFENSE_TROOPS
             description = "AVERAGE_OFFENSE_TROOPS_DESC"
             scope = Source
             activation = None
-            effects = SetTargetResearch value = Value
+            effects = NoOp
 '''
 
 GOOD_OFFENSE_TROOPS
