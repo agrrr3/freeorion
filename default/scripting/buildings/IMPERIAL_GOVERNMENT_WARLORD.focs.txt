@@ -18,17 +18,58 @@ BuildingType
         ]
     ]
     enqueuelocation = And [
-        // must own production location planet
+        // On your own capital
         Capital
         OwnedBy empire = Source.Owner
 
-        // can't build if already a type of government exists
+        // can't enqueue if already a type of government exists
         Not HasTag name = "GOVERNMENT_TYPE"
+        
 
         // must have a non-trivial population
         TargetPopulation low = 1
 
+        // can't enqueue if already have an enqueued palace anywhere
+        [[ENQUEUE_BUILD_ONE_PER_EMPIRE]]
     ]
     icon = "icons/building/palace.png"
 
+    
+BuildingType
+    name = "BLD_IMPERIAL_GOVERNMENT_SEAT_WARLORD"
+    description = "BLD_IMPERIAL_GOVERNMENT_SEAT_WARLORD_DESC"
+    captureresult = destroy
+    buildcost = 1
+    buildtime = 1
+    tags = [ "GOVERNMENT_SEAT" "GOVERNMENT_FUNCTION_DEFENSE" "GOVERNMENT_FUNCTION_EDUCATION" 
+    "GOVERNMENT_FUNCTION_INTERIOR" "GOVERNMENT_FUNCTION_PROPAGANDA"]
+    location = And [
+        Planet
+        OwnedBy empire = Source.Owner
+        TargetPopulation low = 1
+        // Only may build if the government type is WARLORD
+        Number low = 1 condition = And [
+            Capital
+            Contains condition = Building name = "BLD_IMPERIAL_GOVERNMENT_WARLORD"
+            OwnedBy empire = Source.Owner
+        ]
+        // No "BLD_IMPERIAL_GOVERNMENT_SEAT_WARLORD" building exists in the empire
+        Number low = 0 high = 0 condition = Building name = "BLD_IMPERIAL_GOVERNMENT_SEAT_WARLORD"
+    ]
+    enqueuelocation = And [
+        // On one of your planets
+        Planet
+        OwnedBy empire = Source.Owner
+
+
+        // must have a non-trivial population
+        TargetPopulation low = 1
+
+        // can't enqueue if already have an enqueued palace anywhere
+        [[ENQUEUE_BUILD_ONE_PER_EMPIRE]]
+    ]
+    icon = "icons/building/palace.png"
+
+#include "/scripting/common/enqueue.macros"
 #include "/scripting/common/priorities.macros"
+#include "/scripting/buildings/government.macros"
