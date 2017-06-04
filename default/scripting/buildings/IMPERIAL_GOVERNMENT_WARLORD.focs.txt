@@ -17,21 +17,7 @@ BuildingType
             ProducedByEmpire empire = Source.Owner
         ]
     ]
-    enqueuelocation = And [
-        // On your own capital
-        Capital
-        OwnedBy empire = Source.Owner
-
-        // can't enqueue if already a type of government exists
-        Not HasTag name = "GOVERNMENT_TYPE"
-        
-
-        // must have a non-trivial population
-        TargetPopulation low = 1
-
-        // can't enqueue if already have an enqueued government type anywhere
-        [[ENQUEUE_BUILD_ONE_PER_EMPIRE(BLD_IMPERIAL_GOVERNMENT_TYPE_WARLORD)]]
-    ]
+    enqueuelocation = [[ENQUEUELOCATION_GOVERNMENT_TYPE]]
     icon = "icons/flags/emblem/skull.png"
 
     
@@ -53,6 +39,9 @@ BuildingType
     enqueuelocation = [[ENQUEUELOCATION_GOVERNMENT_SEAT(WARLORD)]]
     effectsgroups = [
         [[EFFECT_GROUPS_GOVERNMENT_FUNCTION_DEFENSE]]
+        [[EFFECT_GROUPS_GOVERNMENT_FUNCTION_EDUCATION]]
+        [[EFFECT_GROUPS_GOVERNMENT_FUNCTION_INTERIOR]]
+        [[EFFECT_GROUPS_GOVERNMENT_FUNCTION_PROPAGANDA]]
     ]
     icon = "icons/building/camp.png"
 
@@ -79,3 +68,4 @@ BuildingType
 #include "/scripting/common/enqueue.macros"
 #include "/scripting/common/priorities.macros"
 #include "/scripting/buildings/government.macros"
+#include "/scripting/buildings/government_functions.macros"

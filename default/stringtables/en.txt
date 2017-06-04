@@ -13527,6 +13527,42 @@ Independent Homeworld
 MEGALITH_LABEL
 Megalith
 
+BLD_IMPERIAL_GOVERNMENT_TYPE_DEMOCRACY
+Imperial Democratic Constitution 
+
+BLD_IMPERIAL_GOVERNMENT_SEAT_MINISTRY_DEFENSE
+The Ministry of Defense
+
+BLD_IMPERIAL_GOVERNMENT_SEAT_MINISTRY_EDUCATION
+The Ministry of Education
+
+BLD_IMPERIAL_GOVERNMENT_SEAT_MINISTRY_FOREIGN
+The Ministry of Foreign Affairs
+
+BLD_IMPERIAL_GOVERNMENT_SEAT_MINISTRY_INTERIOR
+The Ministry of Interior
+
+BLD_IMPERIAL_GOVERNMENT_SEAT_MINISTRY_PROPAGANDA
+The Ministry of Propaganda
+
+BLD_IMPERIAL_GOVERNMENT_TYPE_DEMOCRACY_DESC
+The empire is ruled by the following ministries: [[buildingtype BLD_IMPERIAL_GOVERNMENT_SEAT_MINISTRY_DEFENSE]] | [[buildingtype BLD_IMPERIAL_GOVERNMENT_SEAT_MINISTRY_EDUCATION]] | [[buildingtype BLD_IMPERIAL_GOVERNMENT_SEAT_MINISTRY_FOREIGN]] | [[buildingtype BLD_IMPERIAL_GOVERNMENT_SEAT_MINISTRY_INTERIOR]] | [[buildingtype BLD_IMPERIAL_GOVERNMENT_SEAT_MINISTRY_PROPAGANDA]]
+
+BLD_IMPERIAL_GOVERNMENT_SEAT_MINISTRY_DEFENSE_DESC
+One of the seats of power when [[buildingtype BLD_IMPERIAL_GOVERNMENT_TYPE_DEMOCRACY]] is in place.
+
+BLD_IMPERIAL_GOVERNMENT_SEAT_MINISTRY_EDUCATION_DESC
+One of the seats of power when [[buildingtype BLD_IMPERIAL_GOVERNMENT_TYPE_DEMOCRACY]] is in place.
+
+BLD_IMPERIAL_GOVERNMENT_SEAT_MINISTRY_FOREIGN_DESC
+One of the seats of power when [[buildingtype BLD_IMPERIAL_GOVERNMENT_TYPE_DEMOCRACY]] is in place.
+
+BLD_IMPERIAL_GOVERNMENT_SEAT_MINISTRY_INTERIOR_DESC
+One of the seats of power when [[buildingtype BLD_IMPERIAL_GOVERNMENT_TYPE_DEMOCRACY]] is in place.
+
+BLD_IMPERIAL_GOVERNMENT_SEAT_MINISTRY_PROPAGANDA_DESC
+One of the seats of power when [[buildingtype BLD_IMPERIAL_GOVERNMENT_TYPE_DEMOCRACY]] is in place.
+
 BLD_IMPERIAL_GOVERNMENT_TYPE_WARLORD
 Imperial Warlord Constitution 
 
@@ -13546,15 +13582,16 @@ BLD_IMPERIAL_GOVERNMENT_SEAT_NEGOTIATOR_DESC
 In this comfortable mansion the negotiator hosts foreign leaders and coordinates the deep space intelligence network when the [[buildingtype BLD_IMPERIAL_GOVERNMENT_TYPE_WARLORD]] is in effect. The warlord seats at [[buildingtype BLD_IMPERIAL_GOVERNMENT_TYPE_WARLORD]].
 
 
+EFFECT_GOVERNMENT_SEAT_COLLAPSES
+As the constitution at the capital is gone, %buildingtype% on %planet% gets destroyed by the masses.
 
+EFFECT_GOVERNMENT_SEAT_COLLAPSES_LABEL
+Government collapse, %buildingtype% on %planet% is destroyed.
 
-#GOVERNMENT_FUNCTION_DEFENSE_@1@_LABEL
-#The troops send by the imperial seat of defense from <i>%1%</i> - %2%
-
-# %1% FIXME
-# %2% FIXME
+# %1% planet
+# %2% building
 GOVERNMENT_FUNCTION_DEFENSE_LABEL
-Garrison manned by om <i>%1%</i>
+%2% Troops from <i>%1%</i>
 
 OUTPOST_TROOP_LABEL
 Outpost

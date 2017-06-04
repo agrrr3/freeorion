@@ -1,14 +1,3 @@
-/* Every outpost gets troops send by the SEAT of DEFENSE. This value determines the base garrison. */
-MINIMAL_IMPERIAL_GARRISON
-'''3'''
-
-/* Complicated population formula necessary to actually peg pop reduction at a specific value such as -2, not just 2 less growth than it would have been
-   the fixed amount for pop reduction per turn is 'k' towards the beginning and the end of the comment line immediately below
-      SetPopulation value = min(Value - k, Value + 0.5*(101+Target.TargetPopulation-2*Value - Max(0,(101+Target.TargetPopulation-2*Value)^2 -4*(Value*(Value-1-Target.TargetPopulation)-k*100))^0.5))
-   This macro takes a parameter, i.e., use it like
-      [[NEXT_TURN_POPULATION_REDUCE_BY(2)]]
-*/
-
 CONDITION_GOVERNMENT_TYPE_IS
 '''/* Only may build if the government type is @1@ */ // /*
     Number low = 1 condition = And [
@@ -17,61 +6,46 @@ CONDITION_GOVERNMENT_TYPE_IS
         OwnedBy empire = Source.Owner
     ]'''
 
+CONDITION_GOVERNMENT_TYPE_IS_NOT_
+'''/* Only may build if the government type is not @1@ */ // /*
+    Number low = 0 high = 0 condition = And [
+        Capital
+        OwnedBy empire = Source.Owner
+        Contains condition = Building name = "BLD_IMPERIAL_GOVERNMENT_TYPE_@1@"
+    ]'''
+
 CONDITION_NO_SUCH_GOVERNMENT_SEAT_EXISTS
 '''/* No building for the @1@ government seat exists in the empire */ // /*
     Number low = 0 high = 0 condition = Building name = "BLD_IMPERIAL_GOVERNMENT_SEAT_@1@"
 '''
 
-// OwnerHasTech name = "DEF_GARRISON_1"
-
-EFFECT_GROUPS_GOVERNMENT_FUNCTION_DEFENSE
-'''/* EFFECT_GOVERNMENT_FUNCTION_DEFENSE: on outposts use troop indicator for garrison/bunker */ // /*
-[[EFFECT_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(NO)]]
-[[EFFECT_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(BAD)]]
-[[EFFECT_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(GOOD)]]
-[[EFFECT_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(GREAT)]]
-[[EFFECT_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(ULTIMATE)]]
-'''
-
-EFFECT_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS
-'''/* EFFECT_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(@1@) */
-EffectsGroup
-            scope = And [
-                Planet
-                OwnedBy empire = Source.Owner
-                Population high = 0.0
+CONDITION_NO_GOVERNMENT_TYPE_EXISTS
+'''Number low = 0 high = 0 condition = And [
+            Planet
+            Enqueued
+                type = Building
+                empire = Source.Owner
+            Or [
+                Enqueued type = Building name = "BLD_IMPERIAL_GOVERNMENT_TYPE_DEMOCRACY"
+                Enqueued type = Building name = "BLD_IMPERIAL_GOVERNMENT_TYPE_WARLORD"
             ]
-            activation = ContainedBy And [
-                Planet
-                Species
-                HasTag name = "@1@_DEFENSE_TROOPS"
-            ]
-            priority = [[DEFAULT_PRIORITY]]
-            effects = [
-                SetMaxTroops value = Max ([[MINIMAL_IMPERIAL_GARRISON]] * [[@1@_DEFENSE_TROOPS_MULTIPLICATOR]], Value * [[@1@_DEFENSE_TROOPS_MULTIPLICATOR]] )
-                    accountinglabel = "GOVERNMENT_FUNCTION_DEFENSE_LABEL" 
-            ]'''
+        ]'''
 
-EFFECT_GROUPS_GOVERNMENT_FUNCTION_EDUCATION
-'''/* EFFECT_GOVERNMENT_FUNCTION_EDUCATION: ?? */ // /*
-EffectsGroup
-            scope = Source
-            activation = None
-            effects = NoOp
-'''
+ENQUEUELOCATION_GOVERNMENT_TYPE
+'''And [
+        // On your own capital
+        Capital
+        OwnedBy empire = Source.Owner
 
-EFFECT_GROUPS_GOVERNMENT_FUNCTION_FOREIGN
-'''/* EFFECT_GOVERNMENT_FUNCTION_FOREIGN: ?? */ // /*
-EffectsGroup
-            scope = Source
-            activation = None
-            effects = NoOp
-'''
+        // can't enqueue if already a type of government exists
+        Not HasTag name = "GOVERNMENT_TYPE"
+        
+        // must have a non-trivial population
+        TargetPopulation low = 1
 
-EFFECT_GROUPS_GOVERNMENT_FUNCTION_PROPAGANDA
-'''/* EFFECT_GOVERNMENT_FUNCTION_PROPAGANDA: ?? */ // /*
-
-'''
+        // can't enqueue if already have an enqueued government type anywhere
+        [[CONDITION_NO_GOVERNMENT_TYPE_EXISTS]]
+    ]'''
 
 ENQUEUELOCATION_GOVERNMENT_SEAT
 '''And [
@@ -87,6 +61,3 @@ ENQUEUELOCATION_GOVERNMENT_SEAT
     ]'''
 
 #include "/scripting/common/priorities.macros"
-// troops.macro needs base_prod.macros
-#include "/scripting/common/base_prod.macros" 
-#include "/scripting/species/common/troops.macros"
