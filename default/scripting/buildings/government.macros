@@ -6,9 +6,9 @@ CONDITION_GOVERNMENT_TYPE_IS
         OwnedBy empire = Source.Owner
     ]'''
 
+
 CONDITION_GOVERNMENT_TYPE_IS_NOT_
-'''/* Only may build if the government type is not @1@ */ // /*
-    Number low = 0 high = 0 condition = And [
+'''/* if government type is different from @1@ */ Number low = 0 high = 0 condition = And [
         Capital
         OwnedBy empire = Source.Owner
         Contains condition = Building name = "BLD_IMPERIAL_GOVERNMENT_TYPE_@1@"
@@ -71,10 +71,10 @@ ENQUEUELOCATION_GOVERNMENT_SEAT
 EFFECTS_GROUP_COLLAPSE_SEAT_3
 '''EffectsGroup
             scope = Source
-            activation = Source
+            activation = [[CONDITION_GOVERNMENT_TYPE_IS_NOT_(@1@)]]
             @3@
             priority = [[EARLY_PRIORITY]]
-            effects = If condition = [[CONDITION_GOVERNMENT_TYPE_IS_NOT_(@1@)]] effects = [
+            effects = [
                 Destroy 
                 GenerateSitRepMessage
                     message = "EFFECT_GOVERNMENT_SEAT_COLLAPSES"

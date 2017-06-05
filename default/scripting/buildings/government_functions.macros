@@ -60,7 +60,9 @@ EffectsGroup
             stackinggroup = "GOVERNMENT_FUNCTION_FOREIGN_STACK"
             priority = [[DEFAULT_PRIORITY]]
             effects = [
-                CreateShip designname = "SM_BLACK_KRAKEN" empire = Source.Owner
+                // Get spies from natives and neighbors if in supply range (or a little outside)
+                // CreateShip designname = "SM_BLACK_KRAKEN" empire = Source.Owner
+                // Make non-friendly neighbors unhappy
                 GenerateSitRepMessage
                     message = "EFFECT_GOVERNMENT_FUNCTION_SITREP"
                     label = "EFFECT_GOVERNMENT_FUNCTION_SITREP_LABEL"

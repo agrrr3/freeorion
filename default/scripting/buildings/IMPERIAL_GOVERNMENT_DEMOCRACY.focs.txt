@@ -18,7 +18,7 @@ BuildingType
         ]
     ]
     enqueuelocation = [[ENQUEUELOCATION_GOVERNMENT_TYPE]]
-    icon = "icons/flags/emblem/skull.png"
+    icon = "icons/flags/emblem/mask.png"
 
 /* Creates a government seat for democracy (seat and function names are the same)
 #1 <government function name> 
