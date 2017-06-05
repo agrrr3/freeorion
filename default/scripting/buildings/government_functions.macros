@@ -7,20 +7,24 @@ GOVERNMENT_FUNCTION_FOREIGN_ICON
 
 // OwnerHasTech name = "DEF_GARRISON_1"
 
+/*
+#1 <government type>
+*/
 EFFECT_GROUPS_GOVERNMENT_FUNCTION_DEFENSE
 '''/* EFFECT_GOVERNMENT_FUNCTION_DEFENSE: on outposts use troop indicator for garrison/bunker */
-[[EFFECT_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(NO)]]
-[[EFFECT_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(BAD)]]
-[[EFFECT_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(GOOD)]]
-[[EFFECT_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(GREAT)]]
-[[EFFECT_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(ULTIMATE)]]
+[[EFFECT_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(@1@,NO)]]
+[[EFFECT_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(@1@,BAD)]]
+[[EFFECT_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(@1@,GOOD)]]
+[[EFFECT_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(@1@,GREAT)]]
+[[EFFECT_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(@1@,ULTIMATE)]]
 '''
 
 /*
-#1 troop skill level
+#1 <government type>
+#2 <troop skill level>
 */
 EFFECT_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS
-'''/* EFFECT_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(@1@) */
+'''/* EFFECT_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(@1@,@2@) */
 EffectsGroup
             scope = And [
                 Planet
@@ -28,17 +32,22 @@ EffectsGroup
                 Population high = 0.0
             ]
             activation = ContainedBy And [
+                // Source is the seat building
+                [[CONDITION_GOVERNMENT_TYPE_IS_(@1@)]]
                 Planet
                 Species
-                HasTag name = "@1@_DEFENSE_TROOPS"
+                HasTag name = "@2@_DEFENSE_TROOPS"
             ]
             stackinggroup = "GOVERNMENT_FUNCTION_DEFENSE_STACK"
             priority = [[DEFAULT_PRIORITY]]
             effects = [
-                SetMaxTroops value = Max ([[MINIMAL_IMPERIAL_GARRISON]] * [[@1@_DEFENSE_TROOPS_MULTIPLICATOR]], Value * [[@1@_DEFENSE_TROOPS_MULTIPLICATOR]] )
+                SetMaxTroops value = Max ([[MINIMAL_IMPERIAL_GARRISON]] * [[@2@_DEFENSE_TROOPS_MULTIPLICATOR]], Value * [[@2@_DEFENSE_TROOPS_MULTIPLICATOR]] )
                     accountinglabel = "GOVERNMENT_FUNCTION_DEFENSE_LABEL" 
             ]'''
 
+/*
+#1 <government type>
+*/
 EFFECT_GROUPS_GOVERNMENT_FUNCTION_EDUCATION
 '''/* EFFECT_GOVERNMENT_FUNCTION_EDUCATION: ?? */
 EffectsGroup
@@ -47,6 +56,9 @@ EffectsGroup
             effects = NoOp
 '''
 
+/*
+#1 <government type>
+*/
 EFFECT_GROUPS_GOVERNMENT_FUNCTION_INTERIOR
 '''/* EFFECT_GOVERNMENT_FUNCTION_INTERIOR: ?? */
 EffectsGroup
@@ -55,11 +67,14 @@ EffectsGroup
             effects = NoOp
 '''
 
+/*
+#1 <government type>
+*/
 EFFECT_GROUPS_GOVERNMENT_FUNCTION_FOREIGN
 '''/* EFFECT_GOVERNMENT_FUNCTION_FOREIGN: ?? */
 EffectsGroup
             scope = Source
-            activation = Source
+            activation = [[CONDITION_GOVERNMENT_TYPE_IS_(@1@)]]
             stackinggroup = "GOVERNMENT_FUNCTION_FOREIGN_STACK"
             priority = [[DEFAULT_PRIORITY]]
             effects = [
@@ -79,6 +94,9 @@ EffectsGroup
             ]
 '''
 
+/*
+#1 <government type>
+*/
 EFFECT_GROUPS_GOVERNMENT_FUNCTION_PROPAGANDA
 '''/* EFFECT_GOVERNMENT_FUNCTION_PROPAGANDA: ?? */
 EffectsGroup

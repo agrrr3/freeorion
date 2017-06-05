@@ -43,7 +43,7 @@ GOVERNMENT_COUNCIL_SEAT_2
     effectsgroups = [
         [[EFFECTS_GROUP_COLLAPSE_SEAT_3(COUNCIL,@1@,stackinggroup = "GOVERNMENT_FUNCTION_@2@_STACK")]]
         
-        [[EFFECT_GROUPS_GOVERNMENT_FUNCTION_@2@]]
+        [[EFFECT_GROUPS_GOVERNMENT_FUNCTION_@2@(COUNCIL)]]
     ]'''
 
 /* Generates a Council Seat Building with 2 government functions
@@ -71,9 +71,9 @@ GOVERNMENT_COUNCIL_SEAT_3
         // destruct seat if COUNCIL is gone
         [[EFFECTS_GROUP_COLLAPSE_SEAT_3(COUNCIL,@1@,stackinggroup = "GOVERNMENT_FUNCTION_@2@_STACK")]]
         
-        [[EFFECT_GROUPS_GOVERNMENT_FUNCTION_@2@]]
+        [[EFFECT_GROUPS_GOVERNMENT_FUNCTION_@2@(COUNCIL)]]
         
-        [[EFFECT_GROUPS_GOVERNMENT_FUNCTION_@3@]]
+        [[EFFECT_GROUPS_GOVERNMENT_FUNCTION_@3@(COUNCIL)]]
     ]'''
     
 [[GOVERNMENT_COUNCIL_SEAT_3(PRESERVER,DEFENSE,INTERIOR)]]

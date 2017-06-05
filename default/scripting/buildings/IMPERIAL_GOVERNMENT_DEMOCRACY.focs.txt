@@ -43,7 +43,7 @@ GOVERNMENT_MINISTRY_SEAT
         // destruct ministry if democracy is gone
         [[EFFECTS_GROUP_COLLAPSE_SEAT_3(DEMOCRACY,@1@,stackinggroup = "GOVERNMENT_FUNCTION_@1@_STACK")]]
         
-        [[EFFECT_GROUPS_GOVERNMENT_FUNCTION_@1@]]
+        [[EFFECT_GROUPS_GOVERNMENT_FUNCTION_@1@(DEMOCRACY)]]
     ]'''
     
 [[GOVERNMENT_MINISTRY_SEAT(DEFENSE)]]
