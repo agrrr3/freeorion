@@ -1,6 +1,5 @@
-CONDITION_GOVERNMENT_TYPE_IS
-'''/* Only may build if the government type is @1@ */ // /*
-    Number low = 1 condition = And [
+CONDITION_GOVERNMENT_TYPE_IS_
+'''/* if the government type is @1@ */ Number low = 1 condition = And [
         Capital
         Contains condition = Building name = "BLD_IMPERIAL_GOVERNMENT_TYPE_@1@"
         OwnedBy empire = Source.Owner

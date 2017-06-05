@@ -33,7 +33,7 @@ BuildingType
         Planet
         OwnedBy empire = Source.Owner
         TargetPopulation low = 1
-        [[CONDITION_GOVERNMENT_TYPE_IS(WARLORD)]]
+        [[CONDITION_GOVERNMENT_TYPE_IS_(WARLORD)]]
         [[CONDITION_NO_SUCH_GOVERNMENT_SEAT_EXISTS(WARLORD)]]
     ]
     enqueuelocation = [[ENQUEUELOCATION_GOVERNMENT_SEAT(WARLORD)]]
@@ -57,7 +57,7 @@ BuildingType
         Planet
         OwnedBy empire = Source.Owner
         TargetPopulation low = 1
-        [[CONDITION_GOVERNMENT_TYPE_IS(WARLORD)]]
+        [[CONDITION_GOVERNMENT_TYPE_IS_(WARLORD)]]
         [[CONDITION_NO_SUCH_GOVERNMENT_SEAT_EXISTS(NEGOTIATOR)]]
     ]
     enqueuelocation = [[ENQUEUELOCATION_GOVERNMENT_SEAT(NEGOTIATOR)]]

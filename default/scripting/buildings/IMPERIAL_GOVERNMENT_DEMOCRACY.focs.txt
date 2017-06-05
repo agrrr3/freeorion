@@ -35,7 +35,7 @@ GOVERNMENT_MINISTRY_SEAT
         Planet
         OwnedBy empire = Source.Owner
         TargetPopulation low = 1
-        [[CONDITION_GOVERNMENT_TYPE_IS(DEMOCRACY)]]
+        [[CONDITION_GOVERNMENT_TYPE_IS_(DEMOCRACY)]]
         [[CONDITION_NO_SUCH_GOVERNMENT_SEAT_EXISTS(MINISTRY_@1@)]]
     ]
     enqueuelocation = [[ENQUEUELOCATION_GOVERNMENT_SEAT(MINISTRY_@1@)]]
