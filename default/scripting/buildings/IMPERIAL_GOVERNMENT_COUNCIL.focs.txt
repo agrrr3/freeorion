@@ -1,0 +1,124 @@
+BuildingType
+    name = "BLD_IMPERIAL_GOVERNMENT_TYPE_COUNCIL"
+    description = "BLD_IMPERIAL_GOVERNMENT_TYPE_COUNCIL_DESC"
+    captureresult = destroy
+    buildcost = 1
+    buildtime = 1
+    tags = [ "GOVERNMENT_TYPE" ]
+    location = And [
+        Capital
+        OwnedBy empire = Source.Owner
+        Not HasTag name = "GOVERNMENT_TYPE"
+        TargetPopulation low = 1
+        Number low = 0 high = 0 condition = And [
+            Building
+            HasTag name = "GOVERNMENT_TYPE"
+            OwnedBy empire = Source.Owner
+            ProducedByEmpire empire = Source.Owner
+        ]
+    ]
+    enqueuelocation = [[ENQUEUELOCATION_GOVERNMENT_TYPE]]
+    icon = "icons/flags/emblem/rotator.png"
+
+/* Generates a Council Seat Building with 1 government function
+#1 <council seat name>
+#2 <government function>
+*/
+GOVERNMENT_COUNCIL_SEAT_2
+'''BuildingType
+    name = "BLD_IMPERIAL_GOVERNMENT_SEAT_COUNCIL_@1@"
+    description = "BLD_IMPERIAL_GOVERNMENT_SEAT_COUNCIL_@1@_DESC"
+    captureresult = destroy
+    buildcost = 1
+    buildtime = 1
+    tags = [ "GOVERNMENT_FUNCTION_@2@" ]
+    location = And [
+        Planet
+        OwnedBy empire = Source.Owner
+        TargetPopulation low = 1
+        [[CONDITION_GOVERNMENT_TYPE_IS(COUNCIL)]]
+        [[CONDITION_NO_SUCH_GOVERNMENT_SEAT_EXISTS(COUNCIL_@1@)]]
+    ]
+    enqueuelocation = [[ENQUEUELOCATION_GOVERNMENT_SEAT(COUNCIL_@1@)]]
+    effectsgroups = [
+        // destruct seat if COUNCIL is gone
+        EffectsGroup
+            scope = Source
+            activation = Source
+            stackinggroup = "GOVERNMENT_FUNCTION_@2@_STACK"
+            priority = [[EARLY_PRIORITY]]
+            effects = If condition = [[CONDITION_GOVERNMENT_TYPE_IS_NOT_(COUNCIL)]] effects = [
+                Destroy 
+                GenerateSitRepMessage
+                    message = "EFFECT_GOVERNMENT_SEAT_COLLAPSES"
+                    label = "EFFECT_GOVERNMENT_SEAT_COLLAPSES_LABEL"
+                    icon = "icons/building/heavy_mining_processor.png"
+                    parameters = [
+                        tag = "buildingtype" data = "BLD_IMPERIAL_GOVERNMENT_SEAT_COUNCIL_@1@"
+                        tag = "planet" data = Source.PlanetID
+                    ]
+                    empire = Source.Owner
+            ]
+        
+        [[EFFECT_GROUPS_GOVERNMENT_FUNCTION_@2@]]
+    ]'''
+
+/* Generates a Council Seat Building with 2 government functions
+#1 <council seat name>
+#2 <first government function>
+#3 <second government function>
+*/
+GOVERNMENT_COUNCIL_SEAT_3
+'''BuildingType
+    name = "BLD_IMPERIAL_GOVERNMENT_SEAT_COUNCIL_@1@"
+    description = "BLD_IMPERIAL_GOVERNMENT_SEAT_COUNCIL_@1@_DESC"
+    captureresult = destroy
+    buildcost = 1
+    buildtime = 1
+    tags = [ "GOVERNMENT_FUNCTION_@2@" "GOVERNMENT_FUNCTION_@3@" ]
+    location = And [
+        Planet
+        OwnedBy empire = Source.Owner
+        TargetPopulation low = 1
+        [[CONDITION_GOVERNMENT_TYPE_IS(COUNCIL)]]
+        [[CONDITION_NO_SUCH_GOVERNMENT_SEAT_EXISTS(COUNCIL_@1@)]]
+    ]
+    enqueuelocation = [[ENQUEUELOCATION_GOVERNMENT_SEAT(COUNCIL_@1@)]]
+    effectsgroups = [
+        // destruct seat if COUNCIL is gone
+        EffectsGroup
+            scope = Source
+            activation = Source
+            stackinggroup = "GOVERNMENT_FUNCTION_@2@_STACK"
+            priority = [[EARLY_PRIORITY]]
+            effects = If condition = [[CONDITION_GOVERNMENT_TYPE_IS_NOT_(COUNCIL)]] effects = [
+                Destroy 
+                GenerateSitRepMessage
+                    message = "EFFECT_GOVERNMENT_SEAT_COLLAPSES"
+                    label = "EFFECT_GOVERNMENT_SEAT_COLLAPSES_LABEL"
+                    icon = "icons/building/heavy_mining_processor.png"
+                    parameters = [
+                        tag = "buildingtype" data = "BLD_IMPERIAL_GOVERNMENT_SEAT_COUNCIL_@1@"
+                        tag = "planet" data = Source.PlanetID
+                    ]
+                    empire = Source.Owner
+            ]
+        
+        [[EFFECT_GROUPS_GOVERNMENT_FUNCTION_@2@]]
+        
+        [[EFFECT_GROUPS_GOVERNMENT_FUNCTION_@3@]]
+    ]'''
+    
+[[GOVERNMENT_COUNCIL_SEAT_3(PRESERVER,DEFENSE,INTERIOR)]]
+    icon = "icons/building/camp.png"
+
+[[GOVERNMENT_COUNCIL_SEAT_3(TEACHER,EDUCATION,PROPAGANDA)]]
+    icon = "icons/building/autolab_control_centre.png"
+    
+[[GOVERNMENT_COUNCIL_SEAT_2(EXPLORER,FOREIGN)]]
+    icon = "icons/building/shield.png"
+
+#include "/scripting/common/enqueue.macros"
+#include "/scripting/common/priorities.macros"
+#include "/scripting/buildings/government.macros"
+#include "/scripting/buildings/government_functions.macros"

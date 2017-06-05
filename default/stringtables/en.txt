@@ -13527,6 +13527,31 @@ Independent Homeworld
 MEGALITH_LABEL
 Megalith
 
+BLD_IMPERIAL_GOVERNMENT_TYPE_COUNCIL
+Imperial Council of Three
+
+BLD_IMPERIAL_GOVERNMENT_SEAT_COUNCIL_EXPLORER
+The Explorers Academy
+
+BLD_IMPERIAL_GOVERNMENT_SEAT_COUNCIL_PRESERVER
+The Preservers Library
+
+BLD_IMPERIAL_GOVERNMENT_SEAT_COUNCIL_TEACHER
+The Teachers Forum
+
+BLD_IMPERIAL_GOVERNMENT_TYPE_COUNCIL_DESC
+The empire is ruled by the council of the three wise ones: [[buildingtype BLD_IMPERIAL_GOVERNMENT_SEAT_COUNCIL_EXPLORER]] | [[buildingtype BLD_IMPERIAL_GOVERNMENT_SEAT_COUNCIL_PRESERVER]] | [[buildingtype BLD_IMPERIAL_GOVERNMENT_SEAT_COUNCIL_TEACHER]]
+
+BLD_IMPERIAL_GOVERNMENT_SEAT_COUNCIL_EXPLORER_DESC
+The Explorer is part of [[buildingtype BLD_IMPERIAL_GOVERNMENT_TYPE_COUNCIL]] and decides the foreign policies.
+
+BLD_IMPERIAL_GOVERNMENT_SEAT_COUNCIL_PRESERVER_DESC
+The Preserver is part of [[buildingtype BLD_IMPERIAL_GOVERNMENT_TYPE_COUNCIL]] and decides the interior policies.
+
+BLD_IMPERIAL_GOVERNMENT_SEAT_COUNCIL_TEACHER_DESC
+The Teacher is part of [[buildingtype BLD_IMPERIAL_GOVERNMENT_TYPE_COUNCIL]] and decides the education and propaganda policies.
+
+
 BLD_IMPERIAL_GOVERNMENT_TYPE_DEMOCRACY
 Imperial Democratic Constitution 
 
