@@ -2,6 +2,9 @@
 MINIMAL_IMPERIAL_GARRISON
 '''3'''
 
+GOVERNMENT_FUNCTION_FOREIGN_ICON
+'''icons/building/shield.png'''
+
 // OwnerHasTech name = "DEF_GARRISON_1"
 
 EFFECT_GROUPS_GOVERNMENT_FUNCTION_DEFENSE
@@ -53,8 +56,22 @@ EFFECT_GROUPS_GOVERNMENT_FUNCTION_FOREIGN
 '''/* EFFECT_GOVERNMENT_FUNCTION_FOREIGN: ?? */
 EffectsGroup
             scope = Source
-            activation = None
-            effects = NoOp
+            activation = Source
+            stackinggroup = "GOVERNMENT_FUNCTION_FOREIGN_STACK"
+            priority = [[DEFAULT_PRIORITY]]
+            effects = [
+                CreateShip designname = "SM_BLACK_KRAKEN" empire = Source.Owner
+                GenerateSitRepMessage
+                    message = "EFFECT_GOVERNMENT_FUNCTION_SITREP"
+                    label = "EFFECT_GOVERNMENT_FUNCTION_SITREP_LABEL"
+                    icon = "[[GOVERNMENT_FUNCTION_FOREIGN_ICON]]"
+                    parameters = [
+                        tag = "rawtext" data = "Hello out there"
+                        tag = "building" data = Source.ID
+                        tag = "planet" data = Source.PlanetID
+                    ]
+                    empire = Source.Owner
+            ]
 '''
 
 EFFECT_GROUPS_GOVERNMENT_FUNCTION_PROPAGANDA

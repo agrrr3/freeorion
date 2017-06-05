@@ -26,6 +26,7 @@ CONDITION_NO_GOVERNMENT_TYPE_EXISTS
                 type = Building
                 empire = Source.Owner
             Or [
+                Enqueued type = Building name = "BLD_IMPERIAL_GOVERNMENT_TYPE_COUNCIL"
                 Enqueued type = Building name = "BLD_IMPERIAL_GOVERNMENT_TYPE_DEMOCRACY"
                 Enqueued type = Building name = "BLD_IMPERIAL_GOVERNMENT_TYPE_WARLORD"
             ]
@@ -59,5 +60,31 @@ ENQUEUELOCATION_GOVERNMENT_SEAT
         // can't enqueue if this building is enqueued anywhere
         [[ENQUEUE_BUILD_ONE_PER_EMPIRE(BLD_IMPERIAL_GOVERNMENT_SEAT_@1@)]]
     ]'''
+
+/* Destroys a government seat if the government is down.
+ #1 <The government type name>
+ #2 <The seat name>
+ #3 <placeholder for a stackinggroup declaration> - to prevent benefits while the seat gets destroyed
+ XXX not sure if stackinggroup works at all here
+ XXX should check if it is possible to have multiple stacking groups
+*/
+EFFECTS_GROUP_COLLAPSE_SEAT_3
+'''EffectsGroup
+            scope = Source
+            activation = Source
+            @3@
+            priority = [[EARLY_PRIORITY]]
+            effects = If condition = [[CONDITION_GOVERNMENT_TYPE_IS_NOT_(@1@)]] effects = [
+                Destroy 
+                GenerateSitRepMessage
+                    message = "EFFECT_GOVERNMENT_SEAT_COLLAPSES"
+                    label = "EFFECT_GOVERNMENT_SEAT_COLLAPSES_LABEL"
+                    icon = "icons/building/heavy_mining_processor.png"
+                    parameters = [
+                        tag = "buildingtype" data = "BLD_IMPERIAL_GOVERNMENT_SEAT_COUNCIL_@2@"
+                        tag = "planet" data = Source.PlanetID
+                    ]
+                    empire = Source.Owner
+            ]'''
 
 #include "/scripting/common/priorities.macros"

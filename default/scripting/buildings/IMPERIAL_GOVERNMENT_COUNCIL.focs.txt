@@ -41,24 +41,7 @@ GOVERNMENT_COUNCIL_SEAT_2
     ]
     enqueuelocation = [[ENQUEUELOCATION_GOVERNMENT_SEAT(COUNCIL_@1@)]]
     effectsgroups = [
-        // destruct seat if COUNCIL is gone
-        EffectsGroup
-            scope = Source
-            activation = Source
-            stackinggroup = "GOVERNMENT_FUNCTION_@2@_STACK"
-            priority = [[EARLY_PRIORITY]]
-            effects = If condition = [[CONDITION_GOVERNMENT_TYPE_IS_NOT_(COUNCIL)]] effects = [
-                Destroy 
-                GenerateSitRepMessage
-                    message = "EFFECT_GOVERNMENT_SEAT_COLLAPSES"
-                    label = "EFFECT_GOVERNMENT_SEAT_COLLAPSES_LABEL"
-                    icon = "icons/building/heavy_mining_processor.png"
-                    parameters = [
-                        tag = "buildingtype" data = "BLD_IMPERIAL_GOVERNMENT_SEAT_COUNCIL_@1@"
-                        tag = "planet" data = Source.PlanetID
-                    ]
-                    empire = Source.Owner
-            ]
+        [[EFFECTS_GROUP_COLLAPSE_SEAT_3(COUNCIL,@1@,stackinggroup = "GOVERNMENT_FUNCTION_@2@_STACK")]]
         
         [[EFFECT_GROUPS_GOVERNMENT_FUNCTION_@2@]]
     ]'''
@@ -86,23 +69,7 @@ GOVERNMENT_COUNCIL_SEAT_3
     enqueuelocation = [[ENQUEUELOCATION_GOVERNMENT_SEAT(COUNCIL_@1@)]]
     effectsgroups = [
         // destruct seat if COUNCIL is gone
-        EffectsGroup
-            scope = Source
-            activation = Source
-            stackinggroup = "GOVERNMENT_FUNCTION_@2@_STACK"
-            priority = [[EARLY_PRIORITY]]
-            effects = If condition = [[CONDITION_GOVERNMENT_TYPE_IS_NOT_(COUNCIL)]] effects = [
-                Destroy 
-                GenerateSitRepMessage
-                    message = "EFFECT_GOVERNMENT_SEAT_COLLAPSES"
-                    label = "EFFECT_GOVERNMENT_SEAT_COLLAPSES_LABEL"
-                    icon = "icons/building/heavy_mining_processor.png"
-                    parameters = [
-                        tag = "buildingtype" data = "BLD_IMPERIAL_GOVERNMENT_SEAT_COUNCIL_@1@"
-                        tag = "planet" data = Source.PlanetID
-                    ]
-                    empire = Source.Owner
-            ]
+        [[EFFECTS_GROUP_COLLAPSE_SEAT_3(COUNCIL,@1@,stackinggroup = "GOVERNMENT_FUNCTION_@2@_STACK")]]
         
         [[EFFECT_GROUPS_GOVERNMENT_FUNCTION_@2@]]
         
@@ -116,7 +83,7 @@ GOVERNMENT_COUNCIL_SEAT_3
     icon = "icons/building/autolab_control_centre.png"
     
 [[GOVERNMENT_COUNCIL_SEAT_2(EXPLORER,FOREIGN)]]
-    icon = "icons/building/shield.png"
+    icon = "[[GOVERNMENT_FUNCTION_FOREIGN_ICON]]"
 
 #include "/scripting/common/enqueue.macros"
 #include "/scripting/common/priorities.macros"

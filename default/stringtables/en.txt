@@ -13613,6 +13613,12 @@ As the constitution at the capital is gone, %buildingtype% on %planet% gets dest
 EFFECT_GOVERNMENT_SEAT_COLLAPSES_LABEL
 Government collapse, %buildingtype% on %planet% is destroyed.
 
+EFFECT_GOVERNMENT_FUNCTION_SITREP
+%building% on <i>%planet%</i> has a message: %rawtext%
+ 
+EFFECT_GOVERNMENT_FUNCTION_SITREP_LABEL
+Communique from %building%: %rawtext%
+
 # %1% planet
 # %2% building
 GOVERNMENT_FUNCTION_DEFENSE_LABEL
