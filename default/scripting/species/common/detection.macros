@@ -1,3 +1,13 @@
+// Note: Macro names correspond to the respective species tags (e.g. BAD_DETECTION)
+SPECIES_PLANET_BAD_DETECTION_BONUS
+'''-20'''
+SPECIES_PLANET_GOOD_DETECTION_BONUS
+'''25'''
+SPECIES_PLANET_GREAT_DETECTION_BONUS
+'''50'''
+SPECIES_PLANET_ULTIMATE_DETECTION_BONUS
+'''100'''
+
 BAD_DETECTION
 '''EffectsGroup
             description = "BAD_DETECTION_DESC"

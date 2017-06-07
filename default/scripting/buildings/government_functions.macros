@@ -5,19 +5,52 @@ MINIMAL_IMPERIAL_GARRISON
 GOVERNMENT_FUNCTION_FOREIGN_ICON
 '''icons/building/shield.png'''
 
-GEN_SITREPMESSAGE_FOR_BUILDING_
+GEN_SITREPMESSAGE_BUILDING_HAS_SPECIES_SENDS_MESSAGE_TEXT_
 '''GenerateSitRepMessage
-                    message = "EFFECT_GOVERNMENT_FUNCTION_SITREP"
-                    label = "EFFECT_GOVERNMENT_FUNCTION_SITREP_LABEL"
+                    message = "MESSAGE_BUILDING_PLANET_SPECIES_RAW"
+                    label = "MESSAGE_BUILDING_PLANET_SPECIES_RAW_LABEL"
                     icon = "[[GOVERNMENT_FUNCTION_FOREIGN_ICON]]"
                     parameters = [
                         tag = "rawtext" data = "@1@"
                         tag = "building" data = Source.ID
                         tag = "planet" data = Source.PlanetID
+                        tag = "species" data = Source.Planet.Species
                     ]
                     empire = Source.Owner'''
 
-//MESSAGE_BUILDING_PLANET_SPECIES_RAW
+/* Takes a macro which takes two parameters. This will pass BAD... to the macro_2 second parameter
+#1 <first-parameter-to-pass-macro_2>
+#2 <macro_2>
+*/
+FOR2_BAD_GOOD_GREAT_ULTIMATE_
+'''[[@2@(@1@,BAD)]]
+[[@2@(@1@,GOOD)]]
+[[@2@(@1@,GREAT)]]
+[[@2@(@1@,ULTIMATE)]]'''
+
+/*
+#1 <government type>
+#2 <species detection bonus level>
+*/
+EFFECTS_GROUP_GOVERNMENT_FUNCTION_DETECTION_BONUS_2
+'''EffectsGroup // Add seat's species detection bonus to planets with scanning facility
+            scope = And [
+                Planet 
+                Contains Building name = "BLD_SCANNING_FACILITY"
+                OwnedBy empire = Source.Owner
+            ]
+            activation = ContainedBy And [
+                // Source is the seat building
+                [[CONDITION_GOVERNMENT_TYPE_IS_(@1@)]]
+                Planet
+                Species
+                HasTag name = "@2@_DETECION"
+            ]
+            stackinggroup = "GOVERNMENT_FUNCTION_FOREIGN_DETECTION_STACK"
+            priority = [[DEFAULT_PRIORITY]]
+            effects = SetDetection value = Value + [[SPECIES_PLANET_@2@_DETECTION_BONUS]]'''
+
+                    
 // OwnerHasTech name = "DEF_GARRISON_1"
 /*
 #1 <government type>
@@ -115,19 +148,13 @@ EffectsGroup
 #1 <government type>
 */
 EFFECT_GROUPS_GOVERNMENT_FUNCTION_FOREIGN
-'''/* EFFECT_GOVERNMENT_FUNCTION_FOREIGN: ?? */
+'''/* // EFFECT_GOVERNMENT_FUNCTION_FOREIGN(@1@) */
 [[EFFECTS_GROUPS_GOVERNMENT_FUNCTION_HAPPINESS]]
-EffectsGroup
-            scope = Source
-            activation = [[CONDITION_GOVERNMENT_TYPE_IS_(@1@)]]
-            stackinggroup = "GOVERNMENT_FUNCTION_FOREIGN_STACK"
-            priority = [[DEFAULT_PRIORITY]]
-            effects = [
                 // Get spies from natives and neighbors if in supply range (or a little outside)
                 // CreateShip designname = "SM_BLACK_KRAKEN" empire = Source.Owner
                 // Make non-friendly neighbors unhappy
-                NoOp
-            ]
+                // Add detection bonus for 
+                [[FOR2_BAD_GOOD_GREAT_ULTIMATE_(@1@,EFFECTS_GROUP_GOVERNMENT_FUNCTION_DETECTION_BONUS_2)]]
 '''
 
 /*
@@ -164,32 +191,14 @@ EFFECTS_GROUPS_GOVERNMENT_FUNCTION_HAPPINESS
 '''EffectsGroup /* add happiness for species */
             scope = And [
                 PopulationCenter
-                Species
+                Species name = Source.Planet.Species
                 OwnedBy empire = Source.Owner
             ]
             activation = Source
             accountinglabel = "GOVERNMENT_FUNCTION_HAPPINESS_FOR_SPECIES_LABEL"
             priority = [[DEFAULT_PRIORITY]]
             effects = [
-                If condition = And [ 
-                    Object id = Source.PlanetID
-                    Species name = Target.Species
-                ] effects = [
                     SetTargetHappiness value = Value + [[GOVERNMENT_FUNCTION_HAPPINESS_FOR_SPECIES]]
-                    [[GEN_SITREPMESSAGE_FOR_BUILDING_(Species is happy)]]
-                ] else = [
-                    GenerateSitRepMessage
-                        message = "MESSAGE_BUILDING_PLANET_SPECIES_RAW"
-                        label = "EFFECT_GOVERNMENT_FUNCTION_SITREP_LABEL"
-                        icon = "[[GOVERNMENT_FUNCTION_FOREIGN_ICON]]"
-                        parameters = [
-                            tag = "rawtext" data = "@1@"
-                            tag = "building" data = Source.ID
-                            tag = "planet" data = Source.PlanetID
-                            tag = "species" data = LocalCandidate.Species
-                        ]
-                        empire = Source.Owner
-                ]
             ]
             
         [[FOR_EACH_METABOLISM_(EFFECTS_GROUP_HAPPINESS_FOR_METABOLISM_)]]
@@ -197,5 +206,6 @@ EFFECTS_GROUPS_GOVERNMENT_FUNCTION_HAPPINESS
 
 // troops.macro needs base_prod.macros
 #include "/scripting/common/base_prod.macros" 
+#include "/scripting/species/common/detection.macros"
 #include "/scripting/species/common/general.macros"
 #include "/scripting/species/common/troops.macros"

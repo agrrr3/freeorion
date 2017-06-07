@@ -1,9 +1,27 @@
+/* the usual build cost of a constitutional building */
+GOVERNMENT_TYPE_DEFAULT_BUILDCOST
+'''1'''
+/* the usual build time of a constitutional building */
+GOVERNMENT_TYPE_DEFAULT_BUILDTIME
+'''1'''
+
+/* the usual build cost of a government seat */
+GOVERNMENT_SEAT_DEFAULT_BUILDCOST
+'''30'''
+/* the usual build time of a government seat */
+GOVERNMENT_SEAT_DEFAULT_BUILDTIME
+'''5'''
+
+// Basic happiness is 10. 
+// In anarchy it should be possible to colonize (happiness 5)
+// Havin 2 government functions (+6happy), it should be possible to build ships (happiness 3)
+// Havin 3 government functions (+9happy), it should be possible to colonize (happiness 5)
 /* the happiness to be subtracted for an empire */
 GOVERNMENT_GENERAL_UNHAPPINESS
 '''5'''
 /* the happiness to be subtracted in an empire with official government */
 GOVERNMENT_CONSTITUTION_UNHAPPINESS
-'''10'''
+'''8'''
 
 /* the happiness to be added on an planet with representatives of the same species */
 GOVERNMENT_FUNCTION_HAPPINESS_FOR_SPECIES

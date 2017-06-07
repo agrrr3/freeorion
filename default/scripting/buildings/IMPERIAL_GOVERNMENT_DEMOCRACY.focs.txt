@@ -2,8 +2,8 @@ BuildingType
     name = "BLD_IMPERIAL_GOVERNMENT_TYPE_DEMOCRACY"
     description = "BLD_IMPERIAL_GOVERNMENT_TYPE_DEMOCRACY_DESC"
     captureresult = destroy
-    buildcost = 1
-    buildtime = 1
+    buildcost = [[GOVERNMENT_TYPE_DEFAULT_BUILDCOST]]
+    buildtime = [[GOVERNMENT_TYPE_DEFAULT_BUILDTIME]]
     tags = [ "GOVERNMENT_TYPE" ]
     location = And [
         Capital
@@ -29,8 +29,8 @@ GOVERNMENT_MINISTRY_SEAT
     name = "BLD_IMPERIAL_GOVERNMENT_SEAT_MINISTRY_@1@"
     description = "BLD_IMPERIAL_GOVERNMENT_SEAT_MINISTRY_@1@_DESC"
     captureresult = destroy
-    buildcost = 1
-    buildtime = 1
+    buildcost = [[GOVERNMENT_SEAT_DEFAULT_BUILDCOST]]
+    buildtime = [[GOVERNMENT_SEAT_DEFAULT_BUILDTIME]]
     tags = [ "GOVERNMENT_FUNCTION_@1@" ]
     location = And [
         Planet

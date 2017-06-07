@@ -1,0 +1,52 @@
+BuildingType
+    name = "BLD_IMPERIAL_GOVERNMENT_TYPE_AUTOCRACY"
+    description = "BLD_IMPERIAL_GOVERNMENT_TYPE_AUTOCRACY_DESC"
+    captureresult = destroy
+    buildcost = [[GOVERNMENT_TYPE_DEFAULT_BUILDCOST]]
+    buildtime = [[GOVERNMENT_TYPE_DEFAULT_BUILDTIME]]
+    tags = [ "GOVERNMENT_TYPE" ]
+    location = And [
+        Capital
+        OwnedBy empire = Source.Owner
+        Not HasTag name = "GOVERNMENT_TYPE"
+        TargetPopulation low = 1
+        Number low = 0 high = 0 condition = And [
+            Building
+            HasTag name = "GOVERNMENT_TYPE"
+            OwnedBy empire = Source.Owner
+            ProducedByEmpire empire = Source.Owner
+        ]
+    ]
+    enqueuelocation = [[ENQUEUELOCATION_GOVERNMENT_TYPE]]
+    effectsgroups = [[EFFECTS_GROUP_GOVERNMENT_HAPPINESS]]
+    icon = "icons/flags/emblem/eye.png"
+
+BuildingType
+    name = "BLD_IMPERIAL_GOVERNMENT_SEAT_AUTOCRAT"
+    description = "BLD_IMPERIAL_GOVERNMENT_SEAT_AUTOCRAT_DESC"
+    captureresult = destroy
+    buildcost = [[GOVERNMENT_SEAT_DEFAULT_BUILDCOST]]
+    buildtime = [[GOVERNMENT_SEAT_DEFAULT_BUILDTIME]]
+    tags = [ "GOVERNMENT_FUNCTION_FOREIGN" ]
+    location = And [
+        Planet
+        OwnedBy empire = Source.Owner
+        TargetPopulation low = 1
+        [[CONDITION_GOVERNMENT_TYPE_IS_(AUTOCRACY)]]
+        [[CONDITION_NO_SUCH_GOVERNMENT_SEAT_EXISTS(AUTOCRAT)]]
+    ]
+    enqueuelocation = [[ENQUEUELOCATION_GOVERNMENT_SEAT(AUTOCRAT)]]
+    effectsgroups = [
+        [[EFFECTS_GROUP_COLLAPSE_SEAT_3(AUTOCRACY,AUTOCRAT,stackinggroup = "GOVERNMENT_FUNCTION_FOREIGN_STACK")]]
+        [[EFFECT_GROUPS_GOVERNMENT_FUNCTION_DEFENSE(AUTOCRACY)]]
+        [[EFFECT_GROUPS_GOVERNMENT_FUNCTION_EDUCATION(AUTOCRACY)]]  
+        [[EFFECT_GROUPS_GOVERNMENT_FUNCTION_FOREIGN(AUTOCRACY)]]
+        [[EFFECT_GROUPS_GOVERNMENT_FUNCTION_INTERIOR(AUTOCRACY)]]
+        [[EFFECT_GROUPS_GOVERNMENT_FUNCTION_PROPAGANDA(AUTOCRACY)]]
+    ]
+    icon = "icons/building/camp.png"
+
+#include "/scripting/common/enqueue.macros"
+#include "/scripting/common/priorities.macros"
+#include "/scripting/buildings/government.macros"
+#include "/scripting/buildings/government_functions.macros"

@@ -2,8 +2,8 @@ BuildingType
     name = "BLD_IMPERIAL_GOVERNMENT_TYPE_WARLORD"
     description = "BLD_IMPERIAL_GOVERNMENT_TYPE_WARLORD_DESC"
     captureresult = destroy
-    buildcost = 1
-    buildtime = 1
+    buildcost = [[GOVERNMENT_TYPE_DEFAULT_BUILDCOST]]
+    buildtime = [[GOVERNMENT_TYPE_DEFAULT_BUILDTIME]]
     tags = [ "GOVERNMENT_TYPE" ]
     location = And [
         Capital
@@ -26,8 +26,8 @@ BuildingType
     name = "BLD_IMPERIAL_GOVERNMENT_SEAT_WARLORD"
     description = "BLD_IMPERIAL_GOVERNMENT_SEAT_WARLORD_DESC"
     captureresult = destroy
-    buildcost = 1
-    buildtime = 1
+    buildcost = [[GOVERNMENT_SEAT_DEFAULT_BUILDCOST]]
+    buildtime = [[GOVERNMENT_SEAT_DEFAULT_BUILDTIME]]
     tags = [ "GOVERNMENT_SEAT" "GOVERNMENT_FUNCTION_DEFENSE" "GOVERNMENT_FUNCTION_EDUCATION" 
     "GOVERNMENT_FUNCTION_INTERIOR" "GOVERNMENT_FUNCTION_PROPAGANDA"]
     location = And [
@@ -51,8 +51,8 @@ BuildingType
     name = "BLD_IMPERIAL_GOVERNMENT_SEAT_NEGOTIATOR"
     description = "BLD_IMPERIAL_GOVERNMENT_SEAT_NEGOTIATOR_DESC"
     captureresult = destroy
-    buildcost = 1
-    buildtime = 1
+    buildcost = [[GOVERNMENT_SEAT_DEFAULT_BUILDCOST]]
+    buildtime = [[GOVERNMENT_SEAT_DEFAULT_BUILDTIME]]
     tags = [ "GOVERNMENT_FUNCTION_FOREIGN" ]
     location = And [
         Planet
