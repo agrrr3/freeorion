@@ -34,3 +34,33 @@ FAST_COLONIZATION
 
 SLOW_COLONIZATION
 '''[[DESCRIPTION_EFFECTSGROUP_MACRO(SLOW_COLONIZATION_DESC)]]'''
+
+//#####      COMPARISONS CONDITION     #####//
+SOURCE_AND_TARGET_HAVE_ORGANISM_
+'''And [
+        Species
+        HasTag name = "%1%" 
+        Number low = 1 condition = And [ 
+            Object id = Source.PlanetID
+            HasTag name = "%1%"
+        ]
+]'''
+
+SOURCE_AND_TARGET_HAVE_SAME_ORGANISM
+'''Or [
+        [[SOURCE_AND_TARGET_HAVE_ORGANISM_(LITHIC)]]
+        [[SOURCE_AND_TARGET_HAVE_ORGANISM_(ORGANIC)]]
+        [[SOURCE_AND_TARGET_HAVE_ORGANISM_(PHOTOTROPHIC)]]
+        [[SOURCE_AND_TARGET_HAVE_ORGANISM_(ROBOTIC)]]
+        [[SOURCE_AND_TARGET_HAVE_ORGANISM_(SELF_SUSTAINING)]]
+]'''
+
+/* Will pass to the given macro the metabolism as first parameter
+#1 <macro-to-be-applied>
+*/
+FOR_EACH_METABOLISM_
+'''[[@1@(LITHIC)]]
+[[@1@(ORGANIC)]]
+[[@1@(PHOTOTROPHIC)]]
+[[@1@(ROBOTIC)]]
+[[@1@(SELF_SUSTAINING)]]'''
