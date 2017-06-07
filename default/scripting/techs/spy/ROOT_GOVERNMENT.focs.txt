@@ -5,9 +5,30 @@ Tech
     category = "SPY_CATEGORY"
     researchcost = 1
     researchturns = 1
+    Unresearchable // so you do not see it
     tags = [ "PEDIA_SPY_CATEGORY" "THEORY" ]
+    effectsgroups = EffectsGroup /* make everybody less happy in human player empires (AI doesnt know how to get benefits) */
+            scope = And [
+                PopulationCenter
+                Species
+                OwnedBy empire = Source.Owner
+            ]
+            activation = And [
+                Human     // human player, not human species
+            ]
+            stackinggroup = "GOVERNMENT_HAPPINESS_MOD_STACK"
+            accountinglabel = "BASIC_GOVERNMENT_HAPPINESS"
+            priority = [[DEFAULT_PRIORITY]]
+            effects = SetTargetHappiness value = Value - [[GOVERNMENT_GENERAL_UNHAPPINESS]]
+
+    
     /* Intended to unlock the items as starting items - this is not working - bug? */
-    unlock = Item type = Building name = "BLD_IMPERIAL_GOVERNMENT_TYPE_WARLORD"
-    unlock = Item type = Building name = "BLD_IMPERIAL_GOVERNMENT_SEAT_WARLORD"
-    unlock = Item type = Building name = "BLD_IMPERIAL_GOVERNMENT_SEAT_NEGOTIATOR"
+    unlock = [
+        Item type = Building name = "BLD_IMPERIAL_GOVERNMENT_TYPE_WARLORD"
+        Item type = Building name = "BLD_IMPERIAL_GOVERNMENT_SEAT_WARLORD"
+        Item type = Building name = "BLD_IMPERIAL_GOVERNMENT_SEAT_NEGOTIATOR"
+        Item type = Building name = "BLD_IMPERIAL_GOVERNMENT_TYPE_EMPORER"
+    ]
     graphic = "icons/flags/emblem/mask.png"
+
+#include "/scripting/buildings/government.macros"

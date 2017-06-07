@@ -18,6 +18,7 @@ BuildingType
         ]
     ]
     enqueuelocation = [[ENQUEUELOCATION_GOVERNMENT_TYPE]]
+    effectsgroups = [[EFFECTS_GROUP_GOVERNMENT_HAPPINESS]]
     icon = "icons/flags/emblem/mask.png"
 
 /* Creates a government seat for democracy (seat and function names are the same)
@@ -42,7 +43,6 @@ GOVERNMENT_MINISTRY_SEAT
     effectsgroups = [
         // destruct ministry if democracy is gone
         [[EFFECTS_GROUP_COLLAPSE_SEAT_3(DEMOCRACY,@1@,stackinggroup = "GOVERNMENT_FUNCTION_@1@_STACK")]]
-        
         [[EFFECT_GROUPS_GOVERNMENT_FUNCTION_@1@(DEMOCRACY)]]
     ]'''
     

@@ -5,25 +5,40 @@ MINIMAL_IMPERIAL_GARRISON
 GOVERNMENT_FUNCTION_FOREIGN_ICON
 '''icons/building/shield.png'''
 
-// OwnerHasTech name = "DEF_GARRISON_1"
+GEN_SITREPMESSAGE_FOR_BUILDING_
+'''GenerateSitRepMessage
+                    message = "EFFECT_GOVERNMENT_FUNCTION_SITREP"
+                    label = "EFFECT_GOVERNMENT_FUNCTION_SITREP_LABEL"
+                    icon = "[[GOVERNMENT_FUNCTION_FOREIGN_ICON]]"
+                    parameters = [
+                        tag = "rawtext" data = "@1@"
+                        tag = "building" data = Source.ID
+                        tag = "planet" data = Source.PlanetID
+                    ]
+                    empire = Source.Owner'''
 
+//MESSAGE_BUILDING_PLANET_SPECIES_RAW
+// OwnerHasTech name = "DEF_GARRISON_1"
 /*
 #1 <government type>
 */
 EFFECT_GROUPS_GOVERNMENT_FUNCTION_DEFENSE
 '''/* EFFECT_GOVERNMENT_FUNCTION_DEFENSE: on outposts use troop indicator for garrison/bunker */
-[[EFFECT_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(@1@,NO)]]
-[[EFFECT_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(@1@,BAD)]]
-[[EFFECT_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(@1@,GOOD)]]
-[[EFFECT_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(@1@,GREAT)]]
-[[EFFECT_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(@1@,ULTIMATE)]]
+[[EFFECTS_GROUPS_GOVERNMENT_FUNCTION_HAPPINESS]]
+[[EFFECTS_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(@1@,NO)]]
+[[EFFECTS_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(@1@,BAD)]]
+[[EFFECTS_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(@1@,GOOD)]]
+[[EFFECTS_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(@1@,GREAT)]]
+[[EFFECTS_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(@1@,ULTIMATE)]]
+[[EFFECTS_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_AVERAGE_DEFENSE_TROOPS(@1@)]]
 '''
+
 
 /*
 #1 <government type>
 #2 <troop skill level>
 */
-EFFECT_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS
+EFFECTS_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS
 '''/* EFFECT_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(@1@,@2@) */
 EffectsGroup
             scope = And [
@@ -39,10 +54,37 @@ EffectsGroup
                 HasTag name = "@2@_DEFENSE_TROOPS"
             ]
             stackinggroup = "GOVERNMENT_FUNCTION_DEFENSE_STACK"
+            accountinglabel = "GOVERNMENT_FUNCTION_DEFENSE_LABEL" 
             priority = [[DEFAULT_PRIORITY]]
             effects = [
                 SetMaxTroops value = Max ([[MINIMAL_IMPERIAL_GARRISON]] * [[@2@_DEFENSE_TROOPS_MULTIPLICATOR]], Value * [[@2@_DEFENSE_TROOPS_MULTIPLICATOR]] )
-                    accountinglabel = "GOVERNMENT_FUNCTION_DEFENSE_LABEL" 
+            ]'''
+
+/* This is for setting the minimal garrison. Also species should maybe tagged with AVERAGE_DEFENSE_TROOPS, then this extra effect wouldnt be necessary
+#1 <government type>
+*/
+EFFECTS_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_AVERAGE_DEFENSE_TROOPS
+'''/* EFFECTS_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_AVERAGE_DEFENSE_TROOPS(@1@) */
+EffectsGroup
+            scope = And [
+                Planet
+                OwnedBy empire = Source.Owner
+                Population high = 0.0
+            ]
+            activation = ContainedBy And [
+                // Source is the seat building
+                [[CONDITION_GOVERNMENT_TYPE_IS_(@1@)]]
+                Planet
+                Species
+                /* tag the species with AVERAGE_DEFENSE_TROOPS */
+                //HasTag name = "@2@_DEFENSE_TROOPS" 
+            ]
+            // we rely on effect group evaluation order that all but average are already set
+            stackinggroup = "GOVERNMENT_FUNCTION_DEFENSE_STACK"
+            accountinglabel = "GOVERNMENT_FUNCTION_DEFENSE_LABEL" 
+            priority = [[DEFAULT_PRIORITY]]
+            effects = [
+                SetMaxTroops value = Max ([[MINIMAL_IMPERIAL_GARRISON]], Value )
             ]'''
 
 /*
@@ -50,6 +92,7 @@ EffectsGroup
 */
 EFFECT_GROUPS_GOVERNMENT_FUNCTION_EDUCATION
 '''/* EFFECT_GOVERNMENT_FUNCTION_EDUCATION: ?? */
+[[EFFECTS_GROUPS_GOVERNMENT_FUNCTION_HAPPINESS]]
 EffectsGroup
             scope = Source
             activation = None
@@ -61,6 +104,7 @@ EffectsGroup
 */
 EFFECT_GROUPS_GOVERNMENT_FUNCTION_INTERIOR
 '''/* EFFECT_GOVERNMENT_FUNCTION_INTERIOR: ?? */
+[[EFFECTS_GROUPS_GOVERNMENT_FUNCTION_HAPPINESS]]
 EffectsGroup
             scope = Source
             activation = None
@@ -72,6 +116,7 @@ EffectsGroup
 */
 EFFECT_GROUPS_GOVERNMENT_FUNCTION_FOREIGN
 '''/* EFFECT_GOVERNMENT_FUNCTION_FOREIGN: ?? */
+[[EFFECTS_GROUPS_GOVERNMENT_FUNCTION_HAPPINESS]]
 EffectsGroup
             scope = Source
             activation = [[CONDITION_GOVERNMENT_TYPE_IS_(@1@)]]
@@ -81,16 +126,7 @@ EffectsGroup
                 // Get spies from natives and neighbors if in supply range (or a little outside)
                 // CreateShip designname = "SM_BLACK_KRAKEN" empire = Source.Owner
                 // Make non-friendly neighbors unhappy
-                GenerateSitRepMessage
-                    message = "EFFECT_GOVERNMENT_FUNCTION_SITREP"
-                    label = "EFFECT_GOVERNMENT_FUNCTION_SITREP_LABEL"
-                    icon = "[[GOVERNMENT_FUNCTION_FOREIGN_ICON]]"
-                    parameters = [
-                        tag = "rawtext" data = "Hello out there"
-                        tag = "building" data = Source.ID
-                        tag = "planet" data = Source.PlanetID
-                    ]
-                    empire = Source.Owner
+                NoOp
             ]
 '''
 
@@ -99,12 +135,67 @@ EffectsGroup
 */
 EFFECT_GROUPS_GOVERNMENT_FUNCTION_PROPAGANDA
 '''/* EFFECT_GOVERNMENT_FUNCTION_PROPAGANDA: ?? */
+[[EFFECTS_GROUPS_GOVERNMENT_FUNCTION_HAPPINESS]]
 EffectsGroup
             scope = Source
             activation = None
             effects = NoOp
 '''
 
+/* Applies happiness for planets with population with the same metabolism
+#1 <metabolism-type>
+*/
+EFFECTS_GROUP_HAPPINESS_FOR_METABOLISM_
+'''EffectsGroup
+            scope = And [
+                PopulationCenter
+                Species
+                HasTag name = "@1@"
+                OwnedBy empire = Source.Owner
+            ]
+            activation = ContainedBy HasTag name = "@1@"
+            accountinglabel = "GOVERNMENT_FUNCTION_HAPPINESS_FOR_METABOLISM_LABEL"
+            priority = [[DEFAULT_PRIORITY]]
+            effects = [
+                SetTargetHappiness value = Value + [[GOVERNMENT_FUNCTION_HAPPINESS_FOR_METABOLISM]]
+            ]'''
+
+EFFECTS_GROUPS_GOVERNMENT_FUNCTION_HAPPINESS
+'''EffectsGroup /* add happiness for species */
+            scope = And [
+                PopulationCenter
+                Species
+                OwnedBy empire = Source.Owner
+            ]
+            activation = Source
+            accountinglabel = "GOVERNMENT_FUNCTION_HAPPINESS_FOR_SPECIES_LABEL"
+            priority = [[DEFAULT_PRIORITY]]
+            effects = [
+                If condition = And [ 
+                    Object id = Source.PlanetID
+                    Species name = Target.Species
+                ] effects = [
+                    SetTargetHappiness value = Value + [[GOVERNMENT_FUNCTION_HAPPINESS_FOR_SPECIES]]
+                    [[GEN_SITREPMESSAGE_FOR_BUILDING_(Species is happy)]]
+                ] else = [
+                    GenerateSitRepMessage
+                        message = "MESSAGE_BUILDING_PLANET_SPECIES_RAW"
+                        label = "EFFECT_GOVERNMENT_FUNCTION_SITREP_LABEL"
+                        icon = "[[GOVERNMENT_FUNCTION_FOREIGN_ICON]]"
+                        parameters = [
+                            tag = "rawtext" data = "@1@"
+                            tag = "building" data = Source.ID
+                            tag = "planet" data = Source.PlanetID
+                            tag = "species" data = LocalCandidate.Species
+                        ]
+                        empire = Source.Owner
+                ]
+            ]
+            
+        [[FOR_EACH_METABOLISM_(EFFECTS_GROUP_HAPPINESS_FOR_METABOLISM_)]]
+'''
+
 // troops.macro needs base_prod.macros
 #include "/scripting/common/base_prod.macros" 
+#include "/scripting/species/common/general.macros"
 #include "/scripting/species/common/troops.macros"

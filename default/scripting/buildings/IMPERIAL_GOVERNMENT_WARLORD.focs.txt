@@ -18,6 +18,7 @@ BuildingType
         ]
     ]
     enqueuelocation = [[ENQUEUELOCATION_GOVERNMENT_TYPE]]
+    effectsgroups = [[EFFECTS_GROUP_GOVERNMENT_HAPPINESS]]
     icon = "icons/flags/emblem/skull.png"
 
     

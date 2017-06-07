@@ -1,3 +1,17 @@
+/* the happiness to be subtracted for an empire */
+GOVERNMENT_GENERAL_UNHAPPINESS
+'''5'''
+/* the happiness to be subtracted in an empire with official government */
+GOVERNMENT_CONSTITUTION_UNHAPPINESS
+'''10'''
+
+/* the happiness to be added on an planet with representatives of the same species */
+GOVERNMENT_FUNCTION_HAPPINESS_FOR_SPECIES
+'''1'''
+/* the happiness to be added on an planet with representatives of the same organism */
+GOVERNMENT_FUNCTION_HAPPINESS_FOR_METABOLISM
+'''2'''
+
 CONDITION_GOVERNMENT_TYPE_IS_
 '''/* if the government type is @1@ */ Number low = 1 condition = And [
         Capital
@@ -31,6 +45,7 @@ CONDITION_NO_GOVERNMENT_TYPE_EXISTS
             ]
         ]'''
 
+/* Use this condition in the enqueuelocation of a government seat. */
 ENQUEUELOCATION_GOVERNMENT_TYPE
 '''And [
         // On your own capital
@@ -47,6 +62,9 @@ ENQUEUELOCATION_GOVERNMENT_TYPE
         [[CONDITION_NO_GOVERNMENT_TYPE_EXISTS]]
     ]'''
 
+/* Use this condition in the enqueuelocation of a government seat. 
+#1 <The seat name> 
+*/
 ENQUEUELOCATION_GOVERNMENT_SEAT
 '''And [
         // On one of your planets
@@ -84,6 +102,21 @@ EFFECTS_GROUP_COLLAPSE_SEAT_3
                         tag = "planet" data = Source.PlanetID
                     ]
                     empire = Source.Owner
+            ]'''
+
+EFFECTS_GROUP_GOVERNMENT_HAPPINESS
+'''EffectsGroup /* add unhappiness for having a constitutional government */
+            scope = And [
+                PopulationCenter
+                Species
+                OwnedBy empire = Source.Owner
+            ]
+            activation = Source
+            stackinggroup = "GOVERNMENT_HAPPINESS_CONSTITUTION_STACK"
+            accountinglabel = "GOVERNMENT_CONSTITUTION_UNHAPPINESS"
+            priority = [[DEFAULT_PRIORITY]]
+            effects = [
+                SetTargetHappiness value = Value - [[GOVERNMENT_CONSTITUTION_UNHAPPINESS]]
             ]'''
 
 #include "/scripting/common/priorities.macros"

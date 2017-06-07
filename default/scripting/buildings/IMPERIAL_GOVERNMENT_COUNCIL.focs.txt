@@ -18,6 +18,7 @@ BuildingType
         ]
     ]
     enqueuelocation = [[ENQUEUELOCATION_GOVERNMENT_TYPE]]
+    effectsgroups = [[EFFECTS_GROUP_GOVERNMENT_HAPPINESS]]
     icon = "icons/flags/emblem/rotator.png"
 
 /* Generates a Council Seat Building with 1 government function
@@ -42,7 +43,6 @@ GOVERNMENT_COUNCIL_SEAT_2
     enqueuelocation = [[ENQUEUELOCATION_GOVERNMENT_SEAT(COUNCIL_@1@)]]
     effectsgroups = [
         [[EFFECTS_GROUP_COLLAPSE_SEAT_3(COUNCIL,@1@,stackinggroup = "GOVERNMENT_FUNCTION_@2@_STACK")]]
-        
         [[EFFECT_GROUPS_GOVERNMENT_FUNCTION_@2@(COUNCIL)]]
     ]'''
 
@@ -74,6 +74,7 @@ GOVERNMENT_COUNCIL_SEAT_3
         [[EFFECT_GROUPS_GOVERNMENT_FUNCTION_@2@(COUNCIL)]]
         
         [[EFFECT_GROUPS_GOVERNMENT_FUNCTION_@3@(COUNCIL)]]
+        
     ]'''
     
 [[GOVERNMENT_COUNCIL_SEAT_3(PRESERVER,DEFENSE,INTERIOR)]]
