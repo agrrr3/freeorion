@@ -1,3 +1,13 @@
+// Note: Macro names correspond to the respective species tags (e.g. BAD_STEALTH)
+PLUSMINUS_SPECIES_PLANET_BAD_STEALTH_BONUS
+'''- [[LOW_STEALTH]]'''
+PLUSMINUS_SPECIES_PLANET_GOOD_STEALTH_BONUS
+'''+ [[LOW_STEALTH]]'''
+PLUSMINUS_SPECIES_PLANET_GREAT_STEALTH_BONUS
+'''+ [[MEDIUM_STEALTH]]'''
+PLUSMINUS_SPECIES_PLANET_ULTIMATE_STEALTH_BONUS
+'''+ [[HIGH_STEALTH]]'''
+
 BAD_STEALTH
 '''EffectsGroup
             description = "BAD_STEALTH_DESC"
@@ -10,7 +20,7 @@ BAD_STEALTH
             ]
             activation = Planet
             stackinggroup = "SPECIES_STEALTH_STACK"
-            effects = SetStealth value = Value - [[LOW_STEALTH]]
+            effects = SetStealth value = Value [[PLUSMINUS_SPECIES_PLANET_BAD_STEALTH_BONUS]]
 '''
 
 GOOD_STEALTH
@@ -25,7 +35,7 @@ GOOD_STEALTH
             ]
             activation = Planet
             stackinggroup = "SPECIES_STEALTH_STACK"
-            effects = SetStealth value = Value + [[LOW_STEALTH]]
+            effects = SetStealth value = Value [[PLUSMINUS_SPECIES_PLANET_GOOD_STEALTH_BONUS]]
 '''
 
 GREAT_STEALTH
@@ -40,7 +50,7 @@ GREAT_STEALTH
             ]
             activation = Planet
             stackinggroup = "SPECIES_STEALTH_STACK"
-            effects = SetStealth value = Value + [[MEDIUM_STEALTH]]
+            effects = SetStealth value = Value [[PLUSMINUS_SPECIES_PLANET_GREAT_STEALTH_BONUS]]
 '''
 
 ULTIMATE_STEALTH
@@ -55,5 +65,5 @@ ULTIMATE_STEALTH
             ]
             activation = Planet
             stackinggroup = "SPECIES_STEALTH_STACK"
-            effects = SetStealth value = Value + [[HIGH_STEALTH]]
+            effects = SetStealth value = Value [[PLUSMINUS_SPECIES_PLANET_ULTIMATE_STEALTH_BONUS]]
 '''

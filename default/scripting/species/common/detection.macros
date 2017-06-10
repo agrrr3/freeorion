@@ -13,10 +13,12 @@ BAD_DETECTION
             description = "BAD_DETECTION_DESC"
             scope = Source
             activation = Not Ship
+            stackinggroup = "SPECIES_DETECTION_STACK"
             effects = SetDetection value = Value - 20
     EffectsGroup
             scope = Source
             activation = Ship
+            stackinggroup = "SPECIES_DETECTION_STACK"
             effects = SetDetection value = Value - 9
 '''
 
@@ -24,6 +26,7 @@ GOOD_DETECTION
 '''EffectsGroup
             description = "GOOD_DETECTION_DESC"
             scope = Source
+            stackinggroup = "SPECIES_DETECTION_STACK"
             effects = SetDetection value = Value + 25
 '''
 
@@ -31,6 +34,7 @@ GREAT_DETECTION
 '''        EffectsGroup
             description = "GREAT_DETECTION_DESC"
             scope = Source
+            stackinggroup = "SPECIES_DETECTION_STACK"
             effects = SetDetection value = Value + 50
 '''
 
@@ -38,6 +42,7 @@ ULTIMATE_DETECTION
 '''        EffectsGroup
             description = "ULTIMATE_DETECTION_DESC"
             scope = Source
+            stackinggroup = "SPECIES_DETECTION_STACK"
             effects = SetDetection value = Value + 100
 '''
 

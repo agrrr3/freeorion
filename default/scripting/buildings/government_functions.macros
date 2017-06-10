@@ -44,13 +44,36 @@ EFFECTS_GROUP_GOVERNMENT_FUNCTION_DETECTION_BONUS_2
                 [[CONDITION_GOVERNMENT_TYPE_IS_(@1@)]]
                 Planet
                 Species
-                HasTag name = "@2@_DETECION"
+                HasTag name = "@2@_DETECTION"
             ]
-            stackinggroup = "GOVERNMENT_FUNCTION_FOREIGN_DETECTION_STACK"
-            priority = [[DEFAULT_PRIORITY]]
+            // preventing species bonus from planet
+            stackinggroup = "SPECIES_DETECTION_STACK"
+            priority = [[EARLY_PRIORITY]]
             effects = SetDetection value = Value + [[SPECIES_PLANET_@2@_DETECTION_BONUS]]'''
 
-                    
+/*
+#1 <government type>
+#2 <species detection bonus level>
+*/
+EFFECTS_GROUP_GOVERNMENT_FUNCTION_STEALTH_BONUS_2
+'''EffectsGroup // Add seat's species stealth bonus to outposts
+            scope = And [
+                Planet 
+                Population high = 0.0
+                OwnedBy empire = Source.Owner
+            ]
+            activation = ContainedBy And [
+                // Source is the seat building
+                [[CONDITION_GOVERNMENT_TYPE_IS_(@1@)]]
+                Planet
+                Species
+                HasTag name = "@2@_STEALTH"
+            ]
+            // preventing species bonus from planet
+            stackinggroup = "SPECIES_STEALTH_STACK"
+            priority = [[EARLY_PRIORITY]]
+            effects = SetDetection value = Value [[PLUSMINUS_SPECIES_PLANET_@2@_STEALTH_BONUS]]'''
+            
 // OwnerHasTech name = "DEF_GARRISON_1"
 /*
 #1 <government type>
@@ -58,6 +81,7 @@ EFFECTS_GROUP_GOVERNMENT_FUNCTION_DETECTION_BONUS_2
 EFFECT_GROUPS_GOVERNMENT_FUNCTION_DEFENSE
 '''/* EFFECT_GOVERNMENT_FUNCTION_DEFENSE: on outposts use troop indicator for garrison/bunker */
 [[EFFECTS_GROUPS_GOVERNMENT_FUNCTION_HAPPINESS]]
+[[FOR2_BAD_GOOD_GREAT_ULTIMATE_(@1@,EFFECTS_GROUP_GOVERNMENT_FUNCTION_STEALTH_BONUS_2)]]
 [[EFFECTS_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(@1@,NO)]]
 [[EFFECTS_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(@1@,BAD)]]
 [[EFFECTS_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(@1@,GOOD)]]
@@ -208,4 +232,6 @@ EFFECTS_GROUPS_GOVERNMENT_FUNCTION_HAPPINESS
 #include "/scripting/common/base_prod.macros" 
 #include "/scripting/species/common/detection.macros"
 #include "/scripting/species/common/general.macros"
+#include "/scripting/common/stealth.macros" 
+#include "/scripting/species/common/stealth.macros"
 #include "/scripting/species/common/troops.macros"
