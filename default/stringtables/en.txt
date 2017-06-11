@@ -13527,6 +13527,13 @@ Independent Homeworld
 MEGALITH_LABEL
 Megalith
 
+
+BLD_IMPERIAL_GOVERNMENT_TYPE_AUTOCRACY
+The Benevolent Dictators Manifest
+
+BLD_IMPERIAL_GOVERNMENT_SEAT_AUTOCRAT
+The Dictators Pyramid
+
 BLD_IMPERIAL_GOVERNMENT_TYPE_COUNCIL
 Imperial Council of Three
 
