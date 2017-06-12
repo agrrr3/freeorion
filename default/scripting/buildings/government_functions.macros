@@ -62,12 +62,14 @@ EFFECTS_GROUP_GOVERNMENT_FUNCTION_STEALTH_BONUS_2
                 Population high = 0.0
                 OwnedBy empire = Source.Owner
             ]
-            activation = ContainedBy And [
+            activation = And [
                 // Source is the seat building
+                Number low = 1 condition = And [
+                    Object id = Source.PlanetID
+                    Species
+                    HasTag name = "@2@_STEALTH"
+                ]
                 [[CONDITION_GOVERNMENT_TYPE_IS_(@1@)]]
-                Planet
-                Species
-                HasTag name = "@2@_STEALTH"
             ]
             // preventing species bonus from planet
             stackinggroup = "SPECIES_STEALTH_STACK"
