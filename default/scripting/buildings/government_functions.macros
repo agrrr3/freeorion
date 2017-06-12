@@ -72,7 +72,7 @@ EFFECTS_GROUP_GOVERNMENT_FUNCTION_STEALTH_BONUS_2
             // preventing species bonus from planet
             stackinggroup = "SPECIES_STEALTH_STACK"
             priority = [[EARLY_PRIORITY]]
-            effects = SetDetection value = Value [[PLUSMINUS_SPECIES_PLANET_@2@_STEALTH_BONUS]]'''
+            effects = SetStealth value = Value [[PLUSMINUS_SPECIES_PLANET_@2@_STEALTH_BONUS]]'''
             
 // OwnerHasTech name = "DEF_GARRISON_1"
 /*
