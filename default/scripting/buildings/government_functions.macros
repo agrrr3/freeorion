@@ -33,7 +33,7 @@ FOR2_BAD_GOOD_GREAT_ULTIMATE_
 #2 <species detection bonus level>
 */
 EFFECTS_GROUP_GOVERNMENT_FUNCTION_DETECTION_BONUS_2
-'''EffectsGroup // Add seat's species detection bonus to planets with scanning facility
+'''EffectsGroup // Add seat's species detection bonus to planets with scanning facility 
             scope = And [
                 Planet 
                 Contains Building name = "BLD_SCANNING_FACILITY"
@@ -41,9 +41,9 @@ EFFECTS_GROUP_GOVERNMENT_FUNCTION_DETECTION_BONUS_2
             ]
             activation = ContainedBy And [
                 // Source is the seat building
-                [[CONDITION_GOVERNMENT_TYPE_IS_(@1@)]]
                 Planet
                 Species
+                [[CONDITION_GOVERNMENT_TYPE_IS_(@1@)]]
                 HasTag name = "@2@_DETECTION"
             ]
             // preventing species bonus from planet
