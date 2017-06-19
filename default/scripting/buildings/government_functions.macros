@@ -53,7 +53,7 @@ EFFECTS_GROUP_GOVERNMENT_FUNCTION_DETECTION_BONUS_2
 
 /*
 #1 <government type>
-#2 <species detection bonus level>
+#2 <species stealth bonus level>
 */
 EFFECTS_GROUP_GOVERNMENT_FUNCTION_PLANET_STEALTH_BONUS_2
 '''EffectsGroup // Add seat's species stealth bonus to outposts
@@ -98,7 +98,7 @@ EffectsGroup
             scope = And [
                 Planet
                 OwnedBy empire = Source.Owner
-                Population high = 0.0
+//                Population high = 0.0
             ]
             activation = ContainedBy And [
                 Object id = Source.PlanetID
@@ -110,20 +110,22 @@ EffectsGroup
             accountinglabel = "GOVERNMENT_FUNCTION_DEFENSE_LABEL" 
             priority = [[DEFAULT_PRIORITY]]
             effects = [
-                If        condition = And [ Object id = Source.PlanetID  HasTag name = "NO_DEFENSE_TROOPS" ]
-                    effects = SetMaxTroops value = [[NO_DEFENSE_TROOPS_MULTIPLICATOR]] * Max ([[MINIMAL_IMPERIAL_GARRISON]], Value)                    
-                else = If condition = And [ Object id = Source.PlanetID  HasTag name = "BAD_DEFENSE_TROOPS" ]
-                    effects = SetMaxTroops value = [[BAD_DEFENSE_TROOPS_MULTIPLICATOR]] * Max ([[MINIMAL_IMPERIAL_GARRISON]], Value)
-                else = If condition = ContainedBy HasTag name = "GOOD_DEFENSE_TROOPS"
-                    effects = SetMaxTroops value = [[GOOD_DEFENSE_TROOPS_MULTIPLICATOR]] * Max ([[MINIMAL_IMPERIAL_GARRISON]], Value)
-                else = If condition = ContainedBy HasTag name = "GREAT_DEFENSE_TROOPS"
-                    effects = SetMaxTroops value = [[GREAT_DEFENSE_TROOPS_MULTIPLICATOR]] * Max ([[MINIMAL_IMPERIAL_GARRISON]], Value)
-                else = If condition = ContainedBy HasTag name = "ULTIMATE_DEFENSE_TROOPS"
-                    effects = SetMaxTroops value = [[ULTIMATE_DEFENSE_TROOPS_MULTIPLICATOR]] * Max ([[MINIMAL_IMPERIAL_GARRISON]], Value)
+                If        [[CONDITION_AND_EFFECTS_FOR_DEFENSE_TROOPS_(BAD)]]
+                else = If [[CONDITION_AND_EFFECTS_FOR_DEFENSE_TROOPS_(GOOD)]]
+                else = If [[CONDITION_AND_EFFECTS_FOR_DEFENSE_TROOPS_(GREAT)]]
+                else = If [[CONDITION_AND_EFFECTS_FOR_DEFENSE_TROOPS_(NO)]]
+                else = If [[CONDITION_AND_EFFECTS_FOR_DEFENSE_TROOPS_(ULTIMATE)]]
                 // AVERAGE_DEFENSE_TROOPS (dont have a tag or multiplicator)
                 else = SetMaxTroops value = 10 * Max ([[MINIMAL_IMPERIAL_GARRISON]], Value)
             ]'''
- 
+
+/*
+#1 <troop skill level>
+*/
+CONDITION_AND_EFFECTS_FOR_DEFENSE_TROOPS_
+'''condition = Number low = 1 condition = And [ Object id = Source.PlanetID  HasTag name = "@1@_DEFENSE_TROOPS" ]
+                    effects = SetMaxTroops value = [[@1@_DEFENSE_TROOPS_MULTIPLICATOR]] * Max ([[MINIMAL_IMPERIAL_GARRISON]], Value)'''
+            
 /*
 #1 <government type>
 #2 <troop skill level>
