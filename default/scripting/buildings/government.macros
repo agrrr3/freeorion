@@ -32,9 +32,9 @@ GOVERNMENT_FUNCTION_HAPPINESS_FOR_METABOLISM
 
 CONDITION_GOVERNMENT_TYPE_IS_
 '''/* if the government type is @1@ */ Number low = 1 condition = And [
+        OwnedBy empire = Source.Owner
         Capital
         Contains condition = Building name = "BLD_IMPERIAL_GOVERNMENT_TYPE_@1@"
-        OwnedBy empire = Source.Owner
     ]'''
 
 

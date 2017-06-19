@@ -55,7 +55,7 @@ EFFECTS_GROUP_GOVERNMENT_FUNCTION_DETECTION_BONUS_2
 #1 <government type>
 #2 <species detection bonus level>
 */
-EFFECTS_GROUP_GOVERNMENT_FUNCTION_STEALTH_BONUS_2
+EFFECTS_GROUP_GOVERNMENT_FUNCTION_PLANET_STEALTH_BONUS_2
 '''EffectsGroup // Add seat's species stealth bonus to outposts
             scope = And [
                 Planet 
@@ -64,7 +64,7 @@ EFFECTS_GROUP_GOVERNMENT_FUNCTION_STEALTH_BONUS_2
             ]
             activation = And [
                 // Source is the seat building
-                Number low = 1 condition = And [
+                ContainedBy And [
                     Object id = Source.PlanetID
                     Species
                     HasTag name = "@2@_STEALTH"
@@ -83,7 +83,7 @@ EFFECTS_GROUP_GOVERNMENT_FUNCTION_STEALTH_BONUS_2
 EFFECT_GROUPS_GOVERNMENT_FUNCTION_DEFENSE
 '''/* EFFECT_GOVERNMENT_FUNCTION_DEFENSE: on outposts use troop indicator for garrison/bunker */
 [[EFFECTS_GROUPS_GOVERNMENT_FUNCTION_HAPPINESS]]
-[[FOR2_BAD_GOOD_GREAT_ULTIMATE_(@1@,EFFECTS_GROUP_GOVERNMENT_FUNCTION_STEALTH_BONUS_2)]]
+[[FOR2_BAD_GOOD_GREAT_ULTIMATE_(@1@,EFFECTS_GROUP_GOVERNMENT_FUNCTION_PLANET_STEALTH_BONUS_2)]]
 [[EFFECTS_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(@1@,NO)]]
 [[EFFECTS_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(@1@,BAD)]]
 [[EFFECTS_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(@1@,GOOD)]]
@@ -132,9 +132,9 @@ EffectsGroup
             ]
             activation = ContainedBy And [
                 // Source is the seat building
-                [[CONDITION_GOVERNMENT_TYPE_IS_(@1@)]]
                 Planet
                 Species
+                [[CONDITION_GOVERNMENT_TYPE_IS_(@1@)]]
                 /* tag the species with AVERAGE_DEFENSE_TROOPS */
                 //HasTag name = "@2@_DEFENSE_TROOPS" 
             ]
