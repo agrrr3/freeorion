@@ -77,6 +77,7 @@ EFFECTS_GROUP_GOVERNMENT_FUNCTION_PLANET_STEALTH_BONUS_2
             effects = SetStealth value = Value [[PLUSMINUS_SPECIES_PLANET_@2@_STEALTH_BONUS]]'''
             
 // OwnerHasTech name = "DEF_GARRISON_1"
+
 /*
 #1 <government type>
 */
@@ -84,15 +85,45 @@ EFFECT_GROUPS_GOVERNMENT_FUNCTION_DEFENSE
 '''/* EFFECT_GOVERNMENT_FUNCTION_DEFENSE: on outposts use troop indicator for garrison/bunker */
 [[EFFECTS_GROUPS_GOVERNMENT_FUNCTION_HAPPINESS]]
 [[FOR2_BAD_GOOD_GREAT_ULTIMATE_(@1@,EFFECTS_GROUP_GOVERNMENT_FUNCTION_PLANET_STEALTH_BONUS_2)]]
-[[EFFECTS_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(@1@,NO)]]
-[[EFFECTS_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(@1@,BAD)]]
-[[EFFECTS_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(@1@,GOOD)]]
-[[EFFECTS_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(@1@,GREAT)]]
-[[EFFECTS_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_XXX_DEFENSE_TROOPS(@1@,ULTIMATE)]]
-[[EFFECTS_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_AVERAGE_DEFENSE_TROOPS(@1@)]]
+[[EFFECTS_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_DEFENSE_TROOPS_(@1@)]]
 '''
 
 
+/*
+#1 <government type>
+*/
+EFFECTS_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_DEFENSE_TROOPS_
+'''/* EFFECTS_GROUP_GOVERNMENT_FUNCTION_DEFENSE_FOR_DEFENSE_TROOPS_(@1@) */
+EffectsGroup
+            scope = And [
+                Planet
+                OwnedBy empire = Source.Owner
+                Population high = 0.0
+            ]
+            activation = ContainedBy And [
+                Object id = Source.PlanetID
+                // Source is the seat building
+                [[CONDITION_GOVERNMENT_TYPE_IS_(@1@)]]
+                Species
+            ]
+            stackinggroup = "GOVERNMENT_FUNCTION_DEFENSE_STACK"
+            accountinglabel = "GOVERNMENT_FUNCTION_DEFENSE_LABEL" 
+            priority = [[DEFAULT_PRIORITY]]
+            effects = [
+                If        condition = And [ Object id = Source.PlanetID  HasTag name = "NO_DEFENSE_TROOPS" ]
+                    effects = SetMaxTroops value = [[NO_DEFENSE_TROOPS_MULTIPLICATOR]] * Max ([[MINIMAL_IMPERIAL_GARRISON]], Value)                    
+                else = If condition = And [ Object id = Source.PlanetID  HasTag name = "BAD_DEFENSE_TROOPS" ]
+                    effects = SetMaxTroops value = [[BAD_DEFENSE_TROOPS_MULTIPLICATOR]] * Max ([[MINIMAL_IMPERIAL_GARRISON]], Value)
+                else = If condition = ContainedBy HasTag name = "GOOD_DEFENSE_TROOPS"
+                    effects = SetMaxTroops value = [[GOOD_DEFENSE_TROOPS_MULTIPLICATOR]] * Max ([[MINIMAL_IMPERIAL_GARRISON]], Value)
+                else = If condition = ContainedBy HasTag name = "GREAT_DEFENSE_TROOPS"
+                    effects = SetMaxTroops value = [[GREAT_DEFENSE_TROOPS_MULTIPLICATOR]] * Max ([[MINIMAL_IMPERIAL_GARRISON]], Value)
+                else = If condition = ContainedBy HasTag name = "ULTIMATE_DEFENSE_TROOPS"
+                    effects = SetMaxTroops value = [[ULTIMATE_DEFENSE_TROOPS_MULTIPLICATOR]] * Max ([[MINIMAL_IMPERIAL_GARRISON]], Value)
+                // AVERAGE_DEFENSE_TROOPS (dont have a tag or multiplicator)
+                else = SetMaxTroops value = 10 * Max ([[MINIMAL_IMPERIAL_GARRISON]], Value)
+            ]'''
+ 
 /*
 #1 <government type>
 #2 <troop skill level>
