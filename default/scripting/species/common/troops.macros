@@ -8,6 +8,17 @@ BASIC_DEFENSE_TROOPS
             stackinggroup = "HOMEWORLD_TROOPS_STACK"
             priority = [[VERY_EARLY_PRIORITY]]
             effects = SetMaxTroops value = Value + 4 accountinglabel = "HOMEWORLD_LABEL"
+EffectsGroup
+            scope = Source
+            activation = And [
+                Planet
+                Not Unowned
+            ]
+            stackinggroup = "TEST_TROOPS_STACK"
+            priority = [[VERY_EARLY_PRIORITY]]
+            effects = [
+                if condition = Planet effects = SetMaxTroops value = Value + 100 accountinglabel = "INDEPENDENT_TROOP_LABEL"
+            ]
 
 EffectsGroup
             scope = Source
