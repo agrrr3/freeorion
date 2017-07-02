@@ -903,7 +903,13 @@ ProductionQueueOrder::ProductionQueueOrder(int empire, int index) :
 ProductionQueueOrder::ProductionQueueOrder(int empire, int index, bool pause, float dummy) :
     Order(empire),
     m_index(index),
-    m_pause(pause ? PAUSE : RESUME),
+    m_pause(pause ? PAUSE : RESUME)
+{}
+
+ProductionQueueOrder::ProductionQueueOrder(int empire, int index, bool allow_use_imperial_pp, float dummy, float dummy2) :
+    Order(empire),
+    m_index(index),
+    m_use_imperial_pp(allow_use_imperial_pp ? USE_IMPERIAL_PP : DONT_USE_IMPERIAL_PP)
 {}
 
 ProductionQueueOrder::ProductionQueueOrder(int empire, int index, float dummy1) :

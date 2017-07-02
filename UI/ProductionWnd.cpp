@@ -652,8 +652,8 @@ namespace {
             };
             auto resume_action = [&it, this]() { this->QueueItemPausedSignal(it, false); };
             auto pause_action = [&it, this]() { this->QueueItemPausedSignal(it, true); };
-            auto disallow_imperial_pp_action = [&it, this]() { this->QueueItemUseImperialPPSignal(it, false) };
-            auto allow_imperial_pp_action = [&it, this]() { this->QueueItemUseImperialPPSignal(it, true) };
+            auto disallow_imperial_pp_action = [&it, this]() { this->QueueItemUseImperialPPSignal(it, false); };
+            auto allow_imperial_pp_action = [&it, this]() { this->QueueItemUseImperialPPSignal(it, true); };
             auto dupe_action = [&it, this]() { this->QueueItemDupedSignal(it); };
             auto split_action = [&it, this]() { this->QueueItemSplitSignal(it); };
 
@@ -820,7 +820,7 @@ ProductionWnd::ProductionWnd(GG::X w, GG::Y h) :
     m_queue_wnd->GetQueueListBox()->QueueItemPausedSignal.connect(
         boost::bind(&ProductionWnd::QueueItemPaused, this, _1, _2));
     m_queue_wnd->GetQueueListBox()->QueueItemUseImperialPPSignal.connect(
-        boost::bind(&ProductionWnd::QueueItemUseImperialPP, this, _1, _2);
+        boost::bind(&ProductionWnd::QueueItemUseImperialPP, this, _1, _2));
 
     AttachChild(m_production_info_panel);
     AttachChild(m_queue_wnd);
