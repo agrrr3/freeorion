@@ -583,6 +583,7 @@ public:
     void SizeMove(const GG::Pt& ul, const GG::Pt& lr) override;
 
     void            SetTotalPointsCost(float total_points, float total_cost);
+    void            SetStockpileCost(float stockpile, float stockpile_max, float stockpile_use, float stockpile_use_max);
     void            SetLocalPointsCost(float local_points, float local_cost, const std::string& location_name);
     void            SetEmpireID(int empire_id);
     void            ClearLocalInfo();
@@ -599,6 +600,9 @@ private:
     GG::Label*  m_total_points_label;
     GG::Label*  m_total_points;
     GG::Label*  m_total_points_P_label;
+    GG::Label*  m_stockpile_points_label;
+    GG::Label*  m_stockpile_points;
+    GG::Label*  m_stockpile_points_P_label;
     GG::Label*  m_wasted_points_label;
     GG::Label*  m_wasted_points;
     GG::Label*  m_wasted_points_P_label;
