@@ -604,6 +604,9 @@ private:
     GG::Label*  m_stockpile_points_label;
     GG::Label*  m_stockpile_points;
     GG::Label*  m_stockpile_points_P_label;
+    GG::Label*  m_stockpile_use_label;
+    GG::Label*  m_stockpile_use;
+    GG::Label*  m_stockpile_use_P_label;
     GG::Label*  m_wasted_points_label;
     GG::Label*  m_wasted_points;
     GG::Label*  m_wasted_points_P_label;
