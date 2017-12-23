@@ -142,8 +142,8 @@ namespace {
             float excess_here = available_group.second - allocated_here;
             if (excess_here < EPSILON)
                 continue;
-            // Transfer excess to stockpile
-            new_contributions += excess_here * stockpile_transfer_efficiency;
+            // Transfer excess to stockpile limited
+            new_contributions += std::min(excess_here, stockpile_transfer_efficiency * available_group.second);
             TraceLogger() << "allocated here: " << allocated_here
                           << "  excess here: " << excess_here
                           << "  to stockpile: " << new_contributions;
