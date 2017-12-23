@@ -133,6 +133,7 @@ namespace {
             return 0.0f;
         }
         float stockpile_transfer_efficiency = std::min(1.0f, empire->GetMeter("METER_IMPERIAL_PP_TRANSFER_EFFICIENCY")->Current());
+        float stockpile_use_limit = empire->GetMeter("METER_IMPERIAL_PP_USE_LIMIT")->Current();
         float stockpile_used = boost::accumulate(allocated_stockpile_pp | boost::adaptors::map_values, 0.0f);
         float new_contributions = 0.0f;
         for (auto const& available_group : available_pp) {
@@ -143,7 +144,7 @@ namespace {
             if (excess_here < EPSILON)
                 continue;
             // Transfer excess to stockpile limited
-            new_contributions += std::min(excess_here, stockpile_transfer_efficiency * available_group.second);
+            new_contributions += std::min(stockpile_use_limit, excess_here);
             TraceLogger() << "allocated here: " << allocated_here
                           << "  excess here: " << excess_here
                           << "  to stockpile: " << new_contributions;
