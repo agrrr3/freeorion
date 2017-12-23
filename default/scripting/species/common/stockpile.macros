@@ -1,0 +1,50 @@
+BASIC_STOCKPILE
+'''
+'''
+
+
+AVERAGE_STOCKPILE
+'''[[BASIC_STOCKPILE]]
+'''
+
+GREAT_STOCKPILE
+'''[[BASIC_STOCKPILE]]
+        // Make this species the capital one and set it to industry
+        EffectsGroup
+            description = "GREAT_STOCKPILE_DESC"
+            scope = Source
+            activation = And [
+                Source
+                Planet
+                Capital
+                TargetIndustry low = 0
+                Focus type = "FOCUS_INDUSTRY"
+            ]
+            stackinggroup = "IMPERIAL_STOCKPILE_SPECIES_STACK"
+            accountinglabel = "GREAT_IMPERIAL_STOCKPILE_LABEL"
+            priority = [[DEFAULT_PRIORITY]]
+            effects = [
+                SetEmpireMeter empire = Source.Owner meter = "METER_IMPERIAL_PP_TRANSFER_EFFICIENCY" value = Value + 0.4
+                SetEmpireMeter empire = Source.Owner meter = "METER_IMPERIAL_PP_USE_LIMIT"           value = Value + 20
+            ]
+
+        EffectsGroup
+            description = "GREAT_STOCKPILE_DESC"
+            scope = Source
+            activation = And [
+                Source
+                Planet
+                TargetIndustry low = 0
+                Focus type = "FOCUS_INDUSTRY"
+            ]
+            accountinglabel = "GREAT_PLANETARY_STOCKPILE_LABEL"
+            priority = [[DEFAULT_PRIORITY]]
+            effects = [
+                SetEmpireMeter empire = Source.Owner meter = "METER_IMPERIAL_PP_USE_LIMIT"           value = Value + 5 + (Target.Population * [[STOCKPILE_USE_PER_POP]] * [[GREAT_MULTIPLIER_WHOLE]])
+            ]
+
+'''
+
+
+STOCKPILE_USE_PER_POP
+'''0.05'''
