@@ -2,49 +2,74 @@ BASIC_STOCKPILE
 '''
 '''
 
-
-AVERAGE_STOCKPILE
+BAD_STOCKPILE
 '''[[BASIC_STOCKPILE]]
 '''
 
+AVERAGE_STOCKPILE
+'''[[EFFECTS_IMPERIAL_STOCKPILE(GOOD,5)]]
+'''
+
+GOOD_STOCKPILE
+'''[[EFFECTS_IMPERIAL_STOCKPILE(GOOD,5)]]
+        [[FFECTS_PLANETARY_STOCKPILE(GOOD,0.1)]]
+'''
+
 GREAT_STOCKPILE
-'''[[BASIC_STOCKPILE]]
-        // Make this species the capital one and set it to industry
-        EffectsGroup
-            description = "GREAT_STOCKPILE_DESC"
+'''[[EFFECTS_IMPERIAL_STOCKPILE(GREAT,20)]]
+
+        [[EFFECTS_PLANETARY_STOCKPILE(GREAT,0.3)]]
+'''
+
+FFECTS_PLANETARY_STOCKPILE
+'''//nothing
+'''
+
+// 1 - GOOD, GREAT
+// 2 - Static capital on logistics bonus to stockpile limit
+EFFECTS_IMPERIAL_STOCKPILE
+'''EffectsGroup
+            description = "@1@_STOCKPILE_DESC"
             scope = Source
             activation = And [
                 Source
                 Planet
                 Capital
                 TargetIndustry low = 0
-                Focus type = "FOCUS_INDUSTRY"
+                Or [
+                    Focus type = "FOCUS_SUPPLY"
+                ]
             ]
             stackinggroup = "IMPERIAL_STOCKPILE_SPECIES_STACK"
-            accountinglabel = "GREAT_IMPERIAL_STOCKPILE_LABEL"
+            accountinglabel = "@1@_IMPERIAL_STOCKPILE_LABEL"
             priority = [[DEFAULT_PRIORITY]]
             effects = [
-                SetEmpireMeter empire = Source.Owner meter = "METER_IMPERIAL_PP_TRANSFER_EFFICIENCY" value = Value + 0.4
-                SetEmpireMeter empire = Source.Owner meter = "METER_IMPERIAL_PP_USE_LIMIT"           value = Value + 20
+                SetEmpireMeter empire = Source.Owner meter = "METER_IMPERIAL_PP_USE_LIMIT" value = Value + @2@
             ]
+'''
 
-        EffectsGroup
-            description = "GREAT_STOCKPILE_DESC"
+// 1 - GREAT, GOOD...
+// 2 - Per population multiplier for planetary logistics or industry bonus to stockpile limit 
+EFFECTS_PLANETARY_STOCKPILE
+'''EffectsGroup
+            description = "@1@_STOCKPILE_DESC"
             scope = Source
             activation = And [
                 Source
                 Planet
                 TargetIndustry low = 0
-                Focus type = "FOCUS_INDUSTRY"
+                Or [
+                    Focus type = "FOCUS_INDUSTRY"
+                    Focus type = "FOCUS_LOGISTICS"
+                ]
             ]
-            accountinglabel = "GREAT_PLANETARY_STOCKPILE_LABEL"
+            accountinglabel = "@1@_PLANETARY_STOCKPILE_LABEL"
             priority = [[DEFAULT_PRIORITY]]
             effects = [
-                SetEmpireMeter empire = Source.Owner meter = "METER_IMPERIAL_PP_USE_LIMIT"           value = Value + 5 + (Target.Population * [[STOCKPILE_USE_PER_POP]] * [[GREAT_MULTIPLIER_WHOLE]])
+                SetEmpireMeter empire = Source.Owner meter = "METER_IMPERIAL_PP_USE_LIMIT" 
+                    value = Value + (@2@ * Target.Population * [[INDUSTRIAL_EFFICIENCY]])
             ]
-
 '''
 
-
-STOCKPILE_USE_PER_POP
-'''0.05'''
+INDUSTRIAL_EFFICIENCY
+'''min(1.0, (Target.Industry / max(0.01, Target.TargetIndustry)))'''
