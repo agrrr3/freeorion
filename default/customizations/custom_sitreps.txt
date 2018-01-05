@@ -123,10 +123,10 @@ EffectsGroup
             ]
         ]
         // Dont warn about system where there are already enemies this turn
-        Not Contains And [
-            Ship
-            OwnedBy affiliation = EnemyOf empire = Source.Owner
-        ]
+//      Not Contains And [
+  //        Ship
+    //      OwnedBy affiliation = EnemyOf empire = Source.Owner
+      //]
         // Systems which have enemies incoming
         Or [
             [[FLEET_IN_JUMP_DISTANCE_FOR_SPEED(100)]]
@@ -149,11 +149,19 @@ EffectsGroup
 
 FLEET_IN_JUMP_DISTANCE_FOR_SPEED
 '''WithinDistance distance = @1@ condition = And [
-            Fleet 
+            // BUG: comparison with Fleet should suffice for moving fleets, but Speed condition does not seem to match Fleet objects
+            Ship
             Speed low = @1@
             Or [
-                Turn low = LocalCandidate.ETA - 1
-                Stationary
+                And [
+                    Turn low = LocalCandidate.ETA - 1
+                    Number low = 1 condition = And [
+                        System
+                        Object id = RootCandidate.SystemID
+                        Object id = LocalCandidate.FinalDestinationID
+                    ]
+                ]
+                Not Stationary
             ]
             OwnedBy affiliation = EnemyOf empire = Source.Owner
         ]
