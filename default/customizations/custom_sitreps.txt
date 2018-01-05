@@ -110,11 +110,11 @@ EffectsGroup
 // The other example sitreps below are left in English, but can be translated just by changing the strings provided below for the messages and labels below.
 // It is important to note that, unlike the above entry, these entries all use the  NoStringtableLookup keyword after the label.
 //*********************************************************************************************************************************************************
-            
-//            LocalCandidate.FinalDestinationID destination = Target.SystemID
+
 EffectsGroup
     scope = And [
         System
+        // Warn if these systems have incoming
         Contains And [
             OwnedBy empire = Source.Owner
             Or [
@@ -122,25 +122,17 @@ EffectsGroup
                 Ship
             ]
         ]
-        //Not Contains And [
-        //    Ship
-        //    OwnedBy affiliation = EnemyOf empire = Source.Owner
-        //]
-        //Number low = 1 condition = And [
-        NumberOf number = 500 condition = And [
-            System 
-            Number low = 1 condition = And [
-                Fleet
-                id = LocalCandidate.FinalDestinationID
-            
-            //OwnedBy affiliation = EnemyOf empire = Source.Owner
-            //Turn low = LocalCandidate.ETA - 1
-            WithinStarlaneJumps jumps = 1 condition = And [
-                // cant access Target!!
-                System id = RootCandidate.ID
-            ]
-            //Destination id = LocalCandidate.FinalDestinationID 
-            //Turn low = LocalCandidate.ETA - 1 high = LocalCandidate.ETA + 3
+        // Dont warn about system where there are already enemies this turn
+        Not Contains And [
+            Ship
+            OwnedBy affiliation = EnemyOf empire = Source.Owner
+        ]
+        // Systems which have enemies incoming
+        Or [
+            [[FLEET_IN_JUMP_DISTANCE_FOR_SPEED(100)]]
+            [[FLEET_IN_JUMP_DISTANCE_FOR_SPEED(80)]]
+            [[FLEET_IN_JUMP_DISTANCE_FOR_SPEED(60)]]
+            [[FLEET_IN_JUMP_DISTANCE_FOR_SPEED(40)]]
         ]
     ]
     activation = Source
@@ -154,6 +146,18 @@ EffectsGroup
                 tag = "system" data = Target.ID
             ]
             empire = Source.Owner
+
+FLEET_IN_JUMP_DISTANCE_FOR_SPEED
+'''WithinDistance distance = @1@ condition = And [
+            Fleet 
+            Speed low = @1@
+            Or [
+                Turn low = LocalCandidate.ETA - 1
+                Stationary
+            ]
+            OwnedBy affiliation = EnemyOf empire = Source.Owner
+        ]
+'''
 
 // Reminder if a Gas Giant you own in a system along with another planet you also own, populated by a species with Industry Focus, and you have the Orbital Generation tech
 // but haven't yet built or enqueued a GG Generator in that system yet
