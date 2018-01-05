@@ -110,6 +110,50 @@ EffectsGroup
 // The other example sitreps below are left in English, but can be translated just by changing the strings provided below for the messages and labels below.
 // It is important to note that, unlike the above entry, these entries all use the  NoStringtableLookup keyword after the label.
 //*********************************************************************************************************************************************************
+            
+//            LocalCandidate.FinalDestinationID destination = Target.SystemID
+EffectsGroup
+    scope = And [
+        System
+        Contains And [
+            OwnedBy empire = Source.Owner
+            Or [
+                Planet
+                Ship
+            ]
+        ]
+        //Not Contains And [
+        //    Ship
+        //    OwnedBy affiliation = EnemyOf empire = Source.Owner
+        //]
+        //Number low = 1 condition = And [
+        NumberOf number = 500 condition = And [
+            System 
+            Number low = 1 condition = And [
+                Fleet
+                id = LocalCandidate.FinalDestinationID
+            
+            //OwnedBy affiliation = EnemyOf empire = Source.Owner
+            //Turn low = LocalCandidate.ETA - 1
+            WithinStarlaneJumps jumps = 1 condition = And [
+                // cant access Target!!
+                System id = RootCandidate.ID
+            ]
+            //Destination id = LocalCandidate.FinalDestinationID 
+            //Turn low = LocalCandidate.ETA - 1 high = LocalCandidate.ETA + 3
+        ]
+    ]
+    activation = Source
+    effects =
+        GenerateSitRepMessage
+            message = "%system% got incoming next turn"
+            label = "Custom_5"
+            NoStringtableLookup
+            icon = "icons/meter/troops.png"
+            parameters = [
+                tag = "system" data = Target.ID
+            ]
+            empire = Source.Owner
 
 // Reminder if a Gas Giant you own in a system along with another planet you also own, populated by a species with Industry Focus, and you have the Orbital Generation tech
 // but haven't yet built or enqueued a GG Generator in that system yet
