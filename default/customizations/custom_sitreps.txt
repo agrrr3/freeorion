@@ -114,7 +114,7 @@ EffectsGroup
 EffectsGroup
     scope = And [
         System
-        // Warn if these systems have incoming
+        // The following assets need protection
         Contains And [
             OwnedBy empire = Source.Owner
             Or [
@@ -125,19 +125,21 @@ EffectsGroup
         // Dont warn about system where there are already enemies this turn
         Not Contains And [
             Ship
-            OwnedBy affiliation = EnemyOf empire = Source.Owner
+            Or [
+                OwnedBy affiliation = EnemyOf empire = Source.Owner
+                UnOwned
+            ]
         ]
-        // Systems which have enemies incoming (not working)
+        // Only warn if enemies are incoming
         WithinDistance distance = 120 condition = And [
             Fleet
             Not Stationary
-            Turn low = [[ETA_NEXT_TURN]] high = [[ETA_NEXT_TURN]]
-            // RootCandidate.SystemID == LocalCandidate.NextSystemID
-            Number low = 1 condition = And [
-                    Object id = RootCandidate.SystemID
-// LocalCandidate is probably not the surrounding fleet
-                    Object id = LocalCandidate.NextSystemID
+            Or [
+                OwnedBy affiliation = EnemyOf empire = Source.Owner
+                UnOwned
             ]
+            Turn low = [[ETA_NEXT_TURN]] high = [[ETA_NEXT_TURN]]
+            (RootCandidate.ID = LocalCandidate.NextSystemID)
         ]
     ]
     activation = Source
