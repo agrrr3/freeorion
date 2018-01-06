@@ -123,16 +123,21 @@ EffectsGroup
             ]
         ]
         // Dont warn about system where there are already enemies this turn
-//      Not Contains And [
-  //        Ship
-    //      OwnedBy affiliation = EnemyOf empire = Source.Owner
-      //]
-        // Systems which have enemies incoming
-        Or [
-            [[FLEET_IN_JUMP_DISTANCE_FOR_SPEED(100)]]
-            [[FLEET_IN_JUMP_DISTANCE_FOR_SPEED(80)]]
-            [[FLEET_IN_JUMP_DISTANCE_FOR_SPEED(60)]]
-            [[FLEET_IN_JUMP_DISTANCE_FOR_SPEED(40)]]
+        Not Contains And [
+            Ship
+            OwnedBy affiliation = EnemyOf empire = Source.Owner
+        ]
+        // Systems which have enemies incoming (not working)
+        WithinDistance distance = 120 condition = And [
+            Fleet
+            Not Stationary
+            Turn low = [[ETA_NEXT_TURN]] high = [[ETA_NEXT_TURN]]
+            // RootCandidate.SystemID == LocalCandidate.NextSystemID
+            Number low = 1 condition = And [
+                    Object id = RootCandidate.SystemID
+// LocalCandidate is probably not the surrounding fleet
+                    Object id = LocalCandidate.NextSystemID
+            ]
         ]
     ]
     activation = Source
@@ -143,29 +148,12 @@ EffectsGroup
             NoStringtableLookup
             icon = "icons/meter/troops.png"
             parameters = [
-                tag = "system" data = Target.ID
+                tag = "system"  data = Target.ID
             ]
             empire = Source.Owner
 
-FLEET_IN_JUMP_DISTANCE_FOR_SPEED
-'''WithinDistance distance = @1@ condition = And [
-            // BUG: comparison with Fleet should suffice for moving fleets, but Speed condition does not seem to match Fleet objects
-            Ship
-            Speed low = @1@
-            Or [
-                And [
-                    Turn low = LocalCandidate.ETA - 1
-                    Number low = 1 condition = And [
-                        System
-                        Object id = RootCandidate.SystemID
-                        Object id = LocalCandidate.FinalDestinationID
-                    ]
-                ]
-                Not Stationary
-            ]
-            OwnedBy affiliation = EnemyOf empire = Source.Owner
-        ]
-'''
+ETA_NEXT_TURN
+'''(CurrentTurn + LocalCandidate.ETA - 1)'''
 
 // Reminder if a Gas Giant you own in a system along with another planet you also own, populated by a species with Industry Focus, and you have the Orbital Generation tech
 // but haven't yet built or enqueued a GG Generator in that system yet
