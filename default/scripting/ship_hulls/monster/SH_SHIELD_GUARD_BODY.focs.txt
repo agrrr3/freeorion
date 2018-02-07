@@ -1,0 +1,38 @@
+Hull
+    name = "SH_SHIELD_GUARD_BODY"
+    description = "SH_SHIELD_GUARD_BODY_DESC"
+    speed = 0
+    fuel = 0
+    stealth = 5
+    structure = 200
+    slots = [
+        Slot type = External position = (0.13, 0.52)
+        Slot type = External position = (0.32, 0.32)
+        Slot type = External position = (0.60, 0.20)
+        Slot type = External position = (0.25, 0.75)
+        Slot type = External position = (0.58, 0.65)
+        Slot type = External position = (0.85, 0.45)
+        Slot type = Internal position = (0.38, 0.52)
+        Slot type = Internal position = (0.62, 0.42)
+    ]
+    buildCost = 1
+    buildTime = 2
+    Unproducible
+    tags = [ "UNOWNED_FRIENDLY" "PEDIA_HULL_MONSTER_GUARD" ]
+    location = All
+    effectsgroups = [
+        [[UNOWNED_OWNED_VISION_BONUS(POOR,20,20)]]
+        EffectsGroup
+            scope = Source
+            activation = Source
+            effects = [
+                SetMaxDamage partname = "SR_WEAPON_0_1" value = Value + 3
+                SetMaxDamage partname = "SR_WEAPON_4_1" value = Value + 15
+                SetDamage partname = "SR_WEAPON_0_1" value = Value + 3
+                SetDamage partname = "SR_WEAPON_4_1" value = Value + 15
+            ]
+    ]
+    icon = ""
+    graphic = "fields/rainbow_storm.png"
+
+#include "../ship_hulls.macros"

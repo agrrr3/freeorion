@@ -1,0 +1,17 @@
+ShipDesign
+    name = "SM_SHIELD_GUARD"
+    uuid = "08a58b08-0929-496d-84fc-fba91424ca35"
+    description = "SM_SHIELD_GUARD_DESC"
+    hull = "SH_SHIELD_GUARD_BODY"
+    parts = [
+        "SR_WEAPON_0_1"
+        "SR_WEAPON_0_1"
+        "SR_WEAPON_0_1"
+        "SR_WEAPON_0_1"
+        "FT_BAY_KRILL"
+        "FT_BAY_KRILL"
+        "SH_PLASMA"
+        "FT_HANGAR_KRILL"
+    ]
+    icon = "fields/rainbow_storm.png"
+    model = "seed"

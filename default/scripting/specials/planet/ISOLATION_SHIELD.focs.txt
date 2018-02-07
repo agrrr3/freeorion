@@ -1,0 +1,14 @@
+Special
+    name = "ISOLATION_SHIELD_SPECIAL"
+    description = "ISOLATION_SHIELD_SPECIAL_DESC"
+    spawnrate = 0
+    effectsgroups =
+        EffectsGroup
+            scope = Or [
+                Source
+                ContainedBy Source
+            ]
+            effects = SetStealth value = Value + [[MEDIUM_STEALTH]]
+    graphic = "fields/rainbow_storm.png"
+
+#include "/scripting/common/stealth.macros"
