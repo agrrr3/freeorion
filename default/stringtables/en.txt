@@ -4478,6 +4478,9 @@ Planets Invaded
 TOTAL_POPULATION_STAT
 Population
 
+OHUENNOST
+Empire Performance Quotient
+
 STATISTICS_TEST_1
 Statistics Test 1
 
