@@ -134,7 +134,7 @@ namespace parse {
             =   (
                 tok.ShipPartsOwned_
                 > -( label(tok.Empire_) > int_rules.expr )
-                > label(tok.Class_)  >> ship_part_class_enum
+                > label(tok.Class_)  > ship_part_class_enum
                 ) [ _val = construct_movable_(new_<ValueRef::ComplexVariable<int>>(_1, deconstruct_movable_(_2, _pass), deconstruct_movable_(construct_movable_(new_<ValueRef::Constant<int>>(_3)), _pass), nullptr, nullptr, nullptr)) ]
             ;
 
