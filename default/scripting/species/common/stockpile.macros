@@ -56,6 +56,16 @@ STANDARD_STOCKPILE
                 min(abs(Value(Target.MaxStockpile) - Value), 1) *
                     (1 - 2*(Statistic If condition = And [Target (Value > Value(Target.MaxStockpile))]))
 
+        // double stockpile efficiency with focus
+        EffectsGroup
+            scope = Source
+            activation = And [
+                Planet
+                Focus type = "FOCUS_STOCKPILE"
+            ]
+            priority = [[LATE_PRIORITY]]
+            effects = SetMaxStockpile value = Value * 2
+
         // removes residual stockpile capacity from a dead planet
         EffectsGroup
             scope = Source
