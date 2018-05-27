@@ -66,6 +66,24 @@ STANDARD_STOCKPILE
             priority = [[LATE_PRIORITY]]
             effects = SetMaxStockpile value = Value * 2
 
+        EffectsGroup
+            scope = And [
+                ProductionCenter
+                OwnedBy empire = Source.Owner
+                Species name = Source.Species
+                Not Homeworld name = Source.Species
+            ]
+            activation = And [
+                Planet
+                Focus type = "FOCUS_STOCKPILE"
+                Homeworld
+            ]
+            stackinggroup = "HOMEWORLD_STOCKPILE_FOCUS_BONUS_LABEL"
+            accountinglabel = "HOMEWORLD_STOCKPILE_FOCUS_BONUS_LABEL"
+            priority = [[DEFAULT_PRIORITY]]
+            effects = SetMaxStockpile value = (Value +  2 * Target.Population * [[STOCKPILE_PER_POP]])
+
+
         // removes residual stockpile capacity from a dead planet
         EffectsGroup
             scope = Source
