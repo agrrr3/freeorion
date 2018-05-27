@@ -8548,7 +8548,7 @@ FOCUS_STOCKPILE
 Stockpile
 
 FOCUS_STOCKPILE_DESC
-Allows stockpile techs to boost stockpile withdrawl capacity
+Allows stockpile techs to boost stockpile withdrawal capacity
 
 # Focus types
 FOCUS_RESEARCH
@@ -10557,7 +10557,7 @@ This task is difficult as the service has to predict when demand happens, where 
 Unused PP will automatically be transferred to the Imperial Production Stockpile.
 An item on the production queue draws automatically on the Imperial Stockpile if the item has not been explicitly disabled from doing so.
 
-This is the basic technology for the imperial stockpile, which increases the [[metertype METER_STOCKPILE]] of growth-focused and stockpile-focused planets by 1.'''
+This is the basic technology for the imperial stockpile, which increases the [[metertype METER_STOCKPILE]] of stockpile-focused planets by 1.'''
 
 PRO_GENERIC_SUPPLIES
 Generic Supplies
@@ -10570,7 +10570,7 @@ Reaching this state of sophistication, Generic Supplies can be used to construct
 
 This frees the imperial stockpile service from having to know which goods will be demanded exactly. Predicting the location and amount is enough.
 
-This is an upgrade technology for the imperial stockpile. The [[metertype METER_STOCKPILE]] is increased by 2, plus an additional 0.01 per population, plus an additional 3 for each growth-focused and stockpiling-focused planet.
+This is an upgrade technology for the imperial stockpile. The [[metertype METER_STOCKPILE]] is increased by 2, plus an additional 0.01 per population, plus an additional 3 for each stockpiling-focused planet.
 These improvements are cumulative with that provided by [[tech PRO_PREDICTIVE_STOCKPILING]].'''
 
 PRO_INTERSTELLAR_ENTANGLEMENT_FACTORY
