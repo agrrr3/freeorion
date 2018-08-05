@@ -310,7 +310,9 @@
     (Population)                                \
     (PopulationCenter)                          \
     (Position)                                  \
+    (Precision)                                 \
     (PreferredFocus)                            \
+    (PreferredPrey)                             \
     (Prerequisites)                             \
     (PreviousSystemID)                          \
     (Priority)                                  \
