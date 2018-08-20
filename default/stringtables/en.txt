@@ -12095,6 +12095,8 @@ BLD_SHIPYARD_ORBITAL_DRYDOCK_DESC
 
 [[encyclopedia ORBITAL_DRYDOCK_REPAIR_TITLE]] can be hindered due to the planets [[metertype METER_HAPPINESS]], or from combat in the system.
 
+As long as no basic shipyard exists on the planet, building an orbital drydock is takes very long.
+
 When a large interstellar vessel is being constructed, it is not practical to move large parts up and down space elevators for orbital assembly. Rather, it is far more practical to fabricate the parts and assemble them in the same orbital facility, thus eliminating the need to transport particularly massive ship parts from the surface of the planet.'''
 
 BLD_SHIPYARD_CON_NANOROBO
