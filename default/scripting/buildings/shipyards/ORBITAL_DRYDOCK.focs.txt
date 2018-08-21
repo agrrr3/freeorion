@@ -13,7 +13,7 @@ BuildingType
     // If a completed shipyard is present, the Drydocks take 5 turns to build.
     // If a shipyard gets build in parallel the shipyard finishes after four turns and the Drydocks still take 5 turns to build. 
     // A buildtime of 21 ensures that after four turns less than a fifth of the progress is made. (4/nturns < 1/5) ==> (nturns > 20)
-    buildtime = 21 - 16 * Statistic If condition = AND [ Source Contains And [ Building name = "BLD_SHIPYARD_BASE" OwnedBy empire = Source.Owner ] ]
+    buildtime = 21 - 16 * Statistic If condition = AND [ Target Contains And [ Building name = "BLD_SHIPYARD_BASE" OwnedBy empire = Source.Owner ] ]
     tags = "ORBITAL"
     location = And [
         Planet
