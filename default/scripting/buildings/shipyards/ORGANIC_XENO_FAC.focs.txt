@@ -7,16 +7,25 @@ BuildingType
     location = And [
         Planet
         Not Contains Building name = "BLD_SHIPYARD_ORG_XENO_FAC"
-        Contains And [
-            Building name = "BLD_SHIPYARD_BASE"
-            OwnedBy empire = Source.Owner
+        Or [
+            Contains And [
+                Building name = "BLD_SHIPYARD_BASE"
+                OwnedBy empire = Source.Owner
+            ]
+            And [
+                Enqueued type = Building name = "BLD_SHIPYARD_BASE"
+                Not Enqueued type = Building name = CurrentContent
+            ]
         ]
-        Or  [
+        Or [
             Contains And [
                 Building name = "BLD_SHIPYARD_ORG_ORB_INC"
                 OwnedBy empire = Source.Owner
-                ]
-            Enqueued type = Building name = "BLD_SHIPYARD_ORG_ORB_INC"
+            ]
+            And [
+                Enqueued type = Building name = "BLD_SHIPYARD_ORG_ORB_INC"
+                Not Enqueued type = Building name = CurrentContent
+            ]
         ]
         OwnedBy empire = Source.Owner
     ]
