@@ -1,3 +1,27 @@
+/*
+        [[LOCATION_PREREQUISITE_ENQUEUEABLE(BLD_SHIPYARD_BASE)]]
+*/
+LOCATION_PREREQUISITE_ENQUEUEABLE
+'''Or  [
+            Contains And [
+                Building name = "@1@"
+                OwnedBy empire = Source.Owner
+            ]
+            And [
+                Enqueued type = Building name = "@1@"
+                Not Enqueued type = Building name = CurrentContent
+            ]
+        ]'''
+LOCATION_PREREQUISITE_PARALLEL
+'''Or  [
+            Contains And [
+                Building name = "@1@"
+                OwnedBy empire = Source.Owner
+            ]
+            Enqueued type = Building name = "@1@"
+        ]'''
+
+
 ENQUEUE_BUILD_ONE_PER_PLANET
 '''And [
         Not Contains Building name = CurrentContent
