@@ -7,26 +7,8 @@ BuildingType
     location = And [
         Planet
         Not Contains Building name = "BLD_SHIPYARD_ORG_XENO_FAC"
-        Or [
-            Contains And [
-                Building name = "BLD_SHIPYARD_BASE"
-                OwnedBy empire = Source.Owner
-            ]
-            And [
-                Enqueued type = Building name = "BLD_SHIPYARD_BASE"
-                Not Enqueued type = Building name = CurrentContent
-            ]
-        ]
-        Or [
-            Contains And [
-                Building name = "BLD_SHIPYARD_ORG_ORB_INC"
-                OwnedBy empire = Source.Owner
-            ]
-            And [
-                Enqueued type = Building name = "BLD_SHIPYARD_ORG_ORB_INC"
-                Not Enqueued type = Building name = CurrentContent
-            ]
-        ]
+        [[LOCATION_PREREQUISITE_ENQUEUEABLE(BLD_SHIPYARD_BASE)]]
+        [[LOCATION_PREREQUISITE_ENQUEUEABLE(BLD_SHIPYARD_ORG_ORB_INC)]]
         OwnedBy empire = Source.Owner
     ]
     EnqueueLocation = [[ENQUEUE_BUILD_ONE_PER_PLANET]]
