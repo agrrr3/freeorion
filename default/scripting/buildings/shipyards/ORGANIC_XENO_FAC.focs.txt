@@ -8,7 +8,7 @@ BuildingType
         Planet
         Not Contains Building name = "BLD_SHIPYARD_ORG_XENO_FAC"
         [[LOCATION_PREREQUISITE_ENQUEUEABLE(BLD_SHIPYARD_BASE)]]
-        [[LOCATION_PREREQUISITE_ENQUEUEABLE(BLD_SHIPYARD_ORG_ORB_INC)]]
+        [[LOCATION_PREREQUISITE_PARALLEL(BLD_SHIPYARD_ORG_ORB_INC)]]
         OwnedBy empire = Source.Owner
     ]
     EnqueueLocation = [[ENQUEUE_BUILD_ONE_PER_PLANET]]
