@@ -1,5 +1,6 @@
 #include "CombatSystem.h"
 #include "CombatEvents.h"
+#include "../universe/Condition.h"
 #include "CombatTargetting.h"
 
 #include "../universe/Universe.h"
@@ -740,8 +741,13 @@ namespace {
             if (part_class == PC_DETECTION){
                 design_precision = std::max(design_precision, part->Precision());
                 //XXX
-                Targetting::TriggerConditionP wrap = Targetting::WrapCondition(part->PreferredPrey());
-                    //design_preferred_prey = Targetting::Combine(design_preferred_prey, Targetting::WrapCondition(part->PreferredPrey()), part->Precision());
+//                Targetting::TriggerConditionP wrap = Targetting::WrapCondit(part->PreferredPrey());
+		Targetting::TriggerCondition* prey = part->PreferredPrey();
+                Condition::ConditionBase* cbp = nullptr;
+                //const Condition::ConditionBase* wrapple = Targetting::WrapCondition(cbp);
+const Condition::ConditionBase* wrappy = Targetting::Wrap(cbp);
+                Targetting::TriggerConditionP wrap = nullptr;
+                   // design_preferred_prey = Targetting::Combine(design_preferred_prey, Targetting::WrapCondition(part->PreferredPrey()), part->Precision());
                 design_preferred_prey = Targetting::Combine(design_preferred_prey, std::move(wrap), part->Precision());
             }
         }
@@ -757,7 +763,10 @@ namespace {
                 int shots = static_cast<int>(ship->CurrentPartMeterValue(METER_SECONDARY_STAT, part_name)); // secondary stat is shots per attack)
                 if (part_attack > 0.0f && shots > 0) {
                     // attack for each shot...
-                    auto preferred_targets = Targetting::Combine(design_preferred_prey, Targetting::WrapCondition(Targetting::FindPreferredTargets(part_name)), part->Precision());
+//XXX
+//		  Targetting::TriggerConditionP wrap = Targetting::WrapCondition(Targetting::FindPreferredTargets(part_name));
+                Targetting::TriggerConditionP wrap = nullptr;
+                    auto preferred_targets = Targetting::Combine(design_preferred_prey, std::move(wrap), part->Precision());
                     for (int shot_count = 0; shot_count < shots; ++shot_count)
                         retval.push_back(PartAttackInfo(part_class, part_name, part_attack, Targetting::FindPrecision(preferred_targets), preferred_targets));
                 }

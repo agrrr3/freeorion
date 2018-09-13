@@ -114,6 +114,16 @@ Targetting::TriggerConditions Targetting::Combine(const Targetting::TriggerCondi
     return combined;
 }
 
+Targetting::TriggerCondition* Targetting::Wrap(Targetting::TriggerCondition* p)
+{
+    return nullptr;
+}
+
+const Condition::ConditionBase * WrapCondition(Condition::ConditionBase* condition)
+{ //return std::shared_ptr<Targetting::TriggerCondition>(std::move(condition)); 
+return nullptr;
+}
+
 const Targetting::TriggerConditions Targetting::Combine(const Targetting::TriggerConditions& conditions,
                                                         const Targetting::TriggerConditionP&& condition, int weight)
 {
@@ -129,6 +139,8 @@ const Targetting::TriggerConditions Targetting::Combine(const Targetting::Trigge
     return combined;
 }
 
-const Targetting::TriggerConditionP WrapCondition(const Targetting::TriggerCondition*&& condition) {
-    return std::shared_ptr<Targetting::TriggerCondition>(std::move(condition));
-}
+
+/*
+const Targetting::TriggerConditionP WrapCondition(const Targetting::TriggerCondition* condition) 
+{ return std::shared_ptr<Targetting::TriggerCondition>(std::move(condition)); }
+*/

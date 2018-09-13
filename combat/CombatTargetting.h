@@ -80,6 +80,11 @@ namespace Targetting {
     bool IsPreferredTarget(const TriggerConditions& condition, Target target);
 
     Precision FindPrecision(const TriggerConditions& conditions);
+//    const TriggerConditionP WrapCondition(const TriggerCondition* condition);
+ // const Condition::ConditionBase* WrapCondition(Condition::ConditionBase* condition);// ging nicht
+TriggerCondition* WrapCondition(TriggerCondition* condition);
+// TriggerCondition* Wrap(TriggerCondition* x); // was ok
+ TriggerCondition* Wrap(TriggerCondition* x); // was ok
 
     /* returns nullptr if no preference */
     TriggerCondition* FindPreferredTargets(const std::string& part_name);
@@ -87,7 +92,6 @@ namespace Targetting {
     TriggerConditions PreyAsTriggerConditions(PreyType prey);
     TriggerConditions Combine(const TriggerConditions& one, const TriggerConditions& another);
     /* if the given condition exists, a copy with the appended condition gets returned. */
-    const TriggerConditionP WrapCondition(const TriggerCondition*&& condition);
     const TriggerConditions Combine(const TriggerConditions& one, const TriggerConditionP&& another, int weight);
     //     const TriggerConditions Combine(const TriggerConditions& one, std::shared_ptr<const TriggerCondition>&& another, int weight);
 }
