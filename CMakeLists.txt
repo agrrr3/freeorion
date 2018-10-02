@@ -101,6 +101,7 @@ if(APPLE)
 endif()
 
 if(UNIX)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address,undefined")
     set(FreeOrion_INSTALL_LIBDIR "${CMAKE_INSTALL_LIBDIR}/freeorion")
 endif()
 
@@ -121,6 +122,8 @@ add_compile_options(
     # Enable (almost) all warnings on compilers
     # https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wall-316
     $<$<CXX_COMPILER_ID:GNU>:-Wall>
+    $<$<CXX_COMPILER_ID:GNU>:-fsanitize=address,undefined>
+    $<$<CXX_COMPILER_ID:GNU>:-O0>
     # http://clang.llvm.org/docs/DiagnosticsReference.html#wall
     $<$<CXX_COMPILER_ID:Clang>:-Wall>
     # https://msdn.microsoft.com/en-us/library/thxezb7y.aspx#Anchor_1
@@ -393,7 +396,7 @@ target_compile_options(freeorionparseobj
         $<$<CXX_COMPILER_ID:AppleClang>:-fvisibility=hidden>
         $<$<CXX_COMPILER_ID:Clang>:-ftemplate-depth=512>
         $<$<CXX_COMPILER_ID:AppleClang>:-ftemplate-depth=512>
-        $<$<AND:$<NOT:$<BOOL:${BUILD_TESTING}>>,$<CXX_COMPILER_ID:GNU>>:-O3>
+#        $<$<AND:$<NOT:$<BOOL:${BUILD_TESTING}>>,$<CXX_COMPILER_ID:GNU>>:-O3>
 )
 
 target_compile_definitions(freeorionparseobj
