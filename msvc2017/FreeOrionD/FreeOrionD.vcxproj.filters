@@ -59,6 +59,9 @@
     <ClInclude Include="..\..\combat\CombatSystem.h">
       <Filter>Header Files\combat</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\combat\CombatTargetting.h">
+      <Filter>Header Files\combat</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Empire\Empire.h">
       <Filter>Header Files\Empire</Filter>
     </ClInclude>
@@ -255,6 +258,9 @@
     </ClCompile>
     <ClCompile Include="..\..\util\Process.cpp">
       <Filter>Source Files\util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\combat\CombatTargetting.cpp">
+      <Filter>Source Files\combat</Filter>
     </ClCompile>
     <ClCompile Include="..\..\combat\CombatSystem.cpp">
       <Filter>Source Files\combat</Filter>
