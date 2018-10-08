@@ -93,26 +93,33 @@ namespace {
             qi::_r1_type _r1;
             qi::matches_type matches_;
 
+            cap_dam = (  (label(tok.Capacity_)  > double_rule)
+                   | (label(tok.Damage_)    > double_rule)
+                         )  [ construct<std::pair<double,double>>(1.1,1.2)]    ;
+
+            dam_shot =                     
+               (  (label(tok.Damage_)    > double_rule )   // damage is secondary for fighters
+                   | (label(tok.Shots_)     > double_rule )   // shots is secondary for direct fire weapons
+                   )  [ construct<std::pair<double,double>>(2.1,2.2)]    
+                ;
+
+                
             part_type
                 = ( tok.Part_
                 >   common_rules.more_common
                 >   label(tok.Class_)       > ship_part_class_enum
-                > -(  (label(tok.Capacity_)  > double_rule)
-                   | (label(tok.Damage_)    > double_rule)
-                   )
-                > -(  (label(tok.Damage_)    > double_rule )   // damage is secondary for fighters
-                   | (label(tok.Shots_)     > double_rule )   // shots is secondary for direct fire weapons
-                   )
+                    //                    >  (- cap_dam)
+                    //                    >  (- dam_shot)
                 > matches_[tok.NoDefaultCapacityEffect_]
                 > -(label(tok.MountableSlotTypes_) > one_or_more_slots)
                 >   common_rules.common
                 >   label(tok.Icon_)        > tok.string
                 > -(label(tok.Precision_) > double_rule)
-//                > -(label(tok.PreferredPrey_) > condition_parser)
+                > -(label(tok.PreferredPrey_) > condition_parser)
                   ) [ _pass = is_unique_(_r1, _1, phoenix::bind(&MoreCommonParams::name, _2)),
                       insert_parttype_(_r1, _3,
-                                       construct<std::tuple<boost::optional<double>, boost::optional<double>>>(_4, _5)
-                                       , _8, _2, _7, _9, _6, _pass) ]
+                                       construct<std::tuple<boost::optional<double>, boost::optional<double>>>(4, 5)
+                                       , _6, _2, _5, _7, _4, _pass) ]
                 ;
 
             start
@@ -128,10 +135,13 @@ namespace {
             qi::on_error<qi::fail>(start, parse::report_error(filename, first, last, _1, _2, _3, _4));
         }
 
+
         using  part_type_rule = parse::detail::rule<void (start_rule_payload&)>;
 
         using start_rule = parse::detail::rule<start_rule_signature>;
 
+        using  cap_stat2_rule = parse::detail::rule<std::pair<double,double>()>;
+        
         parse::detail::Labeller label;
         const parse::conditions_parser_grammar condition_parser;
         const parse::string_parser_grammar string_grammar;
@@ -143,6 +153,9 @@ namespace {
         parse::detail::single_or_bracketed_repeat<parse::ship_slot_enum_grammar> one_or_more_slots;
         part_type_rule                     part_type;
         start_rule                         start;
+        //        cap_stat2_rule                     cap_stat2;
+                cap_stat2_rule                     cap_dam;
+                cap_stat2_rule                     dam_shot;
     };
 
 }
