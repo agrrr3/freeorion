@@ -101,7 +101,7 @@ if(APPLE)
 endif()
 
 if(UNIX)
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
     set(FreeOrion_INSTALL_LIBDIR "${CMAKE_INSTALL_LIBDIR}/freeorion")
 endif()
 
@@ -123,6 +123,7 @@ add_compile_options(
     # https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wall-316
     $<$<CXX_COMPILER_ID:GNU>:-Wall>
     $<$<CXX_COMPILER_ID:GNU>:-fsanitize=address>
+    $<$<CXX_COMPILER_ID:GNU>:-fno-omit-frame-pointer>
     $<$<CXX_COMPILER_ID:GNU>:-Og>
     # http://clang.llvm.org/docs/DiagnosticsReference.html#wall
     $<$<CXX_COMPILER_ID:Clang>:-Wall>
