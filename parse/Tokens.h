@@ -312,10 +312,10 @@
     (Position)                                  \
     (Precision)                                 \
     (PreferredFocus)                            \
-    (PreferredPrey)                             \
     (Prerequisites)                             \
     (PreviousSystemID)                          \
     (Priority)                                  \
+    (PriorityTargets)                           \
     (Probability)                               \
     (ProducedByEmpire)                          \
     (ProducedByEmpireID)                        \
