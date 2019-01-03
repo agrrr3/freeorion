@@ -104,6 +104,45 @@ EffectsGroup
             ]
             empire = Source.Owner
 
+EffectsGroup
+    scope = And [
+        Capital
+        Not OwnedBy empire = Source.Owner
+        Number low = 1 condition = And [
+            // maybe speed up by ORing subcategories
+            OwnedBy empire = Source.Owner
+            VisibleToEmpire empire = RootCandidate.Owner
+        ]
+    ]
+    // Some things need to be fixed: TurnTechResearched should probably not return 0 if not researched
+    // Some things need to be fixed: TurnTechResearched should include tech which is effective this turn
+    activation = Or [
+       [[EMPIRE_TECH_RESEARCHED(SPY_DETECT_2)]]
+       [[EMPIRE_TECH_RESEARCHED(SPY_DETECT_3)]]
+       [[EMPIRE_TECH_RESEARCHED(SPY_DETECT_4)]]
+       [[EMPIRE_TECH_RESEARCHED(SPY_DETECT_5)]]
+    ]
+    // does not help with TurnTechResearch...
+    priority = [[END_CLEANUP_PRIORITY]]
+    effects =
+        GenerateSitRepMessage
+            message = "SITREP_EMPIRE_TECH_RESEARCHED_DETECTION"
+            label = "SITREP_EMPIRE_TECH_RESEARCHED_DETECTION_LABEL"
+            icon = "icons/tech/active_radar.png"
+            parameters = [
+                tag = "empire"  data = Source.Owner
+            ]
+            empire = Target.Owner
+
+EMPIRE_TECH_RESEARCHED
+'''And [
+        (CurrentTurn > 1)
+        Or [
+            (CurrentTurn == TurnTechResearched empire = Source.Owner name = "@1@")
+            (CurrentTurn == 1 + TurnTechResearched empire = Source.Owner name = "@1@")
+        ]
+    ]
+'''
 
 EffectsGroup
     scope = And [
