@@ -1801,7 +1801,7 @@ bool Armed::Match(const ScriptingContext& local_context) const {
     }
 
     if (auto ship = std::dynamic_pointer_cast<const Ship>(candidate))
-        if (ship->IsArmed() || ship->HasFighters())
+        if (ship->IsArmed() || (ship->HasFighters() && (ship->FighterCount() > 0.0f) ) )
             return true;
 
     return false;
