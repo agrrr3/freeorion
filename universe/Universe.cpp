@@ -463,7 +463,7 @@ void Universe::ResetObjectMeters(const std::vector<std::shared_ptr<UniverseObjec
     }
 }
 
-void Universe::ApplyAllEffectsAndUpdateMeters(bool do_accounting) {
+void Universe::ApplyAllEffectsAndUpdateMeters(bool do_accounting, int low_prio, int high_prio) {
     ScopedTimer timer("Universe::ApplyAllEffectsAndUpdateMeters");
 
     if (do_accounting) {
@@ -484,10 +484,11 @@ void Universe::ApplyAllEffectsAndUpdateMeters(bool do_accounting) {
     // value can be calculated (by accumulating all effects' modifications this
     // turn) and active meters have the proper baseline from which to
     // accumulate changes from effects
-    ResetAllObjectMeters(true, true);
-    for (auto& entry : Empires())
-        entry.second->ResetMeters();
-
+    if (low_prio == 0) {
+      ResetAllObjectMeters(true, true);
+      for (auto& entry : Empires())
+	entry.second->ResetMeters();
+    }
     ExecuteEffects(targets_causes, do_accounting, false, false, true);
     // clamp max meters to [DEFAULT_VALUE, LARGE_VALUE] and current meters to [DEFAULT_VALUE, max]
     // clamp max and target meters to [DEFAULT_VALUE, LARGE_VALUE] and current meters to [DEFAULT_VALUE, max]

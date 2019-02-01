@@ -3343,7 +3343,7 @@ void ServerApp::PostCombatProcessTurns() {
         empire->CheckTradeSocialProgress();
     }
 
-    TraceLogger(effects) << "!!!!!!! AFTER CHECKING QUEUE AND RESOURCE PROGRESS";
+    TraceLogger(effects) << "!!!!!!! AFTER CHECKING QUEUE AND RESOURCE PROGRESS - AFTER_RESEARCH_PRIORITY";
     TraceLogger(effects) << objects.Dump();
 
     // execute turn events implemented as Python scripts

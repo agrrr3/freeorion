@@ -210,7 +210,7 @@ public:
       * executes all effects on all objects.  Then clamps meter values so
       * target and max meters are within a reasonable range and any current
       * meters with associated max meters are limited by their max. */
-    void ApplyAllEffectsAndUpdateMeters(bool do_accounting = true);
+    void ApplyAllEffectsAndUpdateMeters(bool do_accounting = true, int low_prio = 0, int high_prio = 32767);
 
     /** Determines all effectsgroups' target sets, then resets meters and
       * executes only SetMeter effects on all objects whose ids are listed in
