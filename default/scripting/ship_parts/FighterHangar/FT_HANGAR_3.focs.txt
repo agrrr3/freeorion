@@ -8,8 +8,15 @@ Part
     combatTargets = And [
         [[COMBAT_TARGETS_VISIBLE_ENEMY]]
         Or [
-            [[COMBAT_TARGETS_NOT_DESTROYED_SHIP]]
-            Fighter
+           [[COMBAT_TARGETS_NOT_DESTROYED_SHIP]]
+           And [
+               // choose only one of the fighters - that makes it unlikely to be targetted even without further filtering
+               NumberOf number = 1 condition = Fighter
+               Number low = 0 high = 0 condition = And [
+                   [[COMBAT_TARGETS_VISIBLE_ENEMY]]
+                   [[COMBAT_TARGETS_NOT_DESTROYED_SHIP]]
+               ]
+           ]
         ]
     ]
     mountableSlotTypes = Internal
