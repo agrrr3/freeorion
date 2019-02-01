@@ -5,8 +5,9 @@ ShipDesign
     hull = "SH_GUARD_1_BODY"
     parts = [
         "SR_WEAPON_3_1"
-        ""
+        "FT_BAY_KRILL"
         "SR_WEAPON_0_1"
+        "FT_HANGAR_KRILL"
     ]
     icon = "icons/monsters/sentry.png"
     model = "seed"

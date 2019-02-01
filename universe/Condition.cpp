@@ -370,6 +370,7 @@ void Number::Eval(const ScriptingContext& parent_context,
                   ObjectSet& matches, ObjectSet& non_matches,
                   SearchDomain search_domain/* = NON_MATCHES*/) const
 {
+    DebugLogger() << "Number::Eval " << this->Dump();
     // Number does not have a single valid local candidate to be matched, as it
     // will match anything if the proper number of objects match the
     // subcondition.  So, the local context that is passed to the subcondition
@@ -396,6 +397,7 @@ void Number::Eval(const ScriptingContext& parent_context,
     }
 
     if (!local_context.condition_root_candidate && !this->RootCandidateInvariant()) {
+        DebugLogger() << "Number::Eval no externally-defined root candidate, so each object matched must..";
         // no externally-defined root candidate, so each object matched must
         // separately act as a root candidate, and sub-condition must be re-
         // evaluated for each tested object and the number of objects matched
@@ -414,14 +416,17 @@ void Number::Eval(const ScriptingContext& parent_context,
         // compare number of objects that satisfy m_condition to the acceptable range of such objects
         int matched = condition_matches.size();
         bool in_range = (low <= matched && matched <= high);
+        DebugLogger() << "Number::Eval " << matched << " " << in_range << " in " << low << "-" << high ;
 
         // transfer objects to or from candidate set, according to whether number of matches was within
         // the requested range.
         if (search_domain == MATCHES && !in_range) {
+            DebugLogger() << "Number::Eval MATCHES but not in range - non_matches insert the matches";
             non_matches.insert(non_matches.end(), matches.begin(), matches.end());
             matches.clear();
         }
         if (search_domain == NON_MATCHES && in_range) {
+            DebugLogger() << "Number::Eval NON_MATCHES but in range - matches insert the non_matches";
             matches.insert(matches.end(), non_matches.begin(), non_matches.end());
             non_matches.clear();
         }

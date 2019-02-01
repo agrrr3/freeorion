@@ -1163,7 +1163,7 @@ namespace {
                 DebugLogger(combat) << "Weapon has no targeting condition?? Should have been set when initializing PartAttackInfo";
                 continue;
             }
-            TraceLogger(combat) << "Targeting condition: " << weapon.combat_targets->Dump();
+            DebugLogger(combat) << "Targeting condition: " << weapon.combat_targets->Dump();
 
             Condition::ObjectSet possible_targets;
             possible_targets.reserve(combat_state.combat_info.objects.NumObjects());
@@ -1185,6 +1185,7 @@ namespace {
                 continue;
             }
             DebugLogger(combat) << matched_targets.size() << " objects matched targeting condition";
+            DebugLogger(combat) << weapon.combat_targets->Description();
             for (const auto& match : matched_targets)
                 TraceLogger(combat) << " ... " << match->Name() << " (" << match->ID() << ")";
 
