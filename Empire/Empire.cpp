@@ -1571,14 +1571,14 @@ namespace {
     }
 }
 
-void Empire::CheckResearchProgress() {
+std::vector<std::string> Empire::CheckResearchProgress() {
     SanitizeResearchQueue(m_research_queue);
 
     float spent_rp{0.0f};
     float total_rp_available = m_resource_pools[RE_RESEARCH]->TotalAvailable();
 
     // process items on queue
-    std::vector<std::string> to_erase;
+    std::vector<std::string> to_erase_and_add;
     for (auto& elem : m_research_queue) {
         const Tech* tech = GetTech(elem.name);
         if (!tech) {
@@ -1589,11 +1589,9 @@ void Empire::CheckResearchProgress() {
         float tech_cost = tech->ResearchCost(m_id);
         progress += elem.allocated_rp / std::max(EPSILON, tech_cost);
         spent_rp += elem.allocated_rp;
-        if (tech->ResearchCost(m_id) - EPSILON <= progress * tech_cost)
-            AddTech(elem.name);
-        if (GetTechStatus(elem.name) == TS_COMPLETE) {
+        if (tech->ResearchCost(m_id) - EPSILON <= progress * tech_cost) {
             m_research_progress.erase(elem.name);
-            to_erase.push_back(elem.name);
+            to_erase_and_add.push_back(elem.name);
         }
     }
 
@@ -1659,14 +1657,14 @@ void Empire::CheckResearchProgress() {
         rp_left_to_spend -= consumed_rp;
 
         if (tech->ResearchCost(m_id) - EPSILON <= m_research_progress[cost_tech.second] * tech_total_cost)
-            AddTech(cost_tech.second);
+            to_erase_and_add.push_back(cost_tech.second);
 
         //DebugLogger() << "... allocated: " << consumed_rp << " to increase progress by: " << progress_increase;
     }
 
     // remove completed items from queue (after consuming extra RP, as that
     // determination uses the contents of the queue as input)
-    for (const std::string& tech_name : to_erase) {
+    for (const std::string& tech_name : to_erase_and_add) {
         auto temp_it = m_research_queue.find(tech_name);
         if (temp_it != m_research_queue.end())
             m_research_queue.erase(temp_it);
@@ -1674,6 +1672,7 @@ void Empire::CheckResearchProgress() {
 
     // can uncomment following line when / if research stockpiling is enabled...
     // m_resource_pools[RE_RESEARCH]->SetStockpile(m_resource_pools[RE_RESEARCH]->TotalAvailable() - m_research_queue.TotalRPsSpent());
+    return to_erase_and_add;
 }
 
 void Empire::CheckProductionProgress() {

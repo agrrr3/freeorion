@@ -276,9 +276,9 @@ public:
       * but does not actually spend them).  This function spends the PP, removes
       * complete items from the queue and creates the results in the universe. */
     void CheckProductionProgress();
-    /** Checks for tech projects that have been completed, and adds them to the
-      * known techs list. */
-    void CheckResearchProgress();
+    /** Checks for tech projects that have been completed, and returns a vector
+      * of the techs that should be added to the known techs list. */
+    std::vector<std::string> CheckResearchProgress();
     /** Eventually : Will check for social projects that have been completed and
       * / or process ongoing social projects... (not sure exactly what form
       * "social projects" will take or how they will work).  Also will update
