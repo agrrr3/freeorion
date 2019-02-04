@@ -217,10 +217,10 @@ public:
       * \a object_ids.  Then clamps meter values so target and max meters are
       * within a reasonable range and any current meters with associated max
       * meters are limited by their max. */
-    void ApplyMeterEffectsAndUpdateMeters(const std::vector<int>& object_ids, bool do_accounting = true);
+    void ApplyMeterEffectsAndUpdateMeters(const std::vector<int>& object_ids, bool do_accounting = true, int low_prio = 0, int high_prio = 32767);
 
     /** Calls above ApplyMeterEffectsAndUpdateMeters() function on all objects.*/
-    void ApplyMeterEffectsAndUpdateMeters(bool do_accounting = true);
+    void ApplyMeterEffectsAndUpdateMeters(bool do_accounting = true, int low_prio = 0, int high_prio = 32767);
 
     /** Executes effects that modify objects' appearance in the human client. */
     void ApplyAppearanceEffects(const std::vector<int>& object_ids);
@@ -482,7 +482,9 @@ private:
                         bool only_meter_effects = false,
                         bool only_appearance_effects = false,
                         bool include_empire_meter_effects = false,
-                        bool only_generate_sitrep_effects = false);
+                        bool only_generate_sitrep_effects = false,
+                        int low_prio = 0,
+                        int high_prio = 32767);
 
     /** Does actual updating of meter estimates after the public function have
       * processed objects_vec or whatever they were passed and cleared the

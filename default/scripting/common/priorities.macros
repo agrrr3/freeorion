@@ -62,5 +62,11 @@ METER_OVERRIDE_PRIORITY
 '''2000'''
 
 
+// XXX: With current system AFTER_RESEARCH_PRIORITY could either be directly before END_CLEANUP_PRIORITY or after it
+// AFTER_RESEARCH_PRIORITY is only applied after techs actually have been researched in the turn
+// TurnTechResearched will only be able to match the CurrentTurn for effects starting from this priority
+AFTER_RESEARCH_PRIORITY
+'''4000'''
+
 END_CLEANUP_PRIORITY
 '''5000'''

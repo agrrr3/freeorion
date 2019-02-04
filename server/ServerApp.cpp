@@ -3297,7 +3297,7 @@ void ServerApp::PostCombatProcessTurns() {
         static boost::hash<std::string> pcpt_string_hash;
         Seed(static_cast<unsigned int>(CurrentTurn()) + pcpt_string_hash(m_galaxy_setup_data.m_seed));
     }
-    m_universe.ApplyAllEffectsAndUpdateMeters(false);
+    m_universe.ApplyAllEffectsAndUpdateMeters(false, 0, 3999);
 
     // regenerate system connectivity graph after executing effects, which may
     // have added or removed starlanes.
@@ -3353,8 +3353,9 @@ void ServerApp::PostCombatProcessTurns() {
     // UniverseObjects will have effects applied to them this turn, allowing
     // (for example) ships to have max fuel meters greater than 0 on the turn
     // they are created.
-    m_universe.ApplyMeterEffectsAndUpdateMeters(false);
-
+    m_universe.ApplyMeterEffectsAndUpdateMeters(false, 0, 3999); // XXX necessary for the DETECT_1 exclusions, but else(?)
+    m_universe.ApplyAllEffectsAndUpdateMeters(false, 4000, 32767);
+    
     TraceLogger(effects) << "!!!!!!! AFTER UPDATING METERS OF ALL OBJECTS";
     TraceLogger(effects) << objects.Dump();
 

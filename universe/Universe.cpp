@@ -489,14 +489,14 @@ void Universe::ApplyAllEffectsAndUpdateMeters(bool do_accounting, int low_prio, 
       for (auto& entry : Empires())
 	entry.second->ResetMeters();
     }
-    ExecuteEffects(targets_causes, do_accounting, false, false, true);
+    ExecuteEffects(targets_causes, do_accounting, false, false, true, false, low_prio, high_prio);
     // clamp max meters to [DEFAULT_VALUE, LARGE_VALUE] and current meters to [DEFAULT_VALUE, max]
     // clamp max and target meters to [DEFAULT_VALUE, LARGE_VALUE] and current meters to [DEFAULT_VALUE, max]
     for (const auto& object : m_objects)
         object->ClampMeters();
 }
 
-void Universe::ApplyMeterEffectsAndUpdateMeters(const std::vector<int>& object_ids, bool do_accounting) {
+void Universe::ApplyMeterEffectsAndUpdateMeters(const std::vector<int>& object_ids, bool do_accounting, int low_prio, int high_prio) {
     if (object_ids.empty())
         return;
     ScopedTimer timer("Universe::ApplyMeterEffectsAndUpdateMeters on " + std::to_string(object_ids.size()) + " objects");
@@ -516,18 +516,19 @@ void Universe::ApplyMeterEffectsAndUpdateMeters(const std::vector<int>& object_i
     // value can be calculated (by accumulating all effects' modifications this
     // turn) and active meters have the proper baseline from which to
     // accumulate changes from effects
-    ResetObjectMeters(objects, true, true);
+    if (low_prio == 0)
+        ResetObjectMeters(objects, true, true);
     // could also reset empire meters here, but unless all objects have meters
     // recalculated, some targets that lead to empire meters being modified may
     // be missed, and estimated empire meters would be inaccurate
 
-    ExecuteEffects(targets_causes, do_accounting, true);
+    ExecuteEffects(targets_causes, do_accounting, true, false, false, false, low_prio, high_prio);
 
     for (auto& object : objects)
         object->ClampMeters();
 }
 
-void Universe::ApplyMeterEffectsAndUpdateMeters(bool do_accounting) {
+void Universe::ApplyMeterEffectsAndUpdateMeters(bool do_accounting,  int low_prio, int high_prio) {
     ScopedTimer timer("Universe::ApplyMeterEffectsAndUpdateMeters on all objects");
     if (do_accounting) {
         // override if disabled
@@ -537,24 +538,29 @@ void Universe::ApplyMeterEffectsAndUpdateMeters(bool do_accounting) {
     Effect::TargetsCauses targets_causes;
     GetEffectsAndTargets(targets_causes);
 
-    TraceLogger(effects) << "Universe::ApplyMeterEffectsAndUpdateMeters resetting...";
-    for (const auto& object : m_objects) {
-        TraceLogger(effects) << "object " << object->Name() << " (" << object->ID() << ") before resetting meters: ";
-        for (auto const& meter_pair : object->Meters()) {
-            TraceLogger(effects) << "    meter: " << boost::lexical_cast<std::string>(meter_pair.first)
-                                 << "  value: " << meter_pair.second.Current();
+    if (low_prio == 0) {
+        TraceLogger(effects) << "Universe::ApplyMeterEffectsAndUpdateMeters resetting...";
+        for (const auto& object : m_objects) {
+            TraceLogger(effects) << "object " << object->Name() << " (" << object->ID() << ") before resetting meters: ";
+            for (auto const& meter_pair : object->Meters()) {
+                TraceLogger(effects) << "    meter: " << boost::lexical_cast<std::string>(meter_pair.first)
+                                     << "  value: " << meter_pair.second.Current();
+            }
+            object->ResetTargetMaxUnpairedMeters();
+            object->ResetPairedActiveMeters();
+            TraceLogger(effects) << "object " << object->Name() << " (" << object->ID() << ") after resetting meters: ";
+            for (auto const& meter_pair : object->Meters()) {
+                TraceLogger(effects) << "    meter: " << boost::lexical_cast<std::string>(meter_pair.first)
+                                     << "  value: " << meter_pair.second.Current();
+            }
+
+            for (auto& entry : Empires())
+                entry.second->ResetMeters();
         }
-        object->ResetTargetMaxUnpairedMeters();
-        object->ResetPairedActiveMeters();
-        TraceLogger(effects) << "object " << object->Name() << " (" << object->ID() << ") after resetting meters: ";
-        for (auto const& meter_pair : object->Meters()) {
-            TraceLogger(effects) << "    meter: " << boost::lexical_cast<std::string>(meter_pair.first)
-                                 << "  value: " << meter_pair.second.Current();
-        }
+    } else {
+        TraceLogger(effects) << "Universe::ApplyMeterEffectsAndUpdateMeters skips resetting because of minimal priority is " << low_prio ;
     }
-    for (auto& entry : Empires())
-        entry.second->ResetMeters();
-    ExecuteEffects(targets_causes, do_accounting, true, false, true);
+    ExecuteEffects(targets_causes, do_accounting, true, false, true, false, low_prio, high_prio);
 
     for (const auto& object : m_objects)
         object->ClampMeters();
@@ -1520,7 +1526,9 @@ void Universe::ExecuteEffects(const Effect::TargetsCauses& targets_causes,
                               bool only_meter_effects/* = false*/,
                               bool only_appearance_effects/* = false*/,
                               bool include_empire_meter_effects/* = false*/,
-                              bool only_generate_sitrep_effects/* = false*/)
+                              bool only_generate_sitrep_effects/* = false*/,
+                              int low_prio/* = 0*/,
+                              int high_prio/* = 32767*/)
 {
     ScopedTimer timer("Universe::ExecuteEffects", true);
 
@@ -1553,6 +1561,13 @@ void Universe::ExecuteEffects(const Effect::TargetsCauses& targets_causes,
         for (auto& effect_group_entry : priority_group.second) {
             Effect::EffectsGroup* effects_group = effect_group_entry.first;
 
+            if ((low_prio > effects_group->Priority())||(high_prio < effects_group->Priority()))
+               DebugLogger(effects) << "\n\n * * * *DEBUG * * * * * did     SKIP prio:" << effects_group->Priority() << " low:" << low_prio << " high:" << high_prio;    
+            if (low_prio > effects_group->Priority())
+                continue;
+            if (high_prio < effects_group->Priority())
+                continue;
+            DebugLogger(effects) << "\n\n * * * *DEBUG * * * * * did not skip prio:" << effects_group->Priority() << " low:" << low_prio << " high:" << high_prio;
             if (only_meter_effects && !effects_group->HasMeterEffects())
                 continue;
             if (only_appearance_effects && !effects_group->HasAppearanceEffects())
