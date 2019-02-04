@@ -12,27 +12,57 @@ Tech
         Item type = Building name = "BLD_SCANNING_FACILITY"
     ]
     effectsgroups = [
+            EffectsGroup
+            scope = And [
+                Planet
+                OwnedBy empire = Source.Owner
+            ]
+            activation = And [
+                ( CurrentTurn == TurnTechResearched empire = Source.Owner name ="SPY_DETECT_2" )
+            ]
+            stackinggroup = "TECH_DETECT_2_STACK"
+            priority = [[AFTER_RESEARCH_PRIORITY]]
+            effects = [
+            // XXX Meter effects are not prio-ranged yet
+//                SetDetection value = Value + 75
+//                SetEmpireMeter empire = Source.Owner meter = "METER_DETECTION_STRENGTH" value = Value + 30
+                GenerateSitRepMessage
+            message = "SITREP_GAS_GIANT_GENERATION_REMINDER"
+            label = "CUSTOM_2"
+            icon = "icons/building/gas-giant-generator.png"
+            parameters = [
+                tag = "buildingtype" data = "BLD_SCANNING_FACILITY"
+                tag = "planet" data = Target.ID
+            ]
+            empire = Source.Owner
+            ]
+
         EffectsGroup
             scope = And [
                 Planet
                 OwnedBy empire = Source.Owner
             ]
             activation = And [
+//                ( CurrentTurn > TurnTechResearched empire = Source.Owner name = "SPY_DETECT_2" )
                 Not OwnerHasTech name = "SPY_DETECT_3"
                 Not OwnerHasTech name = "SPY_DETECT_4"
                 Not OwnerHasTech name = "SPY_DETECT_5"
             ]
+//            stackinggroup = "TECH_DETECT_2_STACK"            
             effects = SetDetection value = Value + 75
 
         EffectsGroup
             scope = Source
             activation = And [
+//                ( CurrentTurn > TurnTechResearched empire = Source.Owner name = "SPY_DETECT_2" )
                 Not OwnerHasTech name = "SPY_DETECT_3"
                 Not OwnerHasTech name = "SPY_DETECT_4"
                 Not OwnerHasTech name = "SPY_DETECT_5"
             ]
+//            stackinggroup = "TECH_DETECT_2_STACK"
             effects = SetEmpireMeter empire = Source.Owner meter = "METER_DETECTION_STRENGTH" value = Value + 30
     ]
     graphic = "icons/tech/active_radar.png"
 
 #include "/scripting/common/base_prod.macros"
+#include "/scripting/common/priorities.macros"
