@@ -3333,13 +3333,13 @@ void ServerApp::PostCombatProcessTurns() {
     // Consume distributed resources to planets and on queues, create new
     // objects for completed production and give techs to empires that have
     // researched them
-    std::vector<std::pair<Empire *,std::vector<std::string>>> empires_innovations;
+    std::vector<std::pair<int,std::vector<std::string>>> empires_innovations;
     for (auto& entry : empires) {
         Empire* empire = entry.second;
         if (empire->Eliminated())
             continue;   // skip eliminated empires
 
-        empires_innovations.push_back({empire, empire->CheckResearchProgress()});
+        empires_innovations.push_back({empire->EmpireID(), empire->CheckResearchProgress()});
         empire->CheckProductionProgress();
         empire->CheckTradeSocialProgress();
     }
@@ -3375,7 +3375,9 @@ void ServerApp::PostCombatProcessTurns() {
     // add new techs
     for (const auto& empire_techs : empires_innovations) {
         for (const auto& tech : empire_techs.second) {
-            empire_techs.first->AddTech(tech);
+            Empire* empire = GetEmpire(empire_techs.first);
+            if (empire && !empire->Eliminated())
+                empire->AddTech(tech);
         }
     }
 
