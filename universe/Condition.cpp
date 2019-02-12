@@ -9955,6 +9955,185 @@ unsigned int Not::GetCheckSum() const {
     TraceLogger() << "GetCheckSum(Not): retval: " << retval;
     return retval;
 }
+///////////////////////////////////////////////////////////
+// TopmostMatches
+///////////////////////////////////////////////////////////
+TopmostMatches::TopmostMatches(std::vector<std::unique_ptr<ConditionBase>>&& operands) :
+    ConditionBase(),
+    m_operands(std::move(operands))
+{}
+
+bool TopmostMatches::operator==(const ConditionBase& rhs) const {
+    if (this == &rhs)
+        return true;
+    if (typeid(*this) != typeid(rhs))
+        return false;
+
+    const TopmostMatches& rhs_ = static_cast<const TopmostMatches&>(rhs);
+
+    if (m_operands.size() != rhs_.m_operands.size())
+        return false;
+    for (unsigned int i = 0; i < m_operands.size(); ++i) {
+        CHECK_COND_VREF_MEMBER(m_operands.at(i))
+    }
+
+    return true;
+}
+
+void TopmostMatches::Eval(const ScriptingContext& parent_context, ObjectSet& matches,
+               ObjectSet& non_matches, SearchDomain search_domain/* = NON_MATCHES*/) const
+{
+    std::shared_ptr<const UniverseObject> no_object;
+    ScriptingContext local_context(parent_context, no_object);
+
+    if (m_operands.empty()) {
+        ErrorLogger() << "TopmostMatches::Eval given no operands!";
+        return;
+    }
+    for (auto& operand : m_operands) {
+        if (!operand) {
+            ErrorLogger() << "TopmostMatches::Eval given null operand!";
+            return;
+        }
+    }
+
+    if (search_domain == NON_MATCHES) {
+        ObjectSet partly_checked_non_matches;
+        partly_checked_non_matches.reserve(non_matches.size());
+//TODO FIXME
+        // move items in non_matches set that pass first operand condition into
+        // partly_checked_non_matches set
+        m_operands[0]->Eval(local_context, partly_checked_non_matches, non_matches, NON_MATCHES);
+
+        // move items that don't pass one of the other conditions back to non_matches
+        for (unsigned int i = 1; i < m_operands.size(); ++i) {
+            if (partly_checked_non_matches.empty()) break;
+            m_operands[i]->Eval(local_context, partly_checked_non_matches, non_matches, MATCHES);
+        }
+
+        // merge items that passed all operand conditions into matches
+        matches.insert(matches.end(), partly_checked_non_matches.begin(), partly_checked_non_matches.end());
+
+        // items already in matches set are not checked, and remain in matches set even if
+        // they don't match one of the operand conditions
+
+    } else /*(search_domain == MATCHES)*/ {
+        // check all operand conditions on all objects in the matches set, moving those
+        // that don't pass a condition to the non-matches set
+
+        for (auto& operand : m_operands) {
+            if (matches.empty()) break;
+            operand->Eval(local_context, matches, non_matches, MATCHES);
+        }
+
+        // items already in non_matches set are not checked, and remain in non_matches set
+        // even if they pass all operand conditions
+    }
+}
+
+bool TopmostMatches::RootCandidateInvariant() const {
+    if (m_root_candidate_invariant != UNKNOWN_INVARIANCE)
+        return m_root_candidate_invariant == INVARIANT;
+
+    for (auto& operand : m_operands) {
+        if (!operand->RootCandidateInvariant()) {
+            m_root_candidate_invariant = VARIANT;
+            return false;
+        }
+    }
+    m_root_candidate_invariant = INVARIANT;
+    return true;
+}
+
+bool TopmostMatches::TargetInvariant() const {
+    if (m_target_invariant != UNKNOWN_INVARIANCE)
+        return m_target_invariant == INVARIANT;
+
+    for (auto& operand : m_operands) {
+        if (!operand->TargetInvariant()) {
+            m_target_invariant = VARIANT;
+            return false;
+        }
+    }
+    m_target_invariant = INVARIANT;
+    return true;
+}
+
+bool TopmostMatches::SourceInvariant() const {
+    if (m_source_invariant != UNKNOWN_INVARIANCE)
+        return m_source_invariant == INVARIANT;
+
+    for (auto& operand : m_operands) {
+        if (!operand->SourceInvariant()) {
+            m_source_invariant = VARIANT;
+            return false;
+        }
+    }
+    m_source_invariant = INVARIANT;
+    return true;
+}
+
+std::string TopmostMatches::Description(bool negated/* = false*/) const {
+    std::string values_str;
+    if (m_operands.size() == 1) {
+        values_str += UserString("DESC_TOPMOST_BEFORE_SINGLE_OPERAND");
+        // Pushing the negation to the enclosed conditions
+        values_str += m_operands[0]->Description(negated);
+        values_str += UserString("DESC_TOPMOST_AFTER_SINGLE_OPERAND");
+    } else {
+        values_str += UserString("DESC_TOPMOST_BEFORE_OPERANDS");
+        for (unsigned int i = 0; i < m_operands.size(); ++i) {
+            // Pushing the negation to the enclosed conditions
+            values_str += m_operands[i]->Description(negated);
+            if (i != m_operands.size() - 1) {
+                values_str += UserString("DESC_TOPMOST_BETWEEN_OPERANDS");
+            }
+        }
+        values_str += UserString("DESC_TOPMOST_AFTER_OPERANDS");
+    }
+    return values_str;
+}
+
+std::string TopmostMatches::Dump(unsigned short ntabs) const {
+    std::string retval = DumpIndent(ntabs) + "TopmostMatches [\n";
+    for (auto& operand : m_operands)
+        retval += operand->Dump(ntabs+1);
+    retval += DumpIndent(ntabs) + "]\n";
+    return retval;
+}
+
+void TopmostMatches::GetDefaultInitialCandidateObjects(const ScriptingContext& parent_context, ObjectSet& condition_non_targets) const {
+    // XXX unsure what this does
+    if (!m_operands.empty()) {
+        m_operands[0]->GetDefaultInitialCandidateObjects(parent_context, condition_non_targets); // gets condition_non_targets from first operand condition
+    } else {
+        ConditionBase::GetDefaultInitialCandidateObjects(parent_context, condition_non_targets);
+    }
+}
+
+void TopmostMatches::SetTopLevelContent(const std::string& content_name) {
+    // XXX unsure what this does
+    for (auto& operand : m_operands) {
+        operand->SetTopLevelContent(content_name);
+    }
+}
+
+unsigned int TopmostMatches::GetCheckSum() const {
+    unsigned int retval{0};
+
+    CheckSums::CheckSumCombine(retval, "Condition::TopmostMatches");
+    CheckSums::CheckSumCombine(retval, m_operands);
+
+    TraceLogger() << "GetCheckSum(TopmostMatches): retval: " << retval;
+    return retval;
+}
+
+const std::vector<ConditionBase*> TopmostMatches::Operands() const {
+    std::vector<ConditionBase*> retval(m_operands.size());
+    std::transform(m_operands.begin(), m_operands.end(), retval.begin(),
+                   [](const std::unique_ptr<ConditionBase>& xx) {return xx.get();});
+    return retval;
+}
 
 ///////////////////////////////////////////////////////////
 // Described                                             //
