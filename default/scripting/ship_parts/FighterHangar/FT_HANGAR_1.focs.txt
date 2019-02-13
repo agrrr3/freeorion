@@ -7,7 +7,15 @@ Part
     damage = 1
     combatTargets = And [
         [[COMBAT_TARGETS_VISIBLE_ENEMY]]
-        Fighter
+        TopmostMatches [
+            And [
+                Fighter
+                // maybe use LaunchedFrom somehow??
+                ( LocalCandidate.Attack > 3 )
+            ]
+            Fighter
+            Ship
+        ]
     ]
     mountableSlotTypes = Internal
     buildcost = 15 * [[FLEET_UPKEEP_MULTIPLICATOR]] * [[SHIP_PART_COST_MULTIPLIER]]
