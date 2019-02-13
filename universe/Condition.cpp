@@ -9997,37 +9997,55 @@ void TopmostMatches::Eval(const ScriptingContext& parent_context, ObjectSet& mat
         }
     }
 
+    // probably i need to figure out which condition matches first
+    // by searching both domains
+    // ... or actually i can propagate the search domain and look for the first match, probably i can
+    // Expressions like  'NOT TopmostMatches [ A B C ]' matches all candidates which do not match the topmost matching condition
+    // which means the same as TopmostMatches [ (Not A) (Not B) (Not C) ]
+    // TODO use logic like in base eval for both domains
     if (search_domain == NON_MATCHES) {
-        ObjectSet partly_checked_non_matches;
-        partly_checked_non_matches.reserve(non_matches.size());
-//TODO FIXME
-        // move items in non_matches set that pass first operand condition into
-        // partly_checked_non_matches set
-        m_operands[0]->Eval(local_context, partly_checked_non_matches, non_matches, NON_MATCHES);
-
-        // move items that don't pass one of the other conditions back to non_matches
-        for (unsigned int i = 1; i < m_operands.size(); ++i) {
-            if (partly_checked_non_matches.empty()) break;
-            m_operands[i]->Eval(local_context, partly_checked_non_matches, non_matches, MATCHES);
-        }
-
-        // merge items that passed all operand conditions into matches
-        matches.insert(matches.end(), partly_checked_non_matches.begin(), partly_checked_non_matches.end());
-
-        // items already in matches set are not checked, and remain in matches set even if
-        // they don't match one of the operand conditions
-
-    } else /*(search_domain == MATCHES)*/ {
-        // check all operand conditions on all objects in the matches set, moving those
-        // that don't pass a condition to the non-matches set
-
+        // check all operand conditions on all objects in the non matches set
+        // stop if the operand condition has at least one non match
+        ObjectSet temp_matches;
+        temp_matches.reserve(non_matches.size());
+        // try matching operand conditions until one matches
         for (auto& operand : m_operands) {
-            if (matches.empty()) break;
-            operand->Eval(local_context, matches, non_matches, MATCHES);
+            // move back temp_matches
+            non_matches.insert(non_matches.end(),
+                           std::make_move_iterator(temp_matches.begin()),
+                           std::make_move_iterator(temp_matches.end()));
+            temp_matches.clear();
+            operand->Eval(local_context, temp_matches, non_matches, NON_MATCHES);
+            if (!non_matches.empty()) break;
         }
 
-        // items already in non_matches set are not checked, and remain in non_matches set
-        // even if they pass all operand conditions
+        // operand matching items were already moved from non_matches to temp_matches
+        // move operand matching items from temp_matches to matches
+        matches.insert(matches.end(),
+                       std::make_move_iterator(temp_matches.begin()),
+                       std::make_move_iterator(temp_matches.end()));
+    } else /*(search_domain == MATCHES)*/ {
+        // check all operand conditions on all objects in the matches set
+        // stop if the operand condition matches at least one item
+        ObjectSet temp_non_matches;
+        temp_non_matches.reserve(matches.size());
+        // try matching operand conditions until one mateches
+        // use a fresh set of possible matches
+        for (auto& operand : m_operands) {
+            // move back temp_non_matches
+            matches.insert(matches.end(),
+                           std::make_move_iterator(temp_non_matches.begin()),
+                           std::make_move_iterator(temp_non_matches.end()));
+            temp_non_matches.clear();
+            operand->Eval(local_context, matches, temp_non_matches, MATCHES);
+            if (!matches.empty()) break;
+        }
+
+        // non matching items were already moved from matches to temp_non_matches
+        // move non matching items from temp_non_matches to non_matches
+        non_matches.insert(non_matches.end(),
+                           std::make_move_iterator(temp_non_matches.begin()),
+                           std::make_move_iterator(temp_non_matches.end()));
     }
 }
 
