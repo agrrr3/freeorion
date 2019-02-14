@@ -7,15 +7,19 @@ Part
     damage = 1
     combatTargets = And [
         [[COMBAT_TARGETS_VISIBLE_ENEMY]]
-        TopmostMatches [
-            And [
-                Fighter
-                // maybe use LaunchedFrom somehow??
-                ( LocalCandidate.Attack > 3 )
+//      TopmostMatches [
+            // Target "Bombers" first. If there are no enemy fighters present, target Ships
+// //         MaximumNumberOf number = [[COMBAT_TARGETS_SPREAD(And [ Fighter OwnedBy empire = Source.Owner ])]]
+            MaximumNumberOf 
+                number = Statistic Count condition = And [ Fighter OwnedBy empire = Source.Owner ] // XXX does this really select the fighters in the current combat?
+                sortkey = LocalCandidate.Attack
+                condition = And [
+                    Fighter
+                    [[COMBAT_TARGETS_VISIBLE_ENEMY]]
+                ]
             ]
-            Fighter
-            Ship
-        ]
+//          Ship
+//      ]
     ]
     mountableSlotTypes = Internal
     buildcost = 15 * [[FLEET_UPKEEP_MULTIPLICATOR]] * [[SHIP_PART_COST_MULTIPLIER]]
