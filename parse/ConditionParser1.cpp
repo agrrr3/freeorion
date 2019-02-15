@@ -146,7 +146,7 @@ namespace parse { namespace detail {
 
         topmost_matches
             = ( omit_[tok.TopmostMatches_] > '[' > +condition_parser > lit(']'))
-            [ _val = construct_movable_(new_<Condition::And>(deconstruct_movable_vector_(_1, _pass))) ]
+            [ _val = construct_movable_(new_<Condition::TopmostMatches>(deconstruct_movable_vector_(_1, _pass))) ]
             ;
 
         described
