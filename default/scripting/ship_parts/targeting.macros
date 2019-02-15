@@ -37,9 +37,9 @@ COMBAT_TARGETS_PLANET_WITH_DEFENSE
 //Probalistic OR-NumberOf workaround for TopMostMatches condition not working
 //XXX Use TopMostMatches as soon as it works
 TOPMOST_MATCHES_2
-'''        Or [
+'''        TopmostMatches [
            @1@
-           NumberOf number = 1 condition = @2@
+           @2@
         ]
 '''
 

@@ -8,7 +8,7 @@ Part
     combatTargets = And [
         [[COMBAT_TARGETS_VISIBLE_ENEMY]]
         // Target "Bombers" first. If there are no enemy fighters present, target Ships
-        [[TOPMOST_MATCHES_2(            MaximumNumberOf number = [[COMBAT_TARGETS_SPREAD_HANGAR]]                sortkey = LocalCandidate.Attack                condition = And [                    Fighter                ]       ,Ship)]]
+        [[TOPMOST_MATCHES_2(            MaximumNumberOf number = [[COMBAT_TARGETS_SPREAD_HANGAR]]                sortkey = LocalCandidate.Attack                condition = Fighter       ,Ship)]]
     ]
     mountableSlotTypes = Internal
     buildcost = 15 * [[FLEET_UPKEEP_MULTIPLICATOR]] * [[SHIP_PART_COST_MULTIPLIER]]
