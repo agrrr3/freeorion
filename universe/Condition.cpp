@@ -10024,8 +10024,9 @@ void TopmostMatches::Eval(const ScriptingContext& parent_context, ObjectSet& mat
                        std::make_move_iterator(temp_matches.begin()),
                        std::make_move_iterator(temp_matches.end()));
     } else /*(search_domain == MATCHES)*/ {
-        // check all operand conditions on all objects in the matches set
+        // check all operand conditions on all objects in the matches set, collecting non matches temporarily
         // stop if the operand condition matches at least one item
+        // if the operand condition does not match, restore the matches set by moving the temporary non-matches back
         ObjectSet temp_non_matches;
         temp_non_matches.reserve(matches.size());
         // try matching operand conditions until one mateches
