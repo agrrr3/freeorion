@@ -10018,7 +10018,6 @@ void TopmostMatches::Eval(const ScriptingContext& parent_context, ObjectSet& mat
             operand->Eval(local_context, temp_matches, non_matches, NON_MATCHES);
             if (!non_matches.empty()) break;
         }
-
         // operand matching items were already moved from non_matches to temp_matches
         // move operand matching items from temp_matches to matches
         matches.insert(matches.end(),
@@ -10120,17 +10119,7 @@ std::string TopmostMatches::Dump(unsigned short ntabs) const {
     return retval;
 }
 
-void TopmostMatches::GetDefaultInitialCandidateObjects(const ScriptingContext& parent_context, ObjectSet& condition_non_targets) const {
-    // XXX unsure what this does
-    if (!m_operands.empty()) {
-        m_operands[0]->GetDefaultInitialCandidateObjects(parent_context, condition_non_targets); // gets condition_non_targets from first operand condition
-    } else {
-        ConditionBase::GetDefaultInitialCandidateObjects(parent_context, condition_non_targets);
-    }
-}
-
 void TopmostMatches::SetTopLevelContent(const std::string& content_name) {
-    // XXX unsure what this does
     for (auto& operand : m_operands) {
         operand->SetTopLevelContent(content_name);
     }
