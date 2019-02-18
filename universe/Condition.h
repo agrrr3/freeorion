@@ -1971,8 +1971,6 @@ struct FO_COMMON_API TopmostMatches final : public ConditionBase {
     bool operator==(const ConditionBase& rhs) const override;
     void Eval(const ScriptingContext& parent_context, ObjectSet& matches,
               ObjectSet& non_matches, SearchDomain search_domain = NON_MATCHES) const override;
-    void GetDefaultInitialCandidateObjects(const ScriptingContext& parent_context,
-                                           ObjectSet& condition_non_targets) const override;
     bool RootCandidateInvariant() const override;
     bool TargetInvariant() const override;
     bool SourceInvariant() const override;
