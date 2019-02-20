@@ -9997,32 +9997,57 @@ void TopmostMatches::Eval(const ScriptingContext& parent_context, ObjectSet& mat
         }
     }
 
-    // probably i need to figure out which condition matches first
-    // by searching both domains
-    // ... or actually i can propagate the search domain and look for the first match, probably i can
-    // Expressions like  'NOT TopmostMatches [ A B C ]' matches all candidates which do not match the topmost matching condition
-    // which means the same as TopmostMatches [ (Not A) (Not B) (Not C) ]
-    // TODO use logic like in base eval for both domains
+    // Expressions like  'NOT TopmostMatches [ A B C ]'
+    // matches all candidates which do not match the topmost condition which has matches
+    // which means the something like
+    // TopmostMatches [
+    //     And [
+    //         Number low = 1 condition = And [
+    //             Object id = OuterCandidate.ID
+    //             A
+    //         ]
+    //         Not A
+    //     ]
+    //     And [
+    //         Number low = 1 condition = And [
+    //             Object id = OuterCandidate.ID
+    //             B
+    //         ]
+    //         Not B
+    //     ]
+    //     And [
+    //         Number low = 1 condition = And [
+    //             Object id = OuterCandidate.ID
+    //             C
+    //         ]
+    //         Not C
+    //     ]
+    // ]
     if (search_domain == NON_MATCHES) {
         // check all operand conditions on all objects in the non matches set
-        // stop if the operand condition has at least one non match
-        ObjectSet temp_matches;
-        temp_matches.reserve(non_matches.size());
+        // stop if the operand condition has at least one match
+        // Return non-matches if there are any
+        ObjectSet temp_non_matches;
+        temp_non_matches.reserve(matches.size());
         // try matching operand conditions until one matches
         for (auto& operand : m_operands) {
-            // move back temp_matches
-            non_matches.insert(non_matches.end(),
-                           std::make_move_iterator(temp_matches.begin()),
-                           std::make_move_iterator(temp_matches.end()));
-            temp_matches.clear();
-            operand->Eval(local_context, temp_matches, non_matches, NON_MATCHES);
-            if (!non_matches.empty()) break;
+            operand->Eval(local_context, matches, temp_non_matches, MATCHES);
+            if (!matches.empty()) {
+                // move back temp_non matches
+                matches.insert(matches.end(),
+                               std::make_move_iterator(temp_non_matches.begin()),
+                               std::make_move_iterator(temp_non_matches.end()));
+                temp_non_matches.clear();
+                // descent into subcondition for NON_MATCHES
+                operand->Eval(local_context, matches, non_matches, NON_MATCHES);                
+                break;
+            }
+            // move back temp_non matches
+            matches.insert(matches.end(),
+                           std::make_move_iterator(temp_non_matches.begin()),
+                           std::make_move_iterator(temp_non_matches.end()));
+            temp_non_matches.clear();
         }
-        // operand matching items were already moved from non_matches to temp_matches
-        // move operand matching items from temp_matches to matches
-        matches.insert(matches.end(),
-                       std::make_move_iterator(temp_matches.begin()),
-                       std::make_move_iterator(temp_matches.end()));
     } else /*(search_domain == MATCHES)*/ {
         // check all operand conditions on all objects in the matches set, collecting non matches temporarily
         // stop if the operand condition matches at least one item
@@ -10094,20 +10119,31 @@ bool TopmostMatches::SourceInvariant() const {
 std::string TopmostMatches::Description(bool negated/* = false*/) const {
     std::string values_str;
     if (m_operands.size() == 1) {
-        values_str += UserString("DESC_TOPMOST_BEFORE_SINGLE_OPERAND");
-        // Pushing the negation to the enclosed conditions
+        values_str += (!negated)
+            ? UserString("DESC_TOPMOST_BEFORE_SINGLE_OPERAND")
+            : UserString("DESC_NOT_TOPMOST_BEFORE_SINGLE_OPERAND");
+        // Pushing the negation of matches to the enclosed conditions
         values_str += m_operands[0]->Description(negated);
-        values_str += UserString("DESC_TOPMOST_AFTER_SINGLE_OPERAND");
+        values_str += (!negated)
+            ? UserString("DESC_TOPMOST_AFTER_SINGLE_OPERAND")
+            : UserString("DESC_NOT_TOPMOST_AFTER_SINGLE_OPERAND");
     } else {
-        values_str += UserString("DESC_TOPMOST_BEFORE_OPERANDS");
+        // TODO: use per-operand-type connecting language
+        values_str += (!negated)
+            ? UserString("DESC_TOPMOST_BEFORE_OPERANDS")
+            : UserString("DESC_NOT_TOPMOST_BEFORE_OPERANDS");
         for (unsigned int i = 0; i < m_operands.size(); ++i) {
-            // Pushing the negation to the enclosed conditions
+            // Pushing the negation of matches to the enclosed conditions
             values_str += m_operands[i]->Description(negated);
             if (i != m_operands.size() - 1) {
-                values_str += UserString("DESC_TOPMOST_BETWEEN_OPERANDS");
+                values_str += (!negated)
+                    ? UserString("DESC_TOPMOST_BETWEEN_OPERANDS")
+                    : UserString("DESC_NOT_TOPMOST_BETWEEN_OPERANDS");
             }
         }
-        values_str += UserString("DESC_TOPMOST_AFTER_OPERANDS");
+        values_str += (!negated)
+            ? UserString("DESC_TOPMOST_AFTER_OPERANDS")
+            : UserString("DESC_NOT_TOPMOST_AFTER_OPERANDS");
     }
     return values_str;
 }

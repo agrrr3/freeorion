@@ -10224,10 +10224,22 @@ DESC_TOPMOST_BEFORE_SINGLE_OPERAND
 
 DESC_TOPMOST_AFTER_SINGLE_OPERAND
 ''''''
-# Not topmost expressions like  'NOT TopmostMatches [ A B C ]'
-# Such an expression matches all candidates which do not match the topmost matching condition
-# So this the same as TopmostMatches [ (Not A) (Not B) (Not C) ]
-# and does not need special stringtable entries but pushes the description negation to Not A...
+# Expressions like  'NOT TopmostMatches [ A B C ]'
+# Note: returned matches rely on (NOT A), (NOT B).. and are handled in the descriptions of A, B.. respectively
+DESC_NOT_TOPMOST_BEFORE_OPERANDS
+'''that matches the first matching conditions' non-matching candidates: {'''
+
+DESC_NOT_TOPMOST_BETWEEN_OPERANDS
+''', else'''
+
+DESC_NOT_TOPMOST_AFTER_OPERANDS
+''' }'''
+
+DESC_NOT_TOPMOST_BEFORE_SINGLE_OPERAND
+''''''
+
+DESC_NOT_TOPMOST_AFTER_SINGLE_OPERAND
+''''''
 
 
 # %1% textual description of the lower turn limit.
