@@ -145,8 +145,8 @@ namespace parse { namespace detail {
             ;
 
         topmost_matches
-            = ( omit_[tok.TopmostMatches_] > '[' > +condition_parser > lit(']'))
-            [ _val = construct_movable_(new_<Condition::TopmostMatches>(deconstruct_movable_vector_(_1, _pass))) ]
+            = ( omit_[tok.OrderedAlternativesOf_] > '[' > +condition_parser > lit(']'))
+            [ _val = construct_movable_(new_<Condition::OrderedAlternativesOf>(deconstruct_movable_vector_(_1, _pass))) ]
             ;
 
         described
@@ -193,7 +193,7 @@ namespace parse { namespace detail {
         and_.name("And");
         or_.name("Or");
         not_.name("Not");
-        topmost_matches.name("TopmostMatches");
+        topmost_matches.name("OrderedAlternativesOf");
         described.name("Described");
 
 #if DEBUG_CONDITION_PARSERS

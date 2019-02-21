@@ -1965,8 +1965,8 @@ private:
 };
 
 /** Matches all objects that match the first matching Condition in \a operands. */
-struct FO_COMMON_API TopmostMatches final : public ConditionBase {
-    explicit TopmostMatches(std::vector<std::unique_ptr<ConditionBase>>&& operands);
+struct FO_COMMON_API OrderedAlternativesOf final : public ConditionBase {
+    explicit OrderedAlternativesOf(std::vector<std::unique_ptr<ConditionBase>>&& operands);
 
     bool operator==(const ConditionBase& rhs) const override;
     void Eval(const ScriptingContext& parent_context, ObjectSet& matches,
@@ -2459,7 +2459,7 @@ void Not::serialize(Archive& ar, const unsigned int version)
 }
 
 template <class Archive>
-void TopmostMatches::serialize(Archive& ar, const unsigned int version)
+void OrderedAlternativesOf::serialize(Archive& ar, const unsigned int version)
 {
     ar  & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConditionBase)
         & BOOST_SERIALIZATION_NVP(m_operands);

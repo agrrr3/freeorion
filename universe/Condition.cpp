@@ -9956,20 +9956,20 @@ unsigned int Not::GetCheckSum() const {
     return retval;
 }
 ///////////////////////////////////////////////////////////
-// TopmostMatches
+// OrderedAlternativesOf
 ///////////////////////////////////////////////////////////
-TopmostMatches::TopmostMatches(std::vector<std::unique_ptr<ConditionBase>>&& operands) :
+OrderedAlternativesOf::OrderedAlternativesOf(std::vector<std::unique_ptr<ConditionBase>>&& operands) :
     ConditionBase(),
     m_operands(std::move(operands))
 {}
 
-bool TopmostMatches::operator==(const ConditionBase& rhs) const {
+bool OrderedAlternativesOf::operator==(const ConditionBase& rhs) const {
     if (this == &rhs)
         return true;
     if (typeid(*this) != typeid(rhs))
         return false;
 
-    const TopmostMatches& rhs_ = static_cast<const TopmostMatches&>(rhs);
+    const OrderedAlternativesOf& rhs_ = static_cast<const OrderedAlternativesOf&>(rhs);
 
     if (m_operands.size() != rhs_.m_operands.size())
         return false;
@@ -9980,27 +9980,27 @@ bool TopmostMatches::operator==(const ConditionBase& rhs) const {
     return true;
 }
 
-void TopmostMatches::Eval(const ScriptingContext& parent_context, ObjectSet& matches,
+void OrderedAlternativesOf::Eval(const ScriptingContext& parent_context, ObjectSet& matches,
                ObjectSet& non_matches, SearchDomain search_domain/* = NON_MATCHES*/) const
 {
     std::shared_ptr<const UniverseObject> no_object;
     ScriptingContext local_context(parent_context, no_object);
 
     if (m_operands.empty()) {
-        ErrorLogger() << "TopmostMatches::Eval given no operands!";
+        ErrorLogger() << "OrderedAlternativesOf::Eval given no operands!";
         return;
     }
     for (auto& operand : m_operands) {
         if (!operand) {
-            ErrorLogger() << "TopmostMatches::Eval given null operand!";
+            ErrorLogger() << "OrderedAlternativesOf::Eval given null operand!";
             return;
         }
     }
 
-    // Expressions like  'NOT TopmostMatches [ A B C ]'
+    // Expressions like  'NOT OrderedAlternativesOf [ A B C ]'
     // matches all candidates which do not match the topmost condition which has matches
     // which means the something like
-    // TopmostMatches [
+    // OrderedAlternativesOf [
     //     And [
     //         Number low = 1 condition = And [
     //             Object id = OuterCandidate.ID
@@ -10132,7 +10132,7 @@ void TopmostMatches::Eval(const ScriptingContext& parent_context, ObjectSet& mat
     }
 }
 
-bool TopmostMatches::RootCandidateInvariant() const {
+bool OrderedAlternativesOf::RootCandidateInvariant() const {
     if (m_root_candidate_invariant != UNKNOWN_INVARIANCE)
         return m_root_candidate_invariant == INVARIANT;
 
@@ -10146,7 +10146,7 @@ bool TopmostMatches::RootCandidateInvariant() const {
     return true;
 }
 
-bool TopmostMatches::TargetInvariant() const {
+bool OrderedAlternativesOf::TargetInvariant() const {
     if (m_target_invariant != UNKNOWN_INVARIANCE)
         return m_target_invariant == INVARIANT;
 
@@ -10160,7 +10160,7 @@ bool TopmostMatches::TargetInvariant() const {
     return true;
 }
 
-bool TopmostMatches::SourceInvariant() const {
+bool OrderedAlternativesOf::SourceInvariant() const {
     if (m_source_invariant != UNKNOWN_INVARIANCE)
         return m_source_invariant == INVARIANT;
 
@@ -10174,63 +10174,63 @@ bool TopmostMatches::SourceInvariant() const {
     return true;
 }
 
-std::string TopmostMatches::Description(bool negated/* = false*/) const {
+std::string OrderedAlternativesOf::Description(bool negated/* = false*/) const {
     std::string values_str;
     if (m_operands.size() == 1) {
         values_str += (!negated)
-            ? UserString("DESC_TOPMOST_BEFORE_SINGLE_OPERAND")
-            : UserString("DESC_NOT_TOPMOST_BEFORE_SINGLE_OPERAND");
+            ? UserString("DESC_ORDERED_ALTERNATIVES_BEFORE_SINGLE_OPERAND")
+            : UserString("DESC_NOT_ORDERED_ALTERNATIVES_BEFORE_SINGLE_OPERAND");
         // Pushing the negation of matches to the enclosed conditions
         values_str += m_operands[0]->Description(negated);
         values_str += (!negated)
-            ? UserString("DESC_TOPMOST_AFTER_SINGLE_OPERAND")
-            : UserString("DESC_NOT_TOPMOST_AFTER_SINGLE_OPERAND");
+            ? UserString("DESC_ORDERED_ALTERNATIVES_AFTER_SINGLE_OPERAND")
+            : UserString("DESC_NOT_ORDERED_ALTERNATIVES_AFTER_SINGLE_OPERAND");
     } else {
         // TODO: use per-operand-type connecting language
         values_str += (!negated)
-            ? UserString("DESC_TOPMOST_BEFORE_OPERANDS")
-            : UserString("DESC_NOT_TOPMOST_BEFORE_OPERANDS");
+            ? UserString("DESC_ORDERED_ALTERNATIVES_BEFORE_OPERANDS")
+            : UserString("DESC_NOT_ORDERED_ALTERNATIVES_BEFORE_OPERANDS");
         for (unsigned int i = 0; i < m_operands.size(); ++i) {
             // Pushing the negation of matches to the enclosed conditions
             values_str += m_operands[i]->Description(negated);
             if (i != m_operands.size() - 1) {
                 values_str += (!negated)
-                    ? UserString("DESC_TOPMOST_BETWEEN_OPERANDS")
-                    : UserString("DESC_NOT_TOPMOST_BETWEEN_OPERANDS");
+                    ? UserString("DESC_ORDERED_ALTERNATIVES_BETWEEN_OPERANDS")
+                    : UserString("DESC_NOT_ORDERED_ALTERNATIVES_BETWEEN_OPERANDS");
             }
         }
         values_str += (!negated)
-            ? UserString("DESC_TOPMOST_AFTER_OPERANDS")
-            : UserString("DESC_NOT_TOPMOST_AFTER_OPERANDS");
+            ? UserString("DESC_ORDERED_ALTERNATIVES_AFTER_OPERANDS")
+            : UserString("DESC_NOT_ORDERED_ALTERNATIVES_AFTER_OPERANDS");
     }
     return values_str;
 }
 
-std::string TopmostMatches::Dump(unsigned short ntabs) const {
-    std::string retval = DumpIndent(ntabs) + "TopmostMatches [\n";
+std::string OrderedAlternativesOf::Dump(unsigned short ntabs) const {
+    std::string retval = DumpIndent(ntabs) + "OrderedAlternativesOf [\n";
     for (auto& operand : m_operands)
         retval += operand->Dump(ntabs+1);
     retval += DumpIndent(ntabs) + "]\n";
     return retval;
 }
 
-void TopmostMatches::SetTopLevelContent(const std::string& content_name) {
+void OrderedAlternativesOf::SetTopLevelContent(const std::string& content_name) {
     for (auto& operand : m_operands) {
         operand->SetTopLevelContent(content_name);
     }
 }
 
-unsigned int TopmostMatches::GetCheckSum() const {
+unsigned int OrderedAlternativesOf::GetCheckSum() const {
     unsigned int retval{0};
 
-    CheckSums::CheckSumCombine(retval, "Condition::TopmostMatches");
+    CheckSums::CheckSumCombine(retval, "Condition::OrderedAlternativesOf");
     CheckSums::CheckSumCombine(retval, m_operands);
 
-    TraceLogger() << "GetCheckSum(TopmostMatches): retval: " << retval;
+    TraceLogger() << "GetCheckSum(OrderedAlternativesOf): retval: " << retval;
     return retval;
 }
 
-const std::vector<ConditionBase*> TopmostMatches::Operands() const {
+const std::vector<ConditionBase*> OrderedAlternativesOf::Operands() const {
     std::vector<ConditionBase*> retval(m_operands.size());
     std::transform(m_operands.begin(), m_operands.end(), retval.begin(),
                    [](const std::unique_ptr<ConditionBase>& xx) {return xx.get();});

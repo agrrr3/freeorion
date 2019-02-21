@@ -36,8 +36,8 @@ COMBAT_TARGETS_PLANET_WITH_DEFENSE
 // @2@ - Secondary target condition
 //Probalistic OR-NumberOf workaround for TopMostMatches condition not working
 //XXX Use TopMostMatches as soon as it works
-TOPMOST_MATCHES_2
-'''        TopmostMatches [
+ORDERED_ALTERNATIVES_2
+'''        OrderedAlternativesOf [
            @1@
            @2@
         ]
