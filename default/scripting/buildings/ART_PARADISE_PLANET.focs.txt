@@ -6,33 +6,11 @@ BuildingType
     location = And [
         Planet
         OwnedBy empire = Source.Owner
-        Number low = 2 condition = Ship  // ONLY 1 PLANET IN UNIVERSE!!! but enough ships
-//Not OrderedAlternativesOf [ All ] //fail OK                                                         NA_ // fail OK
-Not OrderedAlternativesOf [ Not Planet ] // no fail OK                                              NZ_ // no fail OK // no fail OK
-Not OrderedAlternativesOf [ Not Planet Not Planet] // no fail OK                                    NZZ // no fail OK // no fail OK
-//Number low = 1 condition = And [ Planet OrderedAlternativesOf [ Ship Capital ] ]  // no fail OK     PZB //            // no fail OK
-Number low = 1 condition = And [ Ship OrderedAlternativesOf [ Armed ] ]        //                   PB_ //            // no fail OK
-Number low = 1 condition = And [ Ship Not OrderedAlternativesOf [ Armed ] ]    //                   NB_ //            // no fail OK
-Number low = 1 condition = And [ Ship OrderedAlternativesOf [ Planet Armed ] ]        //            PZB //            // no fail OK
-Number low = 1 condition = And [ Ship Not OrderedAlternativesOf [ Planet Armed ] ]    //            NZB //            // no fail OK
-Number low = 1 condition = And [ Ship OrderedAlternativesOf [ Armed Planet ] ]        //            PBZ //            // no fail OK
-Number low = 1 condition = And [ Ship Not OrderedAlternativesOf [ Armed Planet ] ]    //            NBZ //            // no fail OK
-Number low = 1 condition = And [ Planet Not OrderedAlternativesOf [ Planet ] ]  //no fail NOK       NA_ // fail OK    // fail OK
-Number low = 1 condition = And [ Planet Not OrderedAlternativesOf [ Not Planet ] ]   // no fail OK  NZ_ // fail NOK   // no fail OK
-//Number low = 1 condition = And [ Planet OrderedAlternativesOf [ Not Planet ] ]  // fail OK          PZ_ // fail OK
-//Number low = 1 condition = And [ Planet OrderedAlternativesOf [ Ship ] ]  // fail OK                PZ_ // fail OK
-//Number low = 1 condition = And [ Planet Not Planet ] // fail 
-//Not OrderedAlternativesOf [ All Not Planet ] // fail                                                  // fail OK
-//OrderedAlternativesOf [ Or [ Planet Not Planet ] ] //fail
-//Not OrderedAlternativesOf [ Planet Planet Planet ] //fail
-//Not OrderedAlternativesOf [ Planet Not Planet Planet ] //fail
-//Number low = 1 condition = And [ Planet Not OrderedAlternativesOf [ Capital ] ]  // no fail OK      NB_ // fail NOK // BROKEN condition
-//Number low = 1 condition = And [ Planet OrderedAlternativesOf [ Capital ] ]  // no fail OK          PB_ // no fail OK // BROKEN condition
-//
-//Not OrderedAlternativesOf [ Or [ Planet Not Planet ] Not Planet] // fail
-//OrderedAlternativesOf [ Or [ Planet Not Planet ] Not Planet] // fail
+        Planet type = [Asteroids GasGiant]
+        OwnerHasTech name = "GRO_GAIA_TRANS"
+        Population high = 0
     ]
-
+    EnqueueLocation = [[ENQUEUE_ARTIFICIAL_PLANET_EXCLUSION]]
     effectsgroups = [
         EffectsGroup
             scope = And [
