@@ -32,17 +32,6 @@ COMBAT_TARGETS_PLANET_WITH_DEFENSE
 '''
 
 
-// @1@ - Main target condition
-// @2@ - Secondary target condition
-//Probalistic OR-NumberOf workaround for TopMostMatches condition not working
-//XXX Use TopMostMatches as soon as it works
-ORDERED_ALTERNATIVES_2
-'''        OrderedAlternativesOf [
-           @1@
-           @2@
-        ]
-'''
-
 // This should just considers fighters with the same targetting conditions (i.e. launched by the same hangar type
 // There would be a workaround to find out the relative balance of types of own hangar parts and use that for scaling
 // But probably its better to query the launching hangar part like: LaunchedByHangar = CurrentContent
