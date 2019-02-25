@@ -10032,21 +10032,13 @@ void OrderedAlternativesOf::Eval(const ScriptingContext& parent_context, ObjectS
         // try matching operand conditions until one matches
         bool found_sth = false;
         for (auto& operand : m_operands) {
-            ErrorLogger() << "NON_MATCHES for operand " << operand->Dump();
             // move those non matching the current operand to temp_non_matches
             //            operand->Eval(local_context, matches, temp_non_matches, MATCHES);
             // move those matching the current non-negated operand from non_matches to temp_non_matches
             operand->Eval(local_context, non_matches, temp_non_matches, MATCHES);
             if (!(non_matches.empty())) {
                 // i.e. the current operand should be used negated to move 
-                ErrorLogger() << "NON_MATCHES found matches";
                 found_sth = true;
-                for (auto& m : temp_non_matches) {
-                    ErrorLogger() << "tnm#:" << m << " " << m->ObjectType();
-                }
-                for (auto& m : non_matches) {
-                    ErrorLogger() << "nm#:" << m << " " << m->ObjectType();
-                }
                 // move back temp_non matches
                 non_matches.insert(non_matches.end(),
                                std::make_move_iterator(temp_non_matches.begin()),
@@ -10055,37 +10047,13 @@ void OrderedAlternativesOf::Eval(const ScriptingContext& parent_context, ObjectS
                 // descent into subcondition for NON_MATCHES
                 ObjectSet temp_matches;
                 operand->Eval(local_context, temp_matches, non_matches, NON_MATCHES);
-                if (non_matches.empty()) {
-                    ErrorLogger() << "NON_MATCHES found no NON_MATCHES to return";
-                } else {
-                    ErrorLogger() << "NON_MATCHES found NON_MATCHES to return";
-                }
-                for (auto& m : temp_matches) {
-                    ErrorLogger() << "tm#:" << m << " " << m->ObjectType();
-                }
-                for (auto& m : non_matches) {
-                    ErrorLogger() << "nm#:" << m << " " << m->ObjectType();
-                }
-                for (auto& m : matches) {
-                    ErrorLogger() << "m#:" << m << " " << m->ObjectType();
-                }
                 matches.insert(matches.end(),
                                std::make_move_iterator(temp_matches.begin()),
                                std::make_move_iterator(temp_matches.end()));
                 temp_matches.clear();
                 break;
-            } else {
-                ErrorLogger() << "NON_MATCHES found NO matches in ";
-                for (auto& m : temp_non_matches) {
-                    ErrorLogger() << "tnm#:" << m;
-                }
-                for (auto& m : non_matches) {
-                    ErrorLogger() << "nm#:" << m;
-                }
-                if (temp_non_matches.empty()) {
-                    ErrorLogger() << "NON_MATCHES found NO matches in empty";
-                }
             }
+
             // move back temp_non matches
             matches.insert(matches.end(),
                            std::make_move_iterator(temp_non_matches.begin()),
@@ -10093,18 +10061,12 @@ void OrderedAlternativesOf::Eval(const ScriptingContext& parent_context, ObjectS
             temp_non_matches.clear();
         }
         if (!found_sth) {
-            ErrorLogger() << "NON_MATCHES could not find any matches -> so it should match all ";
+            // NON_MATCHES could not find any matches -> so it should match all
             for (auto it = matches.begin(); it != matches.end(); ) {
                 non_matches.push_back(*it);
                 *it = matches.back();
                 matches.pop_back();
             }
-        }
-        for (auto& m : matches) {
-            ErrorLogger() << "final m#:" << m << " " << m->ObjectType();
-        }
-        for (auto& m : non_matches) {
-            ErrorLogger() << "final nm#:" << m << " " << m->ObjectType();
         }
     } else /*(search_domain == MATCHES)*/ {
         // check all operand conditions on all objects in the matches set, collecting non matches temporarily
