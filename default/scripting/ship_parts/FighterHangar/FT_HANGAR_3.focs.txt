@@ -6,8 +6,8 @@ Part
     capacity = 2
     damage = 5
     combatTargets = OrderedAlternativesOf [
-        And [ [[COMBAT_TARGETS_VISIBLE_ENEMY]]  Fighter ]
         And [ [[COMBAT_TARGETS_VISIBLE_ENEMY]]  [[COMBAT_TARGETS_NOT_DESTROYED_SHIP]] ]
+        And [ [[COMBAT_TARGETS_VISIBLE_ENEMY]]  Fighter ]
     ]
     mountableSlotTypes = Internal
     buildcost = 25 * [[FLEET_UPKEEP_MULTIPLICATOR]] * [[SHIP_PART_COST_MULTIPLIER]]
