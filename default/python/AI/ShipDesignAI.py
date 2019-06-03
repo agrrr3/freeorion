@@ -1542,9 +1542,10 @@ class ShipDesigner(object):
         # base fuel
         tank_name = fuel_part.name
         base = fuel_part.capacity
+        hull_multiplier = _get_hull_efficiency()
         tech_bonus = _get_tech_bonus(AIDependencies.FUEL_TANK_UPGRADE_DICT, tank_name)
         # There is no per part species modifier
-        return base + tech_bonus
+        return ( base + tech_bonus ) * hull_multiplier
 
     def _calculate_weapon_strength(self, weapon_part, ignore_species=False):
         # base damage
@@ -2374,3 +2375,6 @@ def _get_tech_bonus(upgrade_dict, part_name):
         total_tech_bonus += bonus if tech_is_complete(tech) else 0
         # TODO: Error checking if tech is actually a valid tech (tech_is_complete simply returns false)
     return total_tech_bonus
+
+def _hull_efficiency(self):
+    self.hull
