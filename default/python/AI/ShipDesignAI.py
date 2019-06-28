@@ -929,7 +929,7 @@ class ShipDesigner(object):
                 break
             self.design_stats.fighter_launch_rate = self._calculate_fighter_launch_rate(bay_parts, hangar_part_name)
 
-        self._apply_hardcoded_effects()
+        self._apply_hardcoded_effects(ignore_species)
 
         if self.species and not ignore_species:
             shields_grade = CombatRatingsAI.get_species_shield_grade(self.species)
@@ -938,7 +938,7 @@ class ShipDesigner(object):
                 troops_grade = CombatRatingsAI.get_species_troops_grade(self.species)
                 self.design_stats.troops = CombatRatingsAI.weight_attack_troops(self.design_stats.troops, troops_grade)
 
-    def _apply_hardcoded_effects(self):
+    def _apply_hardcoded_effects(self, ignore_species=False):
         """Update stats that can not be read out by the AI yet, i.e. applied by effects.
 
         This function should contain *all* hardcoded effects for hulls/parts to be considered by the AI
