@@ -598,6 +598,7 @@ void Empire::Eliminate() {
     // uncleared after elimination
 
     m_capital_id = INVALID_OBJECT_ID;
+    // m_new_techs
     // m_techs
     m_research_queue.clear();
     m_research_progress.clear();
@@ -976,7 +977,7 @@ void Empire::SetResourceStockpile(ResourceType resource_type, float stockpile) {
 }
 
 void Empire::PlaceTechInQueue(const std::string& name, int pos/* = -1*/) {
-    if (name.empty() || TechResearched(name) || m_techs.count(name))
+    if (name.empty() || TechResearched(name) || m_techs.count(name) || m_new_techs.count(name))
         return;
     const Tech* tech = GetTech(name);
     if (!tech || !tech->Researchable())
@@ -1336,21 +1337,36 @@ void Empire::ConquerProductionQueueItemsAtLocation(int location_id, int empire_i
     }
 }
 
-void Empire::AddTech(const std::string& name) {
+void Empire::AddNewTech(const std::string& name) {
     const Tech* tech = GetTech(name);
     if (!tech) {
-        ErrorLogger() << "Empire::AddTech given and invalid tech: " << name;
+        ErrorLogger() << "Empire::AddNewTech given an invalid tech: " << name;
         return;
     }
 
-    if (!m_techs.count(name))
-        AddSitRepEntry(CreateTechResearchedSitRep(name));
+    if (m_techs.count(name) || m_new_techs.count(name) )
+        return;
 
-    for (const ItemSpec& item : tech->UnlockedItems())
-        UnlockItem(item);  // potential infinite if a tech (in)directly unlocks itself?
+    AddSitRepEntry(CreateTechResearchedSitRep(name));
 
-    if (!m_techs.count(name))
-        m_techs[name] = CurrentTurn();
+    m_new_techs[name] = CurrentTurn();
+}
+
+void Empire::ApplyNewTechs() {
+    for (auto new_tech : m_new_techs) {
+        const Tech* tech = GetTech(new_tech.first);
+        if (!tech) {
+            ErrorLogger() << "Empire::ApplyNewTech has an invalid entry in m_new_techs: " << new_tech.first;
+            return;
+        }
+
+        for (const ItemSpec& item : tech->UnlockedItems())
+            UnlockItem(item);  // potential infinite if a tech (in)directly unlocks itself?
+
+        if (!m_techs.count(new_tech.first))
+            m_techs[new_tech.first] = new_tech.second;
+    }
+    m_new_techs.clear();
 }
 
 void Empire::UnlockItem(const ItemSpec& item) {
@@ -1368,7 +1384,7 @@ void Empire::UnlockItem(const ItemSpec& item) {
         AddShipDesign(GetPredefinedShipDesignManager().GetDesignID(item.name));
         break;
     case UIT_TECH:
-        AddTech(item.name);
+        AddNewTech(item.name);
         break;
     default:
         ErrorLogger() << "Empire::UnlockItem : passed ItemSpec with unrecognized UnlockableItemType";
