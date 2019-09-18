@@ -512,6 +512,7 @@ private:
     Effect::DiscrepancyMap          m_effect_discrepancy_map;           ///< map from target object id, to map from target meter, to discrepancy between meter's actual initial value, and the initial value that this meter should have as far as the client can tell: the unknown factor affecting the meter
 
     std::map<int, std::set<int>>    m_marked_destroyed;                 ///< used while applying effects to cache objects that have been destroyed.  this allows to-be-destroyed objects to remain undestroyed until all effects have been processed, which ensures that to-be-destroyed objects still exist when other effects need to access them as a source object. key is destroyed object, and value set are the ids of objects that caused the destruction (may be multiples destroying a single target on a given turn)
+    std::vector<std:string>         m_marked_researched;                ///< used while applying effects to cache techs that are newly researched.  This allows new tech to be recorded, while being not effective (effects do not see the tech researched). Effects of the tech or depending on the tech will apply next turn. 
 
     double                          m_universe_width;
     bool                            m_inhibit_universe_object_signals;

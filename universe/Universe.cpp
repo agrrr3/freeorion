@@ -1524,6 +1524,7 @@ void Universe::ExecuteEffects(const Effect::TargetsCauses& targets_causes,
     ScopedTimer timer("Universe::ExecuteEffects", true);
 
     m_marked_destroyed.clear();
+    m_marked_researched.clear();
     std::map<std::string, std::set<int>> executed_nonstacking_effects;
 
     // grouping targets causes by effects group
