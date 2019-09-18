@@ -324,6 +324,8 @@ namespace {
         }
         ItemSpec item = ItemSpec(item_type, item_name);
         empire->UnlockItem(item);
+        // FIXME
+        empire->ApplyNewTechs();
     }
 
     void EmpireAddShipDesign(int empire_id, const std::string& design_name) {
