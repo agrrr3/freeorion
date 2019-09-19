@@ -1450,6 +1450,9 @@ void ServerApp::GenerateUniverse(std::map<int, PlayerSetupData>& player_setup_da
     if (!success)
         ServerApp::GetApp()->Networking().SendMessageAll(ErrorMessage(UserStringNop("SERVER_UNIVERSE_GENERATION_ERRORS"), false));
 
+    for (auto& empire : Empires()) {
+        empire.second->ApplyNewTechs();
+    }
 
     DebugLogger() << "Applying first turn effects and updating meters";
 
