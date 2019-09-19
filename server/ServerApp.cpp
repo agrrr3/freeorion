@@ -3479,7 +3479,8 @@ void ServerApp::PostCombatProcessTurns() {
     // apply new techs
     for (auto& entry : empires) {
         Empire* empire = entry.second;
-        empire->ApplyNewTechs();
+        if (empire && !empire->Eliminated())
+            empire->ApplyNewTechs();
     }
 
 
