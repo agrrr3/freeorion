@@ -7,9 +7,26 @@ Tech
     researchturns = 2
     tags = [ "PEDIA_SR_WEAPON_TECHS" ]
     prerequisites = "SHP_ROOT_AGGRESSION"
-    effectsgroups =
+    effectsgroups = [
         [[WEAPON_UPGRADE_CAPACITY_EFFECTS(SR_WEAPON_1_1, 1)]]
-    graphic = "icons/ship_parts/mass-driver-2.png"
+        
+        EffectsGroup
+            scope = Source
+            activation = Source
+            effects = [
+                GiveEmpireTech name = "SPY_DETECT_2" empire = Source.Owner
+                GenerateSitRepMessage
+                    message = "EFFECT_MINES"
+                    label = "EFFECT_MINES_LABEL"
+                    icon = "icons/sitrep/combat_damage.png"
+                    parameters = [
+                        tag = "empire" data = Source.Owner
+                        tag = "rawtext" data = "Trying to give tech"
+                    ]
+                    empire = Source.Owner
+                    ]
+                    ]
+     graphic = "icons/ship_parts/mass-driver-2.png"
 
 #include "../ship_weapons.macros"
 

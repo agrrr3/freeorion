@@ -29,5 +29,16 @@ Tech
                 Not OwnerHasTech name = "SPY_DETECT_4"
                 Not OwnerHasTech name = "SPY_DETECT_5"
             ]
-            effects = SetEmpireMeter empire = Source.Owner meter = "METER_DETECTION_STRENGTH" value = Value + 10
+            effects = [
+            SetEmpireMeter empire = Source.Owner meter = "METER_DETECTION_STRENGTH" value = Value + 10
+            GenerateSitRepMessage
+                    message = "EFFECT_MINES"
+                    label = "EFFECT_MINES_LABEL"
+                    icon = "icons/sitrep/combat_damage.png"
+                    parameters = [
+                        tag = "empire" data = Source.Owner
+                        tag = "rawtext" data = TurnTechResearched empire = Source.Owner name = "SPY_DETECT_1"
+                    ]
+                    empire = Source.Owner
+           ]
     ]

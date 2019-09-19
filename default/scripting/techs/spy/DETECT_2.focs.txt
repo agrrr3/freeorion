@@ -3,8 +3,8 @@ Tech
     description = "SPY_DETECT_2_DESC"
     short_description = "DETECTION_SHORT_DESC"
     category = "SPY_CATEGORY"
-    researchcost = 50 * [[TECH_COST_MULTIPLIER]]
-    researchturns = 5
+    researchcost = 5 * [[TECH_COST_MULTIPLIER]]
+    researchturns = 1
     tags = [ "PEDIA_SPY_CATEGORY" ]
     prerequisites = "SHP_GAL_EXPLO"
     unlock = [
@@ -31,7 +31,20 @@ Tech
                 Not OwnerHasTech name = "SPY_DETECT_4"
                 Not OwnerHasTech name = "SPY_DETECT_5"
             ]
-            effects = SetEmpireMeter empire = Source.Owner meter = "METER_DETECTION_STRENGTH" value = Value + 30
+            effects = [
+            SetEmpireMeter empire = Source.Owner meter = "METER_DETECTION_STRENGTH" value = Value + 30
+
+GenerateSitRepMessage
+                    message = "EFFECT_MINES"
+                    label = "EFFECT_MINES_LABEL"
+                    icon = "icons/tech/active_radar.png"
+                    parameters = [
+                        tag = "empire" data = Source.Owner
+                        tag = "rawtext" data = TurnTechResearched empire = Source.Owner name = "SPY_DETECT_2"
+                    ]
+                    empire = Source.Owner
+           ]
+
     ]
     graphic = "icons/tech/active_radar.png"
 
