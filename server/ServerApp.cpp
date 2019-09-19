@@ -3409,12 +3409,6 @@ void ServerApp::PostCombatProcessTurns() {
     m_universe.BackPropagateObjectMeters();
     empires.BackPropagateMeters();
 
-    // apply new techs
-    for (auto& entry : empires) {
-        Empire* empire = entry.second;
-        empire->ApplyNewTechs();
-    }
-
     // check for loss of empire capitals
     for (auto& entry : empires) {
         int capital_id = entry.second->CapitalID();
@@ -3480,6 +3474,13 @@ void ServerApp::PostCombatProcessTurns() {
     for (auto& entry : empires)
         entry.second->UpdateOwnedObjectCounters();
     GetSpeciesManager().UpdatePopulationCounter();
+
+
+    // apply new techs
+    for (auto& entry : empires) {
+        Empire* empire = entry.second;
+        empire->ApplyNewTechs();
+    }
 
 
     // indicate that the clients are waiting for their new gamestate

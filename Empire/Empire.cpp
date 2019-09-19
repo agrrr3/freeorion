@@ -1364,7 +1364,7 @@ void Empire::ApplyNewTechs() {
             UnlockItem(item);  // potential infinite if a tech (in)directly unlocks itself?
 
         if (!m_techs.count(new_tech.first))
-            m_techs[new_tech.first] = new_tech.second;
+            m_techs[new_tech.first] = CurrentTurn();
     }
     m_new_techs.clear();
 }
