@@ -1344,27 +1344,27 @@ void Empire::AddNewTech(const std::string& name) {
         return;
     }
 
-    if (m_techs.count(name) || m_new_techs.count(name) )
+    if (m_techs.count(name))
         return;
 
-    AddSitRepEntry(CreateTechResearchedSitRep(name));
-
-    m_new_techs[name] = CurrentTurn();
+    auto result = m_new_techs.insert(name);
+    if (result.second)
+        AddSitRepEntry(CreateTechResearchedSitRep(name));
 }
 
 void Empire::ApplyNewTechs() {
     for (auto new_tech : m_new_techs) {
-        const Tech* tech = GetTech(new_tech.first);
+        const Tech* tech = GetTech(new_tech);
         if (!tech) {
-            ErrorLogger() << "Empire::ApplyNewTech has an invalid entry in m_new_techs: " << new_tech.first;
+            ErrorLogger() << "Empire::ApplyNewTech has an invalid entry in m_new_techs: " << new_tech;
             return;
         }
 
         for (const ItemSpec& item : tech->UnlockedItems())
             UnlockItem(item);  // potential infinite if a tech (in)directly unlocks itself?
 
-        if (!m_techs.count(new_tech.first))
-            m_techs[new_tech.first] = CurrentTurn();
+        if (!m_techs.count(new_tech))
+            m_techs[new_tech] = CurrentTurn();
     }
     m_new_techs.clear();
 }

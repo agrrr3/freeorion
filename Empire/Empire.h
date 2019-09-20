@@ -387,7 +387,7 @@ private:
     bool                            m_eliminated = false;       ///< Whether the empire has lost
     std::set<std::string>           m_victories;                ///< The ways that the empire has won, if any
 
-    std::map<std::string, int>      m_new_techs;                ///< names of researched but not yet effective technologies, and turns on which they were acquired.
+    std::set<std::string>           m_new_techs;                ///< names of researched but not yet effective technologies, and turns on which they were acquired.
     std::map<std::string, int>      m_techs;                    ///< names of researched technologies, and turns on which they were acquired.
     std::map<std::string, Meter>    m_meters;                   ///< empire meters, including ratings scales used by species to judge empires
 
