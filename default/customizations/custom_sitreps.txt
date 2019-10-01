@@ -114,8 +114,6 @@ EffectsGroup
             VisibleToEmpire empire = RootCandidate.Owner
         ]
     ]
-    // Some things need to be fixed: TurnTechResearched should probably not return 0 if not researched
-    // Some things need to be fixed: TurnTechResearched should include tech which is effective this turn
     activation = Or [
        [[EMPIRE_TECH_RESEARCHED(SPY_DETECT_2)]]
        [[EMPIRE_TECH_RESEARCHED(SPY_DETECT_3)]]
@@ -134,12 +132,18 @@ EffectsGroup
             ]
             empire = Target.Owner
 
+// The following macro shields against some details of TurnTechResearched implementation.
+// With the current backend implementation TurnTechResearched will never be CurrentTurn
+// the first turn TurnTechResearched will return its value is the one following the research.
+// That turn is also the turn the technology effects apply for the first time.
+// NB: At time of writing TurnTechResearched returns 0 if the given tech is not researched yet
 EMPIRE_TECH_RESEARCHED
 '''And [
         (CurrentTurn > 1)
         Or [
-            (CurrentTurn == TurnTechResearched empire = Source.Owner name = "@1@")
             (CurrentTurn == 1 + TurnTechResearched empire = Source.Owner name = "@1@")
+            // If following matches, the implementation was changed and it is good to get an extra SitRep
+            (CurrentTurn == TurnTechResearched empire = Source.Owner name = "@1@")
         ]
     ]
 '''
