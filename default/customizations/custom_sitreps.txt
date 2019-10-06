@@ -114,8 +114,6 @@ EffectsGroup
             VisibleToEmpire empire = RootCandidate.Owner
         ]
     ]
-    // Some things need to be fixed: TurnTechResearched should probably not return 0 if not researched
-    // Some things need to be fixed: TurnTechResearched should include tech which is effective this turn
     activation = Or [
        [[EMPIRE_TECH_RESEARCHED(SPY_DETECT_2)]]
        [[EMPIRE_TECH_RESEARCHED(SPY_DETECT_3)]]
@@ -130,7 +128,8 @@ EffectsGroup
             label = "SITREP_EMPIRE_TECH_RESEARCHED_DETECTION_LABEL"
             icon = "icons/tech/active_radar.png"
             parameters = [
-                tag = "empire"  data = Source.Owner
+                tag = "empire"    data = Source.Owner
+                tag = "dstrength" data = EmpireMeterValue empire = Source.Owner meter = "METER_DETECTION_STRENGTH"
             ]
             empire = Target.Owner
 
@@ -139,7 +138,6 @@ EMPIRE_TECH_RESEARCHED
         (CurrentTurn > 1)
         Or [
             (CurrentTurn == TurnTechResearched empire = Source.Owner name = "@1@")
-            (CurrentTurn == 1 + TurnTechResearched empire = Source.Owner name = "@1@")
         ]
     ]
 '''
