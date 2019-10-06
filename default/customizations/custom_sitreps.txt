@@ -115,10 +115,10 @@ EffectsGroup
         ]
     ]
     activation = Or [
-       [[EMPIRE_TECH_RESEARCHED(SPY_DETECT_2)]]
-       [[EMPIRE_TECH_RESEARCHED(SPY_DETECT_3)]]
-       [[EMPIRE_TECH_RESEARCHED(SPY_DETECT_4)]]
-       [[EMPIRE_TECH_RESEARCHED(SPY_DETECT_5)]]
+       (CurrentTurn == TurnTechResearched empire = Source.Owner name = "SPY_DETECT_2")
+       (CurrentTurn == TurnTechResearched empire = Source.Owner name = "SPY_DETECT_3")
+       (CurrentTurn == TurnTechResearched empire = Source.Owner name = "SPY_DETECT_4")
+       (CurrentTurn == TurnTechResearched empire = Source.Owner name = "SPY_DETECT_5")
     ]
     // does not help with TurnTechResearch...
     priority = [[END_CLEANUP_PRIORITY]]
@@ -132,15 +132,6 @@ EffectsGroup
                 tag = "dstrength" data = EmpireMeterValue empire = Source.Owner meter = "METER_DETECTION_STRENGTH"
             ]
             empire = Target.Owner
-
-EMPIRE_TECH_RESEARCHED
-'''And [
-        (CurrentTurn > 1)
-        Or [
-            (CurrentTurn == TurnTechResearched empire = Source.Owner name = "@1@")
-        ]
-    ]
-'''
 
 EffectsGroup
     scope = And [
