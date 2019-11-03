@@ -2317,14 +2317,14 @@ int Empire::TotalShipsEnqueued(bool paused) const {
         auto elem = *queue_it;
         ProductionQueue::ProductionItem item = elem.item;
 
-        if ((item.build_type == BT_SHIP) && (item.paused == paused)) {
+        if ((item.build_type == BT_SHIP) && (elem.paused == paused)) {
             counter += elem.blocksize;
         }
     }
     return counter;
 }
 
-int TotalShipPartsEnqueued(bool include_paused = false) const {
+int Empire::TotalShipPartsEnqueued(bool paused) const {
     // count of all ship parts of all ships in the production queue of this empire
     // TODO
     return 0;
