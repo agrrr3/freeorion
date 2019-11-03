@@ -2230,7 +2230,7 @@ void Empire::UpdateOwnedObjectCounters() {
         ProductionQueue::ProductionItem item = elem.item;
 
         if ((item.build_type == BT_SHIP) && (elem.progress > 0.0f)) {
-            m_ship_designs_in_production[item.design_id]++;
+            m_ship_designs_in_production[item.design_id] += elem.blocksize;
         }
     }
 
