@@ -2298,3 +2298,24 @@ int Empire::TotalBuildingsOwned() const {
     { counter += entry.second; }
     return counter;
 }
+
+int Empire::TotalShipsEnqueued(bool paused) const {
+    // count of all ships in the production queue of this empire
+    //    Empire::ProductionStatus
+    int counter = 0;
+    for (auto queue_it = m_production_queue.begin(); queue_it != m_production_queue.end(); ) {
+        auto elem = *queue_it;
+        ProductionQueue::ProductionItem item = elem.item;
+
+        if ((item.build_type == BT_SHIP) && (elem.paused == paused)) {
+            counter += elem.blocksize;
+        }
+    }
+    return counter;
+}
+
+int Empire::TotalShipPartsEnqueued(bool paused) const {
+    // count of all ship parts of all ships in the production queue of this empire
+    // TODO
+    return 0;
+}

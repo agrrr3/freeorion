@@ -334,6 +334,8 @@ public:
     int TotalShipsOwned() const;
     int TotalShipPartsOwned() const;    ///< Total number of parts for all owned ships in this empire
     int TotalBuildingsOwned() const;
+    int TotalShipsEnqueued(bool paused = false) const;
+    int TotalShipPartsEnqueued(bool paused = false) const;    ///< Total number of parts for all ships in this empire's production queue
 
     std::map<std::string, int>&     SpeciesShipsOwned()     { return m_species_ships_owned; }
     std::map<int, int>&             ShipDesignsOwned()      { return m_ship_designs_owned; }
