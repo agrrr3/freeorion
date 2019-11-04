@@ -197,8 +197,10 @@ HULL_FUEL_EFFICIENCY_EFFECTSGROUP
             ]
                        accountinglabel = "@1@_FUEL_EFFICIENCY_LABEL"
             priority = [[VERY_LATE_PRIORITY]]
+            effects = SetMaxFuel value = Value * @2@  * Statistic If Condition = And [ Source HasTag name = "@1@_FUEL_EFFICIENCY" ]
+//            effects = SetMaxFuel value = ((Value - HullFuel name = ThisHull) * @2@ + HullFuel name = ThisHull ) * Statistic If Condition = And [ Source HasTag name = "@1@_FUEL_EFFICIENCY" ]
 //            effects = SetMaxFuel value = ((Value - HullFuel name = ThisHull) + ((Value - HullFuel name = ThisHull) * abs( @2@ - 1 )) + HullFuel name = ThisHull ) * Statistic If Condition = And [ Source HasTag name = "@1@_FUEL_EFFICIENCY" ]
-            effects = SetMaxFuel value = ((Value - HullFuel name = ThisHull) + (abs(Value - HullFuel name = ThisHull) * ( @2@ - 1 )) + HullFuel name = ThisHull ) * Statistic If Condition = And [ Source HasTag name = "@1@_FUEL_EFFICIENCY" ]
+//            effects = SetMaxFuel value = ((Value - HullFuel name = ThisHull) + (abs(Value - HullFuel name = ThisHull) * ( @2@ - 1 )) + HullFuel name = ThisHull ) * Statistic If Condition = And [ Source HasTag name = "@1@_FUEL_EFFICIENCY" ]
 //            effects = [
 //                SetMaxFuel value = Value - HullFuel name = ThisHull  accountinglabel = "@1@_FUEL_EFFICIENCY_LABEL_CAP"
 //                SetMaxFuel value = Value * @2@             accountinglabel = "@1@_FUEL_EFFICIENCY_LABEL"

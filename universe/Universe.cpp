@@ -758,6 +758,7 @@ void Universe::UpdateMeterEstimatesImpl(const std::vector<int>& objects_vec, boo
                        boost::bind(&std::map<int, std::shared_ptr<UniverseObject>>::value_type::second, _1));
     }
 
+    float max_fuel_inherent_value = 4.0f;
     for (auto& obj : object_ptrs) {
         int obj_id = obj->ID();
 
@@ -774,6 +775,11 @@ void Universe::UpdateMeterEstimatesImpl(const std::vector<int>& objects_vec, boo
              type = MeterType(type + 1))
         {
             if (Meter* meter = obj->GetMeter(type)) {
+                //if (type == METER_MAX_FUEL) {
+                    //max_fuel_inherent_value = meter->Current();
+                //    continue;
+                //}
+
                 Effect::AccountingInfo info;
                 info.source_id = INVALID_OBJECT_ID;
                 info.cause_type = ECT_INHERENT;
@@ -801,6 +807,27 @@ void Universe::UpdateMeterEstimatesImpl(const std::vector<int>& objects_vec, boo
     TraceLogger(effects) << "UpdateMeterEstimatesImpl after executing effects objects:";
     for (auto& obj : object_ptrs)
         TraceLogger(effects) << obj->Dump();
+
+    /*
+    // Special case for FUEL
+    //TraceLogger(effects) << "Special handling for METER_MAX_FUEL";
+    for (auto& obj : object_ptrs) {
+        int obj_id = obj->ID();
+
+        if (Meter* meter = obj->GetMeter(METER_MAX_FUEL)) {
+            //Effect::AccountingInfo& max_fuel_inherent = m_effect_accounting_map[obj_id][METER_MAX_FUEL].front();
+            //m_effect_accounting_map[obj_id][METER_MAX_FUEL].erase(m_effect_accounting_map[obj_id][METER_MAX_FUEL].begin());
+            //m_effect_accounting_map[obj_id][METER_MAX_FUEL].push_back(max_fuel_inherent);
+            Effect::AccountingInfo info;
+            info.source_id = INVALID_OBJECT_ID;
+            info.cause_type = ECT_INHERENT;
+            info.meter_change = max_fuel_inherent_value - Meter::DEFAULT_VALUE;
+            info.running_meter_total = max_fuel_inherent_value;
+
+            if (info.meter_change != 0.0f)
+                m_effect_accounting_map[obj_id][METER_MAX_FUEL].push_back(info);
+        }
+        }*/
 
     // Apply known discrepancies between expected and calculated meter maxes at start of turn.  This
     // accounts for the unknown effects on the meter, and brings the estimate in line with the actual
