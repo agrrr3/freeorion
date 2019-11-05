@@ -51,7 +51,11 @@ namespace {
     // by the result of evalulating \a increase_vr
     std::shared_ptr<Effect::EffectsGroup>
     IncreaseMeter(MeterType meter_type,
-                  std::unique_ptr<ValueRef::ValueRefBase<double>>&& increase_vr)
+                  std::unique_ptr<ValueRef::ValueRefBase<double>>&& increase_vr,
+                  const std::string& accounting_label = "",
+                  const std::string& stacking_group = "", int priority = 0,
+                  const std::string& description = "",
+                  const std::string& content_name = "")
     {
         typedef std::vector<std::unique_ptr<Effect::EffectBase>> Effects;
         auto scope = boost::make_unique<Condition::Source>();
@@ -66,15 +70,15 @@ namespace {
             );
         auto effects = Effects();
         effects.push_back(boost::make_unique<Effect::SetMeter>(meter_type, std::move(vr)));
-        return std::make_shared<Effect::EffectsGroup>(std::move(scope), std::move(activation), std::move(effects));
+        return std::make_shared<Effect::EffectsGroup>(std::move(scope), std::move(activation), std::move(effects), accounting_label, stacking_group, priority, description, content_name);
     }
 
     // create effectsgroup that increases the value of \a meter_type
     // by the specified amount \a fixed_increase
     std::shared_ptr<Effect::EffectsGroup>
-    IncreaseMeter(MeterType meter_type, float fixed_increase) {
+    IncreaseMeter(MeterType meter_type, float fixed_increase, int priority = 0) {
         auto increase_vr = boost::make_unique<ValueRef::Constant<double>>(fixed_increase);
-        return IncreaseMeter(meter_type, std::move(increase_vr));
+        return IncreaseMeter(meter_type, std::move(increase_vr), "", "", priority);
     }
 
     // create effectsgroup that increases the value of \a meter_type
@@ -603,7 +607,7 @@ HullType::~HullType()
 
 void HullType::Init(std::vector<std::unique_ptr<Effect::EffectsGroup>>&& effects) {
     if (m_fuel != 0)
-        m_effects.push_back(IncreaseMeter(METER_MAX_FUEL,       m_fuel));
+        m_effects.push_back(IncreaseMeter(METER_MAX_FUEL,       m_fuel, 500)); // FIXME MAGIC NUMBER
     if (m_stealth != 0)
         m_effects.push_back(IncreaseMeter(METER_STEALTH,        m_stealth));
     if (m_structure != 0)
