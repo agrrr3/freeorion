@@ -12048,7 +12048,7 @@ SHP_WEAPON_GAMMA_BURST_1
 Gamma Slingshots
 
 SHP_WEAPON_GAMMA_BURST_1_DESC
-Unlocks the [[shippart SR_GAMMA_BURST]], an automated weapon system doing low damage to multiple targets. Note 
+Unlocks the [[shippart SR_GAMMA_BURST]], an automated weapon system doing low damage to multiple targets.
 
 SHP_WEAPON_GAMMA_BURST_2
 Gamma Slingshot 2
