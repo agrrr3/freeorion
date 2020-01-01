@@ -1,0 +1,61 @@
+// In absense of shields this weapon can get almost as good as Plasma. Against shields its pretty useless
+// BURST_1   12RP  3T  allow 40PP part unlock with 3 shots with 3 damage - almost comparable damage to two MD_3 at the same PP cost and 20% more RP cost, but better upgrades
+// BURST_2   10RP  3T  upgrade to 3 shots with 4 damage - comparable damage to two MD_4 at the same PP cost but double the shots
+// BURST_3   50RP  3T  upgrade to 3 shots with 5 damage - comparable damage to one point three L_4 or one P_3; comparable to one and half L_2 against shields-3
+// BAD_ AVERAGE_ GOOD_ GREAT_ PILOT -1 +0 +1 +2 damage
+// Weapon seems like a good choice to support invasion
+
+// Maybe we should add a MD_5 at 100RP (which would total damage at 7)
+
+// It should be able to support MD invasion - should at least double the shots at the same price point(?).
+// With at least 4 shots increasing damage is probably usually OP (its like a level of death ray)
+// Increasing shots with steady 3 damage is plasma gun level.
+// Probably comsat should go down to 2 structure again. That would make this easier:
+// Then increasing _number_of_shots_ with steady 2 damage would be acceptable laser weapon level.
+
+Tech
+    name = "SHP_WEAPON_GAMMA_BURST_1"
+    description = "SHP_WEAPON_GAMMA_BURST_1_DESC"
+    short_description = "SHIP_WEAPON_UNLOCK_SHORT_DESC"
+    category = "SHIP_WEAPONS_CATEGORY"
+    researchcost = 12 * [[TECH_COST_MULTIPLIER]]
+    researchturns = 3
+    tags = [ "PEDIA_SR_WEAPON_TECHS" ]
+    prerequisites = "SHP_ROOT_AGGRESSION"
+    unlock = Item type = ShipPart name = "SR_GAMMA_BURST"
+    effectsgroups = [
+        [[WEAPON_BASE_EFFECTS(SR_GAMMA_BURST)]]
+    ]
+    graphic = "icons/ship_parts/pulse-laser.png"
+
+Tech
+    name = "SHP_WEAPON_GAMMA_BURST_2"
+    description = "SHP_WEAPON_GAMMA_BURST_2_DESC"
+    short_description = "SHIP_WEAPON_IMPROVE_SHORT_DESC"
+    category = "SHIP_WEAPONS_CATEGORY"
+    researchcost = 10 * [[TECH_COST_MULTIPLIER]]
+    researchturns = 3
+    tags = [ "PEDIA_SR_WEAPON_TECHS" ]
+    prerequisites = "SHP_WEAPON_GAMMA_BURST_1"
+    effectsgroups =
+        [[WEAPON_UPGRADE_CAPACITY_EFFECTS(SR_GAMMA_BURST, 1)]]
+    graphic = "icons/ship_parts/pulse-laser.png"
+
+
+Tech
+    name = "SHP_WEAPON_GAMMA_BURST_3"
+    description = "SHP_WEAPON_GAMMA_BURST_3_DESC"
+    short_description = "SHIP_WEAPON_IMPROVE_SHORT_DESC"
+    category = "SHIP_WEAPONS_CATEGORY"
+    researchcost = 50 * [[TECH_COST_MULTIPLIER]]
+    researchturns = 3
+    tags = [ "PEDIA_SR_WEAPON_TECHS" ]
+    prerequisites = "SHP_WEAPON_GAMMA_BURST_2"
+    effectsgroups =
+        [[WEAPON_UPGRADE_CAPACITY_EFFECTS(SR_GAMMA_BURST, 1)]]
+    graphic = "icons/ship_parts/pulse-laser.png"
+
+
+#include "../ship_weapons.macros"
+
+#include "/scripting/common/base_prod.macros"
