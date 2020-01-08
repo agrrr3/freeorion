@@ -821,6 +821,9 @@ double Variable<double>::Eval(const ScriptingContext& context) const
         if (auto planet = std::dynamic_pointer_cast<const Planet>(object))
             return planet->DistanceFromOriginalType();
 
+    } else if (property_name == "CombatBout") {
+        return context.bout;
+
     } else if (property_name == "CurrentTurn") {
         return CurrentTurn();
 
@@ -866,6 +869,8 @@ int Variable<int>::Eval(const ScriptingContext& context) const
     IF_CURRENT_VALUE(int)
 
     if (m_ref_type == NON_OBJECT_REFERENCE) {
+        if (property_name == "CombatBout")
+            return context.bout;
         if (property_name == "CurrentTurn")
             return CurrentTurn();
         if (property_name == "GalaxySize")
