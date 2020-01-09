@@ -869,7 +869,7 @@ int Variable<int>::Eval(const ScriptingContext& context) const
     IF_CURRENT_VALUE(int)
 
     if (m_ref_type == NON_OBJECT_REFERENCE) {
-        if (property_name == "CombatTurn")
+        if (property_name == "CombatBout")
             return context.bout;
         if (property_name == "CurrentTurn")
             return CurrentTurn();

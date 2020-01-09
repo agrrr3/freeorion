@@ -47,10 +47,10 @@ struct ScriptingContext {
       * may be different from the overall universe visibility. */
     ScriptingContext(std::shared_ptr<const UniverseObject> source_,
                      const Universe::EmpireObjectVisibilityMap& visibility_map,
-		     int bout_) :
+                     int bout_) :
         source(source_),
         empire_object_vis_map_override(visibility_map),
-	bout(bout_)
+        bout(bout_)
     {}
 
     ScriptingContext(std::shared_ptr<const UniverseObject> source_,
@@ -77,7 +77,7 @@ struct ScriptingContext {
         condition_local_candidate(parent_context.condition_local_candidate),
         current_value(current_value_),
         empire_object_vis_map_override(parent_context.empire_object_vis_map_override),
-	bout(parent_context.bout)
+        bout(parent_context.bout)
     {}
 
     /** For recusrive evaluation of Conditions.  Keeps source and effect_target
@@ -94,7 +94,7 @@ struct ScriptingContext {
         condition_local_candidate(      condition_local_candidate_),        // new local candidate
         current_value(                  parent_context.current_value),
         empire_object_vis_map_override( parent_context.empire_object_vis_map_override),
-	bout(                           parent_context.bout)
+        bout(                           parent_context.bout)
     {}
 
     ScriptingContext(std::shared_ptr<const UniverseObject> source_,
