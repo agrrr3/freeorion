@@ -1,0 +1,40 @@
+Part
+    name = "FT_HANGAR_MISSILE"
+    description = "FT_HANGAR_MISSILE_DESC"
+    exclusions = [ "FT_HANGAR_0" "FT_HANGAR_1" "FT_HANGAR_2" "FT_HANGAR_3" "FT_HANGAR_4" "FT_HANGAR_MISSILE" "FT_BAY_1" ]
+    class = FighterHangar
+    // Capacity is set to launch capacity (4 per launch bay)
+    // "Real" missile capacity is double launch capacity (8 per launch bay)
+    // Default value could be expecting a single launch bay
+    capacity = 0
+    damage = 3
+    combatTargets = And [
+        (CombatBout == 3)
+        [[COMBAT_TARGETS_VISIBLE_ENEMY]]
+        Or [
+            [[COMBAT_TARGETS_NOT_DESTROYED_SHIP]]
+            Fighter
+        ]
+    ]
+    mountableSlotTypes = Internal
+    buildcost = 20 * [[FLEET_UPKEEP_MULTIPLICATOR]] * [[SHIP_PART_COST_MULTIPLIER]]
+    buildtime = 1
+    tags = [ "PEDIA_PC_FIGHTER_HANGAR" ]
+    location = OwnedBy empire = Source.Owner
+    effectsgroups = [
+        EffectsGroup
+            scope = And [
+                Source
+            ]
+            activation = Source
+            stackinggroup = "SET_MISSILE_CAPACITY"
+            effects = [
+                SetMaxCapacity partname = "FT_BAY_1" value = 8 * PartsInShipDesign name = "FT_BAY_MISSILE" design = Source.DesignID
+            ]
+    ]
+
+    icon = "icons/ship_parts/nuclear_missile.png"
+
+#include "/scripting/common/upkeep.macros"
+#include "/scripting/techs/techs.macros"
+#include "/scripting/ship_parts/targeting.macros"
