@@ -3,8 +3,8 @@ Part
     description = "FT_HANGAR_MISSILE_DESC"
     exclusions = [ "FT_HANGAR_0" "FT_HANGAR_1" "FT_HANGAR_2" "FT_HANGAR_3" "FT_HANGAR_4" "FT_HANGAR_MISSILE" "FT_BAY_1" ]
     class = FighterHangar
-    // Capacity is set to launch capacity (4 per launch bay)
-    // "Real" missile capacity is double launch capacity (8 per launch bay)
+    // Capacity is set to launch capacity per launch bay (4)
+    // "Real" missile capacity is four times launch capacity plus two times launch capacity per bay (8 per launch bay)
     // Default value could be expecting a single launch bay
     capacity = 0
     damage = 3
@@ -23,13 +23,52 @@ Part
     location = OwnedBy empire = Source.Owner
     effectsgroups = [
         EffectsGroup
+            scope = Source
+            activation = (Source.LastTurnActiveInBattle == CurrentTurn)
+            stackinggroup = "SET_MISSILE_STORAGE"
+            accountinglabel = "MISSILE_STORAGE_USE"
+            effects = [
+            //SetMaxCapacity partname = "FT_HANGAR_MISSILE" value = Max(0, Value + 1)
+//                SetSpecialCapacity name = "MISSILE_STORAGE_CAPACITY" capacity = Max( 0, ( SpecialCapacity  name = "MISSILE_STORAGE_CAPACITY" object = Source.ID ) + 1000 )
+SetSpecialCapacity name = "MISSILE_STORAGE_CAPACITY" capacity = Max( 0, Value + 1000 )
+            ]
+
+       EffectsGroup
+            scope = Source
+            activation = Or [ Not HasSpecial name = "MISSILE_STORAGE" And [
+                InSystem
+                Stationary
+                (Source.LastTurnActiveInBattle < CurrentTurn)
+                // For allied supply needs to be moved to a tech i guess
+                ResupplyableBy empire = Source.Owner
+            ] ]
+            stackinggroup = "SET_MISSILE_STORAGE"
+            accountinglabel = "MISSILE_STORAGE_RESUPPLY_LABEL"
+            effects = [
+                SetSpecialCapacity name = "MISSILE_STORAGE_CAPACITY" capacity = 16 + 4 * PartsInShipDesign name = "FT_BAY_MISSILE" design = Source.DesignID
+//                SetMaxCapacity partname = "FT_HANGAR_MISSILE" value = 16 + 4 * PartsInShipDesign name = "FT_BAY_MISSILE" design = Source.DesignID
+            ]
+
+       EffectsGroup
+            scope = Source
+            activation = Source
+            accountinglabel = "MISSILE_STORAGE_FALLBACK_LABEL"
+            effects = [
+                SetSpecialCapacity name = "MISSILE_STORAGE_CAPACITY" capacity = 10 + 4 * PartsInShipDesign name = "FT_BAY_MISSILE" design = Source.DesignID
+//                SetMaxCapacity partname = "FT_HANGAR_MISSILE" value = 12 + 4 * PartsInShipDesign name = "FT_BAY_MISSILE" design = Source.DesignID
+                SetMaxCapacity partname = "FT_HANGAR_MISSILE" value = 3 + ( SpecialCapacity  name = "MISSILE_STORAGE_CAPACITY" object = Source.ID )
+            ]
+
+        EffectsGroup
             scope = And [
                 Source
             ]
             activation = Source
-            stackinggroup = "SET_MISSILE_CAPACITY"
+            stackinggroup = "SET_MISSILE_LAUNCH_CAPACITY"
             effects = [
-                SetMaxCapacity partname = "FT_BAY_1" value = 8 * PartsInShipDesign name = "FT_BAY_MISSILE" design = Source.DesignID
+                SetMaxCapacity partname = "FT_HANGAR_MISSILE" value = 1.0 + ( SpecialCapacity  name = "MISSILE_STORAGE_CAPACITY" object = Source.ID )
+                // Launchable missiles
+                SetCapacity partname = "FT_HANGAR_MISSILE" value = 4 * PartsInShipDesign name = "FT_BAY_MISSILE" design = Source.DesignID
             ]
     ]
 
