@@ -7,7 +7,7 @@ Part
     // "Real" missile capacity is four times launch capacity plus two times launch capacity per bay (8 per launch bay)
     // Default value could be expecting a single launch bay
     capacity = 0
-    damage = 3
+    damage = 1
     combatTargets = And [
         (CombatBout == 3)
         [[COMBAT_TARGETS_VISIBLE_ENEMY]]
@@ -28,35 +28,23 @@ Part
             stackinggroup = "SET_MISSILE_STORAGE"
             accountinglabel = "MISSILE_STORAGE_USE"
             effects = [
-            //SetMaxCapacity partname = "FT_HANGAR_MISSILE" value = Max(0, Value + 1)
-//                SetSpecialCapacity name = "MISSILE_STORAGE_CAPACITY" capacity = Max( 0, ( SpecialCapacity  name = "MISSILE_STORAGE_CAPACITY" object = Source.ID ) + 1000 )
-SetSpecialCapacity name = "MISSILE_STORAGE_CAPACITY" capacity = Max( 0, Value + 1000 )
+                SetSpecialCapacity name = "MISSILE_STORAGE_CAPACITY" value = Max( 0, Value - ( 4 * PartsInShipDesign name = "FT_BAY_MISSILE" design = Source.DesignID ) )
             ]
 
+                // For allied supply needs to be moved to a tech i guess
        EffectsGroup
             scope = Source
-            activation = Or [ Not HasSpecial name = "MISSILE_STORAGE" And [
+            activation = Or [ Not HasSpecial name = "MISSILE_STORAGE_CAPACITY" And [
                 InSystem
                 Stationary
                 (Source.LastTurnActiveInBattle < CurrentTurn)
-                // For allied supply needs to be moved to a tech i guess
                 ResupplyableBy empire = Source.Owner
-            ] ]
+            ]
+            ]
             stackinggroup = "SET_MISSILE_STORAGE"
             accountinglabel = "MISSILE_STORAGE_RESUPPLY_LABEL"
             effects = [
-                SetSpecialCapacity name = "MISSILE_STORAGE_CAPACITY" capacity = 16 + 4 * PartsInShipDesign name = "FT_BAY_MISSILE" design = Source.DesignID
-//                SetMaxCapacity partname = "FT_HANGAR_MISSILE" value = 16 + 4 * PartsInShipDesign name = "FT_BAY_MISSILE" design = Source.DesignID
-            ]
-
-       EffectsGroup
-            scope = Source
-            activation = Source
-            accountinglabel = "MISSILE_STORAGE_FALLBACK_LABEL"
-            effects = [
-                SetSpecialCapacity name = "MISSILE_STORAGE_CAPACITY" capacity = 10 + 4 * PartsInShipDesign name = "FT_BAY_MISSILE" design = Source.DesignID
-//                SetMaxCapacity partname = "FT_HANGAR_MISSILE" value = 12 + 4 * PartsInShipDesign name = "FT_BAY_MISSILE" design = Source.DesignID
-                SetMaxCapacity partname = "FT_HANGAR_MISSILE" value = 3 + ( SpecialCapacity  name = "MISSILE_STORAGE_CAPACITY" object = Source.ID )
+                SetSpecialCapacity name = "MISSILE_STORAGE_CAPACITY" value = 2 + 4 * PartsInShipDesign name = "FT_BAY_MISSILE" design = Source.DesignID
             ]
 
         EffectsGroup
@@ -66,14 +54,18 @@ SetSpecialCapacity name = "MISSILE_STORAGE_CAPACITY" capacity = Max( 0, Value + 
             activation = Source
             stackinggroup = "SET_MISSILE_LAUNCH_CAPACITY"
             effects = [
-                SetMaxCapacity partname = "FT_HANGAR_MISSILE" value = 1.0 + ( SpecialCapacity  name = "MISSILE_STORAGE_CAPACITY" object = Source.ID )
-                // Launchable missiles
+                // Set amount of available missiles on ship
+                // TODO add Value support for specialcapacity (?)
+                SetMaxCapacity partname = "FT_HANGAR_MISSILE" value =  4 * PartsInShipDesign name = "FT_BAY_MISSILE" design = Source.DesignID 
+                SetMaxCapacity partname = "FT_HANGAR_MISSILE" value = Min( ( 4 * PartsInShipDesign name = "FT_BAY_MISSILE" design = Source.DesignID ), ( SpecialCapacity  name = "MISSILE_STORAGE_CAPACITY" object = Source.ID ) )
+                // Do not prepare more missiles than can be launched in a single bout
                 SetCapacity partname = "FT_HANGAR_MISSILE" value = 4 * PartsInShipDesign name = "FT_BAY_MISSILE" design = Source.DesignID
+                
             ]
     ]
 
-    icon = "icons/ship_parts/nuclear_missile.png"
+
 
 #include "/scripting/common/upkeep.macros"
-#include "/scripting/techs/techs.macros"
+
 #include "/scripting/ship_parts/targeting.macros"
