@@ -4,7 +4,7 @@ Hull
     speed = 0
     fuel = 0
     stealth = 5
-    structure = 3
+    structure = 2
     slots = [
         Slot type = Internal position = (0.38, 0.50)
         Slot type = Internal position = (0.50, 0.50)
