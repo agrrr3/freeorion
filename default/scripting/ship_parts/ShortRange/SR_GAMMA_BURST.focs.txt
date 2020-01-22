@@ -2,7 +2,7 @@ Part
     name = "SR_GAMMA_BURST"
     description = "SR_GAMMA_BURST_DESC"
     class = ShortRange
-    damage = 3
+    damage = 2
     shots = 3
     NoDefaultCapacityEffect
     mountableSlotTypes = External
