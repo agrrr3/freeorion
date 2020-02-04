@@ -602,8 +602,7 @@ HullType::~HullType()
 {}
 
 void HullType::Init(std::vector<std::unique_ptr<Effect::EffectsGroup>>&& effects) {
-    if (m_fuel != 0)
-        m_effects.push_back(IncreaseMeter(METER_MAX_FUEL,       m_fuel));
+    // METER_MAX_FUEL default effect: do not do anything. If other is necessary, script this into the hull effects.
     if (m_stealth != 0)
         m_effects.push_back(IncreaseMeter(METER_STEALTH,        m_stealth));
     if (m_structure != 0)
