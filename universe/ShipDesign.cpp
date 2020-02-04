@@ -1003,7 +1003,7 @@ std::vector<std::string> ShipDesign::Parts(ShipSlotType slot_type) const {
         ErrorLogger() << "Design hull not found: " << m_hull;
         return retval;
     }
-    const auto& slots = hull->Slots();
+    const std::vector<HullType::Slot>& slots = hull->Slots();
 
     if (m_parts.empty())
         return retval;
