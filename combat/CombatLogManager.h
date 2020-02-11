@@ -2,6 +2,7 @@
 #define _CombatLogManager_h_
 
 #include "CombatSystem.h"
+#include "CombatEvent.h"
 
 #include "../util/Export.h"
 #include "../util/Serialize.h"

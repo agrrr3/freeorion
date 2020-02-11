@@ -3,7 +3,7 @@
 
 #include "../universe/Universe.h"
 #include "../util/AppInterface.h"
-#include "CombatEvent.h"
+#include "CombatEvents.h"
 
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/split_member.hpp>
@@ -62,6 +62,75 @@ private:
 
 /** Auto-resolves a battle. */
 void AutoResolveCombat(CombatInfo& combat_info);
+
+struct EmpireCombatInfo {
+public:
+    std::set<int> attacker_ids;
+
+    bool HasAttackers() const;
+    bool HasUnlauchedArmedFighters(const CombatInfo& combat_info) const;
+};
+
+struct PartAttackInfo {
+    PartAttackInfo(ShipPartClass part_class_, const std::string& part_name_,
+                   float part_attack_,
+                   const ::Condition::Condition* combat_targets_ = nullptr) :
+        part_class(part_class_),
+        part_type_name(part_name_),
+        part_attack(part_attack_),
+        combat_targets(combat_targets_)
+    {}
+    PartAttackInfo(ShipPartClass part_class_, const std::string& part_name_,
+                   int fighters_launched_, float fighter_damage_,
+                   const std::string& fighter_type_name_,
+                   const ::Condition::Condition* combat_targets_ = nullptr) :
+        part_class(part_class_),
+        part_type_name(part_name_),
+        combat_targets(combat_targets_),
+        fighters_launched(fighters_launched_),
+        fighter_damage(fighter_damage_),
+        fighter_type_name(fighter_type_name_)
+    {}
+
+    ShipPartClass                       part_class;
+    std::string                         part_type_name;
+    float                               part_attack = 0.0f;     // for direct damage parts
+    const ::Condition::Condition*   combat_targets = nullptr;
+    int                                 fighters_launched = 0;  // for fighter bays, input value should be limited by ship available fighters to launch
+    float                               fighter_damage = 0.0f;  // for fighter bays, input value should be determined by ship fighter weapon setup
+    std::string                         fighter_type_name;
+};
+
+struct AutoresolveInfo {
+public:
+    AutoresolveInfo() = default;
+    explicit AutoresolveInfo(CombatInfo& combat_info_);
+
+    std::set<int>                   valid_attacker_object_ids;  // all objects that can attack
+    std::map<int, EmpireCombatInfo> empire_infos;               // empire specific information, indexed by empire id
+    CombatInfo&                     combat_info = {};
+    int                             next_fighter_id = -1000001; // give fighters negative ids so as to avoid clashes with any positive-id of persistent UniverseObjects
+    std::set<int>                   destroyed_object_ids;       // objects that have been destroyed so far during this combat
+    int                             bout;                       // last bout of actual combat; current bout if currently resolving a bout
+
+    std::vector<int> AddFighters(int number, float damage, int owner_empire_id,
+                                 int from_ship_id, const std::string& species,
+                                 const std::string& fighter_name,
+                                 const Condition::Condition* combat_targets);
+    bool CanSomeoneAttackSomething() const;
+    void CullTheDead(int bout, BoutEvent::BoutEventPtr& bout_event);
+    bool CheckDestruction(const std::shared_ptr<const UniverseObject>& target);
+    void CleanEmpires();
+    void GetShuffledValidAttackerIDs(std::vector<int>& shuffled);
+    float EmpireDetectionStrength(int empire_id);
+    InitialStealthEvent::EmpireToObjectVisibilityMap ReportInvisibleObjects() const;
+
+private:
+    typedef std::set<int>::const_iterator const_id_iterator;
+
+    // Populate lists of things that can attack. List attackers also by empire.
+    void PopulateAttackers();
+};
 
 template <class Archive>
 void CombatInfo::save(Archive & ar, const unsigned int version) const

@@ -371,35 +371,6 @@ namespace {
             )
         );
 
-    struct PartAttackInfo {
-        PartAttackInfo(ShipPartClass part_class_, const std::string& part_name_,
-                       float part_attack_,
-                       const ::Condition::Condition* combat_targets_ = nullptr) :
-            part_class(part_class_),
-            part_type_name(part_name_),
-            part_attack(part_attack_),
-            combat_targets(combat_targets_)
-        {}
-        PartAttackInfo(ShipPartClass part_class_, const std::string& part_name_,
-                       int fighters_launched_, float fighter_damage_,
-                       const std::string& fighter_type_name_,
-                       const ::Condition::Condition* combat_targets_ = nullptr) :
-            part_class(part_class_),
-            part_type_name(part_name_),
-            combat_targets(combat_targets_),
-            fighters_launched(fighters_launched_),
-            fighter_damage(fighter_damage_),
-            fighter_type_name(fighter_type_name_)
-        {}
-
-        ShipPartClass                       part_class;
-        std::string                         part_type_name;
-        float                               part_attack = 0.0f;     // for direct damage parts
-        const ::Condition::Condition*   combat_targets = nullptr;
-        int                                 fighters_launched = 0;  // for fighter bays, input value should be limited by ship available fighters to launch
-        float                               fighter_damage = 0.0f;  // for fighter bays, input value should be determined by ship fighter weapon setup
-        std::string                         fighter_type_name;
-    };
 
     void AttackShipShip(std::shared_ptr<Ship> attacker, const PartAttackInfo& weapon,
                         std::shared_ptr<Ship> target, CombatInfo& combat_info,
@@ -963,340 +934,330 @@ namespace {
 
         return retval;
     }
+}
 
-    // Information about a single empire during combat
-    struct EmpireCombatInfo {
-        std::set<int> attacker_ids;
+////////////////////////////////////////////////
+// EmpireCombatInfo
+////////////////////////////////////////////////
+bool EmpireCombatInfo::HasAttackers() const { return !attacker_ids.empty(); }
 
-        bool HasAttackers() const { return !attacker_ids.empty(); }
+bool EmpireCombatInfo::HasUnlauchedArmedFighters(const CombatInfo& combat_info) const {
+    // check each ship to see if it has any unlaunched armed fighters...
+    for (const auto& ship : combat_info.objects.find<Ship>(attacker_ids)) {
+        if (!ship)
+            continue;   // discard invalid ship references
+        if (combat_info.destroyed_object_ids.count(ship->ID()))
+            continue;   // destroyed objects can't launch fighters
 
-        bool HasUnlauchedArmedFighters(const CombatInfo& combat_info) const {
-            // check each ship to see if it has any unlaunched armed fighters...
-            for (const auto& ship : combat_info.objects.find<Ship>(attacker_ids)) {
-                if (!ship)
-                    continue;   // discard invalid ship references
-                if (combat_info.destroyed_object_ids.count(ship->ID()))
-                    continue;   // destroyed objects can't launch fighters
+        auto weapons = ShipWeaponsStrengths(ship);
+        for (const PartAttackInfo& weapon : weapons) {
+            if (weapon.part_class == PC_FIGHTER_BAY &&
+                weapon.fighters_launched > 0 &&
+                weapon.fighter_damage > 0.0f)
+            { return true; }
+        }
+    }
 
-                auto weapons = ShipWeaponsStrengths(ship);
-                for (const PartAttackInfo& weapon : weapons) {
-                    if (weapon.part_class == PC_FIGHTER_BAY &&
-                        weapon.fighters_launched > 0 &&
-                        weapon.fighter_damage > 0.0f)
-                    { return true; }
+    return false;
+}
+
+////////////////////////////////////////////////
+// AutoResolveInfo
+////////////////////////////////////////////////
+AutoresolveInfo::AutoresolveInfo(CombatInfo& combat_info_) :
+    combat_info(combat_info_)
+{
+    PopulateAttackers();
+}
+
+std::vector<int> AutoresolveInfo::AddFighters(int number, float damage, int owner_empire_id,
+                                              int from_ship_id, const std::string& species,
+                                              const std::string& fighter_name,
+                                              const Condition::Condition* combat_targets)
+{
+    std::vector<int> retval;
+
+    if (combat_targets)
+        TraceLogger(combat) << "Adding " << number << " fighters for empire " << owner_empire_id
+                            << " with targetting condition: " << combat_targets->Dump();
+    else
+        TraceLogger(combat) << "Adding " << number << " fighters for empire " << owner_empire_id
+                            << " with no targetting condition";
+
+    for (int n = 0; n < number; ++n) {
+        // create / insert fighter into combat objectmap
+        auto fighter_ptr = std::make_shared<Fighter>(owner_empire_id, from_ship_id,
+                                                     species, damage, combat_targets);
+        fighter_ptr->SetID(next_fighter_id--);
+        fighter_ptr->Rename(fighter_name);
+        combat_info.objects.insert(fighter_ptr);
+        if (!fighter_ptr) {
+            ErrorLogger(combat) << "AddFighters unable to create and insert new Fighter object...";
+            break;
+        }
+
+        retval.push_back(fighter_ptr->ID());
+
+        // add fighter to attackers (if it can attack)
+        if (damage > 0.0f) {
+            valid_attacker_object_ids.insert(fighter_ptr->ID());
+            empire_infos[fighter_ptr->Owner()].attacker_ids.insert(fighter_ptr->ID());
+            DebugLogger(combat) << "Added fighter id: " << fighter_ptr->ID() << " to attackers sets";
+        }
+
+        // mark fighter visible to all empire participants
+        for (auto viewing_empire_id : combat_info.empire_ids)
+            combat_info.empire_object_visibility[viewing_empire_id][fighter_ptr->ID()] = VIS_PARTIAL_VISIBILITY;
+    }
+
+    return retval;
+}
+
+// Return true if some empire has ships or fighters that can attack
+// Doesn't consider diplomacy or other empires, as parts have arbitrary
+// targeting conditions, including friendly fire
+bool AutoresolveInfo::CanSomeoneAttackSomething() const {
+    for (const auto& attacker_info : empire_infos) {
+        // does empire have something to attack with?
+        const EmpireCombatInfo& attacker_empire_info = attacker_info.second;
+        if (!attacker_empire_info.HasAttackers() && !attacker_empire_info.HasUnlauchedArmedFighters(combat_info))
+            continue;
+
+        // TODO: check if any of these ships or fighters have targeting
+        // conditions that match anything present in this combat
+        return true;
+    }
+    return false;
+}
+
+/// Removes dead units from lists of attackers and defenders
+void AutoresolveInfo::CullTheDead(int bout, BoutEvent::BoutEventPtr& bout_event) {
+    auto fighters_destroyed_event = std::make_shared<FightersDestroyedEvent>(bout);
+    bool at_least_one_fighter_destroyed = false;
+
+    IncapacitationsEventPtr incaps_event = std::make_shared<IncapacitationsEvent>();
+
+    std::vector<int> delete_list;
+    delete_list.reserve(combat_info.objects.size());
+
+    for (const auto& obj : combat_info.objects.all())
+    {
+        // Check if object is already noted as destroyed; don't need to re-record this
+        if (destroyed_object_ids.count(obj->ID()))
+            continue;
+        // Check if object is destroyed and update lists if yes
+        if (!CheckDestruction(obj))
+            continue;
+        destroyed_object_ids.insert(obj->ID());
+
+        if (obj->ObjectType() == OBJ_FIGHTER) {
+            fighters_destroyed_event->AddEvent(obj->Owner());
+            at_least_one_fighter_destroyed = true;
+            // delete actual fighter object so that it can't be targeted
+            // again next round (ships have a minimal structure test instead)
+            delete_list.push_back(obj->ID());
+        } else {
+            CombatEventPtr incap_event = std::make_shared<IncapacitationEvent>(bout, obj->ID(), obj->Owner());
+            incaps_event->AddEvent(incap_event);
+        }
+    }
+
+    if (at_least_one_fighter_destroyed)
+        bout_event->AddEvent(fighters_destroyed_event);
+
+    if (!incaps_event->AreSubEventsEmpty(ALL_EMPIRES))
+        bout_event->AddEvent(incaps_event);
+
+    std::stringstream ss;
+    for (auto id : delete_list) {
+        ss << id << " ";
+        combat_info.objects.erase(id);
+    }
+    DebugLogger() << "Removed destroyed objects from combat state with ids: " << ss.str();
+}
+
+/// Checks if target is destroyed and if it is, update lists of living objects.
+/// Return true if is incapacitated
+bool AutoresolveInfo::CheckDestruction(const std::shared_ptr<const UniverseObject>& target) {
+    int target_id = target->ID();
+    // check for destruction of target object
+
+    if (target->ObjectType() == OBJ_FIGHTER) {
+        auto fighter = std::dynamic_pointer_cast<const Fighter>(target);
+        if (fighter && fighter->Destroyed()) {
+            // remove destroyed fighter's ID from lists of valid attackers and targets
+            valid_attacker_object_ids.erase(target_id);
+            DebugLogger(combat) << "Removed destroyed fighter id: " << fighter->ID() << " from attackers";
+
+            // Remove target from its empire's list of attackers
+            empire_infos[target->Owner()].attacker_ids.erase(target_id);
+            CleanEmpires();
+            return fighter->Destroyed();
+        }
+
+    } else if (target->ObjectType() == OBJ_SHIP) {
+        if (target->CurrentMeterValue(METER_STRUCTURE) <= 0.0f) {
+            DebugLogger(combat) << "!! Target Ship " << target_id << " is destroyed!";
+            // object id destroyed
+            combat_info.destroyed_object_ids.insert(target_id);
+            // all empires in battle know object was destroyed
+            for (int empire_id : combat_info.empire_ids) {
+                if (empire_id != ALL_EMPIRES) {
+                    DebugLogger(combat) << "Giving knowledge of destroyed object " << target_id
+                                        << " to empire " << empire_id;
+                    combat_info.destroyed_object_knowers[empire_id].insert(target_id);
                 }
             }
 
-            return false;
+            // remove destroyed ship's ID from lists of valid attackers and targets
+            valid_attacker_object_ids.erase(target_id);
+
+            // Remove target from its empire's list of attackers
+            empire_infos[target->Owner()].attacker_ids.erase(target_id);
+            CleanEmpires();
+            return true;
         }
-    };
 
-    /// A collection of information the autoresolution must keep around
-    struct AutoresolveInfo {
-        std::set<int>                   valid_attacker_object_ids;  // all objects that can attack
-        std::map<int, EmpireCombatInfo> empire_infos;               // empire specific information, indexed by empire id
-        CombatInfo&                     combat_info;
-        int                             next_fighter_id = -1000001; // give fighters negative ids so as to avoid clashes with any positive-id of persistent UniverseObjects
-        std::set<int>                   destroyed_object_ids;       // objects that have been destroyed so far during this combat
-
-        explicit AutoresolveInfo(CombatInfo& combat_info_) :
-            combat_info(combat_info_)
+    } else if (target->ObjectType() == OBJ_PLANET) {
+        if (!ObjectCanAttack(target) &&
+            valid_attacker_object_ids.count(target_id))
         {
-            PopulateAttackers();
+            DebugLogger(combat) << "!! Target Planet " << target_id << " knocked out, can no longer attack";
+            // remove disabled planet's ID from lists of valid attackers
+            valid_attacker_object_ids.erase(target_id);
         }
-
-        std::vector<int> AddFighters(int number, float damage, int owner_empire_id,
-                                     int from_ship_id, const std::string& species,
-                                     const std::string& fighter_name,
-                                     const Condition::Condition* combat_targets)
+        if (target->CurrentMeterValue(METER_SHIELD) <= 0.0f &&
+            target->CurrentMeterValue(METER_DEFENSE) <= 0.0f &&
+            target->CurrentMeterValue(METER_CONSTRUCTION) <= 0.0f)
         {
-            std::vector<int> retval;
-
-            if (combat_targets)
-                TraceLogger(combat) << "Adding " << number << " fighters for empire " << owner_empire_id
-                                    << " with targetting condition: " << combat_targets->Dump();
-            else
-                TraceLogger(combat) << "Adding " << number << " fighters for empire " << owner_empire_id
-                                    << " with no targetting condition";
-
-            for (int n = 0; n < number; ++n) {
-                // create / insert fighter into combat objectmap
-                auto fighter_ptr = std::make_shared<Fighter>(owner_empire_id, from_ship_id,
-                                                             species, damage, combat_targets);
-                fighter_ptr->SetID(next_fighter_id--);
-                fighter_ptr->Rename(fighter_name);
-                combat_info.objects.insert(fighter_ptr);
-                if (!fighter_ptr) {
-                    ErrorLogger(combat) << "AddFighters unable to create and insert new Fighter object...";
-                    break;
-                }
-
-                retval.push_back(fighter_ptr->ID());
-
-                // add fighter to attackers (if it can attack)
-                if (damage > 0.0f) {
-                    valid_attacker_object_ids.insert(fighter_ptr->ID());
-                    empire_infos[fighter_ptr->Owner()].attacker_ids.insert(fighter_ptr->ID());
-                    DebugLogger(combat) << "Added fighter id: " << fighter_ptr->ID() << " to attackers sets";
-                }
-
-                // mark fighter visible to all empire participants
-                for (auto viewing_empire_id : combat_info.empire_ids)
-                    combat_info.empire_object_visibility[viewing_empire_id][fighter_ptr->ID()] = VIS_PARTIAL_VISIBILITY;
+            // An outpost can enter combat in essentially an
+            // incapacitated state, but if it is removed from combat
+            // before it has been attacked then it can wrongly get regen
+            // on the next turn, so check that it has been attacked
+            // before excluding it from any remaining battle
+            if (!combat_info.damaged_object_ids.count(target_id)) {
+                DebugLogger(combat) << "!! Planet " << target_id << " has not yet been attacked, "
+                                    << "so will not yet be removed from battle, despite being essentially incapacitated";
+                return false;
             }
+            DebugLogger(combat) << "!! Target Planet " << target_id << " is entirely knocked out of battle";
 
-            return retval;
+            // Remove target from its empire's list of attackers
+            empire_infos[target->Owner()].attacker_ids.erase(target_id);
+
+            CleanEmpires();
+            return true;
         }
+    }
 
-        // Return true if some empire has ships or fighters that can attack
-        // Doesn't consider diplomacy or other empires, as parts have arbitrary
-        // targeting conditions, including friendly fire
-        bool CanSomeoneAttackSomething() const {
-            for (const auto& attacker_info : empire_infos) {
-                // does empire have something to attack with?
-                const EmpireCombatInfo& attacker_empire_info = attacker_info.second;
-                if (!attacker_empire_info.HasAttackers() && !attacker_empire_info.HasUnlauchedArmedFighters(combat_info))
-                    continue;
+    return false;
+}
 
-                // TODO: check if any of these ships or fighters have targeting
-                // conditions that match anything present in this combat
-                return true;
-            }
-            return false;
+/// check if any empire has no remaining objects.
+/// If so, remove that empire's entry
+void AutoresolveInfo::CleanEmpires() {
+    DebugLogger(combat) << "CleanEmpires";
+    auto temp = empire_infos;
+
+    std::set<int> empire_ids_with_objects;
+    for (const auto obj : combat_info.objects.all())
+        empire_ids_with_objects.insert(obj->Owner());
+
+    for (auto& empire : empire_infos) {
+        if (!empire_ids_with_objects.count(empire.first)) {
+            temp.erase(empire.first);
+            DebugLogger(combat) << "No objects left for empire with id: " << empire.first;
         }
+    }
+    empire_infos = std::move(temp);
 
-        /// Removes dead units from lists of attackers and defenders
-        void CullTheDead(int bout, BoutEvent::BoutEventPtr& bout_event) {
-            auto fighters_destroyed_event = std::make_shared<FightersDestroyedEvent>(bout);
-            bool at_least_one_fighter_destroyed = false;
-
-            IncapacitationsEventPtr incaps_event = std::make_shared<IncapacitationsEvent>();
-
-            std::vector<int> delete_list;
-            delete_list.reserve(combat_info.objects.size());
-
-            for (const auto& obj : combat_info.objects.all())
-            {
-                // Check if object is already noted as destroyed; don't need to re-record this
-                if (destroyed_object_ids.count(obj->ID()))
-                    continue;
-                // Check if object is destroyed and update lists if yes
-                if (!CheckDestruction(obj))
-                    continue;
-                destroyed_object_ids.insert(obj->ID());
-
-                if (obj->ObjectType() == OBJ_FIGHTER) {
-                    fighters_destroyed_event->AddEvent(obj->Owner());
-                    at_least_one_fighter_destroyed = true;
-                    // delete actual fighter object so that it can't be targeted
-                    // again next round (ships have a minimal structure test instead)
-                    delete_list.push_back(obj->ID());
-                } else {
-                    CombatEventPtr incap_event = std::make_shared<IncapacitationEvent>(
-                        bout, obj->ID(), obj->Owner());
-                    incaps_event->AddEvent(incap_event);
-                }
-            }
-
-            if (at_least_one_fighter_destroyed)
-                bout_event->AddEvent(fighters_destroyed_event);
-
-            if (!incaps_event->AreSubEventsEmpty(ALL_EMPIRES))
-                bout_event->AddEvent(incaps_event);
-
-            std::stringstream ss;
-            for (auto id : delete_list) {
-                ss << id << " ";
-                combat_info.objects.erase(id);
-            }
-            DebugLogger() << "Removed destroyed objects from combat state with ids: " << ss.str();
-        }
-
-        /// Checks if target is destroyed and if it is, update lists of living objects.
-        /// Return true if is incapacitated
-        bool CheckDestruction(const std::shared_ptr<const UniverseObject>& target) {
-            int target_id = target->ID();
-            // check for destruction of target object
-
-            if (target->ObjectType() == OBJ_FIGHTER) {
-                auto fighter = std::dynamic_pointer_cast<const Fighter>(target);
-                if (fighter && fighter->Destroyed()) {
-                    // remove destroyed fighter's ID from lists of valid attackers and targets
-                    valid_attacker_object_ids.erase(target_id);
-                    DebugLogger(combat) << "Removed destroyed fighter id: " << fighter->ID() << " from attackers";
-
-                    // Remove target from its empire's list of attackers
-                    empire_infos[target->Owner()].attacker_ids.erase(target_id);
-                    CleanEmpires();
-                    return fighter->Destroyed();
-                }
-
-            } else if (target->ObjectType() == OBJ_SHIP) {
-                if (target->CurrentMeterValue(METER_STRUCTURE) <= 0.0f) {
-                    DebugLogger(combat) << "!! Target Ship " << target_id << " is destroyed!";
-                    // object id destroyed
-                    combat_info.destroyed_object_ids.insert(target_id);
-                    // all empires in battle know object was destroyed
-                    for (int empire_id : combat_info.empire_ids) {
-                        if (empire_id != ALL_EMPIRES) {
-                            DebugLogger(combat) << "Giving knowledge of destroyed object " << target_id
-                                                << " to empire " << empire_id;
-                            combat_info.destroyed_object_knowers[empire_id].insert(target_id);
-                        }
-                    }
-
-                    // remove destroyed ship's ID from lists of valid attackers and targets
-                    valid_attacker_object_ids.erase(target_id);
-
-                    // Remove target from its empire's list of attackers
-                    empire_infos[target->Owner()].attacker_ids.erase(target_id);
-                    CleanEmpires();
-                    return true;
-                }
-
-            } else if (target->ObjectType() == OBJ_PLANET) {
-                if (!ObjectCanAttack(target) &&
-                    valid_attacker_object_ids.count(target_id))
-                {
-                    DebugLogger(combat) << "!! Target Planet " << target_id << " knocked out, can no longer attack";
-                    // remove disabled planet's ID from lists of valid attackers
-                    valid_attacker_object_ids.erase(target_id);
-                }
-                if (target->CurrentMeterValue(METER_SHIELD) <= 0.0f &&
-                    target->CurrentMeterValue(METER_DEFENSE) <= 0.0f &&
-                    target->CurrentMeterValue(METER_CONSTRUCTION) <= 0.0f)
-                {
-                    // An outpost can enter combat in essentially an
-                    // incapacitated state, but if it is removed from combat
-                    // before it has been attacked then it can wrongly get regen
-                    // on the next turn, so check that it has been attacked
-                    // before excluding it from any remaining battle
-                    if (!combat_info.damaged_object_ids.count(target_id)) {
-                        DebugLogger(combat) << "!! Planet " << target_id << " has not yet been attacked, "
-                                            << "so will not yet be removed from battle, despite being essentially incapacitated";
-                        return false;
-                    }
-                    DebugLogger(combat) << "!! Target Planet " << target_id << " is entirely knocked out of battle";
-
-                    // Remove target from its empire's list of attackers
-                    empire_infos[target->Owner()].attacker_ids.erase(target_id);
-
-                    CleanEmpires();
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        /// check if any empire has no remaining objects.
-        /// If so, remove that empire's entry
-        void CleanEmpires() {
-            DebugLogger(combat) << "CleanEmpires";
-            auto temp = empire_infos;
-
-            std::set<int> empire_ids_with_objects;
-            for (const auto obj : combat_info.objects.all())
-                empire_ids_with_objects.insert(obj->Owner());
-
-            for (auto& empire : empire_infos) {
-                if (!empire_ids_with_objects.count(empire.first)) {
-                    temp.erase(empire.first);
-                    DebugLogger(combat) << "No objects left for empire with id: " << empire.first;
-                }
-            }
-            empire_infos = std::move(temp);
-
-            if (!empire_infos.empty()) {
-                DebugLogger(combat) << "Empires with objects remaining:";
-                for (auto empire : empire_infos) {
-                    DebugLogger(combat) << " ... " << empire.first;
-                    for (auto obj_id : empire.second.attacker_ids) {
-                        TraceLogger(combat) << " ... ... " << obj_id;
-                    }
-                }
+    if (!empire_infos.empty()) {
+        DebugLogger(combat) << "Empires with objects remaining:";
+        for (auto empire : empire_infos) {
+            DebugLogger(combat) << " ... " << empire.first;
+            for (auto obj_id : empire.second.attacker_ids) {
+                TraceLogger(combat) << " ... ... " << obj_id;
             }
         }
+    }
+}
 
-        /// Clears and refills \a shuffled with attacker ids in a random order
-        void GetShuffledValidAttackerIDs(std::vector<int>& shuffled) {
-            shuffled.clear();
-            shuffled.insert(shuffled.begin(), valid_attacker_object_ids.begin(), valid_attacker_object_ids.end());
+/// Clears and refills \a shuffled with attacker ids in a random order
+void AutoresolveInfo::GetShuffledValidAttackerIDs(std::vector<int>& shuffled) {
+    shuffled.clear();
+    shuffled.insert(shuffled.begin(), valid_attacker_object_ids.begin(), valid_attacker_object_ids.end());
 
-            const unsigned swaps = shuffled.size();
-            for (unsigned i = 0; i < swaps; ++i) {
-                int pos2 = RandInt(i, swaps - 1);
-                std::swap(shuffled[i], shuffled[pos2]);
+    const unsigned swaps = shuffled.size();
+    for (unsigned i = 0; i < swaps; ++i) {
+        int pos2 = RandInt(i, swaps - 1);
+        std::swap(shuffled[i], shuffled[pos2]);
+    }
+}
+
+float AutoresolveInfo::EmpireDetectionStrength(int empire_id) {
+    if (const auto* empire = GetEmpire(empire_id))
+        return empire->GetMeter("METER_DETECTION_STRENGTH")->Current();
+    return 0.0f;
+}
+
+/** Report for each empire the stealthy objects in the combat. */
+InitialStealthEvent::EmpireToObjectVisibilityMap AutoresolveInfo::ReportInvisibleObjects() const {
+    DebugLogger(combat) << "Reporting Invisible Objects";
+    InitialStealthEvent::EmpireToObjectVisibilityMap report;
+
+    // loop over all objects, noting which is visible by which empire or neutrals
+    for (const auto target : combat_info.objects.all()) {
+        // for all empires, can they detect this object?
+        for (int viewing_empire_id : combat_info.empire_ids) {
+            // get visibility of target to attacker empire
+            auto empire_vis_info_it = combat_info.empire_object_visibility.find(viewing_empire_id);
+            if (empire_vis_info_it == combat_info.empire_object_visibility.end()) {
+                DebugLogger() << " ReportInvisibleObjects found no visibility info for viewing empire " << viewing_empire_id;
+                report[viewing_empire_id][target->ID()] = VIS_NO_VISIBILITY;
+                continue;
             }
-        }
-
-        float EmpireDetectionStrength(int empire_id) {
-            if (const auto* empire = GetEmpire(empire_id))
-                return empire->GetMeter("METER_DETECTION_STRENGTH")->Current();
-            return 0.0f;
-        }
-
-        /** Report for each empire the stealthy objects in the combat. */
-        InitialStealthEvent::EmpireToObjectVisibilityMap ReportInvisibleObjects() const {
-            DebugLogger(combat) << "Reporting Invisible Objects";
-            InitialStealthEvent::EmpireToObjectVisibilityMap report;
-
-            // loop over all objects, noting which is visible by which empire or neutrals
-            for (const auto target : combat_info.objects.all()) {
-                // for all empires, can they detect this object?
-                for (int viewing_empire_id : combat_info.empire_ids) {
-                    // get visibility of target to attacker empire
-                    auto empire_vis_info_it = combat_info.empire_object_visibility.find(viewing_empire_id);
-                    if (empire_vis_info_it == combat_info.empire_object_visibility.end()) {
-                        DebugLogger() << " ReportInvisibleObjects found no visibility info for viewing empire " << viewing_empire_id;
-                        report[viewing_empire_id][target->ID()] = VIS_NO_VISIBILITY;
-                        continue;
-                    }
-                    auto target_visibility_for_empire_it = empire_vis_info_it->second.find(target->ID());
-                    if (target_visibility_for_empire_it == empire_vis_info_it->second.end()) {
-                        DebugLogger() << " ReportInvisibleObjects found no visibility record for viewing empire "
-                                      << viewing_empire_id << " for object " << target->Name() << " (" << target->ID() << ")";
-                        report[viewing_empire_id][target->ID()] = VIS_NO_VISIBILITY;
-                        continue;
-                    }
-
-                    Visibility vis = target_visibility_for_empire_it->second;
-                    if (viewing_empire_id == ALL_EMPIRES) {
-                        DebugLogger(combat) << " Target " << target->Name() << " (" << target->ID() << "): "
-                                            << vis << " to monsters and neutrals";
-                    } else {
-                        DebugLogger(combat) << " Target " << target->Name() << " (" << target->ID() << "): "
-                                            << vis << " to empire " << viewing_empire_id;
-                    }
-
-                    // This adds information about invisible and basic visible objects and
-                    // trusts that the combat logger only informs player/ai of what they should know
-                    report[viewing_empire_id][target->ID()] = vis;
-                }
+            auto target_visibility_for_empire_it = empire_vis_info_it->second.find(target->ID());
+            if (target_visibility_for_empire_it == empire_vis_info_it->second.end()) {
+                DebugLogger() << " ReportInvisibleObjects found no visibility record for viewing empire "
+                                  << viewing_empire_id << " for object " << target->Name() << " (" << target->ID() << ")";
+                report[viewing_empire_id][target->ID()] = VIS_NO_VISIBILITY;
+                continue;
             }
-            return report;
-        }
 
-    private:
-        typedef std::set<int>::const_iterator const_id_iterator;
-
-        // Populate lists of things that can attack. List attackers also by empire.
-        void PopulateAttackers() {
-            for (const auto& obj : combat_info.objects.all())
-            {
-                bool can_attack{ObjectCanAttack(obj)};
-                if (can_attack) {
-                    valid_attacker_object_ids.insert(obj->ID());
-                    empire_infos[obj->Owner()].attacker_ids.insert(obj->ID());
-                }
-
-                DebugLogger(combat) << "Considering object " << obj->Name() << " (" << obj->ID() << ")"
-                                    << " owned by " << std::to_string(obj->Owner())
-                                    << (can_attack ? "... can attack" : "");
+            Visibility vis = target_visibility_for_empire_it->second;
+            if (viewing_empire_id == ALL_EMPIRES) {
+                DebugLogger(combat) << " Target " << target->Name() << " (" << target->ID() << "): "
+                                    << vis << " to monsters and neutrals";
+            } else {
+                DebugLogger(combat) << " Target " << target->Name() << " (" << target->ID() << "): "
+                                    << vis << " to empire " << viewing_empire_id;
             }
-        }
-    };
 
+            // This adds information about invisible and basic visible objects and
+            // trusts that the combat logger only informs player/ai of what they should know
+            report[viewing_empire_id][target->ID()] = vis;
+        }
+    }
+    return report;
+}
+
+// Populate lists of things that can attack. List attackers also by empire.
+void AutoresolveInfo::PopulateAttackers() {
+    for (const auto& obj : combat_info.objects.all())
+    {
+        bool can_attack{ObjectCanAttack(obj)};
+        if (can_attack) {
+            valid_attacker_object_ids.insert(obj->ID());
+            empire_infos[obj->Owner()].attacker_ids.insert(obj->ID());
+        }
+
+        DebugLogger(combat) << "Considering object " << obj->Name() << " (" << obj->ID() << ")"
+                            << " owned by " << std::to_string(obj->Owner())
+                            << (can_attack ? "... can attack" : "");
+    }
+}
+
+namespace {
     std::vector<PartAttackInfo> GetWeapons(std::shared_ptr<UniverseObject> attacker) {
         // Loop over weapons of attacking object. Each gets a shot at a
         // randomly selected target object, from the objects in the combat
@@ -1403,7 +1364,7 @@ namespace {
             AddAllObjectsSet(combat_state.combat_info.objects, targets);
 
             // attacker is source object for condition evaluation. use combat-specific vis info.
-            ScriptingContext context(attacker, combat_state.combat_info.empire_object_visibility);
+            ScriptingContext context(attacker, &combat_state);
 
             // apply species targeting condition and then weapon targeting condition
             species_targetting_condition->Eval(context, targets, rejected_targets, Condition::MATCHES);
@@ -1628,7 +1589,7 @@ namespace {
         }
     }
 
-    void CombatRound(int bout, AutoresolveInfo& combat_state) {
+    void CombatRound(const int bout, AutoresolveInfo& combat_state) {
         CombatInfo& combat_info = combat_state.combat_info;
 
         auto bout_event = std::make_shared<BoutEvent>(bout);
@@ -1637,6 +1598,7 @@ namespace {
             DebugLogger(combat) << "Combat bout " << bout << " aborted due to no remaining attackers.";
             return;
         }
+        combat_state.bout = bout;
 
         std::vector<int> shuffled_attackers;
         combat_state.GetShuffledValidAttackerIDs(shuffled_attackers);

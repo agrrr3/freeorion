@@ -10,6 +10,7 @@
 #include "../universe/Enums.h"
 #include "../universe/Condition.h"
 #include "../universe/ValueRef.h"
+#include "../combat/CombatEvent.h"
 
 //TODO: replace with std::make_unique when transitioning to C++14
 #include <boost/smart_ptr/make_unique.hpp>
