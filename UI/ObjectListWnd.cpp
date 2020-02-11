@@ -1550,7 +1550,7 @@ private:
         m_column_val_cache.clear();
         m_column_val_cache.reserve(NUM_COLUMNS);
         auto obj = GetUniverseObject(m_object_id);
-        ScriptingContext context(obj);
+        ScriptingContext<> context(obj);
 
         // get currently displayed column value refs, put values into this panel's cache
         for (unsigned int i = 0; i < NUM_COLUMNS; ++i) {

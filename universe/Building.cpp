@@ -277,7 +277,7 @@ float BuildingType::ProductionCost(int empire_id, int location_id) const {
         if (!source && !m_production_cost->SourceInvariant())
             return arbitrary_large_number;
 
-        ScriptingContext context(source, location);
+        ScriptingContext<> context(source, location);
 
         return m_production_cost->Eval(context);
     }
@@ -305,7 +305,7 @@ int BuildingType::ProductionTime(int empire_id, int location_id) const {
         if (!source && !m_production_time->SourceInvariant())
             return arbitrary_large_number;
 
-        ScriptingContext context(source, location);
+        ScriptingContext<> context(source, location);
 
         return m_production_time->Eval(context);
     }

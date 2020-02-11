@@ -36,6 +36,7 @@ class MonsterFleetPlan;
 
 
 namespace Condition {
+    template <typename SpecialContextInfo>
     struct Condition;
     typedef std::vector<std::shared_ptr<const UniverseObject>> ObjectSet;
 }

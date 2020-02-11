@@ -9,7 +9,7 @@
 
 class UniverseObject;
 
-template<typename SpecialContextInfo = std::nullptr_t>
+template <typename SpecialContextInfo = std::nullptr_t>
 struct ScriptingContext {
     /** Empty context.  Useful for evaluating ValueRef::Constant that don't
       * depend on their context. */

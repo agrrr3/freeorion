@@ -1752,7 +1752,7 @@ void Universe::ApplyEffectDerivedVisibilities() {
             for (auto& source_ref_entry : object_entry.second) {
                 // set up context for executing ValueRef to determine visibility to set
                 auto source = GetUniverseObject(source_ref_entry.first);
-                ScriptingContext context(source, target, target_initial_vis);
+                ScriptingContext<> context(source, target, target_initial_vis);
 
                 const auto val_ref = source_ref_entry.second;
 

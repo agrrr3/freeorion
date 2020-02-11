@@ -491,7 +491,7 @@ float PartType::ProductionCost(int empire_id, int location_id, int in_design_id/
     if (!source && !m_production_cost->SourceInvariant())
         return arbitrary_large_number;
 
-    ScriptingContext context(source, location, in_design_id);
+    ScriptingContext<> context(source, location, in_design_id);
 
     return static_cast<float>(m_production_cost->Eval(context));
 }
@@ -515,7 +515,7 @@ int PartType::ProductionTime(int empire_id, int location_id, int in_design_id/* 
     if (!source && !m_production_time->SourceInvariant())
         return arbitrary_large_number;
 
-    ScriptingContext context(source, location, in_design_id);
+    ScriptingContext<> context(source, location, in_design_id);
 
     return m_production_time->Eval(context);
 }
@@ -667,7 +667,7 @@ float HullType::ProductionCost(int empire_id, int location_id, int in_design_id/
     if (!source && !m_production_cost->SourceInvariant())
         return arbitrary_large_number;
 
-    ScriptingContext context(source, location, in_design_id);
+    ScriptingContext<> context(source, location, in_design_id);
 
     return static_cast<float>(m_production_cost->Eval(context));
 }
@@ -691,7 +691,7 @@ int HullType::ProductionTime(int empire_id, int location_id, int in_design_id/* 
     if (!source && !m_production_time->SourceInvariant())
         return arbitrary_large_number;
 
-    ScriptingContext context(source, location, in_design_id);
+    ScriptingContext<> context(source, location, in_design_id);
 
     return m_production_time->Eval(context);
 }

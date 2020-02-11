@@ -10,6 +10,8 @@
 #include <vector>
 
 class UniverseObject;
+
+template <typename SpecialContextInfo = std::nullptr_t>
 struct ScriptingContext;
 
 namespace Condition {
@@ -28,6 +30,7 @@ enum SearchDomain {
 };
 
 /** The base class for all Conditions. */
+template <typename SpecialContextInfo = std::nullptr_t>
 struct FO_COMMON_API Condition {
     Condition() {}
     virtual ~Condition();
@@ -36,7 +39,7 @@ struct FO_COMMON_API Condition {
     bool operator!=(const Condition& rhs) const
     { return !(*this == rhs); }
 
-    virtual void Eval(const ScriptingContext& parent_context,
+    virtual void Eval(const ScriptingContext<SpecialContextInfo>& parent_context,
                       ObjectSet& matches,
                       ObjectSet& non_matches,
                       SearchDomain search_domain = NON_MATCHES) const;

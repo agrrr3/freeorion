@@ -29,6 +29,7 @@
 FO_COMMON_API extern const int INVALID_OBJECT_ID;
 FO_COMMON_API extern const int INVALID_DESIGN_ID;
 namespace Condition {
+    template <typename SpecialContextInfo>
     struct Condition;
 }
 namespace Effect {
@@ -42,20 +43,21 @@ class Empire;
 
 /** Common parameters for PartType and HullType constructors.  Used as temporary
   * storage for parsing to reduce number of sub-items parsed per item. */
+template <typename SpecialContextInfo>
 struct FO_COMMON_API CommonParams {
-    template <typename T>
+                                   template <typename T>
     using ConsumptionMap = std::map<T, std::pair<std::unique_ptr<ValueRef::ValueRef<double>>,
-                                                 std::unique_ptr<Condition::Condition>>>;
+                                                 std::unique_ptr<Condition::Condition<SpecialContextInfo>>>>;
     CommonParams();
     CommonParams(std::unique_ptr<ValueRef::ValueRef<double>>&& production_cost_,
                  std::unique_ptr<ValueRef::ValueRef<int>>&& production_time_,
                  bool producible_,
                  const std::set<std::string>& tags_,
-                 std::unique_ptr<Condition::Condition>&& location_,
+                 std::unique_ptr<Condition::Condition<SpecialContextInfo>>&& location_,
                  std::vector<std::unique_ptr<Effect::EffectsGroup>>&& effects_,
                  ConsumptionMap<MeterType>&& production_meter_consumption_,
                  ConsumptionMap<std::string>&& production_special_consumption_,
-                 std::unique_ptr<Condition::Condition>&& enqueue_location_);
+                 std::unique_ptr<Condition::Condition<SpecialContextInfo>>&& enqueue_location_);
     ~CommonParams();
 
     std::unique_ptr<ValueRef::ValueRef<double>> production_cost;
@@ -64,8 +66,8 @@ struct FO_COMMON_API CommonParams {
     std::set<std::string>                           tags;
     ConsumptionMap<MeterType>                       production_meter_consumption;
     ConsumptionMap<std::string>                     production_special_consumption;
-    std::unique_ptr<Condition::Condition>       location;
-    std::unique_ptr<Condition::Condition>       enqueue_location;
+    std::unique_ptr<Condition::Condition<SpecialContextInfo>>       location;
+    std::unique_ptr<Condition::Condition<SpecialContextInfo>>       enqueue_location;
     std::vector<std::unique_ptr<Effect::EffectsGroup>> effects;
 };
 
@@ -95,7 +97,7 @@ public:
              CommonParams& common_params, const MoreCommonParams& more_common_params,
              std::vector<ShipSlotType> mountable_slot_types,
              const std::string& icon, bool add_standard_capacity_effect = true,
-             std::unique_ptr<Condition::Condition>&& combat_targets = nullptr);
+             std::unique_ptr<Condition::Condition<SpecialContextInfo>>&& combat_targets = nullptr);
 
     ~PartType();
     //@}
@@ -159,12 +161,12 @@ private:
     std::set<std::string>                               m_tags;
     CommonParams::ConsumptionMap<MeterType>             m_production_meter_consumption;
     CommonParams::ConsumptionMap<std::string>           m_production_special_consumption;
-    std::unique_ptr<Condition::Condition>           m_location;
+    std::unique_ptr<Condition::Condition<SpecialContextInfo>>           m_location;
     std::set<std::string>                               m_exclusions;
     std::vector<std::shared_ptr<Effect::EffectsGroup>>  m_effects;
     std::string                                         m_icon;
     bool                                                m_add_standard_capacity_effect = false;
-    std::unique_ptr<Condition::Condition>           m_combat_targets;
+    std::unique_ptr<Condition::Condition<SpecialContextInfo>>           m_combat_targets;
 
     friend class boost::serialization::access;
     template <class Archive>
@@ -348,7 +350,7 @@ private:
     std::set<std::string>                               m_tags;
     CommonParams::ConsumptionMap<MeterType>             m_production_meter_consumption;
     CommonParams::ConsumptionMap<std::string>           m_production_special_consumption;
-    std::unique_ptr<Condition::Condition>           m_location;
+    std::unique_ptr<Condition::Condition<SpecialContextInfo>>           m_location;
     std::set<std::string>                               m_exclusions;
     std::vector<std::shared_ptr<Effect::EffectsGroup>>  m_effects;
     std::string                                         m_graphic = "";
