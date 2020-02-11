@@ -998,6 +998,7 @@ namespace {
         CombatInfo&                     combat_info;
         int                             next_fighter_id = -1000001; // give fighters negative ids so as to avoid clashes with any positive-id of persistent UniverseObjects
         std::set<int>                   destroyed_object_ids;       // objects that have been destroyed so far during this combat
+        int                             bout;                       // last bout of actual combat; current bout if currently resolving a bout
 
         explicit AutoresolveInfo(CombatInfo& combat_info_) :
             combat_info(combat_info_)
@@ -1403,7 +1404,7 @@ namespace {
             AddAllObjectsSet(combat_state.combat_info.objects, targets);
 
             // attacker is source object for condition evaluation. use combat-specific vis info.
-            ScriptingContext context(attacker, combat_state.combat_info.empire_object_visibility);
+            ScriptingContext<AutoResolveInfo> context(attacker, combat_state);
 
             // apply species targeting condition and then weapon targeting condition
             species_targetting_condition->Eval(context, targets, rejected_targets, Condition::MATCHES);
@@ -1628,7 +1629,7 @@ namespace {
         }
     }
 
-    void CombatRound(int bout, AutoresolveInfo& combat_state) {
+    void CombatRound(const int bout, AutoresolveInfo& combat_state) {
         CombatInfo& combat_info = combat_state.combat_info;
 
         auto bout_event = std::make_shared<BoutEvent>(bout);
@@ -1637,6 +1638,7 @@ namespace {
             DebugLogger(combat) << "Combat bout " << bout << " aborted due to no remaining attackers.";
             return;
         }
+        combat_state.bout = bout;
 
         std::vector<int> shuffled_attackers;
         combat_state.GetShuffledValidAttackerIDs(shuffled_attackers);

@@ -21,6 +21,7 @@
 #include "../util/Logger.h"
 #include "../util/MultiplayerCommon.h"
 #include "../util/GameRules.h"
+#include "../combat/CombatSystem.h"
 
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/predicate.hpp>
@@ -859,6 +860,12 @@ double Variable<double>::Eval(const ScriptingContext& context) const
         if (auto planet = std::dynamic_pointer_cast<const Planet>(object))
             return planet->DistanceFromOriginalType();
         return 0.0;
+
+    } else if (property_name == "CombatBout") {
+        // TODO auch untern nochmals
+        // if (auto info = std::dynamic_pointer_cast<const >(object))
+        ///return context.;
+        return 1.0;
 
     } else if (property_name == "CurrentTurn") {
         return CurrentTurn();
