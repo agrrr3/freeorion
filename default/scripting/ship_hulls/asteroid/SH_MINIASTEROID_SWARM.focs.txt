@@ -40,7 +40,7 @@ Hull
         EffectsGroup
             scope = Source
             activation = Source
-            effects = SetMaxShield value = Value + 5
+            effects = SetMaxShield value = Value + (5 * (GameRule name = "RULE_SHIP_WEAPON_DAMAGE_FACTOR"))
 
         [[AVERAGE_BASE_FUEL_REGEN]]
         [[REGULAR_HULL_DETECTION]]
