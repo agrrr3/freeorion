@@ -1,7 +1,7 @@
 BuildingType
     name = "BLD_LIGHTHOUSE"
     description = "BLD_LIGHTHOUSE_DESC"
-    buildcost = 25 * [[BUILDING_COST_MULTIPLIER]]
+    buildcost = 40 * [[BUILDING_COST_MULTIPLIER]]
     buildtime = 10
     location = AND [
         Planet
@@ -13,7 +13,7 @@ BuildingType
         EffectsGroup
             scope = WithinDistance distance = 0.00001 condition = Source
             stackinggroup = "LIGHTHOUSE_STEALTH_STACK"
-            effects = SetStealth value = Value - 30
+            effects = SetStealth value = Value - 20
 
         EffectsGroup
             scope = And [
