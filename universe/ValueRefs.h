@@ -108,6 +108,27 @@ protected:
     bool                        m_return_immediate_value = false;
 };
 
+/** The NamedRef class. Looks up a named ValueRef from the NamedValueRefManager
+  */
+template <typename T>
+struct FO_COMMON_API NamedRef final : public ValueRef<T>
+{
+    NamedRef(std::string value_ref_name);
+
+    bool operator==(const ValueRef<T>& rhs) const override;
+    T  Eval(const ScriptingContext& context) const override;
+
+    std::string Description() const override;
+    std::string Dump(unsigned short ntabs = 0) const override;
+    void SetTopLevelContent(const std::string& content_name) override;
+
+    const ValueRef<T>* GetValueRef() const;
+    unsigned int GetCheckSum() const override;
+
+private:
+    std::string m_value_ref_name;
+};
+
 /** The variable statistic class.   The value returned by this node is
   * computed from the general gamestate; the value of the indicated
   * \a property_name is computed for each object that matches
@@ -663,6 +684,85 @@ FO_COMMON_API std::string Variable<std::string>::Eval(const ScriptingContext& co
 template <>
 FO_COMMON_API std::vector<std::string> Variable<std::vector<std::string>>::Eval(const ScriptingContext& context) const;
 
+
+///////////////////////////////////////////////////////////
+// NamedRef                                              //
+///////////////////////////////////////////////////////////
+template <typename T>
+NamedRef<T>::NamedRef(std::string value_ref_name) :
+    m_value_ref_name(value_ref_name)
+{
+    DebugLogger() << "ctor(NamedRef<T>): " << typeid(*this).name() << " value_ref_name: " << m_value_ref_name;
+    // not invariant value refs are not supported currently as we do not need those yet
+    if (auto ref = GetValueRef()) {
+        this->m_root_candidate_invariant = ref->RootCandidateInvariant();
+        this->m_local_candidate_invariant = ref->LocalCandidateInvariant();
+        this->m_target_invariant = ref->TargetInvariant();
+        this->m_source_invariant = ref->SourceInvariant();;
+        if (!(this->m_root_candidate_invariant && this->m_local_candidate_invariant
+              && this->m_target_invariant && this->m_source_invariant))
+            ErrorLogger() << "Currently only invariant value refs can be named. " << m_value_ref_name;
+    } else {
+        this->m_root_candidate_invariant = true;
+        this->m_local_candidate_invariant = true;
+        this->m_target_invariant = true;
+        this->m_source_invariant = true;
+    }
+}
+
+template <typename T>
+bool NamedRef<T>::operator==(const ValueRef<T>& rhs) const
+{
+    if (&rhs == this)
+        return true;
+    if (typeid(rhs) != typeid(*this))
+        return false;
+    const NamedRef<T>& rhs_ = static_cast<const NamedRef<T>&>(rhs);
+    return (m_value_ref_name == rhs_.m_value_ref_name);
+}
+
+template <typename T>
+std::string NamedRef<T>::Description() const
+{ return GetValueRef() ? GetValueRef()->Description() : UserString("NAMED_REF_UNKNOWN"); }
+
+template <typename T>
+std::string NamedRef<T>::Dump(unsigned short ntabs) const
+{ return GetValueRef() ? GetValueRef()->Dump() : "NAMED_REF_UNKNOWN"; }
+
+template <typename T>
+void NamedRef<T>::SetTopLevelContent(const std::string& content_name)
+{}//{ if ( GetValueRef() ) GetValueRef()->SetTopLevelContent(content_name); } // TODO decide what to do. also setter does not fit to const return of GetValueRef
+
+template <typename T>
+const ValueRef<T>* NamedRef<T>::GetValueRef() const
+{
+    InfoLogger() << "ValueRefs::GetValueRef<T> look for registered valueref for \"" << m_value_ref_name << '"';
+    return ::GetValueRef<T>(m_value_ref_name);
+}
+
+template <typename T>
+unsigned int NamedRef<T>::GetCheckSum() const
+{
+    unsigned int retval{0};
+
+    CheckSums::CheckSumCombine(retval, "ValueRef::NamedRef");
+    CheckSums::CheckSumCombine(retval, m_value_ref_name);
+    TraceLogger() << "GetCheckSum(NamedRef<T>): " << typeid(*this).name() << " retval: " << retval;
+    return retval;
+}
+
+template <typename T>
+T NamedRef<T>::Eval(const ScriptingContext& context) const
+{
+    ErrorLogger() << "Eval(NamedRef<T>): " << typeid(*this).name();
+    const ValueRef<T>* value_ref = ::GetValueRef<T>(m_value_ref_name);
+    if (!value_ref)
+        throw std::runtime_error("Referenced unknown ValueRef named '" + m_value_ref_name + "'");
+
+    auto retval = value_ref->Eval(context);
+    DebugLogger() << "Eval(NamedRef<T>): " << typeid(*this).name() << " retval: " << retval;
+    return retval;
+}
 
 ///////////////////////////////////////////////////////////
 // Statistic                                             //

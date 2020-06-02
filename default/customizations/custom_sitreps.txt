@@ -103,7 +103,26 @@ EffectsGroup
                 tag = "planet" data = Target.ID
             ]
             empire = Source.Owner
-
+EffectsGroup
+    scope = Source
+    activation = And [
+        Capital
+        OwnedBy empire = Source.Owner
+    ]
+    effects =
+        GenerateSitRepMessage
+            message = "SITREP_SHP_REINFORCED_HULL_BONUS"
+            label = "BLA_LABEL"
+            icon = "icons/meter/detection.png"
+            // der zweite tag wird als label extrahier in VarText.cpp:199 fuer value::SHP_REINFORCED_HULL_BONUS
+            //   und dann in :202 aus den variablen gefischt - ergebnis dort grad "value"
+            //                                         und dann die data als key zum ersetzen verwendet
+            parameters = [
+                tag = "value" data = "SHP_REINFORCED_HULL_BONUS"
+                tag = "bonus" data = "SHP_REINFORCED_HULL_BONUS"
+                ]
+            empire = Source.Owner
+    
 // Tell all the others that you have better detection tech (the information is public anyway)
 EffectsGroup
     scope = And [
