@@ -38,6 +38,13 @@ namespace parse {
               ) [ _val = construct_movable_(new_<ValueRef::ComplexVariable<int>>(_1, nullptr, nullptr, nullptr, deconstruct_movable_(_2, _pass), nullptr)) ]
             ;
 
+        named
+            = (   tok.Named_
+                > label(tok.Name_) > string_grammar
+                > label(tok.Value_) > int_rules.expr
+              ) [ _val = construct_movable_(new_<ValueRef::ComplexVariable<int>>(_1, deconstruct_movable_(_3, _pass), nullptr, nullptr, deconstruct_movable_(_2, _pass), nullptr)) ]
+            ;
+
          empire_name_ref
             =   (
                     (   tok.BuildingTypesOwned_
@@ -185,6 +192,7 @@ namespace parse {
             |   empire_ships_destroyed
             |   jumps_between
             //|   jumps_between_by_empire_supply
+            |   named
             |   outposts_owned
             |   parts_in_ship_design
             |   part_class_in_ship_design
@@ -200,6 +208,7 @@ namespace parse {
         empire_ships_destroyed.name("EmpireShipsDestroyed");
         jumps_between.name("JumpsBetween");
         //jumps_between_by_empire_supply.name("JumpsBetweenByEmpireSupplyConnections");
+        outposts_owned.name("Named");
         outposts_owned.name("OutpostsOwned");
         parts_in_ship_design.name("PartsInShipDesign");
         part_class_in_ship_design.name("PartOfClassInShipDesign");
@@ -216,6 +225,7 @@ namespace parse {
         debug(empire_ships_destroyed);
         debug(jumps_between);
         //debug(jumps_between_by_empire_supply);
+        debug(named);
         debug(outposts_owned);
         debug(parts_in_ship_design);
         debug(part_class_in_ship_design);
