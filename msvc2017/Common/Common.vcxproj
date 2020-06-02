@@ -300,6 +300,7 @@
     <ClCompile Include="..\..\universe\IDAllocator.cpp" />
     <ClCompile Include="..\..\universe\Meter.cpp" />
     <ClCompile Include="..\..\universe\ObjectMap.cpp" />
+    <ClCompile Include="..\..\universe\NamedValueRefManager.cpp" />
     <ClCompile Include="..\..\universe\Planet.cpp" />
     <ClCompile Include="..\..\universe\PopCenter.cpp" />
     <ClCompile Include="..\..\universe\UniverseObjectVisitors.cpp" />

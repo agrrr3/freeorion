@@ -54,6 +54,7 @@ target_sources(freeorioncommon
         ${CMAKE_CURRENT_LIST_DIR}/FleetPlan.cpp
         ${CMAKE_CURRENT_LIST_DIR}/IDAllocator.cpp
         ${CMAKE_CURRENT_LIST_DIR}/Meter.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/NamedValueRefManager.cpp
         ${CMAKE_CURRENT_LIST_DIR}/ObjectMap.cpp
         ${CMAKE_CURRENT_LIST_DIR}/Planet.cpp
         ${CMAKE_CURRENT_LIST_DIR}/PopCenter.cpp
