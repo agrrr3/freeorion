@@ -1,5 +1,6 @@
 target_sources(freeorionparseobj
     PUBLIC
+        ${CMAKE_CURRENT_LIST_DIR}/MovableEnvelope.h
         ${CMAKE_CURRENT_LIST_DIR}/Parse.h
     PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/CommonParamsParser.h
@@ -57,6 +58,7 @@ target_sources(freeorionparseobj
         ${CMAKE_CURRENT_LIST_DIR}/ItemsParser.cpp
         ${CMAKE_CURRENT_LIST_DIR}/Lexer.cpp
         ${CMAKE_CURRENT_LIST_DIR}/MonsterFleetPlansParser.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/NamedValueRefParser.cpp
         ${CMAKE_CURRENT_LIST_DIR}/Parse.cpp
         ${CMAKE_CURRENT_LIST_DIR}/PlanetEnvironmentValueRefParser.cpp
         ${CMAKE_CURRENT_LIST_DIR}/PlanetSizeValueRefParser.cpp

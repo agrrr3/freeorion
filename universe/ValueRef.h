@@ -22,6 +22,7 @@ struct FO_COMMON_API ValueRefBase {
     virtual bool ConstantExpr() const    { return false; }
 
     virtual std::string Description() const = 0;                    //! Returns a user-readable text description of this ValueRef
+    virtual std::string StringResult() const = 0;                   //! Returns a textual representation of the evaluation result of this ValueRef
     virtual std::string Dump(unsigned short ntabs = 0) const = 0;   //! Returns a textual representation that should be parseable to recreate this ValueRef
 
     virtual void SetTopLevelContent(const std::string& content_name) {}
@@ -58,6 +59,12 @@ struct FO_COMMON_API ValueRef : public ValueRefBase
       * to objects such as the source, effect target, or condition candidates
       * that exist in the tree. */
     virtual T Eval(const ScriptingContext& context) const = 0;
+
+    /** Evaluates the expression tree with an empty context and retuns the
+      * a string representation of the result value iff the result type is
+      * supported (currently std::string, int, float, double).
+      * See ValueRefs.cpp for specialisation implementations. */
+    std::string StringResult() const;
 };
 
 enum StatisticType : int {
@@ -83,5 +90,87 @@ enum StatisticType : int {
 
 }
 
+//! Holds all FreeOrion named ValueRef%s.  ValueRef%s may be looked up by name.
+class NamedValueRefManager {
+public:
+    //using container_type = std::map<const std::string, const std::unique_ptr<ValueRef::AnyValueRef>>;
+    using key_type = std::string;
+    using value_type = std::unique_ptr<ValueRef::AnyValueRef>;
+    using container_type = std::map<key_type, value_type>;
 
-#endif
+    using iterator = container_type::const_iterator;
+
+    //! Returns the ValueRef with the name @p name or nullptr if there is nov ValueRef with such a name or of the wrong type
+    //! use the free function GetValueRef(...) instead, mainly to save some typing.
+    template <typename T>
+    auto GetValueRef(const std::string& name) -> ValueRef::ValueRef<T>*;
+
+    //! Returns the ValueRef with the name @p name; you should use the
+    //! free function GetValueRef(...) instead, mainly to save some typing.
+    auto GetAnyValueRef(const std::string& name) const -> ValueRef::AnyValueRef*;
+
+    auto NumNamedValueRefs() const -> std::size_t { return m_value_refs.size(); }
+
+    //! iterator to the first value ref
+    FO_COMMON_API auto begin() const -> iterator;
+
+    //! iterator to the last + 1th value ref
+    FO_COMMON_API auto end() const -> iterator;
+
+    // Singleton
+    NamedValueRefManager&  operator=(NamedValueRefManager const&) =delete; // no copy via assignment
+
+    NamedValueRefManager(NamedValueRefManager const&) =delete;            // no copies via construction
+
+    ~NamedValueRefManager();
+
+    /** Sets named value refs to the value of \p future. */
+    FO_COMMON_API void SetNamedValueRefs(Pending::Pending<container_type>&& future);
+
+    //! Returns the instance of this singleton class; you should use the free
+    //! function GetNamedValueRefManager() instead
+    static NamedValueRefManager& GetNamedValueRefManager();
+
+    //! Returns a number, calculated from the contained data, which should be
+    //! different for different contained data, and must be the same for
+    //! the same contained data, and must be the same on different platforms
+    //! and executions of the program and the function. Useful to verify that
+    //! the parsed content is consistent without sending it all between
+    //! clients and server.
+    auto GetCheckSum() const -> unsigned int;
+
+    //! Register the @p value_ref under the evaluated @p name.
+    template <typename T>
+    std::string RegisterValueRef(std::string name, std::unique_ptr<T> vref);
+
+private:
+    NamedValueRefManager();
+
+    /** Assigns any m_pending_refs to m_value_refs. */
+    void CheckPendingRefs() const;
+
+    /** Future named value refs being parsed by parser.  mutable so that it can
+        be assigned to m_species_types when completed.*/
+    mutable boost::optional<Pending::Pending<container_type>> m_pending_refs = boost::none;
+
+    //! Map of ValueRef%s identified by a name
+    container_type m_value_refs;
+
+    static NamedValueRefManager* s_instance;
+};
+
+//! Returns the singleton manager for named value refs
+FO_COMMON_API auto GetNamedValueRefManager() -> NamedValueRefManager&;
+
+//! Returns the ValueRef object registered with the given
+//! @p name.  If no such ValueRef exists, nullptr is returned instead.
+FO_COMMON_API auto GetAnyValueRef(const std::string& name) -> ValueRef::AnyValueRef*;
+
+template <typename T>
+FO_COMMON_API auto GetValueRef(const std::string& name) -> ValueRef::ValueRef<T>*;
+
+//! Register and take possesion of the ValueRef object @p vref under the given @p name.
+template <typename T>
+FO_COMMON_API std::string RegisterValueRef(std::string name, std::unique_ptr<T>&& vref);
+
+#endif // _ValueRef_h_

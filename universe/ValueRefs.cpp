@@ -11,6 +11,7 @@
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/numeric.hpp>
 #include "Building.h"
+#include "Enums.h"
 #include "Field.h"
 #include "Fighter.h"
 #include "Fleet.h"
@@ -249,6 +250,48 @@ namespace {
 }
 
 namespace ValueRef {
+
+template <>
+std::string ValueRef<std::string>::StringResult() const {
+    return Eval();
+}
+
+template <>
+std::string ValueRef<int>::StringResult() const {
+    return std::to_string(Eval());
+}
+
+template <>
+std::string ValueRef<float>::StringResult() const {
+    return std::to_string(Eval());
+}
+
+template <>
+std::string ValueRef<double>::StringResult() const {
+    return std::to_string(Eval());
+}
+
+template <>
+std::string ValueRef<std::vector<std::string>>::StringResult() const {
+    std::string s;
+    for (const auto &piece : Eval()) s += piece;
+    return s;
+}
+
+template <typename T>
+std::string ValueRef<T>::StringResult() const {
+    return std::to_string(Eval());
+}
+
+// instantiations
+template std::string ValueRef<PlanetEnvironment>::StringResult() const;
+template std::string ValueRef<PlanetSize>::StringResult() const;
+template std::string ValueRef<PlanetType>::StringResult() const;
+template std::string ValueRef<StarType>::StringResult() const;
+template std::string ValueRef<UniverseObjectType>::StringResult() const;
+template std::string ValueRef<Visibility>::StringResult() const;
+
+
 MeterType NameToMeter(const std::string& name) {
     MeterType retval = INVALID_METER_TYPE;
     auto it = GetMeterNameMap().find(name);
@@ -1010,6 +1053,14 @@ int Variable<int>::Eval(const ScriptingContext& context) const
         if (auto ship = std::dynamic_pointer_cast<const Ship>(object))
             return ship->DesignID();
         return INVALID_DESIGN_ID;
+
+    }
+    else if (property_name == "SpeciesID") {
+        if (auto planet = std::dynamic_pointer_cast<const Planet>(object))
+            return GetSpeciesManager().GetSpeciesID(planet->SpeciesName());
+        else if (auto ship = std::dynamic_pointer_cast<const Ship>(object))
+            return GetSpeciesManager().GetSpeciesID(ship->SpeciesName());
+        return -1;
 
     }
     else if (property_name == "FleetID") {
@@ -3032,4 +3083,4 @@ int Operation<int>::EvalImpl(const ScriptingContext& context) const
     throw std::runtime_error("double ValueRef evaluated with an unknown or invalid OpType.");
     return 0;
 }
-}
+} // namespace ValueRef
