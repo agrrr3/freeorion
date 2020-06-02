@@ -168,6 +168,11 @@ namespace parse { namespace detail {
             return std::move(obj);
         }
 
+        /** returns a raw pointer to the original object location */
+        const T* GetOriginalObj() const{
+            return original_obj;
+        }
+
     private:
         template <typename U>
         friend class MovableEnvelope;
@@ -201,6 +206,20 @@ namespace parse { namespace detail {
         template <typename T>
         result_type<T> operator() (const MovableEnvelope<T>& obj) const
         { return MovableEnvelope<T>(obj); }
+    };
+
+    /** \p get_pointer is a functor that returns the original object of a MovableEnvelope<T> */
+    struct get_pointer {
+        template <typename T>
+        using result_type = const T*;
+
+        template <typename T>
+        result_type<T> operator() (MovableEnvelope<T>&& obj) const
+        { return obj.GetOriginalObj(); }
+
+        template <typename T>
+        result_type<T> operator() (const MovableEnvelope<T>& obj) const
+        { return obj.GetOriginalObj(); }
     };
 
     /** Free functions converting containers of MovableEnvelope to unique_ptrs. */

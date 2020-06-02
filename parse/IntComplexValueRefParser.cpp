@@ -2,11 +2,12 @@
 
 #include "MovableEnvelope.h"
 #include "../universe/ValueRefs.h"
-#include <boost/spirit/include/phoenix.hpp>
-#include <boost/spirit/include/qi_as.hpp>
+#include <boost/spirit/include/qi.hpp>
+#include <boost/spirit/include/phoenix_core.hpp>
 
 namespace parse {
-    int_complex_parser_grammar::int_complex_parser_grammar(
+
+  int_complex_parser_grammar::int_complex_parser_grammar(
         const parse::lexer& tok,
         detail::Labeller& label,
         const int_arithmetic_rules& _int_arith_rules,
@@ -19,9 +20,7 @@ namespace parse {
         namespace phoenix = boost::phoenix;
         namespace qi = boost::spirit::qi;
 
-        using phoenix::construct;
         using phoenix::new_;
-
         qi::_1_type _1;
         qi::_2_type _2;
         qi::_3_type _3;

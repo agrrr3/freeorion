@@ -3,6 +3,7 @@
 #include <functional>
 #include <iomanip>
 #include <iterator>
+#include <unordered_map>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string/split.hpp>
@@ -249,6 +250,48 @@ namespace {
 }
 
 namespace ValueRef {
+
+template <>
+std::string ValueRef<std::string>::StringResult() const {
+    return Eval();
+}
+
+template <>
+std::string ValueRef<int>::StringResult() const {
+    return std::to_string(Eval());
+}
+
+template <>
+std::string ValueRef<float>::StringResult() const {
+    return std::to_string(Eval());
+}
+
+template <>
+std::string ValueRef<double>::StringResult() const {
+    return std::to_string(Eval());
+}
+
+template <>
+std::string ValueRef<std::vector<std::string>>::StringResult() const {
+    std::string s;
+    for (const auto &piece : Eval()) s += piece;
+    return s;
+}
+
+template <typename T>
+std::string ValueRef<T>::StringResult() const {
+    return std::to_string(Eval());
+}
+
+// instantiations
+template std::string ValueRef<PlanetEnvironment>::StringResult() const;
+template std::string ValueRef<PlanetSize>::StringResult() const;
+template std::string ValueRef<PlanetType>::StringResult() const;
+template std::string ValueRef<StarType>::StringResult() const;
+template std::string ValueRef<UniverseObjectType>::StringResult() const;
+template std::string ValueRef<Visibility>::StringResult() const;
+
+
 MeterType NameToMeter(const std::string& name) {
     MeterType retval = INVALID_METER_TYPE;
     auto it = GetMeterNameMap().find(name);
@@ -1339,6 +1382,26 @@ std::string Statistic<std::string>::Eval(const ScriptingContext& context) const
 
     // return result (property value) that occured most frequently
     return most_common_property_value_it->first;
+}
+
+
+///////////////////////////////////////////////////////////
+// NamedRef                                               //
+///////////////////////////////////////////////////////////
+
+
+template <>
+const ValueRef<double>* NamedRef<double>::GetValueRef() const
+{
+    ErrorLogger() << "ValueRefs::GetValueRef<double> look for registered valueref for \"" << m_value_ref_name << '"';
+    auto drefp = ::GetValueRef<double>(m_value_ref_name);
+    if (drefp)
+      return drefp;
+    else {
+      auto irefp = ::GetValueRef<int>(m_value_ref_name);
+      ErrorLogger() << "ValueRefs::GetValueRef<double> found only a ValueRef<int> registered for \"" << m_value_ref_name << '"';
+      return nullptr;
+    }
 }
 
 ///////////////////////////////////////////////////////////
@@ -3065,4 +3128,5 @@ int Operation<int>::EvalImpl(const ScriptingContext& context) const
     throw std::runtime_error("double ValueRef evaluated with an unknown or invalid OpType.");
     return 0;
 }
+
 } // namespace ValueRef
