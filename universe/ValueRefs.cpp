@@ -1613,6 +1613,17 @@ int ComplexVariable<int>::Eval(const ScriptingContext& context) const
         }
         return 0;
     }
+    else if (variable_name == "Named") {
+        if (!m_string_ref1)
+            return 0;
+        std::string rule_name = m_string_ref1->Eval();
+        if (rule_name.empty())
+            return 0;
+        if (!m_int_ref1)
+            return 0;
+        int value = m_int_ref1->Eval();
+        return value;
+    }
     else if (variable_name == "PartsInShipDesign") {
         int design_id = INVALID_DESIGN_ID;
         if (m_int_ref1) {

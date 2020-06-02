@@ -251,6 +251,7 @@
     (MoveTo)                                    \
     (MoveTowards)                               \
     (Name)                                      \
+    (Named)                                     \
     (Native)                                    \
     (NearestSystemID)                           \
     (Neutron)                                   \

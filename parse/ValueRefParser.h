@@ -229,6 +229,7 @@ namespace parse {
         detail::complex_variable_rule<int>  jumps_between;
         //complex_variable_rule<int>          jumps_between_by_empire_supply;
         detail::complex_variable_rule<int>  outposts_owned;
+        detail::complex_variable_rule<int>  named;
         detail::complex_variable_rule<int>  parts_in_ship_design;
         detail::complex_variable_rule<int>  part_class_in_ship_design;
         detail::value_ref_rule<int>         part_class_as_int;
