@@ -3,16 +3,27 @@
 
 
 #include <string>
+#include <type_traits>
+#include <boost/any.hpp>
+#include <boost/lexical_cast.hpp>
 #include "ScriptingContext.h"
 #include "../util/Export.h"
 
 
 namespace ValueRef {
 
+
+struct FO_COMMON_API AnyValueRef
+{
+ virtual std::string Description() const = 0;
+
+ virtual std::string StringResult() const = 0;
+};
+
 /** The base class for all ValueRef classes.  This class provides the public
   * interface for a ValueRef expression tree. */
 template <typename T>
-struct FO_COMMON_API ValueRef
+struct FO_COMMON_API ValueRef : AnyValueRef
 {
     virtual ~ValueRef()
     {}
@@ -32,6 +43,15 @@ struct FO_COMMON_API ValueRef
       * to objects such as the source, effect target, or condition candidates
       * that exist in the tree. */
     virtual T Eval(const ScriptingContext& context) const = 0;
+
+    /** Evaluates the expression tree with an empty context and retuns the
+      * a string representation of the result value iff the result type is
+      * supported (currently std::string, int, float, double).
+      * See ValueRefs.cpp for specialisation implementations. */
+    std::string StringResult() const
+    {
+        return std::string("STRINGRESULT_UNSUPPORTED_TYPE_OF_VALUEREF_RESULT");
+    }
 
     virtual bool RootCandidateInvariant() const
     { return false; }
@@ -85,5 +105,9 @@ enum StatisticType : int {
 };
 
 }
+
+//! Returns the ValueRef object registered with the given
+//! @p name.  If no such ValueRef exists, nullptr is returned instead.
+FO_COMMON_API auto GetValueRef(const std::string& name) -> const ValueRef::AnyValueRef*;
 
 #endif // _ValueRef_h_
