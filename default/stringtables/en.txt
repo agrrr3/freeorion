@@ -12265,9 +12265,20 @@ SHP_REINFORCED_HULL
 Reinforced Hull
 
 SHP_REINFORCED_HULL_DESC
-'''Increases max [[metertype METER_STRUCTURE]] of all ships by %value:bonus%
+'''Increases max [[metertype METER_STRUCTURE]] of all ships by [[value SHP_REINFORCED_HULL_BONUS]].
 
 Standard ship hulls are designed and constructed with advanced microgravity architectural techniques and highly resistant materials. However, the limitations of physical matter impose a severe limitation on the strength of hulls. By enhancing the hull with structural integrity fields, a sizable increase in strength can be obtained.'''
+
+SITREP_SHP_REINFORCED_HULL_BONUS
+'''via       pseudo-macro: [[value SHP_REINFORCED_HULL_BONUS]]
+value       sitrep tag: %value%
+value:bonus sitrep tag: %value:bonus%
+
+Check sitrep and tech: [[tech SHP_REINFORCED_HULL]]
+.'''
+
+SHP_REINFORCED_HULL_BOOST
+en-entry-shp-blabla
 
 SHP_BASIC_DAM_CONT
 Basic Damage Control
