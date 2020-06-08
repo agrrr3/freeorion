@@ -35,7 +35,7 @@
 #include <functional>
 #include <iomanip>
 #include <iterator>
-
+#include <unordered_map>
 
 std::string DoubleToString(double val, int digits, bool always_show_sign);
 bool UserStringExists(const std::string& str);
@@ -251,6 +251,27 @@ namespace {
 }
 
 namespace ValueRef {
+
+template <>
+std::string ValueRef<std::string>::StringResult() const {
+    return Eval();
+}
+
+template <>
+std::string ValueRef<int>::StringResult() const {
+    return std::to_string(Eval());
+}
+
+template <>
+std::string ValueRef<float>::StringResult() const {
+    return std::to_string(Eval());
+}
+
+template <>
+std::string ValueRef<double>::StringResult() const {
+    return std::to_string(Eval());
+}
+
 MeterType NameToMeter(const std::string& name) {
     MeterType retval = INVALID_METER_TYPE;
     auto it = GetMeterNameMap().find(name);
@@ -3007,4 +3028,10 @@ int Operation<int>::EvalImpl(const ScriptingContext& context) const
     throw std::runtime_error("double ValueRef evaluated with an unknown or invalid OpType.");
     return 0;
 }
+
+// poor mans registry for Named ValueRefs
+std::unordered_map<std::string, AnyValueRef*> registered_valuerefs = {};
 } // namespace ValueRef
+
+const ValueRef::AnyValueRef* GetValueRef(const std::string& name)
+{ return ValueRef::registered_valuerefs[name]; }

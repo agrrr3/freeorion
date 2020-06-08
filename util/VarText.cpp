@@ -1,5 +1,6 @@
 #include "VarText.h"
 
+#include "../universe/ValueRefs.h"
 #include "../universe/Universe.h"
 #include "../universe/ShipDesign.h"
 #include "../universe/System.h"
@@ -10,6 +11,7 @@
 #include "AppInterface.h"
 
 #include <boost/xpressive/xpressive.hpp>
+#include <boost/any.hpp>
 
 #include <functional>
 #include <map>
@@ -30,6 +32,7 @@ const Species*      GetSpecies(const std::string& name);
 const FieldType*    GetFieldType(const std::string& name);
 const ShipHull*     GetShipHull(const std::string& name);
 const ShipPart*     GetShipPart(const std::string& name);
+const ValueRef::AnyValueRef*   GetValueRef(const std::string& name);
 
 namespace {
     //! Return @p content surrounded by the given @p tags.
@@ -169,6 +172,13 @@ namespace {
             {VarText::PREDEFINED_DESIGN_TAG, PredefinedShipDesignString},
             {VarText::EMPIRE_ID_TAG, [](const std::string& data)
                 { return IDString<Empire, GetEmpire>(data, VarText::EMPIRE_ID_TAG); }},
+            {VarText::FOCS_VALUE_TAG, [](const std::string& data) -> boost::optional<std::string>
+             // { return NameString<boost::any, GetValueRef>(data, VarText::FOCS_VALUE_TAG); }},
+             { const ValueRef::AnyValueRef* vr = GetValueRef(data);
+               if (vr) {
+                   return WithTags(vr->StringResult(), VarText::FOCS_VALUE_TAG, vr->Description());
+               } else
+                   return WithTags(data, VarText::FOCS_VALUE_TAG, UserString("UNKNOWN_VALUE_REF_NAME")); }},
         };
 
         return substitute_map;
@@ -231,6 +241,8 @@ const std::string VarText::COMBAT_ID_TAG = "combat";
 const std::string VarText::EMPIRE_ID_TAG = "empire";
 const std::string VarText::DESIGN_ID_TAG = "shipdesign";
 const std::string VarText::PREDEFINED_DESIGN_TAG = "predefinedshipdesign";
+
+const std::string VarText::FOCS_VALUE_TAG = "value";
 
 const std::string VarText::TECH_TAG = "tech";
 const std::string VarText::BUILDING_TYPE_TAG = "buildingtype";

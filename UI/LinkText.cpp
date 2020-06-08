@@ -382,6 +382,7 @@ void TextLinker::FindLinks() {
                     tag->tag_name == VarText::SPECIES_TAG ||
                     tag->tag_name == VarText::FIELD_TYPE_TAG ||
                     tag->tag_name == VarText::METER_TYPE_TAG ||
+                    tag->tag_name == VarText::FOCS_VALUE_TAG ||
                     tag->tag_name == TextLinker::ENCYCLOPEDIA_TAG ||
                     tag->tag_name == TextLinker::GRAPH_TAG ||
                     tag->tag_name == TextLinker::URL_TAG ||
@@ -581,6 +582,8 @@ void RegisterLinkTags() {
     GG::Font::RegisterKnownTag(VarText::SPECIES_TAG);
     GG::Font::RegisterKnownTag(VarText::FIELD_TYPE_TAG);
     GG::Font::RegisterKnownTag(VarText::METER_TYPE_TAG);
+
+    GG::Font::RegisterKnownTag(VarText::FOCS_VALUE_TAG);
 
     GG::Font::RegisterKnownTag(TextLinker::ENCYCLOPEDIA_TAG);
     GG::Font::RegisterKnownTag(TextLinker::GRAPH_TAG);
