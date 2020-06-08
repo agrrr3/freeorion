@@ -3029,8 +3029,18 @@ int Operation<int>::EvalImpl(const ScriptingContext& context) const
     return 0;
 }
 
+const std::unique_ptr<ValueRef<double>> vref_shp_reinforced_hull_boost = std::make_unique<Operation<double>>(
+    PLUS,
+    std::make_unique<Constant<double>>(5.0),
+    std::make_unique<ComplexVariable<double>>(
+        "GameRule", nullptr, nullptr, nullptr,
+        std::make_unique<Constant<std::string>>("RULE_SHIP_STRUCTURE_FACTOR")
+    )
+);
+
+// FIXME: remove hardcoded valueref
 // poor mans registry for Named ValueRefs
-std::unordered_map<std::string, AnyValueRef*> registered_valuerefs = {};
+std::unordered_map<std::string, AnyValueRef*> registered_valuerefs = { { "SHP_REINFORCED_HULL_BONUS", vref_shp_reinforced_hull_boost.get() } };
 } // namespace ValueRef
 
 const ValueRef::AnyValueRef* GetValueRef(const std::string& name)
