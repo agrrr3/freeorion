@@ -208,7 +208,7 @@ namespace parse {
         empire_ships_destroyed.name("EmpireShipsDestroyed");
         jumps_between.name("JumpsBetween");
         //jumps_between_by_empire_supply.name("JumpsBetweenByEmpireSupplyConnections");
-        outposts_owned.name("Named");
+        named.name("Named");
         outposts_owned.name("OutpostsOwned");
         parts_in_ship_design.name("PartsInShipDesign");
         part_class_in_ship_design.name("PartOfClassInShipDesign");
