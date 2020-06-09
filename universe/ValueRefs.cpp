@@ -3110,8 +3110,11 @@ const std::unique_ptr<ValueRef<double>> vref_shp_reinforced_hull_boost = std::ma
 
 // FIXME: remove hardcoded valueref
 // poor mans registry for Named ValueRefs
-std::unordered_map<std::string, AnyValueRef*> registered_valuerefs = { { "SHP_REINFORCED_HULL_BONUS", vref_shp_reinforced_hull_boost.get() } };
+std::unordered_map<std::string, AnyValueRef*> registered_valuerefs = { };
 } // namespace ValueRef
 
 const ValueRef::AnyValueRef* GetValueRef(const std::string& name)
 { return ValueRef::registered_valuerefs[name]; }
+
+void ValueRef::RegisterValueRef(const std::string& name, const ValueRef::AnyValueRef *vref)
+{ ValueRef::registered_valuerefs[name] = vref; }

@@ -110,4 +110,7 @@ enum StatisticType : int {
 //! @p name.  If no such ValueRef exists, nullptr is returned instead.
 FO_COMMON_API auto GetValueRef(const std::string& name) -> const ValueRef::AnyValueRef*;
 
+//! Register the ValueRef object @p vref under the given @p name.
+FO_COMMON_API void RegisterValueRef(const std::string& name, const ValueRef::AnyValueRef* vref);
+
 #endif // _ValueRef_h_
