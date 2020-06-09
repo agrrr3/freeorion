@@ -50,7 +50,7 @@ struct FO_COMMON_API ValueRef : AnyValueRef
       * See ValueRefs.cpp for specialisation implementations. */
     std::string StringResult() const
     {
-        return std::string("STRINGRESULT_UNSUPPORTED_TYPE_OF_VALUEREF_RESULT");
+        return std::string("STRINGRESULT_UNSUPPORTED_TYPE_OF_VALUEREF_RESULT").append(typeid(T).name());
     }
 
     virtual bool RootCandidateInvariant() const
