@@ -12277,7 +12277,7 @@ value:bonus sitrep tag: %value:bonus%
 Check sitrep and tech: [[tech SHP_REINFORCED_HULL]]
 .'''
 
-SHP_REINFORCED_HULL_BOOST
+SHP_REINFORCED_HULL_BONUS
 en-entry-shp-blabla
 
 SHP_BASIC_DAM_CONT
