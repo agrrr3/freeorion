@@ -4,8 +4,6 @@
 
 #include <string>
 #include <type_traits>
-#include <boost/any.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ScriptingContext.h"
 #include "../util/Export.h"
 
@@ -48,10 +46,7 @@ struct FO_COMMON_API ValueRef : AnyValueRef
       * a string representation of the result value iff the result type is
       * supported (currently std::string, int, float, double).
       * See ValueRefs.cpp for specialisation implementations. */
-    std::string StringResult() const
-    {
-        return std::string("STRINGRESULT_UNSUPPORTED_TYPE_OF_VALUEREF_RESULT").append(typeid(T).name());
-    }
+    std::string StringResult() const;
 
     virtual bool RootCandidateInvariant() const
     { return false; }

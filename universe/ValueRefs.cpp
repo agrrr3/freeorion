@@ -10,6 +10,7 @@
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/numeric.hpp>
+#include <boost/type_index.hpp>
 #include "Building.h"
 #include "Enums.h"
 #include "Field.h"
@@ -270,6 +271,28 @@ template <>
 std::string ValueRef<double>::StringResult() const {
     return std::to_string(Eval());
 }
+
+template <>
+std::string ValueRef<std::vector<std::string>>::StringResult() const {
+    std::string s;
+    for (const auto &piece : Eval()) s += piece;
+    return s;
+}
+
+template <typename T>
+std::string ValueRef<T>::StringResult() const {
+    return std::to_string(Eval());
+    // return std::string("STRINGRESULT_UNSUPPORTED_TYPE_OF_VALUEREF_RESULT").append(boost::typeindex::type_id<T>().pretty_name());
+}
+
+// instantiations
+template std::string ValueRef<PlanetEnvironment>::StringResult() const;
+template std::string ValueRef<PlanetSize>::StringResult() const;
+template std::string ValueRef<PlanetType>::StringResult() const;
+template std::string ValueRef<StarType>::StringResult() const;
+template std::string ValueRef<UniverseObjectType>::StringResult() const;
+template std::string ValueRef<Visibility>::StringResult() const;
+
 
 MeterType NameToMeter(const std::string& name) {
     MeterType retval = INVALID_METER_TYPE;

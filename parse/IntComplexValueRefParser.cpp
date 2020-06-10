@@ -50,6 +50,8 @@ namespace parse {
 
         using phoenix::construct;
         using phoenix::new_;
+        using phoenix::let;
+        using phoenix::local_names::_a;
         using phoenix::local_names::_b;
         using phoenix::local_names::_c;
 
@@ -82,8 +84,12 @@ namespace parse {
                      /* does not work:  _val = boost::phoenix::let( _b = deconstruct_movable_(_2, _pass), _c = deconstruct_movable_(_3, _pass) )
                         [ construct_movable_(new_<ValueRef::ComplexVariable<int>>(_1, _c, nullptr, nullptr, _b, nullptr)) ] */
                      //phoenix::let( _b = "SHP_REINFORCED_HULL_BONUS", _c = nullptr) [
-                     phoenix::bind(&RegisterValueRef,"SHP_REINFORCED_HULL_BONUS",vref_forty_two.get()),
+                     //_a = "Named";
+                     let (_b = "SHP_REINFORCED_HULL_BONUS",
+                          _c = vref_forty_two.get() ) [
+                                                       phoenix::bind(&RegisterValueRef, _b, _c) ],
                      _val = construct_movable_(new_<ValueRef::ComplexVariable<int>>(_1, deconstruct_movable_(_3, _pass), nullptr, nullptr, deconstruct_movable_(_2, _pass), nullptr))
+                     //_val = construct_movable_(new_<ValueRef::ComplexVariable<int>>(_1, deconstruct_movable_(_3, _pass), nullptr, nullptr, deconstruct_movable_(_2, _pass), nullptr))
                      
                      /* works:
                        _val = boost::phoenix::let( _b = _2, _c = _3 )
