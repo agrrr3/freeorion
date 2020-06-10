@@ -4,6 +4,7 @@
 #include "../universe/ValueRefs.h"
 #include <boost/spirit/include/phoenix.hpp>
 #include <boost/spirit/include/qi_as.hpp>
+#include <boost/phoenix/operator.hpp>
 
 namespace parse {
     //FIXME REMOVE THIS
@@ -64,6 +65,9 @@ namespace parse {
         qi::_pass_type _pass;
         const boost::phoenix::function<detail::construct_movable> construct_movable_;
         const boost::phoenix::function<detail::deconstruct_movable> deconstruct_movable_;
+        const boost::phoenix::function<detail::get_pointer> get_pointer_;
+        std::string temp_s = "SHP_REINFORCED_HULL_BONUS";
+        std::string* temp_s_p = &temp_s;
         
         game_rule
             = (   tok.GameRule_
@@ -84,10 +88,15 @@ namespace parse {
                      /* does not work:  _val = boost::phoenix::let( _b = deconstruct_movable_(_2, _pass), _c = deconstruct_movable_(_3, _pass) )
                         [ construct_movable_(new_<ValueRef::ComplexVariable<int>>(_1, _c, nullptr, nullptr, _b, nullptr)) ] */
                      //phoenix::let( _b = "SHP_REINFORCED_HULL_BONUS", _c = nullptr) [
-                     //_a = "Named";
-                     let (_b = "SHP_REINFORCED_HULL_BONUS",
+                     //phoenix::ref(temp_s) = "SHP_REINFORCED_HULL_BONUS",
+                     let (
+                          //_a = phoenix::bind(&detail::MovableEnvelope<std::string>::GetOriginalObj, _2), // invalid initialization of reference of type ‘const std::__cxx11::basic_string<char>&’ from expression of type ‘std::__cxx11::basic_string<char>*’
+                          // :104 ointer to member type ‘std::__cxx11::basic_string<char>* (parse::detail::MovableEnvelope<std::__cxx11::basic_string<char> >::)()’ incompatible with object type ‘parse::detail::MovableEnvelope<ValueRef::ValueRef<std::__cxx11::basic_string<char> > >’
+                          _b = *(get_pointer_(_2)),
+                          _a = phoenix::val("SHP_REINFORCED_HULL_BONUS"),
                           _c = vref_forty_two.get() ) [
-                                                       phoenix::bind(&RegisterValueRef, _b, _c) ],
+                     // Register the value ref under the given name by lazy invoking RegisterValueRef using the pointers inside the MovableEnvelopes without opening yet                                 
+                                                       phoenix::bind(&RegisterValueRef, _a, get_pointer_(_3)) ],
                      _val = construct_movable_(new_<ValueRef::ComplexVariable<int>>(_1, deconstruct_movable_(_3, _pass), nullptr, nullptr, deconstruct_movable_(_2, _pass), nullptr))
                      //_val = construct_movable_(new_<ValueRef::ComplexVariable<int>>(_1, deconstruct_movable_(_3, _pass), nullptr, nullptr, deconstruct_movable_(_2, _pass), nullptr))
                      
