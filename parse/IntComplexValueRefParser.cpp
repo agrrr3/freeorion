@@ -2,9 +2,13 @@
 
 #include "MovableEnvelope.h"
 #include "../universe/ValueRefs.h"
-#include <boost/spirit/include/phoenix.hpp>
-#include <boost/spirit/include/qi_as.hpp>
-#include <boost/phoenix/operator.hpp>
+#include <boost/spirit/include/phoenix_core.hpp>
+#include <boost/spirit/include/qi.hpp>
+//#include <boost/spirit/include/qi_as.hpp>
+//#include <boost/phoenix/operator.hpp>
+//#include <boost/spirit/include/qi_char_.hpp>
+//#include <boost/spirit/include/qi_char_class.hpp>
+//#include <boost/spirit/home/support/char_encoding/ascii.hpp>
 
 namespace parse {
     //FIXME REMOVE THIS
@@ -17,7 +21,7 @@ namespace parse {
         )
     );
     const std::unique_ptr<ValueRef::ValueRef<int>> vref_forty_two = std::make_unique<ValueRef::Constant<int>>(42);
-
+    const std::unique_ptr<ValueRef::ValueRef<std::string>> vref_shp_reinforced_hull_bonus = std::make_unique<ValueRef::Constant<std::string>>("SHP_REINFORCED_HULL_BONUS");
                                                                                                                                      
     class RegisterValueRefClass {
     public:
@@ -46,6 +50,9 @@ namespace parse {
         int_rules(_int_arith_rules),
         ship_part_class_enum(tok)
     {
+        using boost::spirit::ascii::char_;
+        using boost::spirit::ascii::alnum;
+
         namespace phoenix = boost::phoenix;
         namespace qi = boost::spirit::qi;
 
@@ -77,7 +84,8 @@ namespace parse {
 
         named
             = (   tok.Named_
-                > label(tok.Name_) > string_grammar
+                  //> label(tok.Name_) > +(qi::alnum | qi::char_('_'))
+                  > label(tok.Name_) > +(alnum)
                 > label(tok.Value_) > int_rules.expr
                   // ) [ register_value_ref_(_2(), _3()),
                   //                    ) [ register_value_ref_(deconstruct_movable_(_2, _pass), deconstruct_movable_(_3, _pass)),
@@ -92,7 +100,10 @@ namespace parse {
                      let (
                           //_a = phoenix::bind(&detail::MovableEnvelope<std::string>::GetOriginalObj, _2), // invalid initialization of reference of type ‘const std::__cxx11::basic_string<char>&’ from expression of type ‘std::__cxx11::basic_string<char>*’
                           // :104 ointer to member type ‘std::__cxx11::basic_string<char>* (parse::detail::MovableEnvelope<std::__cxx11::basic_string<char> >::)()’ incompatible with object type ‘parse::detail::MovableEnvelope<ValueRef::ValueRef<std::__cxx11::basic_string<char> > >’
-                          _b = *(get_pointer_(_2)),
+                          //_b = *(get_pointer_(_2)),
+                          //_b = phoenix::bind(static_cast<std::string(*)(ValueRef::ValueRef<std::string>*)>(&ValueRef::Constant<std::string>::Eval), vref_shp_reinforced_hull_bonus),
+                          //                          _b = phoenix::bind(&ValueRef::Constant<std::string>::Eval, vref_shp_reinforced_hull_bonus),
+                          _b = _2,
                           _a = phoenix::val("SHP_REINFORCED_HULL_BONUS"),
                           _c = vref_forty_two.get() ) [
                      // Register the value ref under the given name by lazy invoking RegisterValueRef using the pointers inside the MovableEnvelopes without opening yet                                 
