@@ -3,7 +3,6 @@
 
 
 #include <string>
-#include <type_traits>
 #include "ScriptingContext.h"
 #include "../util/Export.h"
 

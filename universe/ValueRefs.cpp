@@ -10,7 +10,6 @@
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/numeric.hpp>
-#include <boost/type_index.hpp>
 #include "Building.h"
 #include "Enums.h"
 #include "Field.h"
@@ -282,7 +281,6 @@ std::string ValueRef<std::vector<std::string>>::StringResult() const {
 template <typename T>
 std::string ValueRef<T>::StringResult() const {
     return std::to_string(Eval());
-    // return std::string("STRINGRESULT_UNSUPPORTED_TYPE_OF_VALUEREF_RESULT").append(boost::typeindex::type_id<T>().pretty_name());
 }
 
 // instantiations
@@ -3122,16 +3120,6 @@ int Operation<int>::EvalImpl(const ScriptingContext& context) const
     return 0;
 }
 
-const std::unique_ptr<ValueRef<double>> vref_shp_reinforced_hull_boost = std::make_unique<Operation<double>>(
-    PLUS,
-    std::make_unique<Constant<double>>(5.0),
-    std::make_unique<ComplexVariable<double>>(
-        "GameRule", nullptr, nullptr, nullptr,
-        std::make_unique<Constant<std::string>>("RULE_SHIP_STRUCTURE_FACTOR")
-    )
-);
-
-// FIXME: remove hardcoded valueref
 // poor mans registry for Named ValueRefs
 std::unordered_map<std::string, const AnyValueRef*> registered_valuerefs = { };
 } // namespace ValueRef

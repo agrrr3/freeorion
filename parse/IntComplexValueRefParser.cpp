@@ -2,26 +2,10 @@
 
 #include "MovableEnvelope.h"
 #include "../universe/ValueRefs.h"
-#include <boost/spirit/include/phoenix_core.hpp>
 #include <boost/spirit/include/qi.hpp>
-//#include <boost/spirit/include/qi_as.hpp>
-//#include <boost/phoenix/operator.hpp>
-//#include <boost/spirit/include/qi_char_.hpp>
-//#include <boost/spirit/include/qi_char_class.hpp>
-//#include <boost/spirit/home/support/char_encoding/ascii.hpp>
+#include <boost/spirit/include/phoenix_core.hpp>
 
 namespace parse {
-    //FIXME REMOVE THIS
-    const std::unique_ptr<ValueRef::ValueRef<double>> vref_shp_reinforced_hull_boost = std::make_unique<ValueRef::Operation<double>>(
-        ValueRef::TIMES,
-        std::make_unique<ValueRef::Constant<double>>(5.0),
-        std::make_unique<ValueRef::ComplexVariable<double>>(
-            "GameRule", nullptr, nullptr, nullptr,
-            std::make_unique<ValueRef::Constant<std::string>>("RULE_SHIP_STRUCTURE_FACTOR")
-        )
-    );
-    const std::unique_ptr<ValueRef::ValueRef<int>> vref_forty_two = std::make_unique<ValueRef::Constant<int>>(42);
-    const std::unique_ptr<ValueRef::ValueRef<std::string>> vref_shp_reinforced_hull_bonus = std::make_unique<ValueRef::Constant<std::string>>("SHP_REINFORCED_HULL_BONUS");
                                                                                                                                      
     class RegisterValueRefClass {
     public:
@@ -50,9 +34,6 @@ namespace parse {
         int_rules(_int_arith_rules),
         ship_part_class_enum(tok)
     {
-        using boost::spirit::ascii::char_;
-        using boost::spirit::ascii::alnum;
-
         namespace phoenix = boost::phoenix;
         namespace qi = boost::spirit::qi;
 
@@ -62,19 +43,17 @@ namespace parse {
         using phoenix::local_names::_a;
         using phoenix::local_names::_b;
         using phoenix::local_names::_c;
-
         qi::_1_type _1;
         qi::_2_type _2;
         qi::_3_type _3;
         qi::_4_type _4;
+        qi::_r1_type  _r1;
         qi::_val_type _val;
         qi::eps_type eps;
         qi::_pass_type _pass;
         const boost::phoenix::function<detail::construct_movable> construct_movable_;
         const boost::phoenix::function<detail::deconstruct_movable> deconstruct_movable_;
         const boost::phoenix::function<detail::get_pointer> get_pointer_;
-        std::string temp_s = "SHP_REINFORCED_HULL_BONUS";
-        std::string* temp_s_p = &temp_s;
         
         game_rule
             = (   tok.GameRule_
@@ -84,39 +63,16 @@ namespace parse {
 
         named
             = (   tok.Named_
-                  //> label(tok.Name_) > +(qi::alnum | qi::char_('_'))
-                  > label(tok.Name_) > +(alnum)
+                > label(tok.Name_) > string_grammar
                 > label(tok.Value_) > int_rules.expr
-                  // ) [ register_value_ref_(_2(), _3()),
-                  //                    ) [ register_value_ref_(deconstruct_movable_(_2, _pass), deconstruct_movable_(_3, _pass)),
-                  //                       ) [ register_value_ref_(deconstruct_movable_(_3, _pass)),
-                  //) [ register_value_ref_("SHP_REINFORCED_HULL_BONUS", vref_shp_reinforced_hull_boost),
-                  //) [ register_value_ref_("SHP_REINFORCED_HULL_BONUS", nullptr), // works with std::function
-                  ) [
-                     /* does not work:  _val = boost::phoenix::let( _b = deconstruct_movable_(_2, _pass), _c = deconstruct_movable_(_3, _pass) )
-                        [ construct_movable_(new_<ValueRef::ComplexVariable<int>>(_1, _c, nullptr, nullptr, _b, nullptr)) ] */
-                     //phoenix::let( _b = "SHP_REINFORCED_HULL_BONUS", _c = nullptr) [
-                     //phoenix::ref(temp_s) = "SHP_REINFORCED_HULL_BONUS",
+              ) [
                      let (
-                          //_a = phoenix::bind(&detail::MovableEnvelope<std::string>::GetOriginalObj, _2), // invalid initialization of reference of type ‘const std::__cxx11::basic_string<char>&’ from expression of type ‘std::__cxx11::basic_string<char>*’
-                          // :104 ointer to member type ‘std::__cxx11::basic_string<char>* (parse::detail::MovableEnvelope<std::__cxx11::basic_string<char> >::)()’ incompatible with object type ‘parse::detail::MovableEnvelope<ValueRef::ValueRef<std::__cxx11::basic_string<char> > >’
-                          //_b = *(get_pointer_(_2)),
-                          //_b = phoenix::bind(static_cast<std::string(*)(ValueRef::ValueRef<std::string>*)>(&ValueRef::Constant<std::string>::Eval), vref_shp_reinforced_hull_bonus),
-                          //                          _b = phoenix::bind(&ValueRef::Constant<std::string>::Eval, vref_shp_reinforced_hull_bonus),
-                          _b = _2,
-                          _a = phoenix::val("SHP_REINFORCED_HULL_BONUS"),
-                          _c = vref_forty_two.get() ) [
+                          _a = phoenix::val("SHP_REINFORCED_HULL_BONUS")
+                          ) [
                      // Register the value ref under the given name by lazy invoking RegisterValueRef using the pointers inside the MovableEnvelopes without opening yet                                 
-                                                       phoenix::bind(&RegisterValueRef, _a, get_pointer_(_3)) ],
+                             phoenix::bind(&RegisterValueRef, _a, get_pointer_(_3)) ],
                      _val = construct_movable_(new_<ValueRef::ComplexVariable<int>>(_1, deconstruct_movable_(_3, _pass), nullptr, nullptr, deconstruct_movable_(_2, _pass), nullptr))
-                     //_val = construct_movable_(new_<ValueRef::ComplexVariable<int>>(_1, deconstruct_movable_(_3, _pass), nullptr, nullptr, deconstruct_movable_(_2, _pass), nullptr))
-                     
-                     /* works:
-                       _val = boost::phoenix::let( _b = _2, _c = _3 )
-                       [ construct_movable_(new_<ValueRef::ComplexVariable<int>>(_1, deconstruct_movable_(_c, _pass), nullptr, nullptr, deconstruct_movable_(_b, _pass), nullptr)) ]
-                     */
                    ]
-                   // [             _val = construct_movable_(new_<ValueRef::ComplexVariable<int>>(_1, register_value_ref_(deconstruct_movable_(_3, _pass)), nullptr, nullptr, deconstruct_movable_(_2, _pass), nullptr)) ]
             ;
 
          empire_name_ref

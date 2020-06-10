@@ -11,7 +11,6 @@
 #include "AppInterface.h"
 
 #include <boost/xpressive/xpressive.hpp>
-#include <boost/any.hpp>
 
 #include <functional>
 #include <map>
@@ -177,7 +176,6 @@ namespace {
             {VarText::EMPIRE_ID_TAG, [](const std::string& data)
                 { return IDString<Empire, GetEmpire>(data, VarText::EMPIRE_ID_TAG); }},
             {VarText::FOCS_VALUE_TAG, [](const std::string& data) -> boost::optional<std::string>
-             // { return NameString<boost::any, GetValueRef>(data, VarText::FOCS_VALUE_TAG); }},
              { const ValueRef::AnyValueRef* vr = GetValueRef(data);
                if (vr) {
                    return WithTags(vr->StringResult(), VarText::FOCS_VALUE_TAG, vr->Description());
