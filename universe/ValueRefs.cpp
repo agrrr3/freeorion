@@ -3127,5 +3127,8 @@ std::unordered_map<std::string, const AnyValueRef*> registered_valuerefs = { };
 const ValueRef::AnyValueRef* GetValueRef(const std::string& name)
 { return ValueRef::registered_valuerefs[name]; }
 
-void RegisterValueRef(const std::string& name, const ValueRef::AnyValueRef* vref)
-{ ValueRef::registered_valuerefs[name] = vref; }
+//void RegisterValueRef(const std::string& name, const ValueRef::AnyValueRef* vref)
+//{ ValueRef::registered_valuerefs[name] = vref; }
+
+void RegisterValueRef(const ValueRef::ValueRef<std::string>* name, const ValueRef::AnyValueRef* vref)
+{ ValueRef::registered_valuerefs[name->Eval()] = vref; }

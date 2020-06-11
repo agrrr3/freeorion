@@ -105,6 +105,9 @@ enum StatisticType : int {
 FO_COMMON_API auto GetValueRef(const std::string& name) -> const ValueRef::AnyValueRef*;
 
 //! Register the ValueRef object @p vref under the given @p name.
-FO_COMMON_API void RegisterValueRef(const std::string& name, const ValueRef::AnyValueRef* vref);
+//FO_COMMON_API void RegisterValueRef(const std::string& name, const ValueRef::AnyValueRef* vref);
+
+//! Register the ValueRef object @p vref under the given @p name.
+FO_COMMON_API void RegisterValueRef(const ValueRef::ValueRef<std::string>* name, const ValueRef::AnyValueRef* vref);
 
 #endif // _ValueRef_h_

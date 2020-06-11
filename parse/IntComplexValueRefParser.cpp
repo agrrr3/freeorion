@@ -7,23 +7,6 @@
 
 namespace parse {
                                                                                                                                      
-    class RegisterValueRefClass {
-    public:
-        void operator() (ValueRef::AnyValueRef*  vref) const
-        {
-            //            RegisterValueRef("SHP_REINFORCED_HULL_BONUS", vref);
-        }
-
-        template <typename T>
-        void operator() (std::unique_ptr<ValueRef::ValueRef<T>>&  vref) const
-        {
-            //RegisterValueRef("SHP_REINFORCED_HULL_BONUS", vref);
-        }
-    };
-    //const boost::phoenix::function<RegisterValueRefClass> register_value_ref_ ;
-    
-    //std::function<void(const std::string&,const ValueRef::AnyValueRef*)> register_value_ref_ = &RegisterValueRef;
-    
     int_complex_parser_grammar::int_complex_parser_grammar(
         const parse::lexer& tok,
         detail::Labeller& label,
@@ -40,14 +23,10 @@ namespace parse {
         using phoenix::construct;
         using phoenix::new_;
         using phoenix::let;
-        using phoenix::local_names::_a;
-        using phoenix::local_names::_b;
-        using phoenix::local_names::_c;
         qi::_1_type _1;
         qi::_2_type _2;
         qi::_3_type _3;
         qi::_4_type _4;
-        qi::_r1_type  _r1;
         qi::_val_type _val;
         qi::eps_type eps;
         qi::_pass_type _pass;
@@ -66,13 +45,10 @@ namespace parse {
                 > label(tok.Name_) > string_grammar
                 > label(tok.Value_) > int_rules.expr
               ) [
-                     let (
-                          _a = phoenix::val("SHP_REINFORCED_HULL_BONUS")
-                          ) [
-                     // Register the value ref under the given name by lazy invoking RegisterValueRef using the pointers inside the MovableEnvelopes without opening yet                                 
-                             phoenix::bind(&RegisterValueRef, _a, get_pointer_(_3)) ],
-                     _val = construct_movable_(new_<ValueRef::ComplexVariable<int>>(_1, deconstruct_movable_(_3, _pass), nullptr, nullptr, deconstruct_movable_(_2, _pass), nullptr))
-                   ]
+                  // Register the value ref under the given name by lazy invoking RegisterValueRef using the pointers inside the MovableEnvelopes without opening yet
+                  phoenix::bind(&RegisterValueRef, get_pointer_(_2), get_pointer_(_3)),
+                  _val = construct_movable_(new_<ValueRef::ComplexVariable<int>>(_1, deconstruct_movable_(_3, _pass), nullptr, nullptr, deconstruct_movable_(_2, _pass), nullptr))
+              ]
             ;
 
          empire_name_ref
