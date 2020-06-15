@@ -40,7 +40,7 @@ namespace parse {
               ) [ _val = construct_movable_(new_<ValueRef::ComplexVariable<int>>(_1, nullptr, nullptr, nullptr, deconstruct_movable_(_2, _pass), nullptr)) ]
             ;
 
-        named
+        named_valueref_rule
             = (   tok.Named_
                 > label(tok.Name_) > string_grammar
                 > label(tok.Value_) > int_rules.expr
