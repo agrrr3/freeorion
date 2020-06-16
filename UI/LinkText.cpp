@@ -102,9 +102,9 @@ namespace {
 
     /** Parses VarText::FOCS_VALUE_TAG%s within @p text, replacing value ref name%s with
      *  the evaluation result of that value ref.  If link label is empty, inserts resolved link argument as label */
-    std::string ValueRefLinkText(const std::string& text, const bool useValueInsteadOfDescription) {
+    std::string ValueRefLinkText(const std::string& text, const bool useDescriptionInsteadOfUserString) {
         if (!boost::contains(text, FOCS_VALUE_TAG_CLOSE))
-            return "_:"+text+":_";
+            return text;
 
         std::string retval(text);
         auto text_it = retval.begin();
@@ -117,22 +117,22 @@ namespace {
             std::string value_ref_name(match[1]);
             auto        value_ref = GetValueRef(value_ref_name);
             std::string value_str = value_ref_name;
+            std::string explanation_str(match[2]);
+
             if (value_ref) {
-                if (useValueInsteadOfDescription)
-                    value_str = value_ref->StringResult();
+                value_str = value_ref->StringResult();
+                if (explanation_str.empty() || useDescriptionInsteadOfUserString)
+                    explanation_str = " (" + value_ref->Description() + ")";
                 else
-                    value_str = value_ref->Description();
-            } 
+                    explanation_str = " (" + explanation_str + ")";
+            } else {
+                if (!explanation_str.empty())
+                    explanation_str = " (" + explanation_str + ")";
+            }
 
-            std::string link_label(match[2]);
-            if (link_label.empty())
-                link_label = "(" + value_str + ")";
-            else
-                link_label = link_label + "  (" + value_str + ")";
+            auto resolved_tooltip = FOCS_VALUE_TAG_OPEN_PRE + " " + value_ref_name + ">" + value_str + explanation_str + FOCS_VALUE_TAG_CLOSE;
 
-            auto resolved_link = FOCS_VALUE_TAG_OPEN_PRE + " " + value_ref_name + ">" + link_label + FOCS_VALUE_TAG_CLOSE;
-
-            retval.replace(text_it + match.position(), text_it + match.position() + match.length(), resolved_link);
+            retval.replace(text_it + match.position(), text_it + match.position() + match.length(), resolved_tooltip);
 
             text_it = retval.end() - match.suffix().length();
         }
@@ -271,11 +271,11 @@ std::string PathTypeDecorator::DecorateRollover(const std::string& path_type, co
 }
 
 std::string ValueRefDecorator::Decorate(const std::string& value_ref_name, const std::string& content) const {
-    return GG::RgbaTag(ClientUI::DefaultTooltipColor()) + ValueRefLinkText(content, true) + LINK_FORMAT_CLOSE;
+    return GG::RgbaTag(ClientUI::DefaultTooltipColor()) + ValueRefLinkText(content, false) + LINK_FORMAT_CLOSE;
 }
 
 std::string ValueRefDecorator::DecorateRollover(const std::string& value_ref_name, const std::string& content) const {
-    return GG::RgbaTag(ClientUI::RolloverTooltipColor()) + ValueRefLinkText(content, false) + LINK_FORMAT_CLOSE;
+    return GG::RgbaTag(ClientUI::RolloverTooltipColor()) + ValueRefLinkText(content, true) + LINK_FORMAT_CLOSE;
 }
 
 
