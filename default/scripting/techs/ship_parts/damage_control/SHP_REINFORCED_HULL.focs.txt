@@ -13,7 +13,7 @@ Tech
                 Ship
                 OwnedBy empire = Source.Owner
             ]
-            effects = SetMaxStructure value = Value + Named name = "SHP_REINFORCED_HULL_BONUS" value = [[SHP_REINFORCED_HULL_BONUS]]
+            effects = SetMaxStructure value = Value + Named bomber = "SHP_REINFORCED_HULL_BONUS" value = [[SHP_REINFORCED_HULL_BONUS]]
     graphic = "icons/tech/structural_integrity_fields.png"
 
 
