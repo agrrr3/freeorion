@@ -22,13 +22,7 @@ namespace parse {
 
         using phoenix::construct;
         using phoenix::new_;
-        using phoenix::let;
-        using phoenix::static_cast_;
-        using phoenix::dynamic_cast_;
         qi::_a_type _a;
-        qi::_b_type _b;
-        qi::_r1_type _r1;
-        qi::_r2_type _r2;
         qi::_1_type _1;
         qi::_2_type _2;
         qi::_3_type _3;
@@ -41,7 +35,6 @@ namespace parse {
         const boost::phoenix::function<detail::get_pointer> get_pointer_;
 
         const std::string TOK_NAMED{"Named"};
-        const int         TOK_INT{22};
         
         game_rule
             = (   tok.GameRule_
@@ -49,27 +42,20 @@ namespace parse {
               ) [ _val = construct_movable_(new_<ValueRef::ComplexVariable<int>>(_1, nullptr, nullptr, nullptr, deconstruct_movable_(_2, _pass), nullptr)) ]
             ;
 
+        // First check generic situation (e.g. valueref in parenthesis, other calculations) which do procuce kind of simple value_ref_rule<int>
+        // then check producers of ComplexVariable<int>
         named_valueref_rule
             = (   tok.Named_
                 > (   (   (  label(tok.Name_) > string_grammar
-                        > label(tok.Value_) > start.alias() )
-                          [ phoenix::bind(&RegisterValueRef, get_pointer_(_1), get_pointer_(_2)), _val = _2 ]
-                      )|( ( label(tok.Bomber_) > string_grammar
                         > label(tok.Value_) > int_rules.expr )
                           [ phoenix::bind(&RegisterValueRef, get_pointer_(_1), get_pointer_(_2)),
                             _val = construct_movable_(new_<ValueRef::ComplexVariable<int>>(construct<std::string>(TOK_NAMED), deconstruct_movable_(_2, _pass), nullptr, nullptr, /*str*/nullptr, nullptr)) ]
+                      )|( ( label(tok.Name_) > string_grammar
+                        > label(tok.Value_) > start.alias() )
+                          [ phoenix::bind(&RegisterValueRef, get_pointer_(_1), get_pointer_(_2)), _val = _2 ]
                       )
                   )
-              ) /*[
-                  // Register the value ref under the given name by lazy invoking RegisterValueRef using the pointers inside the MovableEnvelopes without opening yet
-                 //                  phoenix::bind(&RegisterValueRef, get_pointer_(_2), get_pointer_(_a)),
-                 _val = construct_movable_(new_<ValueRef::ComplexVariable<int>>(construct<std::string>(TOK_NAMED), nullptr, nullptr, nullptr, nullptr, nullptr))
-                  //_val = construct_movable_(static_cast_<const ValueRef::ValueRef<int>*>(deconstruct_movable_(_3, _pass)))
-                  //_val = construct_movable_(new_<ValueRef::ComplexVariable<int>>(_1, deconstruct_movable_(_3, _pass), nullptr, nullptr, deconstruct_movable_(_2, _pass), nullptr))
-                  //_val = dynamic_cast_<MovableEnvelope<ValueRef::ValueRef<int>>(_3)
-                  //_val = construct_movable_(new_<ValueRef::Constant<int>>(construct<int>(33)));
-                  //_val = _3
-                  ]*/
+              )
             ;
 
          empire_name_ref
