@@ -1662,8 +1662,12 @@ int ComplexVariable<int>::Eval(const ScriptingContext& context) const
         std::string rule_name = m_string_ref1->Eval();
         if (rule_name.empty())
             return 0;
-        if (!m_int_ref1)
+        if (!m_int_ref1) {
+            ErrorLogger() << "Named value ref is not part of the ComplexVariable";
+            // could look it up            - auto vref = GetValueRef(rule_name);
+            // but AnyValueRef has no Eval - if (vref) return vref->Eval();
             return 0;
+        }
         int value = m_int_ref1->Eval();
         return value;
     }
@@ -3124,11 +3128,20 @@ int Operation<int>::EvalImpl(const ScriptingContext& context) const
 std::unordered_map<std::string, const AnyValueRef*> registered_valuerefs = { };
 } // namespace ValueRef
 
-const ValueRef::AnyValueRef* GetValueRef(const std::string& name)
-{ return ValueRef::registered_valuerefs[name]; }
+const ValueRef::AnyValueRef* GetValueRef(const std::string& valueref_name)
+{
+    ErrorLogger() << "Retrieve valueref for " << valueref_name;
+        return ValueRef::registered_valuerefs[valueref_name];
+}
 
 //void RegisterValueRef(const std::string& name, const ValueRef::AnyValueRef* vref)
 //{ ValueRef::registered_valuerefs[name] = vref; }
 
-void RegisterValueRef(const ValueRef::ValueRef<std::string>* name, const ValueRef::AnyValueRef* vref)
-{ ValueRef::registered_valuerefs[name->Eval()] = vref; }
+void RegisterValueRef(const ValueRef::ValueRef<std::string>* nameref, const ValueRef::AnyValueRef* vref)
+{
+    const std::string& valueref_name = nameref->Eval();
+    ErrorLogger() << "Register valueref for " << valueref_name << ": " << vref->Description();
+    if (ValueRef::registered_valuerefs.count(valueref_name)>0)
+        ErrorLogger() << "Reregister already registered valueref for " << valueref_name;
+    ValueRef::registered_valuerefs[valueref_name] = vref;
+}

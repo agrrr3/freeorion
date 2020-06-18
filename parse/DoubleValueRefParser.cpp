@@ -90,10 +90,13 @@ parse::double_parser_rules::double_parser_rules(
     using phoenix::static_cast_;
 
     qi::_1_type _1;
+    qi::_2_type _2;
+    qi::_3_type _3;
     qi::_val_type _val;
     qi::_pass_type _pass;
     const boost::phoenix::function<detail::construct_movable> construct_movable_;
     const boost::phoenix::function<detail::deconstruct_movable> deconstruct_movable_;
+    const boost::phoenix::function<detail::get_pointer> get_pointer_;
 
     const parse::detail::value_ref_rule<double>& simple = simple_double_rules.simple;
 
@@ -117,6 +120,17 @@ parse::double_parser_rules::double_parser_rules(
         =   int_complex_grammar [ _val = construct_movable_(new_<ValueRef::StaticCast<int, double>>(deconstruct_movable_(_1, _pass))) ]
         ;
 
+    named_real_valueref
+        = (     tok.Named_ >> tok.Real_
+             >  label(tok.Name_) > string_grammar
+             >  label(tok.Value_) > primary_expr.alias()
+          ) [
+              // Register the value ref under the given name by lazy invoking RegisterValueRef using the pointers inside the MovableEnvelopes without opening yet
+             phoenix::bind(&RegisterValueRef, get_pointer_(_2), get_pointer_(_3)),
+             _val = _3
+          ]
+        ;
+
     statistic_value_ref_expr
         = primary_expr.alias();
 
@@ -130,12 +144,14 @@ parse::double_parser_rules::double_parser_rules(
         |    int_free_variable_cast
         |    int_bound_variable_cast
         |    int_complex_variable_cast
+        |    named_real_valueref
         ;
 
     int_free_variable_cast.name("integer free variable");
     int_bound_variable_cast.name("integer bound variable");
     int_statistic_cast.name("integer statistic");
     int_complex_variable_cast.name("integer complex variable");
+    named_real_valueref.name("named real valueref");
 
 #if DEBUG_VALUEREF_PARSERS
     debug(int_constant_cast);
@@ -144,6 +160,7 @@ parse::double_parser_rules::double_parser_rules(
     debug(int_statistic_cast);
     debug(int_complex_variable_cast);
     debug(double_complex_variable);
+    debug(named_real_valueref);
 #endif
 }
 
