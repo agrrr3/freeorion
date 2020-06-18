@@ -12656,22 +12656,28 @@ SHP_SINGULARITY_ENGINE_CORE_DESC
 A smaller cousin of the [[buildingtype BLD_HYPER_DAM]] outfitted for ships, the Singularity Engine Core drastically boosts power generation. Increases [[metertype METER_SPEED]] by 80.'''
 
 SHP_DEUTERIUM_TANK
-Deuterium Tank
+Deuterium Fuel
 
 SHP_DEUTERIUM_TANK_DESC
-Small upgrade to each of your [[shippart FU_BASIC_TANK]] ship parts. Increases [[metertype METER_FUEL]] capacity and thereby the number of jumps your ships can do without refueling.
+Small upgrade to each of your [[shippart FU_BASIC_TANK]] ship parts. Increases [[metertype METER_FUEL]] capacity by [[value SHP_DEUTERIUM_TANK_EFFECT_MULT]] and thereby the number of jumps your ships can do without refueling.
 
 SHP_DEUTERIUM_TANK_EFFECT
-Deuterium Tank Technology
+Deuterium Fuel Technology
+
+SHP_DEUTERIUM_TANK_EFFECT_MULT
+'''per tank part'''
 
 SHP_ANTIMATTER_TANK
-Antimatter Tank
+Antimatter Fuel
 
 SHP_ANTIMATTER_TANK_DESC
-Moderate upgrade to each of your [[shippart FU_BASIC_TANK]] ship parts. Increases [[metertype METER_FUEL]] capacity and thereby the number of jumps your ships can do without refueling.
+Moderate upgrade to each of your [[shippart FU_BASIC_TANK]] ship parts. Increases [[metertype METER_FUEL]] capacity by [[value SHP_ANTIMATTER_TANK_EFFECT_MULT]] and thereby the number of jumps your ships can do without refueling.
 
 SHP_ANTIMATTER_TANK_EFFECT
-Antimatter Tank Technology
+Antimatter Fuel Technology
+
+SHP_ANTIMATTER_TANK_EFFECT_MULT
+'''per tank part'''
 
 SHP_ZERO_POINT
 Zero-Point Fuel Generator
@@ -13996,7 +14002,10 @@ FU_BASIC_TANK
 Extra Fuel Tank
 
 FU_BASIC_TANK_DESC
-Increases [[metertype METER_FUEL]] capacity, allowing additional jumps depending on [[encyclopedia FUEL_EFFICIENCY_TITLE]]. Later technologies further increase the number of additional jumps per tank.
+'''Increases [[metertype METER_FUEL]] capacity, allowing additional jumps depending on [[encyclopedia FUEL_EFFICIENCY_TITLE]]. Later technologies further increase the number of additional jumps per tank.
+Fuel boosts from tech for a normal fuel efficiency hull:
+- [[tech SHP_DEUTERIUM_TANK]]: [[value SHP_DEUTERIUM_TANK_EFFECT_MULT]]
+- [[tech SHP_ANTIMATTER_TANK]]: [[value SHP_ANTIMATTER_TANK_EFFECT_MULT]].'''
 
 FU_ZERO_FUEL
 Zero-Point Fuel Generator
