@@ -45,7 +45,7 @@ namespace parse {
         // First check generic situation (e.g. valueref in parenthesis, other calculations) which do procuce kind of simple value_ref_rule<int>
         // then check producers of ComplexVariable<int>
         named_valueref_rule
-            = (   tok.Named_
+            = (   tok.Named_  >> tok.Integer_
                 > (   (   (  label(tok.Name_) > string_grammar
                         > label(tok.Value_) > int_rules.expr )
                           [ phoenix::bind(&RegisterValueRef, get_pointer_(_1), get_pointer_(_2)),
