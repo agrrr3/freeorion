@@ -126,7 +126,7 @@ parse::double_parser_rules::double_parser_rules(
              >  label(tok.Value_) > primary_expr.alias()
           ) [
               // Register the value ref under the given name by lazy invoking RegisterValueRef using the pointers inside the MovableEnvelopes without opening yet
-             phoenix::bind(&RegisterValueRef, get_pointer_(_2), get_pointer_(_3)),
+             phoenix::bind(&RegisterValueRef<ValueRef::ValueRef<double>>, get_pointer_(_2), get_pointer_(_3)),
              _val = _3
           ]
         ;

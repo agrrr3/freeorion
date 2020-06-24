@@ -48,11 +48,11 @@ namespace parse {
             = (   tok.Named_  >> tok.Integer_
                 > (   (   (  label(tok.Name_) > string_grammar
                         > label(tok.Value_) > int_rules.expr )
-                          [ phoenix::bind(&RegisterValueRef, get_pointer_(_1), get_pointer_(_2)),
+                          [ phoenix::bind(&RegisterValueRef<ValueRef::ValueRef<int>>, get_pointer_(_1), get_pointer_(_2)),
                             _val = construct_movable_(new_<ValueRef::ComplexVariable<int>>(construct<std::string>(TOK_NAMED), deconstruct_movable_(_2, _pass), nullptr, nullptr, /*str*/nullptr, nullptr)) ]
                       )|( ( label(tok.Name_) > string_grammar
                         > label(tok.Value_) > start.alias() )
-                          [ phoenix::bind(&RegisterValueRef, get_pointer_(_1), get_pointer_(_2)), _val = _2 ]
+                          [ phoenix::bind(&RegisterValueRef<ValueRef::ComplexVariable<int>>, get_pointer_(_1), get_pointer_(_2)), _val = _2 ]
                       )
                   )
               )
