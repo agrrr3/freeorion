@@ -3124,24 +3124,4 @@ int Operation<int>::EvalImpl(const ScriptingContext& context) const
     return 0;
 }
 
-// poor mans registry for Named ValueRefs
-std::unordered_map<std::string, const AnyValueRef*> registered_valuerefs = { };
 } // namespace ValueRef
-
-const ValueRef::AnyValueRef* GetValueRef(const std::string& valueref_name)
-{
-    ErrorLogger() << "Retrieve valueref for " << valueref_name;
-        return ValueRef::registered_valuerefs[valueref_name];
-}
-
-//void RegisterValueRef(const std::string& name, const ValueRef::AnyValueRef* vref)
-//{ ValueRef::registered_valuerefs[name] = vref; }
-
-void RegisterValueRef(const ValueRef::ValueRef<std::string>* nameref, const ValueRef::AnyValueRef* vref)
-{
-    const std::string& valueref_name = nameref->Eval();
-    ErrorLogger() << "Register valueref for " << valueref_name << ": " << vref->Description();
-    if (ValueRef::registered_valuerefs.count(valueref_name)>0)
-        ErrorLogger() << "Reregister already registered valueref for " << valueref_name;
-    ValueRef::registered_valuerefs[valueref_name] = vref;
-}

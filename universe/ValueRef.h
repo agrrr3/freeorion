@@ -100,6 +100,57 @@ enum StatisticType : int {
 
 }
 
+//! Holds all FreeOrion named ValueRef%s.  ValueRef%s may be looked up by name.
+class NamedValueRefManager {
+public:
+    //using container_type = std::map<const std::string, const std::unique_ptr<ValueRef::AnyValueRef>>;
+    using key_type = std::string;
+    using value_type = std::unique_ptr<ValueRef::AnyValueRef>;
+    using container_type = std::map<key_type, value_type>;
+    using iterator = container_type::const_iterator;
+
+    //! Returns the ValueRef with the name @p name; you should use the
+    //! free function GetValueRef(...) instead, mainly to save some typing.
+    auto GetValueRef(const std::string& name) const -> const ValueRef::AnyValueRef*;
+
+    auto NumNamedValueRefs() const -> std::size_t { return m_value_refs.size(); }
+
+    //! iterator to the first value ref
+    FO_COMMON_API auto begin() const -> iterator;
+
+    //! iterator to the last + 1th value ref
+    FO_COMMON_API auto end() const -> iterator;
+
+    //! Returns the instance of this singleton class; you should use the free
+    //! function GetNamedValueRefManager() instead
+    static auto GetNamedValueRefManager() -> NamedValueRefManager&;
+
+    //! Returns a number, calculated from the contained data, which should be
+    //! different for different contained data, and must be the same for
+    //! the same contained data, and must be the same on different platforms
+    //! and executions of the program and the function. Useful to verify that
+    //! the parsed content is consistent without sending it all between
+    //! clients and server.
+    auto GetCheckSum() const -> unsigned int;
+
+    //! Register the @p value_ref under the evaluated @p name.
+    template <typename T>
+    void RegisterValueRef(const ValueRef::ValueRef<std::string>* name, const std::unique_ptr<T> vref);
+    //void RegisterValueRef(const ValueRef::ValueRef<std::string>* nameref, const std::unique_ptr<ValueRef::AnyValueRef> value_ref);
+
+private:
+    NamedValueRefManager();
+
+    //! Map of ValueRef%s identified by a name
+    //! mutable so that when the parse complete it can be updated.
+    mutable container_type m_value_refs;
+
+    static NamedValueRefManager* s_instance;
+};
+
+//! Returns the singleton manager for named value refs
+FO_COMMON_API auto GetNamedValueRefManager() -> NamedValueRefManager&;
+
 //! Returns the ValueRef object registered with the given
 //! @p name.  If no such ValueRef exists, nullptr is returned instead.
 FO_COMMON_API auto GetValueRef(const std::string& name) -> const ValueRef::AnyValueRef*;
@@ -107,7 +158,16 @@ FO_COMMON_API auto GetValueRef(const std::string& name) -> const ValueRef::AnyVa
 //! Register the ValueRef object @p vref under the given @p name.
 //FO_COMMON_API void RegisterValueRef(const std::string& name, const ValueRef::AnyValueRef* vref);
 
-//! Register the ValueRef object @p vref under the given @p name.
-FO_COMMON_API void RegisterValueRef(const ValueRef::ValueRef<std::string>* name, const ValueRef::AnyValueRef* vref);
+//! Register a copy of the ValueRef object @p vref under the evaluated @p name.
+template <typename T>
+FO_COMMON_API void RegisterValueRef(const ValueRef::ValueRef<std::string>* name, const T* vref);
+
+//FO_COMMON_API void RegisterValueRef(const ValueRef::ValueRef<std::string>* name, const std::unique_ptr<ValueRef::AnyValueRef> vref); // TODO
+
+// undefined reference to `void RegisterValueRef<ValueRef::ValueRef<double> >(
+//                                  ValueRef::ValueRef<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > const*,
+//                                                                               ValueRef::ValueRef<double> const*)'
+template <>
+FO_COMMON_API void RegisterValueRef(const ValueRef::ValueRef<std::string>* name, const ValueRef::ValueRef<double>* vref);
 
 #endif // _ValueRef_h_

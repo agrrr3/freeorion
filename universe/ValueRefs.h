@@ -210,6 +210,8 @@ struct FO_COMMON_API ComplexVariable final : public Variable<T>
                              std::unique_ptr<ValueRef<std::string>>&& string_ref2 = nullptr,
                              bool return_immediate_value = false);
 
+    explicit ComplexVariable(const ComplexVariable& copyme);
+
     bool operator==(const ValueRef<T>& rhs) const override;
     T Eval(const ScriptingContext& context) const override;
     bool RootCandidateInvariant() const override;
@@ -1199,6 +1201,16 @@ ComplexVariable<T>::ComplexVariable(const char* variable_name,
     m_int_ref3(std::move(int_ref3)),
     m_string_ref1(std::move(string_ref1)),
     m_string_ref2(std::move(string_ref2))
+{}
+
+template <typename T>
+ComplexVariable<T>::ComplexVariable(const ComplexVariable& copyme) :
+    Variable<T>(NON_OBJECT_REFERENCE, copyme.m_property_name, copyme.m_return_immediate_value),
+    m_int_ref1(copyme.m_int_ref1),
+    m_int_ref2(copyme.m_int_ref2),
+    m_int_ref3(copyme.m_int_ref3),
+    m_string_ref1(copyme.m_string_ref1),
+    m_string_ref2(copyme.m_string_ref2)
 {}
 
 template <typename T>
