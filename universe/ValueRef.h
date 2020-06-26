@@ -105,13 +105,18 @@ class NamedValueRefManager {
 public:
     //using container_type = std::map<const std::string, const std::unique_ptr<ValueRef::AnyValueRef>>;
     using key_type = std::string;
-    using value_type = std::unique_ptr<ValueRef::AnyValueRef>;
+    using value_type = std::unique_ptr<const ValueRef::AnyValueRef>;
     using container_type = std::map<key_type, value_type>;
     using iterator = container_type::const_iterator;
 
+    //! Returns the ValueRef with the name @p name or nullptr if there is nov ValueRef with such a name or of the wrong type
+    //! use the free function GetValueRef(...) instead, mainly to save some typing.
+    template <typename T>
+    auto GetValueRef(const std::string& name) -> const ValueRef::ValueRef<T>*;
+
     //! Returns the ValueRef with the name @p name; you should use the
     //! free function GetValueRef(...) instead, mainly to save some typing.
-    auto GetValueRef(const std::string& name) const -> const ValueRef::AnyValueRef*;
+    auto GetAnyValueRef(const std::string& name) const -> const ValueRef::AnyValueRef*;
 
     auto NumNamedValueRefs() const -> std::size_t { return m_value_refs.size(); }
 
@@ -135,7 +140,7 @@ public:
 
     //! Register the @p value_ref under the evaluated @p name.
     template <typename T>
-    void RegisterValueRef(const ValueRef::ValueRef<std::string>* name, const std::unique_ptr<T> vref);
+    void RegisterValueRef(const ValueRef::ValueRef<std::string>* name, std::unique_ptr<T> vref);
     //void RegisterValueRef(const ValueRef::ValueRef<std::string>* nameref, const std::unique_ptr<ValueRef::AnyValueRef> value_ref);
 
 private:
@@ -153,21 +158,26 @@ FO_COMMON_API auto GetNamedValueRefManager() -> NamedValueRefManager&;
 
 //! Returns the ValueRef object registered with the given
 //! @p name.  If no such ValueRef exists, nullptr is returned instead.
-FO_COMMON_API auto GetValueRef(const std::string& name) -> const ValueRef::AnyValueRef*;
+FO_COMMON_API auto GetAnyValueRef(const std::string& name) -> const ValueRef::AnyValueRef*;
 
+template <typename T>
+FO_COMMON_API auto GetValueRef(const std::string& name) -> const ValueRef::ValueRef<T>*;
 //! Register the ValueRef object @p vref under the given @p name.
 //FO_COMMON_API void RegisterValueRef(const std::string& name, const ValueRef::AnyValueRef* vref);
+
 
 //! Register a copy of the ValueRef object @p vref under the evaluated @p name.
 template <typename T>
 FO_COMMON_API void RegisterValueRef(const ValueRef::ValueRef<std::string>* name, const T* vref);
+
 
 //FO_COMMON_API void RegisterValueRef(const ValueRef::ValueRef<std::string>* name, const std::unique_ptr<ValueRef::AnyValueRef> vref); // TODO
 
 // undefined reference to `void RegisterValueRef<ValueRef::ValueRef<double> >(
 //                                  ValueRef::ValueRef<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > const*,
 //                                                                               ValueRef::ValueRef<double> const*)'
-template <>
+/*template <>
 FO_COMMON_API void RegisterValueRef(const ValueRef::ValueRef<std::string>* name, const ValueRef::ValueRef<double>* vref);
+*/
 
 #endif // _ValueRef_h_

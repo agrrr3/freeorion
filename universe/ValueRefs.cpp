@@ -1384,6 +1384,21 @@ std::string Statistic<std::string>::Eval(const ScriptingContext& context) const
     return most_common_property_value_it->first;
 }
 
+
+///////////////////////////////////////////////////////////
+// NamedRef                                               //
+///////////////////////////////////////////////////////////
+/*template <T>
+T NamedRef<T>::Eval(const ScriptingContext& context) const
+{
+    const ValueRef::ValueRef<T>* value_ref NamedValueRefManager::GetValueRef<T>(m_value_ref_name);
+    if (!value_ref)
+        return T();
+    
+    return m_value_ref->Eval(context);
+}
+*/
+
 ///////////////////////////////////////////////////////////
 // ComplexVariable                                       //
 ///////////////////////////////////////////////////////////

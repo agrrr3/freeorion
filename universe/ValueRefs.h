@@ -131,6 +131,37 @@ private:
     void serialize(Archive& ar, const unsigned int version);
 };
 
+/** The variable NamedValueRef class. Looks up a named ValueRef from the NamedValueRefManager
+  */
+template <typename T>
+struct FO_COMMON_API NamedRef final : public ValueRef<T>
+{
+    NamedRef(const char* value_ref_name);
+
+    const ValueRef<T>* GetValueRef() const
+    { return NamedValueRefManager::GetValueRef<T>(m_value_ref_name); }
+
+    bool operator==(const ValueRef<T>& rhs) const override;
+    T  Eval(const ScriptingContext& context) const override;
+    bool RootCandidateInvariant() const override;
+    bool LocalCandidateInvariant() const override;
+    bool TargetInvariant() const override;
+    bool SourceInvariant() const override;
+
+    std::string Description() const override;
+    std::string Dump(unsigned short ntabs = 0) const override;
+    void SetTopLevelContent(const std::string& content_name) override;
+
+    unsigned int GetCheckSum() const override;
+
+private:
+    std::string m_value_ref_name;
+
+    friend class boost::serialization::access;
+    template <typename Archive>
+    void serialize(Archive& ar, const unsigned int version);
+};
+
 /** The variable statistic class.   The value returned by this node is
   * computed from the general gamestate; the value of the indicated
   * \a property_name is computed for each object that matches
@@ -209,8 +240,6 @@ struct FO_COMMON_API ComplexVariable final : public Variable<T>
                              std::unique_ptr<ValueRef<std::string>>&& string_ref1 = nullptr,
                              std::unique_ptr<ValueRef<std::string>>&& string_ref2 = nullptr,
                              bool return_immediate_value = false);
-
-    explicit ComplexVariable(const ComplexVariable& copyme);
 
     bool operator==(const ValueRef<T>& rhs) const override;
     T Eval(const ScriptingContext& context) const override;
@@ -763,6 +792,67 @@ void Variable<T>::serialize(Archive& ar, const unsigned int version)
 }
 
 ///////////////////////////////////////////////////////////
+// NamedRef                                              //
+///////////////////////////////////////////////////////////
+template <typename T>
+unsigned int NamedRef<T>::GetCheckSum() const
+{
+    unsigned int retval{0};
+
+    CheckSums::CheckSumCombine(retval, "ValueRef::NamedRef");
+    CheckSums::CheckSumCombine(retval, m_value_ref_name);
+    TraceLogger() << "GetCheckSum(NamedRef<T>): " << typeid(*this).name() << " retval: " << retval;
+    return retval;
+}
+
+template <typename T>
+bool NamedRef<T>::RootCandidateInvariant() const
+{ return GetValueRef() ? GetValueRef()->RootCandidateInvariant() : true; }
+
+template <typename T>
+bool NamedRef<T>::LocalCandidateInvariant() const
+{ return GetValueRef() ? GetValueRef()->LocalCandidateInvariant() : true; }
+
+template <typename T>
+bool NamedRef<T>::TargetInvariant() const
+{ return GetValueRef() ? GetValueRef()->TargetInvariant() : true; }
+
+template <typename T>
+bool NamedRef<T>::SourceInvariant() const
+{ return GetValueRef() ? GetValueRef()->SourceInvariant() : true; }
+
+template <typename T>
+std::string NamedRef<T>::Description() const
+{ return GetValueRef() ? GetValueRef()->Description() : std::string("NAMED_REF_UNKNOWN"); }
+
+template <typename T>
+std::string NamedRef<T>::Dump(unsigned short ntabs) const
+{ return GetValueRef() ? GetValueRef()->Dump() : std::string("NAMED_REF_UNKNOWN"); }
+
+template <typename T>
+void NamedRef<T>::SetTopLevelContent(const std::string& content_name)
+{ if ( GetValueRef() ) GetValueRef()->SetTopLevelContent(content_name); } // TODO
+
+template <typename T>
+T NamedRef<T>::Eval(const ScriptingContext& context) const
+{
+    auto* value_ref = NamedValueRefManager::GetValueRef<T>(m_value_ref_name);
+    if (!value_ref)
+        throw std::runtime_error("Referenced unknown ValueRef named '" + m_value_ref_name + "'");
+
+    return value_ref->Eval(context);
+}
+
+
+template <typename T>
+template <typename Archive>
+void NamedRef<T>::serialize(Archive& ar, const unsigned int version)
+{
+    ar  & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ValueRef)
+        & BOOST_SERIALIZATION_NVP(m_value_ref_name);
+}
+
+///////////////////////////////////////////////////////////
 // Statistic                                             //
 ///////////////////////////////////////////////////////////
 template <typename T>
@@ -1201,16 +1291,6 @@ ComplexVariable<T>::ComplexVariable(const char* variable_name,
     m_int_ref3(std::move(int_ref3)),
     m_string_ref1(std::move(string_ref1)),
     m_string_ref2(std::move(string_ref2))
-{}
-
-template <typename T>
-ComplexVariable<T>::ComplexVariable(const ComplexVariable& copyme) :
-    Variable<T>(NON_OBJECT_REFERENCE, copyme.m_property_name, copyme.m_return_immediate_value),
-    m_int_ref1(copyme.m_int_ref1),
-    m_int_ref2(copyme.m_int_ref2),
-    m_int_ref3(copyme.m_int_ref3),
-    m_string_ref1(copyme.m_string_ref1),
-    m_string_ref2(copyme.m_string_ref2)
 {}
 
 template <typename T>
@@ -2339,5 +2419,26 @@ void Operation<T>::serialize(Archive& ar, const unsigned int version)
 }
 
 } // namespace ValueRef
+
+
+// template function generation
+// For accessing NamedValueRefManager - needing definitions from ValueRef.h and ValueRefs.h
+template <>
+FO_COMMON_API void RegisterValueRef(const ValueRef::ValueRef<std::string>* name, const ValueRef::ComplexVariable<int>* vref);
+template <>
+FO_COMMON_API void RegisterValueRef(const ValueRef::ValueRef<std::string>* name, const ValueRef::ValueRef<int>* vref);
+template <>
+FO_COMMON_API void RegisterValueRef(const ValueRef::ValueRef<std::string>* name, const ValueRef::ValueRef<double>* vref);
+
+
+// GetValueRef(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)'
+template <>
+FO_COMMON_API const ValueRef::ValueRef<int>* GetValueRef(const std::string& name);
+template <>
+FO_COMMON_API const ValueRef::ValueRef<double>* GetValueRef(const std::string& name);
+
+//template <typename T> const ValueRef::ValueRef<T>* GetValueRef(const std::string& name)
+//template <typename T>  FO_COMMON_API auto          GetValueRef(const std::string& name) -> const ValueRef::ValueRef<T>*;
+
 
 #endif // _ValueRefs_h_

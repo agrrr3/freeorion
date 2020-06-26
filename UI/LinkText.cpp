@@ -115,7 +115,7 @@ namespace {
                 break;
 
             std::string value_ref_name(match[1]);
-            auto        value_ref = GetValueRef(value_ref_name);
+            auto        value_ref = GetAnyValueRef(value_ref_name);
             std::string value_str = value_ref_name;
             std::string explanation_str(match[2]);
 
