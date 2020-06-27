@@ -172,4 +172,7 @@ FO_COMMON_API void RegisterAnyValueRef(const ValueRef::ValueRef<std::string>* na
 template <typename T>
 FO_COMMON_API auto RegisterValueRef(const ValueRef::ValueRef<std::string>* name, const T* vref) -> std::string;
 
+template <typename T>
+FO_COMMON_API auto RegisterValueRefT(std::unique_ptr<ValueRef::ValueRef<std::string>> name, std::unique_ptr<T> vref) -> std::string;
+
 #endif // _ValueRef_h_

@@ -130,7 +130,10 @@ parse::double_parser_rules::double_parser_rules(
              >  label(tok.Value_) > primary_expr.alias()
           ) [
              // Register the value ref under the given name by lazy invoking RegisterValueRef
-             phoenix::bind(&RegisterAnyValueRef, deconstruct_movable_(_2), deconstruct_movable_(_3)),
+             //phoenix::bind(&RegisterAnyValueRef, deconstruct_movable_(_2), deconstruct_movable_(_3)),
+             //             [ u{move(u)} ] { do_something_with( u ); } 
+             phoenix::bind(&RegisterAnyValueRef, get_pointer_(_2), get_pointer_(_3)), // compiles - but what about the unique_ptr%s?
+             //phoenix::bind(&RegisterValueRefT<ValueRef::ValueRef<double>>, deconstruct_movable_(_2, _pass), deconstruct_movable_(_3, _pass)), // think this tries to copy the unique ptr and fails
              _val = construct_movable_(new_<ValueRef::NamedRef<double>>(construct<std::string>(TOK_SHP_BLABLA)))
           ]
         ;

@@ -115,8 +115,10 @@ template <typename T>
 std::string NamedValueRefManager::RegisterValueRef(const ValueRef::ValueRef<std::string>* nameref, std::unique_ptr<T> vref) {
     std::string valueref_name = nameref->Eval();
     InfoLogger() << "Register valueref for " << valueref_name << ": " << vref->Description();
-    if (m_value_refs.count(valueref_name)>0)
-        ErrorLogger() << "Reregister already registered valueref for " << valueref_name;
+    if (m_value_refs.count(valueref_name)>0) {
+        ErrorLogger() << "Skip registration for already registered valueref for " << valueref_name;
+        return valueref_name;
+    }
     //    m_value_refs.insert(std::make_pair<std::string&&,std::unique_ptr<ValueRef::AnyValueRef>>(valueref_name, std::move(vref))); 
     // m_value_refs.emplace(valueref_name, std::move(vref)); //FIXME
     NamedValueRefManager::key_type bla{"bla"};
@@ -198,6 +200,11 @@ std::string RegisterValueRef(const ValueRef::ValueRef<std::string>* nameref, con
                   "T must be a descendant of AnyValueRef"
                   );
     return GetNamedValueRefManager().RegisterValueRef(nameref, move(std::unique_ptr<const T>(vref)));
+}
+
+template <typename T>
+std::string RegisterValueRefT(std::unique_ptr<ValueRef::ValueRef<std::string>> nameref, std::unique_ptr<ValueRef::ValueRef<double>> vref) {
+    return GetNamedValueRefManager().RegisterValueRef<T>(nameref, move(vref));
 }
 
 template <>
