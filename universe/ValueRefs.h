@@ -136,10 +136,10 @@ private:
 template <typename T>
 struct FO_COMMON_API NamedRef final : public ValueRef<T>
 {
-    NamedRef(const char* value_ref_name);
-
-    const ValueRef<T>* GetValueRef() const
-    { return NamedValueRefManager::GetValueRef<T>(m_value_ref_name); }
+    //NamedRef(const char* value_ref_name);
+    NamedRef(const std::string& value_ref_name);
+    
+    const ValueRef<T>* GetValueRef() const;
 
     bool operator==(const ValueRef<T>& rhs) const override;
     T  Eval(const ScriptingContext& context) const override;
@@ -795,15 +795,28 @@ void Variable<T>::serialize(Archive& ar, const unsigned int version)
 // NamedRef                                              //
 ///////////////////////////////////////////////////////////
 template <typename T>
-unsigned int NamedRef<T>::GetCheckSum() const
+NamedRef<T>::NamedRef(const std::string& value_ref_name) :
+    m_value_ref_name(value_ref_name)
 {
-    unsigned int retval{0};
-
-    CheckSums::CheckSumCombine(retval, "ValueRef::NamedRef");
-    CheckSums::CheckSumCombine(retval, m_value_ref_name);
-    TraceLogger() << "GetCheckSum(NamedRef<T>): " << typeid(*this).name() << " retval: " << retval;
-    return retval;
+    DebugLogger() << "ctor(NamedRef<T>): " << typeid(*this).name() << " value_ref_name: " << m_value_ref_name;
 }
+
+template <typename T>
+bool NamedRef<T>::operator==(const ValueRef<T>& rhs) const
+{
+    if (&rhs == this)
+        return true;
+    if (typeid(rhs) != typeid(*this))
+        return false;
+    const NamedRef<T>& rhs_ = static_cast<const NamedRef<T>&>(rhs);
+    return (m_value_ref_name == rhs_.m_value_ref_name);
+}
+
+/*
+template <>
+const ValueRef<double>* NamedRef<double>::GetValueRef() const;
+//{    return ::GetValueRef<double>(m_value_ref_name); }
+*/
 
 template <typename T>
 bool NamedRef<T>::RootCandidateInvariant() const
@@ -831,16 +844,31 @@ std::string NamedRef<T>::Dump(unsigned short ntabs) const
 
 template <typename T>
 void NamedRef<T>::SetTopLevelContent(const std::string& content_name)
-{ if ( GetValueRef() ) GetValueRef()->SetTopLevelContent(content_name); } // TODO
+// { if ( GetValueRef() ) GetValueRef()->SetTopLevelContent(content_name); } // TODO decide what to do. also setter does not fit to const return of GetValueRef
+{}
+
+template <typename T>
+unsigned int NamedRef<T>::GetCheckSum() const
+{
+    unsigned int retval{0};
+
+    CheckSums::CheckSumCombine(retval, "ValueRef::NamedRef");
+    CheckSums::CheckSumCombine(retval, m_value_ref_name);
+    TraceLogger() << "GetCheckSum(NamedRef<T>): " << typeid(*this).name() << " retval: " << retval;
+    return retval;
+}
 
 template <typename T>
 T NamedRef<T>::Eval(const ScriptingContext& context) const
 {
-    auto* value_ref = NamedValueRefManager::GetValueRef<T>(m_value_ref_name);
+    DebugLogger() << "Eval(NamedRef<T>): " << typeid(*this).name();
+    const ValueRef<T>* value_ref = ::GetValueRef<T>(m_value_ref_name);
     if (!value_ref)
         throw std::runtime_error("Referenced unknown ValueRef named '" + m_value_ref_name + "'");
 
-    return value_ref->Eval(context);
+    auto retval = value_ref->Eval(context);
+    DebugLogger() << "Eval(NamedRef<T>): " << typeid(*this).name() << " retval: " << retval;
+    return retval;
 }
 
 
@@ -2423,12 +2451,14 @@ void Operation<T>::serialize(Archive& ar, const unsigned int version)
 
 // template function generation
 // For accessing NamedValueRefManager - needing definitions from ValueRef.h and ValueRefs.h
+// XXX not sure if necessary
+/*
 template <>
-FO_COMMON_API void RegisterValueRef(const ValueRef::ValueRef<std::string>* name, const ValueRef::ComplexVariable<int>* vref);
+FO_COMMON_API std::string RegisterValueRef(const ValueRef::ValueRef<std::string>* name, const ValueRef::ComplexVariable<int>* vref);
 template <>
-FO_COMMON_API void RegisterValueRef(const ValueRef::ValueRef<std::string>* name, const ValueRef::ValueRef<int>* vref);
+FO_COMMON_API std::string RegisterValueRef(const ValueRef::ValueRef<std::string>* name, const ValueRef::ValueRef<int>* vref);
 template <>
-FO_COMMON_API void RegisterValueRef(const ValueRef::ValueRef<std::string>* name, const ValueRef::ValueRef<double>* vref);
+FO_COMMON_API std::string RegisterValueRef(const ValueRef::ValueRef<std::string>* name, const ValueRef::ValueRef<double>* vref);
 
 
 // GetValueRef(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)'
@@ -2436,7 +2466,7 @@ template <>
 FO_COMMON_API const ValueRef::ValueRef<int>* GetValueRef(const std::string& name);
 template <>
 FO_COMMON_API const ValueRef::ValueRef<double>* GetValueRef(const std::string& name);
-
+*/
 //template <typename T> const ValueRef::ValueRef<T>* GetValueRef(const std::string& name)
 //template <typename T>  FO_COMMON_API auto          GetValueRef(const std::string& name) -> const ValueRef::ValueRef<T>*;
 

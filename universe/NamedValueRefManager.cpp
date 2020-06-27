@@ -46,19 +46,23 @@ NamedValueRefManager::NamedValueRefManager() {
 
 template <typename T>
 const ValueRef::ValueRef<T>* NamedValueRefManager::GetValueRef(const std::string& name) /* const */ {
+    InfoLogger() << "NamedValueRefManager::GetValueRef<T> look for registered valueref for " << name;
     const auto* vref = GetAnyValueRef(name);
     if (vref) {
         return dynamic_cast<const ValueRef::ValueRef<T>*>(vref);
     }
+    ErrorLogger() << "NamedValueRefManager::GetValueRef<T> found no registered valueref for " << name;
     return nullptr;
 }
 
 template <>
 const ValueRef::ValueRef<int>* NamedValueRefManager::GetValueRef(const std::string& name) /* const */ {
+    InfoLogger() << "NamedValueRefManager::GetValueRef<int> look for registered valueref for " << name;
     const auto* vref = GetAnyValueRef(name);
     if (vref) {
         return dynamic_cast<const ValueRef::ValueRef<int>*>(vref);
     }
+    ErrorLogger() << "NamedValueRefManager::GetValueRef<int> found no registered valueref for " << name;
     return nullptr;
 }
 
@@ -108,7 +112,7 @@ unsigned int NamedValueRefManager::GetCheckSum() const {
 
 template <typename T>
 //void NamedValueRefManager::RegisterValueRef(const ValueRef::ValueRef<std::string>* nameref, const std::unique_ptr<ValueRef::ValueRef<T>> vref) {
-void NamedValueRefManager::RegisterValueRef(const ValueRef::ValueRef<std::string>* nameref, std::unique_ptr<T> vref) {
+std::string NamedValueRefManager::RegisterValueRef(const ValueRef::ValueRef<std::string>* nameref, std::unique_ptr<T> vref) {
     std::string valueref_name = nameref->Eval();
     InfoLogger() << "Register valueref for " << valueref_name << ": " << vref->Description();
     if (m_value_refs.count(valueref_name)>0)
@@ -128,6 +132,7 @@ void NamedValueRefManager::RegisterValueRef(const ValueRef::ValueRef<std::string
     */
     // Could not make this work without construction another unique_ptr (although i think it should implicitly convert
     m_value_refs.emplace(valueref_name, std::move(std::unique_ptr<const ValueRef::AnyValueRef>(std::move(vref))));
+    return valueref_name;
 }
 
 
@@ -145,6 +150,14 @@ const ValueRef::AnyValueRef* GetAnyValueRef(const std::string& name)
 template <typename T>
 const ValueRef::ValueRef<T>* GetValueRef(const std::string& name)
 { return GetNamedValueRefManager().GetValueRef<T>(name); }
+
+template <>
+const ValueRef::ValueRef<int>* GetValueRef(const std::string& name)
+{ return GetNamedValueRefManager().GetValueRef<int>(name); }
+
+template <>
+const ValueRef::ValueRef<double>* GetValueRef(const std::string& name)
+{ return GetNamedValueRefManager().GetValueRef<double>(name); }
 
 /* // these are still pure classes
 template <>
@@ -170,29 +183,36 @@ void RegisterValueRef(const ValueRef::ValueRef<std::string>* nameref, const Valu
 */
 
 
+// void RegisterValueRef(const ValueRef::ValueRef<std::string>* nameref, const ValueRef::AnyValueRef* vref) // this worked once upon a time
+ //std::string
+void RegisterAnyValueRef(const ValueRef::ValueRef<std::string>* nameref, const ValueRef::AnyValueRef* vref) {
+    //    return GetNamedValueRefManager().RegisterValueRef(nameref, move(std::unique_ptr<const ValueRef::ComplexVariable<int>>(vref)));//FIXME TODO
+    //    return "NUFFING";
+}
+
 // implementation does not get generated(?)
 template <typename T>
-void RegisterValueRef(const ValueRef::ValueRef<std::string>* nameref, const T* vref) {
+std::string RegisterValueRef(const ValueRef::ValueRef<std::string>* nameref, const T* vref) {
     static_assert(
                   std::is_base_of<ValueRef::AnyValueRef, T>::value, 
                   "T must be a descendant of AnyValueRef"
                   );
-    GetNamedValueRefManager().RegisterValueRef(nameref, move(std::unique_ptr<const T>(vref)));
+    return GetNamedValueRefManager().RegisterValueRef(nameref, move(std::unique_ptr<const T>(vref)));
 }
 
 template <>
-void RegisterValueRef(const ValueRef::ValueRef<std::string>* nameref, const ValueRef::ComplexVariable<int>* vref) {
-    GetNamedValueRefManager().RegisterValueRef(nameref, move(std::unique_ptr<const ValueRef::ComplexVariable<int>>(vref)));
+std::string RegisterValueRef(const ValueRef::ValueRef<std::string>* nameref, const ValueRef::ComplexVariable<int>* vref) {
+    return GetNamedValueRefManager().RegisterValueRef(nameref, move(std::unique_ptr<const ValueRef::ComplexVariable<int>>(vref)));
 }
 
 template <>
-void RegisterValueRef(const ValueRef::ValueRef<std::string>* nameref, const ValueRef::ValueRef<int>* vref) {
-    GetNamedValueRefManager().RegisterValueRef(nameref, move(std::unique_ptr<const ValueRef::ValueRef<int>>(vref)));
+std::string RegisterValueRef(const ValueRef::ValueRef<std::string>* nameref, const ValueRef::ValueRef<int>* vref) {
+    return GetNamedValueRefManager().RegisterValueRef(nameref, move(std::unique_ptr<const ValueRef::ValueRef<int>>(vref)));
 }
 
 template <>
-void RegisterValueRef(const ValueRef::ValueRef<std::string>* nameref, const ValueRef::ValueRef<double>* vref) {
-    GetNamedValueRefManager().RegisterValueRef(nameref, move(std::unique_ptr<const ValueRef::ValueRef<double>>(vref)));
+std::string RegisterValueRef(const ValueRef::ValueRef<std::string>* nameref, const ValueRef::ValueRef<double>* vref) {
+    return GetNamedValueRefManager().RegisterValueRef(nameref, move(std::unique_ptr<const ValueRef::ValueRef<double>>(vref)));
 }
 
 

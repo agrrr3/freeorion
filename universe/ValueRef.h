@@ -140,7 +140,7 @@ public:
 
     //! Register the @p value_ref under the evaluated @p name.
     template <typename T>
-    void RegisterValueRef(const ValueRef::ValueRef<std::string>* name, std::unique_ptr<T> vref);
+    std::string RegisterValueRef(const ValueRef::ValueRef<std::string>* name, std::unique_ptr<T> vref);
     //void RegisterValueRef(const ValueRef::ValueRef<std::string>* nameref, const std::unique_ptr<ValueRef::AnyValueRef> value_ref);
 
 private:
@@ -162,22 +162,14 @@ FO_COMMON_API auto GetAnyValueRef(const std::string& name) -> const ValueRef::An
 
 template <typename T>
 FO_COMMON_API auto GetValueRef(const std::string& name) -> const ValueRef::ValueRef<T>*;
-//! Register the ValueRef object @p vref under the given @p name.
-//FO_COMMON_API void RegisterValueRef(const std::string& name, const ValueRef::AnyValueRef* vref);
 
 
-//! Register a copy of the ValueRef object @p vref under the evaluated @p name.
+//! Register and take possesion of the ValueRef object @p vref under the evaluated @p name.
+//FO_COMMON_API void RegisterValueRef(const ValueRef::ValueRef<std::string>* name, const ValueRef::AnyValueRef* vref); // worked once upon a time
+FO_COMMON_API void RegisterAnyValueRef(const ValueRef::ValueRef<std::string>* name, const ValueRef::AnyValueRef* vref);// -> std::string;
+
+//! Register and take possesion of the ValueRef object @p vref under the evaluated @p name.
 template <typename T>
-FO_COMMON_API void RegisterValueRef(const ValueRef::ValueRef<std::string>* name, const T* vref);
-
-
-//FO_COMMON_API void RegisterValueRef(const ValueRef::ValueRef<std::string>* name, const std::unique_ptr<ValueRef::AnyValueRef> vref); // TODO
-
-// undefined reference to `void RegisterValueRef<ValueRef::ValueRef<double> >(
-//                                  ValueRef::ValueRef<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > const*,
-//                                                                               ValueRef::ValueRef<double> const*)'
-/*template <>
-FO_COMMON_API void RegisterValueRef(const ValueRef::ValueRef<std::string>* name, const ValueRef::ValueRef<double>* vref);
-*/
+FO_COMMON_API auto RegisterValueRef(const ValueRef::ValueRef<std::string>* name, const T* vref) -> std::string;
 
 #endif // _ValueRef_h_

@@ -3,6 +3,7 @@
 #include "Parse.h"
 #include "MovableEnvelope.h"
 #include "../universe/ValueRef.h"
+#include "../universe/ValueRefs.h"
 
 #include <boost/spirit/include/phoenix.hpp>
 
@@ -89,6 +90,9 @@ parse::double_parser_rules::double_parser_rules(
     using phoenix::new_;
     using phoenix::static_cast_;
 
+    using phoenix::construct;
+    const std::string TOK_SHP_BLABLA{"SHP_DEUTERIUM_TANK_EFFECT_MULT"};
+    //qi::_a_type _a;
     qi::_1_type _1;
     qi::_2_type _2;
     qi::_3_type _3;
@@ -125,9 +129,16 @@ parse::double_parser_rules::double_parser_rules(
              >  label(tok.Name_) > string_grammar
              >  label(tok.Value_) > primary_expr.alias()
           ) [
-              // Register the value ref under the given name by lazy invoking RegisterValueRef using the pointers inside the MovableEnvelopes without opening yet
-             phoenix::bind(&RegisterValueRef<ValueRef::ValueRef<double>>, get_pointer_(_2), get_pointer_(_3)),
-             _val = _3
+             /*              // Register the value ref under the given name by lazy invoking RegisterValueRef
+             _a = phoenix::bind(&RegisterValueRef<ValueRef::ValueRef<double>>, deconstruct_movable_(_2), deconstruct_movable_(_3)),
+             // use the returned registered name to construct a NamedRef
+             _val = construct_movable_(new_<ValueRef::NamedRef<double>>(_a) )*/
+             //_val = construct_movable_(new_<ValueRef::NamedRef<double>>(phoenix::bind(&RegisterValueRef<ValueRef::ValueRef<double>>, deconstruct_movable_(_2), deconstruct_movable_(_3))))
+             //             phoenix::bind(&::RegisterValueRef<ValueRef::ValueRef<double>>, deconstruct_movable_(_2), deconstruct_movable_(_3)),
+             //             _val = construct_movable_(new_<ValueRef::NamedRef<double>>("SHP_DEUTERIUM_TANK_EFFECT_MULT")))
+             phoenix::bind(&RegisterAnyValueRef, deconstruct_movable_(_2), deconstruct_movable_(_3)),
+             _val = construct_movable_(new_<ValueRef::NamedRef<double>>(construct<std::string>(TOK_SHP_BLABLA)))
+             //_val = _3 // FIXME TODO
           ]
         ;
 

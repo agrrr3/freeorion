@@ -1398,6 +1398,17 @@ T NamedRef<T>::Eval(const ScriptingContext& context) const
     return m_value_ref->Eval(context);
 }
 */
+template <typename T>
+const ValueRef<T>* NamedRef<T>::GetValueRef() const
+{
+    return ::GetValueRef<T>(m_value_ref_name);
+}
+
+template <>
+const ValueRef<double>* NamedRef<double>::GetValueRef() const
+{
+    return ::GetValueRef<double>(m_value_ref_name);
+}
 
 ///////////////////////////////////////////////////////////
 // ComplexVariable                                       //
@@ -1675,14 +1686,19 @@ int ComplexVariable<int>::Eval(const ScriptingContext& context) const
         if (!m_string_ref1)
             return 0;
         std::string rule_name = m_string_ref1->Eval();
-        if (rule_name.empty())
-            return 0;
-        if (!m_int_ref1) {
-            ErrorLogger() << "Named value ref is not part of the ComplexVariable";
-            // could look it up            - auto vref = GetValueRef(rule_name);
-            // but AnyValueRef has no Eval - if (vref) return vref->Eval();
+        if (rule_name.empty()) {
+            ErrorLogger() << "Named ComplexVariable was given an empty name instead of a registered value ref name";
             return 0;
         }
+        if (!m_int_ref1) {
+            ErrorLogger() << "Named value ref is not part of the ComplexVariable - fetch registered one";
+            // could look it up            - auto vref = GetValueRef(rule_name);
+            // but AnyValueRef has no Eval - if (vref) return vref->Eval();
+            auto* vref = ::GetValueRef<int>(rule_name);
+            if (vref) return vref->Eval();
+            return 0;
+        }
+        InfoLogger() << "Named value ref for " << rule_name << " is inside ComplexVariable - no need to check register";
         int value = m_int_ref1->Eval();
         return value;
     }
