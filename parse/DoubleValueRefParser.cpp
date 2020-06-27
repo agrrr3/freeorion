@@ -129,16 +129,9 @@ parse::double_parser_rules::double_parser_rules(
              >  label(tok.Name_) > string_grammar
              >  label(tok.Value_) > primary_expr.alias()
           ) [
-             /*              // Register the value ref under the given name by lazy invoking RegisterValueRef
-             _a = phoenix::bind(&RegisterValueRef<ValueRef::ValueRef<double>>, deconstruct_movable_(_2), deconstruct_movable_(_3)),
-             // use the returned registered name to construct a NamedRef
-             _val = construct_movable_(new_<ValueRef::NamedRef<double>>(_a) )*/
-             //_val = construct_movable_(new_<ValueRef::NamedRef<double>>(phoenix::bind(&RegisterValueRef<ValueRef::ValueRef<double>>, deconstruct_movable_(_2), deconstruct_movable_(_3))))
-             //             phoenix::bind(&::RegisterValueRef<ValueRef::ValueRef<double>>, deconstruct_movable_(_2), deconstruct_movable_(_3)),
-             //             _val = construct_movable_(new_<ValueRef::NamedRef<double>>("SHP_DEUTERIUM_TANK_EFFECT_MULT")))
+             // Register the value ref under the given name by lazy invoking RegisterValueRef
              phoenix::bind(&RegisterAnyValueRef, deconstruct_movable_(_2), deconstruct_movable_(_3)),
              _val = construct_movable_(new_<ValueRef::NamedRef<double>>(construct<std::string>(TOK_SHP_BLABLA)))
-             //_val = _3 // FIXME TODO
           ]
         ;
 
