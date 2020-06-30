@@ -6,6 +6,9 @@
 #include "ScriptingContext.h"
 #include "../util/Export.h"
 
+// XXX
+#include "../parse/MovableEnvelope.h"
+
 
 namespace ValueRef {
 
@@ -105,18 +108,18 @@ class NamedValueRefManager {
 public:
     //using container_type = std::map<const std::string, const std::unique_ptr<ValueRef::AnyValueRef>>;
     using key_type = std::string;
-    using value_type = std::unique_ptr<const ValueRef::AnyValueRef>;
+    using value_type = std::unique_ptr<ValueRef::AnyValueRef>;
     using container_type = std::map<key_type, value_type>;
     using iterator = container_type::const_iterator;
 
     //! Returns the ValueRef with the name @p name or nullptr if there is nov ValueRef with such a name or of the wrong type
     //! use the free function GetValueRef(...) instead, mainly to save some typing.
     template <typename T>
-    auto GetValueRef(const std::string& name) -> const ValueRef::ValueRef<T>*;
+    auto GetValueRef(const std::string& name) -> ValueRef::ValueRef<T>*;
 
     //! Returns the ValueRef with the name @p name; you should use the
     //! free function GetValueRef(...) instead, mainly to save some typing.
-    auto GetAnyValueRef(const std::string& name) const -> const ValueRef::AnyValueRef*;
+    auto GetAnyValueRef(const std::string& name) const -> ValueRef::AnyValueRef*;
 
     auto NumNamedValueRefs() const -> std::size_t { return m_value_refs.size(); }
 
@@ -140,7 +143,7 @@ public:
 
     //! Register the @p value_ref under the evaluated @p name.
     template <typename T>
-    std::string RegisterValueRef(const ValueRef::ValueRef<std::string>* name, std::unique_ptr<T> vref);
+    std::string RegisterValueRef(std::string name, std::unique_ptr<T> vref);
     //void RegisterValueRef(const ValueRef::ValueRef<std::string>* nameref, const std::unique_ptr<ValueRef::AnyValueRef> value_ref);
 
 private:
@@ -158,21 +161,83 @@ FO_COMMON_API auto GetNamedValueRefManager() -> NamedValueRefManager&;
 
 //! Returns the ValueRef object registered with the given
 //! @p name.  If no such ValueRef exists, nullptr is returned instead.
-FO_COMMON_API auto GetAnyValueRef(const std::string& name) -> const ValueRef::AnyValueRef*;
+FO_COMMON_API auto GetAnyValueRef(const std::string& name) -> ValueRef::AnyValueRef*;
 
 template <typename T>
-FO_COMMON_API auto GetValueRef(const std::string& name) -> const ValueRef::ValueRef<T>*;
+FO_COMMON_API auto GetValueRef(const std::string& name) -> ValueRef::ValueRef<T>*;
 
 
 //! Register and take possesion of the ValueRef object @p vref under the evaluated @p name.
 //FO_COMMON_API void RegisterValueRef(const ValueRef::ValueRef<std::string>* name, const ValueRef::AnyValueRef* vref); // worked once upon a time
-FO_COMMON_API void RegisterAnyValueRef(const ValueRef::ValueRef<std::string>* name, const ValueRef::AnyValueRef* vref);// -> std::string;
+FO_COMMON_API void RegisterAnyValueRef(ValueRef::ValueRef<std::string>* name, ValueRef::AnyValueRef* vref);// -> std::string;
 
 //! Register and take possesion of the ValueRef object @p vref under the evaluated @p name.
 template <typename T>
-FO_COMMON_API auto RegisterValueRef(const ValueRef::ValueRef<std::string>* name, const T* vref) -> std::string;
+FO_COMMON_API auto RegisterValueRef(ValueRef::ValueRef<std::string>* name, T* vref) -> std::string;
 
 template <typename T>
 FO_COMMON_API auto RegisterValueRefT(std::unique_ptr<ValueRef::ValueRef<std::string>> name, std::unique_ptr<T> vref) -> std::string;
+
+
+/*
+undefined reference to `
+std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > 
+    RegisterValueRefU<ValueRef::ValueRef<double> >(std::unique_ptr<ValueRef::ValueRef<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::default_delete<ValueRef::ValueRef<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >&&, std::unique_ptr<ValueRef::ValueRef<double>, std::default_delete<ValueRef::ValueRef<double> > >&&)'
+*/
+template <typename T>
+//FO_COMMON_API auto RegisterValueRefU(std::unique_ptr<ValueRef::ValueRef<std::string>>&& name, std::unique_ptr<T>&& vref) -> std::string;
+FO_COMMON_API std::string RegisterValueRefU(/*std::unique_ptr<ValueRef::ValueRef<std::string>>&& nameref*/std::string name, std::unique_ptr<T>&& vref) {
+    return GetNamedValueRefManager().RegisterValueRef<T>(name, move(vref));
+}
+
+namespace parse {
+    namespace detail {
+        struct FO_COMMON_API open_and_register {
+            using result_type = void;
+
+            template <typename T>
+            void operator() (::parse::detail::MovableEnvelope<ValueRef::ValueRef<std::string>>&& nameref, ::parse::detail::MovableEnvelope<T>&& obj, bool& pass) const
+            {
+                if (nameref.IsEmptiedEnvelope() || obj.IsEmptiedEnvelope()) {
+                    ErrorLogger() <<
+                        "The parser attempted to extract the unique_ptr from a MovableEnvelope more than once - while looking at a name envelope and a valueref envelope for use in ValueRef registration ";
+                    pass = false;
+                    return;
+                }
+
+                ::RegisterValueRefU<T>(nameref.OpenEnvelope(pass)->Eval(), std::move(obj.OpenEnvelope(pass)));
+            }
+
+            template <typename T>
+            void operator() (::parse::detail::MovableEnvelope<ValueRef::ValueRef<std::string>>& nameref, ::parse::detail::MovableEnvelope<T>& obj, bool& pass) const
+            {   //TODO error handling
+                ::RegisterValueRefU<T>(nameref.OpenEnvelope(pass)->Eval(), std::move(obj.OpenEnvelope(pass)));
+            }
+        };
+
+        struct FO_COMMON_API open_val_and_register {
+            using result_type = void;
+
+            template <typename T>
+            void operator() (::parse::detail::MovableEnvelope<ValueRef::ValueRef<std::string>>&& nameref, ::parse::detail::MovableEnvelope<T>&& obj, bool& pass) const
+            {
+                if (nameref.IsEmptiedEnvelope() || obj.IsEmptiedEnvelope()) {
+                    ErrorLogger() <<
+                        "The parser attempted to extract the unique_ptr from a MovableEnvelope more than once - while looking at a name envelope and a valueref envelope for use in ValueRef registration ";
+                    pass = false;
+                    return;
+                }
+
+                ::RegisterValueRefU<T>(nameref.GetOriginalObj()->Eval(), std::move(obj.OpenEnvelope(pass)));
+            }
+
+            template <typename T>
+            void operator() (::parse::detail::MovableEnvelope<ValueRef::ValueRef<std::string>>& nameref, ::parse::detail::MovableEnvelope<T>& obj, bool& pass) const
+            {   //TODO error handling
+                ::RegisterValueRefU<T>(nameref.GetOriginalObj()->Eval(), std::move(obj.OpenEnvelope(pass)));
+            }
+        };
+    }
+} // namespace parse
 
 #endif // _ValueRef_h_

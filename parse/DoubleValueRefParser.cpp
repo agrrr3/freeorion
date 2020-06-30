@@ -101,7 +101,8 @@ parse::double_parser_rules::double_parser_rules(
     const boost::phoenix::function<detail::construct_movable> construct_movable_;
     const boost::phoenix::function<detail::deconstruct_movable> deconstruct_movable_;
     const boost::phoenix::function<detail::get_pointer> get_pointer_;
-
+    const boost::phoenix::function<detail::open_and_register> open_and_register_;
+    
     const parse::detail::value_ref_rule<double>& simple = simple_double_rules.simple;
 
     int_constant_cast
@@ -131,8 +132,11 @@ parse::double_parser_rules::double_parser_rules(
           ) [
              // Register the value ref under the given name by lazy invoking RegisterValueRef
              //phoenix::bind(&RegisterAnyValueRef, deconstruct_movable_(_2), deconstruct_movable_(_3)),
-             //             [ u{move(u)} ] { do_something_with( u ); } 
-             phoenix::bind(&RegisterAnyValueRef, get_pointer_(_2), get_pointer_(_3)), // compiles - but what about the unique_ptr%s?
+             //phoenix::bind([ name=std::move( deconstruct_movable_(_2, _pass)) ] { RegisterValueRefT<ValueRef::ValueRef<double>>(name(), nullptr); }), //c++14 generalized lambda // no clue
+             // use result_of protocol
+             open_and_register_(_2, _3, _pass),
+             // phoenix::bind(&RegisterAnyValueRef, get_pointer_(_2), get_pointer_(_3)), // compiles - but what about the unique_ptr%s? - maybe we can release lazily?
+             // 
              //phoenix::bind(&RegisterValueRefT<ValueRef::ValueRef<double>>, deconstruct_movable_(_2, _pass), deconstruct_movable_(_3, _pass)), // think this tries to copy the unique ptr and fails
              _val = construct_movable_(new_<ValueRef::NamedRef<double>>(construct<std::string>(TOK_SHP_BLABLA)))
           ]

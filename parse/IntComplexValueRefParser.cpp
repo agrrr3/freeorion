@@ -33,7 +33,9 @@ namespace parse {
         const boost::phoenix::function<detail::construct_movable> construct_movable_;
         const boost::phoenix::function<detail::deconstruct_movable> deconstruct_movable_;
         const boost::phoenix::function<detail::get_pointer> get_pointer_;
-
+        const boost::phoenix::function<detail::open_and_register> open_and_register_;
+        const boost::phoenix::function<detail::open_val_and_register> open_val_and_register_;
+        
         const std::string TOK_NAMED{"Named"};
         
         game_rule
@@ -48,10 +50,13 @@ namespace parse {
             = (   tok.Named_  >> tok.Integer_
                 > (   (   (  label(tok.Name_) > string_grammar
                         > label(tok.Value_) > int_rules.expr )
-                          [ phoenix::bind(&RegisterValueRef<ValueRef::ValueRef<int>>, get_pointer_(_1), get_pointer_(_2)),
+                          [ //phoenix::bind(&RegisterValueRef<ValueRef::ValueRef<int>>, get_pointer_(_1), get_pointer_(_2)),
                             //_val = construct_movable_(new_<ValueRef::ComplexVariable<int>>(construct<std::string>(TOK_NAMED), deconstruct_movable_(_2, _pass), nullptr, nullptr, /*str*/nullptr, nullptr)) ]
                             // FIXME maybe actually works?
-_val = construct_movable_(new_<ValueRef::ComplexVariable<int>>(construct<std::string>(TOK_NAMED), nullptr, nullptr, nullptr, /*str*/nullptr, nullptr)) ]
+                           open_val_and_register_(_1, _2, _pass),
+                            _val = construct_movable_(new_<ValueRef::ComplexVariable<int>>(construct<std::string>(TOK_NAMED), nullptr, nullptr, nullptr, /*str*/deconstruct_movable_(_1, _pass), nullptr))
+
+                            ]
                       )|( ( label(tok.Name_) > string_grammar
                         > label(tok.Value_) > start.alias() )
                           [ /* FIXME DISABLED for the moment phoenix::bind(&RegisterValueRef<ValueRef::ComplexVariable<int>>, get_pointer_(_1), get_pointer_(_2)),*/ _val = _2 ]
