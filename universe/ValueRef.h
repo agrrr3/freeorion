@@ -129,9 +129,16 @@ public:
     //! iterator to the last + 1th value ref
     FO_COMMON_API auto end() const -> iterator;
 
+    // Singleton
+    NamedValueRefManager&  operator=(NamedValueRefManager const&) =delete; // no copy via assignment
+
+    NamedValueRefManager(NamedValueRefManager const&) =delete;            // no copies via construction
+
+    ~NamedValueRefManager();
+
     //! Returns the instance of this singleton class; you should use the free
     //! function GetNamedValueRefManager() instead
-    static auto GetNamedValueRefManager() -> NamedValueRefManager&;
+    static NamedValueRefManager& GetNamedValueRefManager();
 
     //! Returns a number, calculated from the contained data, which should be
     //! different for different contained data, and must be the same for
@@ -150,8 +157,8 @@ private:
     NamedValueRefManager();
 
     //! Map of ValueRef%s identified by a name
-    //! mutable so that when the parse complete it can be updated.
-    mutable container_type m_value_refs;
+    //??! mutable so that when the parse complete it can be updated.
+    container_type m_value_refs;
 
     static NamedValueRefManager* s_instance;
 };
@@ -181,14 +188,12 @@ FO_COMMON_API auto RegisterValueRefT(std::unique_ptr<ValueRef::ValueRef<std::str
 
 /*
 undefined reference to `
-std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > 
+std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >
     RegisterValueRefU<ValueRef::ValueRef<double> >(std::unique_ptr<ValueRef::ValueRef<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::default_delete<ValueRef::ValueRef<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >&&, std::unique_ptr<ValueRef::ValueRef<double>, std::default_delete<ValueRef::ValueRef<double> > >&&)'
 */
 template <typename T>
 //FO_COMMON_API auto RegisterValueRefU(std::unique_ptr<ValueRef::ValueRef<std::string>>&& name, std::unique_ptr<T>&& vref) -> std::string;
-FO_COMMON_API std::string RegisterValueRefU(/*std::unique_ptr<ValueRef::ValueRef<std::string>>&& nameref*/std::string name, std::unique_ptr<T>&& vref) {
-    return GetNamedValueRefManager().RegisterValueRef<T>(name, move(vref));
-}
+FO_COMMON_API std::string RegisterValueRefU(/*std::unique_ptr<ValueRef::ValueRef<std::string>>&& nameref*/std::string name, std::unique_ptr<T>&& vref);
 
 namespace parse {
     namespace detail {
