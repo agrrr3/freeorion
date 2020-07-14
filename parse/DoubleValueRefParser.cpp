@@ -92,7 +92,6 @@ parse::double_parser_rules::double_parser_rules(
 
     using phoenix::construct;
     const std::string TOK_SHP_BLABLA{"SHP_DEUTERIUM_TANK_EFFECT_MULT"};
-    //qi::_a_type _a;
     qi::_1_type _1;
     qi::_2_type _2;
     qi::_3_type _3;
@@ -131,14 +130,8 @@ parse::double_parser_rules::double_parser_rules(
              >  label(tok.Value_) > primary_expr.alias()
           ) [
              // Register the value ref under the given name by lazy invoking RegisterValueRef
-             //phoenix::bind(&RegisterAnyValueRef, deconstruct_movable_(_2), deconstruct_movable_(_3)),
-             //phoenix::bind([ name=std::move( deconstruct_movable_(_2, _pass)) ] { RegisterValueRefT<ValueRef::ValueRef<double>>(name(), nullptr); }), //c++14 generalized lambda // no clue
-             // use result_of protocol
              open_and_register_(_2, _3, _pass),
-             // phoenix::bind(&RegisterAnyValueRef, get_pointer_(_2), get_pointer_(_3)), // compiles - but what about the unique_ptr%s? - maybe we can release lazily?
-             // 
-             //phoenix::bind(&RegisterValueRefT<ValueRef::ValueRef<double>>, deconstruct_movable_(_2, _pass), deconstruct_movable_(_3, _pass)), // think this tries to copy the unique ptr and fails
-             _val = construct_movable_(new_<ValueRef::NamedRef<double>>(construct<std::string>(TOK_SHP_BLABLA)))
+             _val = construct_movable_(new_<ValueRef::NamedRef<double>>(construct<std::string>(TOK_SHP_BLABLA))) // FIXME
           ]
         ;
 

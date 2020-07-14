@@ -1388,25 +1388,17 @@ std::string Statistic<std::string>::Eval(const ScriptingContext& context) const
 ///////////////////////////////////////////////////////////
 // NamedRef                                               //
 ///////////////////////////////////////////////////////////
-/*template <T>
-T NamedRef<T>::Eval(const ScriptingContext& context) const
-{
-    const ValueRef::ValueRef<T>* value_ref NamedValueRefManager::GetValueRef<T>(m_value_ref_name);
-    if (!value_ref)
-        return T();
-    
-    return m_value_ref->Eval(context);
-}
-*/
 template <typename T>
 const ValueRef<T>* NamedRef<T>::GetValueRef() const
 {
+    InfoLogger() << "ValueRefs::GetValueRef<T> look for registered valueref for \"" << m_value_ref_name << '"';
     return ::GetValueRef<T>(m_value_ref_name);
 }
 
 template <>
 const ValueRef<double>* NamedRef<double>::GetValueRef() const
 {
+    InfoLogger() << "ValueRefs::GetValueRef<double> look for registered valueref for \"" << m_value_ref_name << '"';
     return ::GetValueRef<double>(m_value_ref_name);
 }
 
@@ -1687,7 +1679,7 @@ int ComplexVariable<int>::Eval(const ScriptingContext& context) const
             return 0;
         std::string rule_name = m_string_ref1->Eval();
         if (rule_name.empty()) {
-            ErrorLogger() << "Named ComplexVariable was given an empty name instead of a registered value ref name";
+            ErrorLogger() << "Named ComplexVariable<int> was given an empty name instead of a registered value ref name";
             return 0;
         }
         if (!m_int_ref1) {
@@ -1698,7 +1690,7 @@ int ComplexVariable<int>::Eval(const ScriptingContext& context) const
             if (vref) return vref->Eval();
             return 0;
         }
-        InfoLogger() << "Named value ref for " << rule_name << " is inside ComplexVariable - no need to check register";
+        InfoLogger() << "Named value ref for " << rule_name << " is inside ComplexVariable<int> - no need to check register";
         int value = m_int_ref1->Eval();
         return value;
     }

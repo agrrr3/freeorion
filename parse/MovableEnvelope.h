@@ -222,35 +222,6 @@ namespace parse { namespace detail {
         { return obj.GetOriginalObj(); }
     };
 
-    // TODO move this to the right module (has dependency on ValueRef.h)
-    /** \p open_and_register is a functor that opens the given envelopes and passes those to the RegisterValueRef */
-        /*    struct open_and_register {
-        //phoenix::bind([ name=std::move( deconstruct_movable_(_2, _pass)) ] { RegisterValueRefT<ValueRef::ValueRef<double>>(name(), nullptr); }), //c++14 generalized lambda // no clue
-        using result_type = void;
-
-        template <typename T>
-        void operator() (MovableEnvelope<ValueRef::ValueRef<std::string>>&& nameref, MovableEnvelope<T>&& obj, bool& pass) const
-        {
-            // TODO error handling
-            //            std::unique_ptr<ValueRef::ValueRef<std::string>> valueref_name(std::move(nameref.OpenEnvelope(pass));
-            if (nameref.IsEmptiedEnvelope() || obj.IsEmptiedEnvelope()) {
-                ErrorLogger() <<
-                    "The parser attempted to extract the unique_ptr from a MovableEnvelope more than once - while looking at a name envelope and a valueref envelope for use in ValueRef registration ";
-                pass = false;
-                return;
-            }
-
-            ::RegisterValueRefT<ValueRef::ValueRef<double>>(std::move(nameref.OpenEnvelope(pass)), std::move(obj.OpenEnvelope(pass)));
-        }
-
-        template <typename T>
-        void operator() (MovableEnvelope<ValueRef::ValueRef<std::string>>& nameref, MovableEnvelope<T>& obj, bool& pass) const
-        {   //TODO error handling
-            ::RegisterValueRefT<ValueRef::ValueRef<double>>(std::move(nameref.OpenEnvelope(pass)), std::move(obj.OpenEnvelope(pass)));
-        }
-    };
-        */
-        
     /** Free functions converting containers of MovableEnvelope to unique_ptrs. */
     template <typename T>
     std::vector<std::unique_ptr<T>> OpenEnvelopes(const std::vector<MovableEnvelope<T>>& envelopes, bool& pass) {

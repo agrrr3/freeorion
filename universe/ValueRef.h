@@ -151,13 +151,11 @@ public:
     //! Register the @p value_ref under the evaluated @p name.
     template <typename T>
     std::string RegisterValueRef(std::string name, std::unique_ptr<T> vref);
-    //void RegisterValueRef(const ValueRef::ValueRef<std::string>* nameref, const std::unique_ptr<ValueRef::AnyValueRef> value_ref);
 
 private:
     NamedValueRefManager();
 
     //! Map of ValueRef%s identified by a name
-    //??! mutable so that when the parse complete it can be updated.
     container_type m_value_refs;
 
     static NamedValueRefManager* s_instance;
@@ -173,27 +171,9 @@ FO_COMMON_API auto GetAnyValueRef(const std::string& name) -> ValueRef::AnyValue
 template <typename T>
 FO_COMMON_API auto GetValueRef(const std::string& name) -> ValueRef::ValueRef<T>*;
 
-
-//! Register and take possesion of the ValueRef object @p vref under the evaluated @p name.
-//FO_COMMON_API void RegisterValueRef(const ValueRef::ValueRef<std::string>* name, const ValueRef::AnyValueRef* vref); // worked once upon a time
-FO_COMMON_API void RegisterAnyValueRef(ValueRef::ValueRef<std::string>* name, ValueRef::AnyValueRef* vref);// -> std::string;
-
-//! Register and take possesion of the ValueRef object @p vref under the evaluated @p name.
+//! Register and take possesion of the ValueRef object @p vref under the given @p name.
 template <typename T>
-FO_COMMON_API auto RegisterValueRef(ValueRef::ValueRef<std::string>* name, T* vref) -> std::string;
-
-template <typename T>
-FO_COMMON_API auto RegisterValueRefT(std::unique_ptr<ValueRef::ValueRef<std::string>> name, std::unique_ptr<T> vref) -> std::string;
-
-
-/*
-undefined reference to `
-std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >
-    RegisterValueRefU<ValueRef::ValueRef<double> >(std::unique_ptr<ValueRef::ValueRef<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::default_delete<ValueRef::ValueRef<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >&&, std::unique_ptr<ValueRef::ValueRef<double>, std::default_delete<ValueRef::ValueRef<double> > >&&)'
-*/
-template <typename T>
-//FO_COMMON_API auto RegisterValueRefU(std::unique_ptr<ValueRef::ValueRef<std::string>>&& name, std::unique_ptr<T>&& vref) -> std::string;
-FO_COMMON_API std::string RegisterValueRefU(/*std::unique_ptr<ValueRef::ValueRef<std::string>>&& nameref*/std::string name, std::unique_ptr<T>&& vref);
+FO_COMMON_API std::string RegisterValueRef(std::string name, std::unique_ptr<T>&& vref);
 
 namespace parse {
     namespace detail {
@@ -210,13 +190,13 @@ namespace parse {
                     return;
                 }
 
-                ::RegisterValueRefU<T>(nameref.OpenEnvelope(pass)->Eval(), std::move(obj.OpenEnvelope(pass)));
+                ::RegisterValueRef<T>(nameref.OpenEnvelope(pass)->Eval(), std::move(obj.OpenEnvelope(pass)));
             }
 
             template <typename T>
             void operator() (::parse::detail::MovableEnvelope<ValueRef::ValueRef<std::string>>& nameref, ::parse::detail::MovableEnvelope<T>& obj, bool& pass) const
             {   //TODO error handling
-                ::RegisterValueRefU<T>(nameref.OpenEnvelope(pass)->Eval(), std::move(obj.OpenEnvelope(pass)));
+                ::RegisterValueRef<T>(nameref.OpenEnvelope(pass)->Eval(), std::move(obj.OpenEnvelope(pass)));
             }
         };
 
@@ -233,13 +213,13 @@ namespace parse {
                     return;
                 }
 
-                ::RegisterValueRefU<T>(nameref.GetOriginalObj()->Eval(), std::move(obj.OpenEnvelope(pass)));
+                ::RegisterValueRef<T>(nameref.GetOriginalObj()->Eval(), std::move(obj.OpenEnvelope(pass)));
             }
 
             template <typename T>
             void operator() (::parse::detail::MovableEnvelope<ValueRef::ValueRef<std::string>>& nameref, ::parse::detail::MovableEnvelope<T>& obj, bool& pass) const
             {   //TODO error handling
-                ::RegisterValueRefU<T>(nameref.GetOriginalObj()->Eval(), std::move(obj.OpenEnvelope(pass)));
+                ::RegisterValueRef<T>(nameref.GetOriginalObj()->Eval(), std::move(obj.OpenEnvelope(pass)));
             }
         };
     }

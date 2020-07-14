@@ -2448,27 +2448,4 @@ void Operation<T>::serialize(Archive& ar, const unsigned int version)
 
 } // namespace ValueRef
 
-
-// template function generation
-// For accessing NamedValueRefManager - needing definitions from ValueRef.h and ValueRefs.h
-// XXX not sure if necessary
-/*
-template <>
-FO_COMMON_API std::string RegisterValueRef(const ValueRef::ValueRef<std::string>* name, const ValueRef::ComplexVariable<int>* vref);
-template <>
-FO_COMMON_API std::string RegisterValueRef(const ValueRef::ValueRef<std::string>* name, const ValueRef::ValueRef<int>* vref);
-template <>
-FO_COMMON_API std::string RegisterValueRef(const ValueRef::ValueRef<std::string>* name, const ValueRef::ValueRef<double>* vref);
-
-
-// GetValueRef(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)'
-template <>
-FO_COMMON_API const ValueRef::ValueRef<int>* GetValueRef(const std::string& name);
-template <>
-FO_COMMON_API const ValueRef::ValueRef<double>* GetValueRef(const std::string& name);
-*/
-//template <typename T> const ValueRef::ValueRef<T>* GetValueRef(const std::string& name)
-//template <typename T>  FO_COMMON_API auto          GetValueRef(const std::string& name) -> const ValueRef::ValueRef<T>*;
-
-
 #endif // _ValueRefs_h_
