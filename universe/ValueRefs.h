@@ -131,14 +131,13 @@ private:
     void serialize(Archive& ar, const unsigned int version);
 };
 
-/** The variable NamedValueRef class. Looks up a named ValueRef from the NamedValueRefManager
+/** The NamedRef class. Looks up a named ValueRef from the NamedValueRefManager
   */
 template <typename T>
 struct FO_COMMON_API NamedRef final : public ValueRef<T>
 {
-    //NamedRef(const char* value_ref_name);
     NamedRef(const std::string& value_ref_name);
-    
+
     const ValueRef<T>* GetValueRef() const;
 
     bool operator==(const ValueRef<T>& rhs) const override;
@@ -811,12 +810,6 @@ bool NamedRef<T>::operator==(const ValueRef<T>& rhs) const
     const NamedRef<T>& rhs_ = static_cast<const NamedRef<T>&>(rhs);
     return (m_value_ref_name == rhs_.m_value_ref_name);
 }
-
-/*
-template <>
-const ValueRef<double>* NamedRef<double>::GetValueRef() const;
-//{    return ::GetValueRef<double>(m_value_ref_name); }
-*/
 
 template <typename T>
 bool NamedRef<T>::RootCandidateInvariant() const
