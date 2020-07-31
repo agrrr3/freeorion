@@ -22,6 +22,7 @@ namespace parse {
 
         using phoenix::construct;
         using phoenix::new_;
+	qi::_a_type _a;
         qi::_1_type _1;
         qi::_2_type _2;
         qi::_3_type _3;
@@ -48,10 +49,11 @@ namespace parse {
         named_valueref_rule
             = (   tok.Named_  >> tok.Integer_
                 > (   (   (  label(tok.Name_) > string_grammar
-                        > label(tok.Value_) > int_rules.expr )
+                        > label(tok.Value_) > qi::as<parse::detail::MovableEnvelope<ValueRef::ValueRef<int>>>()[int_rules.expr] )
                           [
-                            open_val_and_register_(_1, _2, _pass),
-                            _val = construct_movable_(new_<ValueRef::ComplexVariable<int>>(construct<std::string>(TOK_NAMED), nullptr, nullptr, nullptr, /*str*/deconstruct_movable_(_1, _pass), nullptr))
+			   //_a = construct_movable_(open_val_and_register_(_1, _2, _pass)),
+			   //_a = construct_movable_(new_<ValueRef::ComplexVariable<int>>(construct<std::string>(TOK_NAMED), nullptr, nullptr, nullptr, /*str*/deconstruct_movable_(_1, _pass), nullptr)),
+			   _val = nullptr
                           ]
                       )|( ( label(tok.Name_) > string_grammar
                         > label(tok.Value_) > start.alias() )

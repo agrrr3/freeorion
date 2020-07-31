@@ -837,8 +837,7 @@ std::string NamedRef<T>::Dump(unsigned short ntabs) const
 
 template <typename T>
 void NamedRef<T>::SetTopLevelContent(const std::string& content_name)
-// { if ( GetValueRef() ) GetValueRef()->SetTopLevelContent(content_name); } // TODO decide what to do. also setter does not fit to const return of GetValueRef
-{}
+{}//{ if ( GetValueRef() ) GetValueRef()->SetTopLevelContent(content_name); } // TODO decide what to do. also setter does not fit to const return of GetValueRef
 
 template <typename T>
 unsigned int NamedRef<T>::GetCheckSum() const
