@@ -668,14 +668,14 @@ EXTINCT_SPECIES = [
 
 # <editor-fold desc="Piloting traits">
 # TODO (Morlic): Consider using only 1 dict with tuple for (Capacity, SecondaryStat) effects
-PILOT_DAMAGE_MODIFIER_DICT = {
+PILOT_DAMAGE_MODIFIER_DICT = {trait: tuple({weapon_name: damage * SHIP_WEAPON_DAMAGE_FACTOR for weapon_name, damage in part_damage.items()}.items()) for trait, part_damage in {
     # TRAIT:    {weapon_name: effect, weapon_name2: effect2,...}
     "NO":       {},
     "BAD":      {"SR_WEAPON_1_1": -1, "SR_WEAPON_2_1": -2, "SR_WEAPON_3_1": -3, "SR_WEAPON_4_1": -5},
     "GOOD":     {"SR_WEAPON_1_1":  1, "SR_WEAPON_2_1":  2, "SR_WEAPON_3_1":  3, "SR_WEAPON_4_1": 5},
     "GREAT":    {"SR_WEAPON_1_1":  2, "SR_WEAPON_2_1":  4, "SR_WEAPON_3_1":  6, "SR_WEAPON_4_1": 10},
     "ULTIMATE": {"SR_WEAPON_1_1":  3, "SR_WEAPON_2_1":  6, "SR_WEAPON_3_1":  9, "SR_WEAPON_4_1": 15, "SR_WEAPON_0_1": 1},
-}
+}.items()}
 
 PILOT_ROF_MODIFIER_DICT = {
     # TRAIT:    {weapon_name: effect, weapon_name2: effect2,...}
@@ -686,7 +686,7 @@ PILOT_ROF_MODIFIER_DICT = {
     "ULTIMATE": {"SR_WEAPON_0_1": 3},
 }
 
-PILOT_FIGHTERDAMAGE_MODIFIER_DICT = {
+PILOT_FIGHTERDAMAGE_MODIFIER_DICT = {trait: tuple({weapon_name: damage * FIGHTER_DAMAGE_FACTOR for weapon_name, damage in part_damage.items()}.items()) for trait, part_damage in {
     # TRAIT:    {hangar_name: effect, hangar_name2: effect2,...}
     # TODO FT_HANGAR_1 fighters are not able to attack ships so pilot damage modifier does not apply
     "NO":       {},
@@ -694,7 +694,7 @@ PILOT_FIGHTERDAMAGE_MODIFIER_DICT = {
     "GOOD":     {"FT_HANGAR_1":  0, "FT_HANGAR_2":  1, "FT_HANGAR_3":  1, "FT_HANGAR_4": 1},
     "GREAT":    {"FT_HANGAR_1":  0, "FT_HANGAR_2":  2, "FT_HANGAR_3":  2, "FT_HANGAR_4": 2},
     "ULTIMATE": {"FT_HANGAR_1":  0, "FT_HANGAR_2":  3, "FT_HANGAR_3":  3, "FT_HANGAR_4": 3},
-}
+}.items()}
 
 PILOT_FIGHTER_CAPACITY_MODIFIER_DICT = {
     # TRAIT:    {hangar_name: effect, hangar_name2: effect2,...}
