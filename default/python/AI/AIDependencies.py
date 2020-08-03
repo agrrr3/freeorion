@@ -21,7 +21,7 @@ Example usage:
 """
 import freeOrionAIInterface as fo  # interface used to interact with FreeOrion AI client  # pylint: disable=import-error
 
-from typing import Dict, Tuple
+from typing import Dict
 
 # Note re common dictionary lookup structure, "PlanetSize-Dependent-Lookup":
 # Many dictionaries herein (a prime example being the building_supply dictionary) have a primary key (such as
@@ -711,6 +711,7 @@ HANGAR_LAUNCH_CAPACITY_MODIFIER_DICT = {
     # hangar_name: {bay_name: ((tech_name, effect), ...), bay_name2: ((tech_name, effect), ...}
     "FT_HANGAR_1": {"FT_BAY_1": (("SHP_FIGHTERS_1", 1), ("SHP_FIGHTERS_2", 1), ("SHP_FIGHTERS_3", 1), ("SHP_FIGHTERS_4", 1))},
 }
+
 
 def _scale_part_damage(part_damage: Dict[str, int], factor: float) -> Dict[str, float]:
     scaled_part_damage = {
