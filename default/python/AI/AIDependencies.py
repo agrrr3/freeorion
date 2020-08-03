@@ -713,11 +713,16 @@ HANGAR_LAUNCH_CAPACITY_MODIFIER_DICT = {
 }
 
 def _scale_part_damage(part_damage: Dict[str, int], factor: float) -> Dict[str, float]:
-    return { weapon_name: (damage * factor) for weapon_name, damage in part_damage.items() };
+    scaled_part_damage = {
+        weapon_name: (damage * factor) for weapon_name, damage in part_damage.items()
+    }
+    return scaled_part_damage
+
 
 PILOT_DAMAGE_MODIFIER_DICT = {
     trait: _scale_part_damage(part_damage, SHIP_WEAPON_DAMAGE_FACTOR) for trait, part_damage in PILOT_DAMAGE_UNSCALED_MODIFIER_DICT.items()
 }
+
 PILOT_FIGHTERDAMAGE_MODIFIER_DICT = {
     trait: _scale_part_damage(part_damage, FIGHTER_DAMAGE_FACTOR) for trait, part_damage in PILOT_FIGHTERDAMAGE_UNSCALED_MODIFIER_DICT.items()
 }
