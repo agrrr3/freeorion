@@ -1,0 +1,5 @@
+NamedInteger name = "Fupsel" value = 1
+
+NamedInteger name = "Schupsel" value = (3 * 3)
+
+NamedInteger name = "QWERT_ZU" value = 7

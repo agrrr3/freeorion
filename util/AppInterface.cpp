@@ -60,6 +60,13 @@ void IApp::StartBackgroundParsing() {
         return;
     }
 
+    // named value ref parsing can be done in parallel as the referencing happens after parsing
+    if (fs::exists(rdir / "scripting/common")) {
+        GetNamedValueRefManager().SetNamedValueRefs(Pending::StartParsing(parse::named_value_refs, rdir / "scripting/common"));
+        ErrorLogger() << "Background parse path for NamedValueRefs does exist: " << (rdir / "scripting/common").string();
+    } else
+        ErrorLogger() << "Background parse path doesn't exist: " << (rdir / "scripting/common").string();
+
     if (fs::exists(rdir / "scripting/buildings"))
         GetBuildingTypeManager().SetBuildingTypes(Pending::StartParsing(parse::buildings, rdir / "scripting/buildings"));
     else

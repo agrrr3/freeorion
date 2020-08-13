@@ -110,6 +110,7 @@ public:
     using key_type = std::string;
     using value_type = std::unique_ptr<ValueRef::AnyValueRef>;
     using container_type = std::map<key_type, value_type>;
+
     using iterator = container_type::const_iterator;
 
     //! Returns the ValueRef with the name @p name or nullptr if there is nov ValueRef with such a name or of the wrong type
@@ -136,6 +137,9 @@ public:
 
     ~NamedValueRefManager();
 
+    /** Sets named value refs to the value of \p future. */
+    FO_COMMON_API void SetNamedValueRefs(Pending::Pending<container_type>&& future);
+
     //! Returns the instance of this singleton class; you should use the free
     //! function GetNamedValueRefManager() instead
     static NamedValueRefManager& GetNamedValueRefManager();
@@ -154,6 +158,13 @@ public:
 
 private:
     NamedValueRefManager();
+
+    /** Assigns any m_pending_refs to m_value_refs. */
+    void CheckPendingRefs() const;
+
+    /** Future named value refs being parsed by parser.  mutable so that it can
+        be assigned to m_species_types when completed.*/
+    mutable boost::optional<Pending::Pending<container_type>> m_pending_refs = boost::none;
 
     //! Map of ValueRef%s identified by a name
     container_type m_value_refs;
@@ -201,27 +212,24 @@ namespace parse {
         };
 
         struct FO_COMMON_API open_val_and_register {
-	    using result_type = std::string;
+            using result_type = void;
 
             template <typename T>
-            std::string operator() (::parse::detail::MovableEnvelope<ValueRef::ValueRef<std::string>>&& nameref, ::parse::detail::MovableEnvelope<T>&& obj, bool& pass) const
+            void operator() (::parse::detail::MovableEnvelope<ValueRef::ValueRef<std::string>>&& nameref, ::parse::detail::MovableEnvelope<T>&& obj, bool& pass) const
             {
 	        if (nameref.IsEmptiedEnvelope() || obj.IsEmptiedEnvelope()) {
                     ErrorLogger() <<
                         "The parser attempted to extract the unique_ptr from a MovableEnvelope more than once - while looking at a name envelope and a valueref envelope for use in ValueRef registration ";
                     pass = false;
-                    return "OPEN_VAL_AND_REGISTER_ERROR";
                 }
 
                 ::RegisterValueRef<T>(nameref.GetOriginalObj()->Eval(), std::move(obj.OpenEnvelope(pass)));
-		return nameref.GetOriginalObj()->Eval();
             }
 
             template <typename T>
-            std::string operator() (::parse::detail::MovableEnvelope<ValueRef::ValueRef<std::string>>& nameref, ::parse::detail::MovableEnvelope<T>& obj, bool& pass) const
+            void operator() (::parse::detail::MovableEnvelope<ValueRef::ValueRef<std::string>>& nameref, ::parse::detail::MovableEnvelope<T>& obj, bool& pass) const
             {   //TODO error handling
                 ::RegisterValueRef<T>(nameref.GetOriginalObj()->Eval(), std::move(obj.OpenEnvelope(pass)));
-	        return nameref.GetOriginalObj()->Eval();
             }
         };
     }
