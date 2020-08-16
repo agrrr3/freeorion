@@ -138,8 +138,6 @@ struct FO_COMMON_API NamedRef final : public ValueRef<T>
 {
     NamedRef(const std::string& value_ref_name);
 
-    const ValueRef<T>* GetValueRef() const;
-
     bool operator==(const ValueRef<T>& rhs) const override;
     T  Eval(const ScriptingContext& context) const override;
     bool RootCandidateInvariant() const override;
@@ -151,6 +149,7 @@ struct FO_COMMON_API NamedRef final : public ValueRef<T>
     std::string Dump(unsigned short ntabs = 0) const override;
     void SetTopLevelContent(const std::string& content_name) override;
 
+    const ValueRef<T>* GetValueRef() const;
     unsigned int GetCheckSum() const override;
 
 private:
@@ -840,6 +839,13 @@ void NamedRef<T>::SetTopLevelContent(const std::string& content_name)
 {}//{ if ( GetValueRef() ) GetValueRef()->SetTopLevelContent(content_name); } // TODO decide what to do. also setter does not fit to const return of GetValueRef
 
 template <typename T>
+const ValueRef<T>* NamedRef<T>::GetValueRef() const
+{
+    InfoLogger() << "ValueRefs::GetValueRef<T> look for registered valueref for \"" << m_value_ref_name << '"';
+    return ::GetValueRef<T>(m_value_ref_name);
+}
+
+template <typename T>
 unsigned int NamedRef<T>::GetCheckSum() const
 {
     unsigned int retval{0};
@@ -853,7 +859,7 @@ unsigned int NamedRef<T>::GetCheckSum() const
 template <typename T>
 T NamedRef<T>::Eval(const ScriptingContext& context) const
 {
-    DebugLogger() << "Eval(NamedRef<T>): " << typeid(*this).name();
+    ErrorLogger() << "Eval(NamedRef<T>): " << typeid(*this).name();
     const ValueRef<T>* value_ref = ::GetValueRef<T>(m_value_ref_name);
     if (!value_ref)
         throw std::runtime_error("Referenced unknown ValueRef named '" + m_value_ref_name + "'");

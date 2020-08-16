@@ -1,5 +1,9 @@
+NamedReal name = "SHP_REINFORCED_HULL_BONUS" value = (5 * [[SHIP_STRUCTURE_FACTOR]]) 
+
 NamedInteger name = "Fupsel" value = 1
 
 NamedInteger name = "Schupsel" value = (3 * 3)
 
 NamedInteger name = "QWERT_ZU" value = 7
+
+#include "/scripting/common/misc.macros"

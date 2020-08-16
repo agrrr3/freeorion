@@ -101,7 +101,7 @@ parse::double_parser_rules::double_parser_rules(
     const boost::phoenix::function<detail::deconstruct_movable> deconstruct_movable_;
     const boost::phoenix::function<detail::get_pointer> get_pointer_;
     const boost::phoenix::function<detail::open_and_register> open_and_register_;
-    
+
     const parse::detail::value_ref_rule<double>& simple = simple_double_rules.simple;
 
     int_constant_cast
@@ -142,6 +142,7 @@ parse::double_parser_rules::double_parser_rules(
         =   ('(' > expr > ')')
         |    simple
         |    statistic_expr
+        |    named_lookup_expr
         |    int_statistic_cast
         |    double_complex_grammar
         |    int_constant_cast

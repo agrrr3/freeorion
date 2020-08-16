@@ -103,6 +103,7 @@ namespace parse { namespace detail {
         expression_rule<T>              exponential_expr;
         expression_rule<T>              multiplicative_expr;
         expression_rule<T>              additive_expr;
+        detail::value_ref_rule<T>       named_lookup_expr;
         detail::value_ref_rule<T>       primary_expr;
         detail::value_ref_rule<T>       statistic_value_ref_expr;
         statistic_rule<T>               statistic_collection_expr;

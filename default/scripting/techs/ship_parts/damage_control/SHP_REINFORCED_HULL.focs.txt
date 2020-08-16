@@ -13,7 +13,7 @@ Tech
                 Ship
                 OwnedBy empire = Source.Owner
             ]
-            effects = SetMaxStructure value = Value + NamedInteger name = "SHP_REINFORCED_HULL_BONUS" value = (5 * [[SHIP_STRUCTURE_FACTOR]])
+            effects = SetMaxStructure value = Value + Refinement "SHP_REINFORCED_HULL_BONUS"
     graphic = "icons/tech/structural_integrity_fields.png"
 
 #include "/scripting/common/base_prod.macros"

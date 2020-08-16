@@ -12,6 +12,8 @@
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/phoenix_core.hpp>
 
+#include <typeinfo>
+
 #define DEBUG_PARSERS 0
 
 #if DEBUG_PARSERS
@@ -23,17 +25,21 @@ namespace std {
 
 namespace parse {
 
+  template <typename T>
       void insert_named_ref(std::map<std::string, std::unique_ptr<ValueRef::AnyValueRef>>& named_refs,
                          const std::string& name,
-			 const parse::detail::MovableEnvelope<ValueRef::ValueRef<int>>& int_ref_envelope,
+			 const parse::detail::MovableEnvelope<ValueRef::ValueRef<T>>& ref_envelope,
                          bool& pass)
     {
-       ErrorLogger() << "Registering from named_values.focs.txt : " << name << " !";
+      ErrorLogger() << "Registering from named_values.focs.txt : " << name << " ! ValueRef<" << typeid(T).name() << ">";
        if (true) {
-	 std::unique_ptr<ValueRef::ValueRef<int>> int_ref = std::move(int_ref_envelope.OpenEnvelope(pass));
-         named_refs.emplace(name, std::move(std::unique_ptr<ValueRef::AnyValueRef>(std::move(int_ref))));
+	 ErrorLogger() << "Registering from named_values.focs.txt : opening envelope";
+	 std::unique_ptr<ValueRef::ValueRef<T>> ref = std::move(ref_envelope.OpenEnvelope(pass));
+	 ErrorLogger() << "Registering from named_values.focs.txt : add a AnyValueRef to named_refs map";
+         named_refs.emplace(name, std::move(std::unique_ptr<ValueRef::AnyValueRef>(std::move(ref))));
+	 ErrorLogger() << "Registering from named_values.focs.txt : go on...";
        } else {
-	 ::RegisterValueRef(name, std::move(int_ref_envelope.OpenEnvelope(pass)));
+	 ::RegisterValueRef(name, std::move(ref_envelope.OpenEnvelope(pass)));
        }
     }
 
@@ -50,7 +56,8 @@ namespace parse {
             grammar::base_type(start, "named_value_ref_grammar"),
             condition_parser(tok, label),
             string_grammar(tok, label, condition_parser),
-            int_rules(tok, label, condition_parser, string_grammar)
+            int_rules(tok, label, condition_parser, string_grammar),
+            double_rules(tok, label, condition_parser, string_grammar)
         {
             namespace phoenix = boost::phoenix;
             namespace qi = boost::spirit::qi;
@@ -59,18 +66,26 @@ namespace parse {
             qi::_2_type _2;
             qi::_3_type _3;
             qi::_4_type _4;
-	    qi::_val_type _val;
+            qi::_val_type _val;
             qi::_pass_type _pass;
             qi::omit_type omit_;
             qi::_r1_type _r1;
 	    const boost::phoenix::function<detail::open_val_and_register> open_val_and_register_;
 
             named_ref
-                = ( omit_[tok.Named_]   >> omit_[tok.Integer_]
-                > label(tok.Name_) > tok.string
-                > label(tok.Value_) >  qi::as<parse::detail::MovableEnvelope<ValueRef::ValueRef<int>>>()[int_rules.expr] 
-		    ) [ insert_named_ref_(_r1, _1, _2, _pass) ]
+               = omit_[tok.Named_]   >>
+                    ( omit_[tok.Real_]
+                   > label(tok.Name_) > tok.string
+                   > label(tok.Value_) >  qi::as<parse::detail::MovableEnvelope<ValueRef::ValueRef<double>>>()[double_rules.expr]
+                    ) [ insert_named_ref_(_r1, _1, _2, _pass) ]
+                    |
+	      // FIXME the second branch is broken / gets an "incompletely parsed"
+                    ( omit_[tok.Integer_]
+                   > label(tok.Name_) > tok.string
+                   > label(tok.Value_) >  qi::as<parse::detail::MovableEnvelope<ValueRef::ValueRef<int>>>()[int_rules.expr]
+                    ) [ insert_named_ref_(_r1, _1, _2, _pass) ]
                 ;
+
 
             start
               = +named_ref(_r1)
@@ -96,7 +111,7 @@ namespace parse {
       //const parse::detail::value_ref_grammar<std::string>& string_grammar
         const parse::string_parser_grammar      string_grammar;
         const parse::int_arithmetic_rules       int_rules;  // &
-      //parse::detail::tags_grammar             tags_parser;
+        const parse::double_parser_rules        double_rules;  // &
       //parse::detail::common_params_rules      common_rules;
       //parse::capture_result_enum_grammar      capture_result_enum;
       //parse::detail::rule<CaptureResult ()>   capture;
