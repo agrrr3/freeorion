@@ -25,21 +25,21 @@ namespace std {
 
 namespace parse {
 
-  template <typename T>
-      void insert_named_ref(std::map<std::string, std::unique_ptr<ValueRef::AnyValueRef>>& named_refs,
-                         const std::string& name,
-			 const parse::detail::MovableEnvelope<ValueRef::ValueRef<T>>& ref_envelope,
-                         bool& pass)
+    template <typename T>
+    void insert_named_ref(std::map<std::string, std::unique_ptr<ValueRef::AnyValueRef>>& named_refs,
+                          const std::string& name,
+                          const parse::detail::MovableEnvelope<ValueRef::ValueRef<T>>& ref_envelope,
+                          bool& pass)
     {
-      ErrorLogger() << "Registering from named_values.focs.txt : " << name << " ! ValueRef<" << typeid(T).name() << ">";
-       if (true) {
-	 ErrorLogger() << "Registering from named_values.focs.txt : opening envelope";
-	 std::unique_ptr<ValueRef::ValueRef<T>> ref = std::move(ref_envelope.OpenEnvelope(pass));
-	 ErrorLogger() << "Registering from named_values.focs.txt : add a AnyValueRef to named_refs map";
+        ErrorLogger() << "Registering from named_values.focs.txt : " << name << " ! ValueRef<" << typeid(T).name() << ">";
+        if (true) {
+         ErrorLogger() << "Registering from named_values.focs.txt : opening envelope";
+         std::unique_ptr<ValueRef::ValueRef<T>> ref = std::move(ref_envelope.OpenEnvelope(pass));
+         ErrorLogger() << "Registering from named_values.focs.txt : add a AnyValueRef to named_refs map";
          named_refs.emplace(name, std::move(std::unique_ptr<ValueRef::AnyValueRef>(std::move(ref))));
-	 ErrorLogger() << "Registering from named_values.focs.txt : go on...";
+         ErrorLogger() << "Registering from named_values.focs.txt : go on...";
        } else {
-	 ::RegisterValueRef(name, std::move(ref_envelope.OpenEnvelope(pass)));
+         ::RegisterValueRef(name, std::move(ref_envelope.OpenEnvelope(pass)));
        }
     }
 
@@ -73,8 +73,7 @@ namespace parse {
 	    const boost::phoenix::function<detail::open_val_and_register> open_val_and_register_;
 
             named_ref
-               = 
-	      // FIXME the second branch is broken / gets an "incompletely parsed"
+               =
                     ( omit_[tok.Named_]   >> tok.Integer_
                    > label(tok.Name_) > tok.string
                    > label(tok.Value_) >  qi::as<parse::detail::MovableEnvelope<ValueRef::ValueRef<int>>>()[int_rules.expr]
@@ -106,17 +105,11 @@ namespace parse {
         using start_rule = parse::detail::rule<start_rule_signature>;
 
         parse::detail::Labeller                 label;
-      //      const parse::detail::condition_parser_grammar condition_parser;
         const parse::conditions_parser_grammar  condition_parser;
-      //const parse::detail::value_ref_grammar<std::string>& string_grammar
         const parse::string_parser_grammar      string_grammar;
-        const parse::int_arithmetic_rules       int_rules;  // &
-        const parse::double_parser_rules        double_rules;  // &
-      //parse::detail::common_params_rules      common_rules;
-      //parse::capture_result_enum_grammar      capture_result_enum;
-      //parse::detail::rule<CaptureResult ()>   capture;
-      	named_value_ref_rule                    named_ref;
-      //      parse::detail::rule<void (std::map<std::string, std::unique_ptr<ValueRef::AnyValueRef>>&)> named_ref;
+        const parse::int_arithmetic_rules       int_rules;
+        const parse::double_parser_rules        double_rules;
+        named_value_ref_rule                    named_ref;
         start_rule                              start;
     };
 }
@@ -131,8 +124,8 @@ namespace parse {
         for (const auto& file : ListDir(path, IsFOCScript))
             detail::parse_file<grammar, start_rule_payload>(lexer, file, named_value_refs);
 
-       	for (auto& k_v : named_value_refs )
-		ErrorLogger() << "named_value_refs : " << k_v.first;
+        for (auto& k_v : named_value_refs )
+                ErrorLogger() << "named_value_refs : " << k_v.first;
 
         return named_value_refs;
     }
