@@ -73,17 +73,17 @@ namespace parse {
 	    const boost::phoenix::function<detail::open_val_and_register> open_val_and_register_;
 
             named_ref
-               = omit_[tok.Named_]   >>
-                    ( omit_[tok.Real_]
-                   > label(tok.Name_) > tok.string
-                   > label(tok.Value_) >  qi::as<parse::detail::MovableEnvelope<ValueRef::ValueRef<double>>>()[double_rules.expr]
-                    ) [ insert_named_ref_(_r1, _1, _2, _pass) ]
-                    |
+               = 
 	      // FIXME the second branch is broken / gets an "incompletely parsed"
-                    ( omit_[tok.Integer_]
+                    ( omit_[tok.Named_]   >> tok.Integer_
                    > label(tok.Name_) > tok.string
                    > label(tok.Value_) >  qi::as<parse::detail::MovableEnvelope<ValueRef::ValueRef<int>>>()[int_rules.expr]
-                    ) [ insert_named_ref_(_r1, _1, _2, _pass) ]
+                    ) [ insert_named_ref_(_r1, _2, _3, _pass) ]
+                    |
+                    ( omit_[tok.Named_]   >> tok.Real_
+                   > label(tok.Name_) > tok.string
+                   > label(tok.Value_) >  qi::as<parse::detail::MovableEnvelope<ValueRef::ValueRef<double>>>()[double_rules.expr]
+                    ) [ insert_named_ref_(_r1, _2, _3, _pass) ]
                 ;
 
 
