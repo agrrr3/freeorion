@@ -1676,26 +1676,6 @@ int ComplexVariable<int>::Eval(const ScriptingContext& context) const
         }
         return 0;
     }
-    else if (variable_name == "Named") {
-        if (!m_string_ref1)
-            return 0;
-        std::string rule_name = m_string_ref1->Eval();
-        if (rule_name.empty()) {
-            ErrorLogger() << "Named ComplexVariable<int> was given an empty name instead of a registered value ref name";
-            return 0;
-        }
-        if (!m_int_ref1) {
-            ErrorLogger() << "Named value ref is not part of the ComplexVariable - fetch registered one";
-            // could look it up            - auto vref = GetValueRef(rule_name);
-            // but AnyValueRef has no Eval - if (vref) return vref->Eval();
-            auto* vref = ::GetValueRef<int>(rule_name);
-            if (vref) return vref->Eval();
-            return 0;
-        }
-        InfoLogger() << "Named value ref for " << rule_name << " is inside ComplexVariable<int> - no need to check register";
-        int value = m_int_ref1->Eval();
-        return value;
-    }
     else if (variable_name == "PartsInShipDesign") {
         int design_id = INVALID_DESIGN_ID;
         if (m_int_ref1) {

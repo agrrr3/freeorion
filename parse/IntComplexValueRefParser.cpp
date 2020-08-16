@@ -20,7 +20,6 @@ namespace parse {
         namespace phoenix = boost::phoenix;
         namespace qi = boost::spirit::qi;
 
-        using phoenix::construct;
         using phoenix::new_;
 	qi::_a_type _a;
         qi::_1_type _1;
@@ -32,35 +31,11 @@ namespace parse {
         qi::_pass_type _pass;
         const boost::phoenix::function<detail::construct_movable> construct_movable_;
         const boost::phoenix::function<detail::deconstruct_movable> deconstruct_movable_;
-        const boost::phoenix::function<detail::get_pointer> get_pointer_;
-        const boost::phoenix::function<detail::open_and_register> open_and_register_;
-        const boost::phoenix::function<detail::open_val_and_register> open_val_and_register_;
-
-        const std::string TOK_NAMED{"Named"}; // FIXME TODO use dynamic name
 
         game_rule
             = (   tok.GameRule_
                 > label(tok.Name_) > string_grammar
               ) [ _val = construct_movable_(new_<ValueRef::ComplexVariable<int>>(_1, nullptr, nullptr, nullptr, deconstruct_movable_(_2, _pass), nullptr)) ]
-            ;
-
-        // First check generic situation (e.g. valueref in parenthesis, other calculations) which do procuce kind of simple value_ref_rule<int>
-        // then check producers of ComplexVariable<int>
-        named_valueref_rule
-            = (   tok.Named_  >> tok.Integer_
-                > (   (   (  label(tok.Name_) > string_grammar
-                        > label(tok.Value_) > qi::as<parse::detail::MovableEnvelope<ValueRef::ValueRef<int>>>()[int_rules.expr] )
-                          [
-			   //_a = construct_movable_(open_val_and_register_(_1, _2, _pass)),
-			   open_val_and_register_(_1, _2, _pass),
-			   _val = construct_movable_(new_<ValueRef::ComplexVariable<int>>(construct<std::string>(TOK_NAMED), nullptr, nullptr, nullptr, /*str*/deconstruct_movable_(_1, _pass), nullptr))
-                          ]
-                      )|( ( label(tok.Name_) > string_grammar
-                        > label(tok.Value_) > start.alias() )
-                          [ /* FIXME DISABLED for the moment phoenix::bind(&RegisterValueRef<ValueRef::ComplexVariable<int>>, get_pointer_(_1), get_pointer_(_2)),*/ _val = _2 ]
-                      )
-                  )
-              )
             ;
 
          empire_name_ref
@@ -210,7 +185,6 @@ namespace parse {
             |   empire_ships_destroyed
             |   jumps_between
             //|   jumps_between_by_empire_supply
-            |   named_valueref_rule
             |   outposts_owned
             |   parts_in_ship_design
             |   part_class_in_ship_design
@@ -226,7 +200,6 @@ namespace parse {
         empire_ships_destroyed.name("EmpireShipsDestroyed");
         jumps_between.name("JumpsBetween");
         //jumps_between_by_empire_supply.name("JumpsBetweenByEmpireSupplyConnections");
-        named_valueref_rule.name("Named<int>");
         outposts_owned.name("OutpostsOwned");
         parts_in_ship_design.name("PartsInShipDesign");
         part_class_in_ship_design.name("PartOfClassInShipDesign");
@@ -243,7 +216,6 @@ namespace parse {
         debug(empire_ships_destroyed);
         debug(jumps_between);
         //debug(jumps_between_by_empire_supply);
-        debug(named_valueref_rule);
         debug(outposts_owned);
         debug(parts_in_ship_design);
         debug(part_class_in_ship_design);

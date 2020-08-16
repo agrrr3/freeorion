@@ -124,6 +124,8 @@ parse::int_arithmetic_rules::int_arithmetic_rules(
     namespace qi = boost::spirit::qi;
     using phoenix::new_;
     qi::_1_type _1;
+    qi::_2_type _2;
+    qi::_3_type _3;
     qi::omit_type omit_;
     qi::_val_type _val;
     qi::_pass_type _pass;
@@ -136,13 +138,27 @@ parse::int_arithmetic_rules::int_arithmetic_rules(
         |   int_complex_grammar
         ;
 
+    named_int_valueref
+        = (     tok.Named_ >> tok.Integer_
+             >  label(tok.Name_) > tok.string
+             >  label(tok.Value_) > primary_expr.alias()
+          ) [
+             // Register the value ref under the given name by lazy invoking RegisterValueRef
+             parse::detail::open_and_register_as_string_(_2, _3, _pass),
+             _val = construct_movable_(new_<ValueRef::NamedRef<int>>(_2))
+          ]
+        ;
+
     primary_expr
         =   '(' >> expr >> ')'
         |   simple
         |   statistic_expr
         |   named_lookup_expr
         |   int_complex_grammar
+        |   named_int_valueref
         ;
+
+    named_int_valueref.name("named int valueref");
 }
 
 namespace parse {

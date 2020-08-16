@@ -7,24 +7,6 @@
 
 #include <boost/spirit/include/phoenix.hpp>
 
-namespace parse {
-  namespace detail {
-          template <typename T>
-    void open_and_register_as_string(std::string& nameref, ::parse::detail::MovableEnvelope<T>& obj, bool& pass)
-    {
-      if (obj.IsEmptiedEnvelope()) {
-	ErrorLogger() <<
-	  "The parser attempted to extract the unique_ptr from a MovableEnvelope more than once - while looking at a valueref envelope for use in ValueRef registration ";
-	pass = false;
-	return;
-      }
-      ::RegisterValueRef<T>(nameref, std::move(obj.OpenEnvelope(pass)));
-    }
-
-    BOOST_PHOENIX_ADAPT_FUNCTION(void, open_and_register_as_string_, open_and_register_as_string, 3)
-  }
-}
-
 parse::detail::simple_double_parser_rules::simple_double_parser_rules(const parse::lexer& tok) :
     simple_variable_rules("double", tok)
 {
