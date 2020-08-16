@@ -214,6 +214,7 @@
     (LocalCandidate)                            \
     (Location)                                  \
     (Log)                                       \
+    (Lookup)                                    \
     (Low)                                       \
     (LowestCostEnqueuedTech)                    \
     (LowestCostResearchableTech)                \
