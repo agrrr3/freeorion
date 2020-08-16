@@ -1388,18 +1388,20 @@ std::string Statistic<std::string>::Eval(const ScriptingContext& context) const
 ///////////////////////////////////////////////////////////
 // NamedRef                                               //
 ///////////////////////////////////////////////////////////
-template <typename T>
-const ValueRef<T>* NamedRef<T>::GetValueRef() const
-{
-    InfoLogger() << "ValueRefs::GetValueRef<T> look for registered valueref for \"" << m_value_ref_name << '"';
-    return ::GetValueRef<T>(m_value_ref_name);
-}
+
 
 template <>
 const ValueRef<double>* NamedRef<double>::GetValueRef() const
 {
-    InfoLogger() << "ValueRefs::GetValueRef<double> look for registered valueref for \"" << m_value_ref_name << '"';
-    return ::GetValueRef<double>(m_value_ref_name);
+    ErrorLogger() << "ValueRefs::GetValueRef<double> look for registered valueref for \"" << m_value_ref_name << '"';
+    auto drefp = ::GetValueRef<double>(m_value_ref_name);
+    if (drefp)
+      return drefp;
+    else {
+      auto irefp = ::GetValueRef<int>(m_value_ref_name);
+      ErrorLogger() << "ValueRefs::GetValueRef<double> found only a ValueRef<int> registered for \"" << m_value_ref_name << '"';
+      return nullptr;
+    }
 }
 
 ///////////////////////////////////////////////////////////
