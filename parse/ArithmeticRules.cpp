@@ -45,10 +45,14 @@ namespace parse { namespace detail {
         const boost::phoenix::function<deconstruct_movable_vector> deconstruct_movable_vector_;
 
         named_lookup_expr
-	    =   ( tok.Refinement_  >> tok.string ) [ // TODO use tok.Named_ after this works, currently this
+          =   (
+                   tok.Lookup_
+                >> label(tok.Name_)
+                >> tok.string
+              ) [
                      ::parse::errorlog_hello_(_2),
                      _val = construct_movable_(new_<ValueRef::NamedRef<T>>(_2))
-                ]
+              ]
             ;
 
         functional_expr
