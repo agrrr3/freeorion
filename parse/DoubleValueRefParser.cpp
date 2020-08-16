@@ -7,6 +7,24 @@
 
 #include <boost/spirit/include/phoenix.hpp>
 
+namespace parse {
+  namespace detail {
+          template <typename T>
+    void open_and_register_as_string(std::string& nameref, ::parse::detail::MovableEnvelope<T>& obj, bool& pass)
+    {
+      if (obj.IsEmptiedEnvelope()) {
+	ErrorLogger() <<
+	  "The parser attempted to extract the unique_ptr from a MovableEnvelope more than once - while looking at a valueref envelope for use in ValueRef registration ";
+	pass = false;
+	return;
+      }
+      ::RegisterValueRef<T>(nameref, std::move(obj.OpenEnvelope(pass)));
+    }
+
+    BOOST_PHOENIX_ADAPT_FUNCTION(void, open_and_register_as_string_, open_and_register_as_string, 3)
+  }
+}
+
 parse::detail::simple_double_parser_rules::simple_double_parser_rules(const parse::lexer& tok) :
     simple_variable_rules("double", tok)
 {
@@ -126,12 +144,12 @@ parse::double_parser_rules::double_parser_rules(
 
     named_real_valueref
         = (     tok.Named_ >> tok.Real_
-             >  label(tok.Name_) > string_grammar
+             >  label(tok.Name_) > tok.string
              >  label(tok.Value_) > primary_expr.alias()
           ) [
              // Register the value ref under the given name by lazy invoking RegisterValueRef
-             open_and_register_(_2, _3, _pass),
-             _val = construct_movable_(new_<ValueRef::NamedRef<double>>(construct<std::string>(TOK_SHP_BLABLA))) // FIXME
+             parse::detail::open_and_register_as_string_(_2, _3, _pass),
+             _val = construct_movable_(new_<ValueRef::NamedRef<double>>(_2))
           ]
         ;
 
