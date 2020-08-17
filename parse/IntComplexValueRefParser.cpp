@@ -6,8 +6,8 @@
 #include <boost/spirit/include/phoenix_core.hpp>
 
 namespace parse {
-                                                                                                                                     
-    int_complex_parser_grammar::int_complex_parser_grammar(
+
+  int_complex_parser_grammar::int_complex_parser_grammar(
         const parse::lexer& tok,
         detail::Labeller& label,
         const int_arithmetic_rules& _int_arith_rules,
@@ -21,7 +21,6 @@ namespace parse {
         namespace qi = boost::spirit::qi;
 
         using phoenix::new_;
-	qi::_a_type _a;
         qi::_1_type _1;
         qi::_2_type _2;
         qi::_3_type _3;
