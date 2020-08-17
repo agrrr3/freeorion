@@ -828,11 +828,11 @@ bool NamedRef<T>::SourceInvariant() const
 
 template <typename T>
 std::string NamedRef<T>::Description() const
-{ return GetValueRef() ? GetValueRef()->Description() : std::string("NAMED_REF_UNKNOWN"); }
+{ return GetValueRef() ? GetValueRef()->Description() : UserString("NAMED_REF_UNKNOWN"); }
 
 template <typename T>
 std::string NamedRef<T>::Dump(unsigned short ntabs) const
-{ return GetValueRef() ? GetValueRef()->Dump() : std::string("NAMED_REF_UNKNOWN"); }
+{ return GetValueRef() ? GetValueRef()->Dump() : UserString("NAMED_REF_UNKNOWN"); }
 
 template <typename T>
 void NamedRef<T>::SetTopLevelContent(const std::string& content_name)
