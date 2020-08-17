@@ -117,10 +117,6 @@ struct FO_COMMON_API NamedRef final : public ValueRef<T>
 
     bool operator==(const ValueRef<T>& rhs) const override;
     T  Eval(const ScriptingContext& context) const override;
-    bool RootCandidateInvariant() const override;
-    bool LocalCandidateInvariant() const override;
-    bool TargetInvariant() const override;
-    bool SourceInvariant() const override;
 
     std::string Description() const override;
     std::string Dump(unsigned short ntabs = 0) const override;
@@ -697,6 +693,18 @@ NamedRef<T>::NamedRef(const std::string& value_ref_name) :
     m_value_ref_name(value_ref_name)
 {
     DebugLogger() << "ctor(NamedRef<T>): " << typeid(*this).name() << " value_ref_name: " << m_value_ref_name;
+    // FIXME need to check the invariances
+    if (auto ref = GetValueRef()) {
+        this->m_root_candidate_invariant = ref->RootCandidateInvariant();
+        this->m_local_candidate_invariant = ref->LocalCandidateInvariant();
+        this->m_target_invariant = GetValueRef()->TargetInvariant();
+        this->m_source_invariant = GetValueRef()->SourceInvariant();;
+    } else {
+        this->m_root_candidate_invariant = true;
+        this->m_local_candidate_invariant = true;
+        this->m_target_invariant = true;
+        this->m_source_invariant = true;
+    }
 }
 
 template <typename T>
@@ -709,22 +717,6 @@ bool NamedRef<T>::operator==(const ValueRef<T>& rhs) const
     const NamedRef<T>& rhs_ = static_cast<const NamedRef<T>&>(rhs);
     return (m_value_ref_name == rhs_.m_value_ref_name);
 }
-
-template <typename T>
-bool NamedRef<T>::RootCandidateInvariant() const
-{ return GetValueRef() ? GetValueRef()->RootCandidateInvariant() : true; }
-
-template <typename T>
-bool NamedRef<T>::LocalCandidateInvariant() const
-{ return GetValueRef() ? GetValueRef()->LocalCandidateInvariant() : true; }
-
-template <typename T>
-bool NamedRef<T>::TargetInvariant() const
-{ return GetValueRef() ? GetValueRef()->TargetInvariant() : true; }
-
-template <typename T>
-bool NamedRef<T>::SourceInvariant() const
-{ return GetValueRef() ? GetValueRef()->SourceInvariant() : true; }
 
 template <typename T>
 std::string NamedRef<T>::Description() const
