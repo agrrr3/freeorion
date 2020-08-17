@@ -732,7 +732,7 @@ std::string NamedRef<T>::Description() const
 
 template <typename T>
 std::string NamedRef<T>::Dump(unsigned short ntabs) const
-{ return GetValueRef() ? GetValueRef()->Dump() : UserString("NAMED_REF_UNKNOWN"); }
+{ return GetValueRef() ? GetValueRef()->Dump() : "NAMED_REF_UNKNOWN"; }
 
 template <typename T>
 void NamedRef<T>::SetTopLevelContent(const std::string& content_name)
