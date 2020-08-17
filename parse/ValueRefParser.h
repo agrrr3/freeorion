@@ -196,16 +196,15 @@ namespace parse { namespace detail {
     void open_and_register_as_string(std::string& nameref, ::parse::detail::MovableEnvelope<T>& obj, bool& pass)
     {
       if (obj.IsEmptiedEnvelope()) {
-	ErrorLogger() <<
-	  "The parser attempted to extract the unique_ptr from a MovableEnvelope more than once - while looking at a valueref envelope for use in ValueRef registration ";
-	pass = false;
-	return;
+          ErrorLogger() <<
+              "The parser attempted to extract the unique_ptr from a MovableEnvelope more than once - while looking at a valueref envelope for use in ValueRef registration ";
+          pass = false;
+          return;
       }
       ::RegisterValueRef<T>(nameref, std::move(obj.OpenEnvelope(pass)));
     }
 
     BOOST_PHOENIX_ADAPT_FUNCTION(void, open_and_register_as_string_, open_and_register_as_string, 3)
-
 }}
 
 namespace parse {
