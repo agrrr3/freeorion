@@ -93,9 +93,9 @@ enum StatisticType : int {
 //! Holds all FreeOrion named ValueRef%s.  ValueRef%s may be looked up by name.
 class NamedValueRefManager {
 public:
-    //using container_type = std::map<const std::string, const std::unique_ptr<ValueRef::AnyValueRef>>;
+    //using container_type = std::map<const std::string, const std::unique_ptr<ValueRef::ValueRefBase>>;
     using key_type = std::string;
-    using value_type = std::unique_ptr<ValueRef::AnyValueRef>;
+    using value_type = std::unique_ptr<ValueRef::ValueRefBase>;
     using container_type = std::map<key_type, value_type>;
 
     using iterator = container_type::const_iterator;
@@ -107,7 +107,7 @@ public:
 
     //! Returns the ValueRef with the name @p name; you should use the
     //! free function GetValueRef(...) instead, mainly to save some typing.
-    auto GetAnyValueRef(const std::string& name) const -> ValueRef::AnyValueRef*;
+    auto GetValueRefBase(const std::string& name) const -> ValueRef::ValueRefBase*;
 
     auto NumNamedValueRefs() const -> std::size_t { return m_value_refs.size(); }
 
@@ -164,7 +164,7 @@ FO_COMMON_API auto GetNamedValueRefManager() -> NamedValueRefManager&;
 
 //! Returns the ValueRef object registered with the given
 //! @p name.  If no such ValueRef exists, nullptr is returned instead.
-FO_COMMON_API auto GetAnyValueRef(const std::string& name) -> ValueRef::AnyValueRef*;
+FO_COMMON_API auto GetValueRefBase(const std::string& name) -> ValueRef::ValueRefBase*;
 
 template <typename T>
 FO_COMMON_API auto GetValueRef(const std::string& name) -> ValueRef::ValueRef<T>*;
