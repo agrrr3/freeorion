@@ -32,7 +32,7 @@ const Species*      GetSpecies(const std::string& name);
 const FieldType*    GetFieldType(const std::string& name);
 const ShipHull*     GetShipHull(const std::string& name);
 const ShipPart*     GetShipPart(const std::string& name);
-ValueRef::AnyValueRef*   GetAnyValueRef(const std::string& name);
+ValueRef::ValueRefBase*   GetValueRefBase(const std::string& name);
 
 namespace {
     //! Return @p content surrounded by the given @p tags.
@@ -175,7 +175,7 @@ namespace {
             {VarText::EMPIRE_ID_TAG, [](const std::string& data)
                 { return IDString<Empire, GetEmpire>(data, VarText::EMPIRE_ID_TAG); }},
             {VarText::FOCS_VALUE_TAG, [](const std::string& data) -> boost::optional<std::string>
-             { const ValueRef::AnyValueRef* vr = GetAnyValueRef(data);
+             { const ValueRef::ValueRefBase* vr = GetValueRefBase(data);
                if (vr) {
                    return WithTags(UserString(data), VarText::FOCS_VALUE_TAG, vr->StringResult());
                } else
