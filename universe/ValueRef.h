@@ -186,53 +186,8 @@ FO_COMMON_API auto GetValueRef(const std::string& name) -> ValueRef::ValueRef<T>
 template <typename T>
 FO_COMMON_API std::string RegisterValueRef(std::string name, std::unique_ptr<T>&& vref);
 
-namespace parse {
-    namespace detail {
-        struct FO_COMMON_API open_and_register {
-            using result_type = void;
+namespace parse { namespace detail {
 
-            template <typename T>
-            void operator() (::parse::detail::MovableEnvelope<ValueRef::ValueRef<std::string>>&& nameref, ::parse::detail::MovableEnvelope<T>&& obj, bool& pass) const
-            {
-                if (nameref.IsEmptiedEnvelope() || obj.IsEmptiedEnvelope()) {
-                    ErrorLogger() <<
-                        "The parser attempted to extract the unique_ptr from a MovableEnvelope more than once - while looking at a name envelope and a valueref envelope for use in ValueRef registration ";
-                    pass = false;
-                    return;
-                }
-
-                ::RegisterValueRef<T>(nameref.OpenEnvelope(pass)->Eval(), std::move(obj.OpenEnvelope(pass)));
-            }
-
-            template <typename T>
-            void operator() (::parse::detail::MovableEnvelope<ValueRef::ValueRef<std::string>>& nameref, ::parse::detail::MovableEnvelope<T>& obj, bool& pass) const
-            {   //TODO error handling
-                ::RegisterValueRef<T>(nameref.OpenEnvelope(pass)->Eval(), std::move(obj.OpenEnvelope(pass)));
-            }
-        };
-
-        struct FO_COMMON_API open_val_and_register {
-            using result_type = void;
-
-            template <typename T>
-            void operator() (::parse::detail::MovableEnvelope<ValueRef::ValueRef<std::string>>&& nameref, ::parse::detail::MovableEnvelope<T>&& obj, bool& pass) const
-            {
-	        if (nameref.IsEmptiedEnvelope() || obj.IsEmptiedEnvelope()) {
-                    ErrorLogger() <<
-                        "The parser attempted to extract the unique_ptr from a MovableEnvelope more than once - while looking at a name envelope and a valueref envelope for use in ValueRef registration ";
-                    pass = false;
-                }
-
-                ::RegisterValueRef<T>(nameref.GetOriginalObj()->Eval(), std::move(obj.OpenEnvelope(pass)));
-            }
-
-            template <typename T>
-            void operator() (::parse::detail::MovableEnvelope<ValueRef::ValueRef<std::string>>& nameref, ::parse::detail::MovableEnvelope<T>& obj, bool& pass) const
-            {   //TODO error handling
-                ::RegisterValueRef<T>(nameref.GetOriginalObj()->Eval(), std::move(obj.OpenEnvelope(pass)));
-            }
-        };
-    }
-} // namespace parse
+} } // namespace parse
 
 #endif // _ValueRef_h_

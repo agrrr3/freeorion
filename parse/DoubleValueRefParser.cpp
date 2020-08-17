@@ -90,8 +90,6 @@ parse::double_parser_rules::double_parser_rules(
     using phoenix::new_;
     using phoenix::static_cast_;
 
-    using phoenix::construct;
-    const std::string TOK_SHP_BLABLA{"SHP_DEUTERIUM_TANK_EFFECT_MULT"};
     qi::_1_type _1;
     qi::_2_type _2;
     qi::_3_type _3;
@@ -99,8 +97,6 @@ parse::double_parser_rules::double_parser_rules(
     qi::_pass_type _pass;
     const boost::phoenix::function<detail::construct_movable> construct_movable_;
     const boost::phoenix::function<detail::deconstruct_movable> deconstruct_movable_;
-    const boost::phoenix::function<detail::get_pointer> get_pointer_;
-    const boost::phoenix::function<detail::open_and_register> open_and_register_;
 
     const parse::detail::value_ref_rule<double>& simple = simple_double_rules.simple;
 

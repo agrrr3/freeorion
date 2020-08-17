@@ -70,7 +70,6 @@ namespace parse {
             qi::_pass_type _pass;
             qi::omit_type omit_;
             qi::_r1_type _r1;
-	    const boost::phoenix::function<detail::open_val_and_register> open_val_and_register_;
 
             named_ref
                =
