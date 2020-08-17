@@ -131,10 +131,6 @@ struct FO_COMMON_API NamedRef final : public ValueRef<T>
 
 private:
     std::string m_value_ref_name;
-
-    friend class boost::serialization::access;
-    template <typename Archive>
-    void serialize(Archive& ar, const unsigned int version);
 };
 
 /** The variable statistic class.   The value returned by this node is
@@ -771,15 +767,6 @@ T NamedRef<T>::Eval(const ScriptingContext& context) const
     auto retval = value_ref->Eval(context);
     DebugLogger() << "Eval(NamedRef<T>): " << typeid(*this).name() << " retval: " << retval;
     return retval;
-}
-
-
-template <typename T>
-template <typename Archive>
-void NamedRef<T>::serialize(Archive& ar, const unsigned int version)
-{
-    ar  & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ValueRef)
-        & BOOST_SERIALIZATION_NVP(m_value_ref_name);
 }
 
 ///////////////////////////////////////////////////////////
