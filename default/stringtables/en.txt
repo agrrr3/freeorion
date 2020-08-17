@@ -12807,7 +12807,7 @@ Tech <i>Deuterium Fuel</i>
 
 # value ref description
 SHP_DEUTERIUM_TANK_EFFECT_MULT
-'''per tank part'
+'''per tank part'''
 
 SHP_ANTIMATTER_TANK
 Antimatter Fuel
