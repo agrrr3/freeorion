@@ -26,7 +26,7 @@ namespace std {
 namespace parse {
 
     template <typename T>
-    void insert_named_ref(std::map<std::string, std::unique_ptr<ValueRef::AnyValueRef>>& named_refs,
+    void insert_named_ref(std::map<std::string, std::unique_ptr<ValueRef::ValueRefBase>>& named_refs,
                           const std::string& name,
                           const parse::detail::MovableEnvelope<ValueRef::ValueRef<T>>& ref_envelope,
                           bool& pass)
@@ -35,8 +35,8 @@ namespace parse {
         if (true) {
          ErrorLogger() << "Registering from named_values.focs.txt : opening envelope";
          std::unique_ptr<ValueRef::ValueRef<T>> ref = std::move(ref_envelope.OpenEnvelope(pass));
-         ErrorLogger() << "Registering from named_values.focs.txt : add a AnyValueRef to named_refs map";
-         named_refs.emplace(name, std::move(std::unique_ptr<ValueRef::AnyValueRef>(std::move(ref))));
+         ErrorLogger() << "Registering from named_values.focs.txt : add a ValueRefBase to named_refs map";
+         named_refs.emplace(name, std::move(std::unique_ptr<ValueRef::ValueRefBase>(std::move(ref))));
          ErrorLogger() << "Registering from named_values.focs.txt : go on...";
        } else {
          ::RegisterValueRef(name, std::move(ref_envelope.OpenEnvelope(pass)));
@@ -45,7 +45,7 @@ namespace parse {
 
     BOOST_PHOENIX_ADAPT_FUNCTION(void, insert_named_ref_, insert_named_ref, 4)
 
-    using start_rule_payload = std::map<std::string, std::unique_ptr<ValueRef::AnyValueRef>>;
+    using start_rule_payload = std::map<std::string, std::unique_ptr<ValueRef::ValueRefBase>>;
     using start_rule_signature = void(start_rule_payload&);
 
     struct grammar : public parse::detail::grammar<start_rule_signature> {
@@ -99,7 +99,7 @@ namespace parse {
         }
 
         using named_value_ref_rule = parse::detail::rule<
-            void (std::map<std::string, std::unique_ptr<ValueRef::AnyValueRef>>&)>;
+            void (std::map<std::string, std::unique_ptr<ValueRef::ValueRefBase>>&)>;
 
         using start_rule = parse::detail::rule<start_rule_signature>;
 
