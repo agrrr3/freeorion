@@ -100,8 +100,11 @@ namespace {
                                           (xpr::s2 = REGEX_NON_BRACKET) >> FOCS_VALUE_TAG_CLOSE;
 
     /** Parses VarText::FOCS_VALUE_TAG%s within @p text, replacing value ref name%s with
-     *  the evaluation result of that value ref.  If link label is empty, inserts resolved link argument as label */
-    std::string ValueRefLinkText(const std::string& text, const bool useDescriptionInsteadOfUserString) {
+     *  the evaluation result of that value ref.
+     *  Given tag content (i.e. the stringtable content for the tag name) gets added as explanation.
+     *  If the tag content is empty or @p use_description_instead_of_user_string is true,
+     *  the value ref description gets added as explanation instead. */
+    std::string ValueRefLinkText(const std::string& text, const bool use_description_instead_of_user_string) {
         if (!boost::contains(text, FOCS_VALUE_TAG_CLOSE))
             return text;
 
@@ -116,17 +119,12 @@ namespace {
             std::string value_ref_name(match[1]);
             auto        value_ref = GetValueRefBase(value_ref_name);
             std::string value_str = value_ref_name;
-            std::string explanation_str(match[2]);
+            std::string explanation_str(match[2].length()==0 ? "" : " (" + match[2] + ")");
 
             if (value_ref) {
                 value_str = value_ref->StringResult();
-                if (explanation_str.empty() || useDescriptionInsteadOfUserString)
+                if (use_description_instead_of_user_string || match[2].length()==0)
                     explanation_str = " (" + value_ref->Description() + ")";
-                else
-                    explanation_str = " (" + explanation_str + ")";
-            } else {
-                if (!explanation_str.empty())
-                    explanation_str = " (" + explanation_str + ")";
             }
 
             auto resolved_tooltip = FOCS_VALUE_TAG_OPEN_PRE + " " + value_ref_name + ">" + value_str + explanation_str + FOCS_VALUE_TAG_CLOSE;
