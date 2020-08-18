@@ -113,7 +113,7 @@ protected:
 template <typename T>
 struct FO_COMMON_API NamedRef final : public ValueRef<T>
 {
-    NamedRef(const std::string& value_ref_name);
+    NamedRef(std::string value_ref_name);
 
     bool operator==(const ValueRef<T>& rhs) const override;
     T  Eval(const ScriptingContext& context) const override;
@@ -689,7 +689,7 @@ FO_COMMON_API std::vector<std::string> Variable<std::vector<std::string>>::Eval(
 // NamedRef                                              //
 ///////////////////////////////////////////////////////////
 template <typename T>
-NamedRef<T>::NamedRef(const std::string& value_ref_name) :
+NamedRef<T>::NamedRef(std::string value_ref_name) :
     m_value_ref_name(value_ref_name)
 {
     DebugLogger() << "ctor(NamedRef<T>): " << typeid(*this).name() << " value_ref_name: " << m_value_ref_name;
@@ -697,8 +697,8 @@ NamedRef<T>::NamedRef(const std::string& value_ref_name) :
     if (auto ref = GetValueRef()) {
         this->m_root_candidate_invariant = ref->RootCandidateInvariant();
         this->m_local_candidate_invariant = ref->LocalCandidateInvariant();
-        this->m_target_invariant = GetValueRef()->TargetInvariant();
-        this->m_source_invariant = GetValueRef()->SourceInvariant();;
+        this->m_target_invariant = ref->TargetInvariant();
+        this->m_source_invariant = ref->SourceInvariant();;
     } else {
         this->m_root_candidate_invariant = true;
         this->m_local_candidate_invariant = true;
