@@ -117,7 +117,7 @@ namespace parse {
             detail::parse_file<grammar, start_rule_payload>(lexer, file, named_value_refs);
 
         for (auto& k_v : named_value_refs )
-                ErrorLogger() << "named_value_refs : " << k_v.first;
+            ErrorLogger() << "named_value_refs : " << k_v.first;
 
         return named_value_refs;
     }
