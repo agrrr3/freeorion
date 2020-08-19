@@ -32,7 +32,7 @@ const Species*      GetSpecies(const std::string& name);
 const FieldType*    GetFieldType(const std::string& name);
 const ShipHull*     GetShipHull(const std::string& name);
 const ShipPart*     GetShipPart(const std::string& name);
-ValueRef::ValueRefBase*   GetValueRefBase(const std::string& name);
+ValueRef::ValueRefBase* const  GetValueRefBase(const std::string& name);
 
 namespace {
     //! Return @p content surrounded by the given @p tags.
