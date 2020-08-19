@@ -146,7 +146,7 @@ unsigned int NamedValueRefManager::GetCheckSum() const {
 
 
 template <typename T>
-void NamedValueRefManager::RegisterValueRef(std::string&& valueref_name, std::unique_ptr<T> vref) {
+void NamedValueRefManager::RegisterValueRef(std::string&& valueref_name, std::unique_ptr<ValueRef::ValueRef<T>> vref) {
     InfoLogger() << "Register valueref for " << valueref_name << ": " << vref->Description();
     if (m_value_refs.count(valueref_name)>0) {
         ErrorLogger() << "Skip registration for already registered valueref for " << valueref_name;
@@ -175,7 +175,7 @@ ValueRef::ValueRef<T>* const GetValueRef(const std::string& name)
 { return GetNamedValueRefManager().GetValueRef<T>(name); }
 
 template <typename T>
-void RegisterValueRef(std::string name, std::unique_ptr<T>&& vref)
+void RegisterValueRef(std::string name, std::unique_ptr<ValueRef::ValueRef<T>>&& vref)
 { return GetNamedValueRefManager().RegisterValueRef<T>(std::move(name), std::move(vref)); }
 
 // trigger instantiations
