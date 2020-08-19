@@ -32,15 +32,8 @@ namespace parse {
                           bool& pass)
     {
         ErrorLogger() << "Registering from named_values.focs.txt : " << name << " ! ValueRef<" << typeid(T).name() << ">";
-        if (true) {
-         ErrorLogger() << "Registering from named_values.focs.txt : opening envelope";
-         std::unique_ptr<ValueRef::ValueRef<T>> ref = std::move(ref_envelope.OpenEnvelope(pass));
-         ErrorLogger() << "Registering from named_values.focs.txt : add a ValueRefBase to named_refs map";
-         named_refs.emplace(name, std::move(std::unique_ptr<ValueRef::ValueRefBase>(std::move(ref))));
-         ErrorLogger() << "Registering from named_values.focs.txt : go on...";
-       } else {
-         ::RegisterValueRef(name, std::move(ref_envelope.OpenEnvelope(pass)));
-       }
+	named_refs.emplace(name, ref_envelope.OpenEnvelope(pass));
+	// Note: using ::RegisterValueRef(name, ref_envelope.OpenEnvelope(pass)) instead would circumvent the Pending mechanism
     }
 
     BOOST_PHOENIX_ADAPT_FUNCTION(void, insert_named_ref_, insert_named_ref, 4)
