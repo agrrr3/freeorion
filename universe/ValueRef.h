@@ -141,7 +141,7 @@ public:
 
     //! Register the @p value_ref under the evaluated @p name.
     template <typename T>
-    void RegisterValueRef(std::string&& name, std::unique_ptr<T> vref);
+    void RegisterValueRef(std::string&& name, std::unique_ptr<ValueRef::ValueRef<T>> vref);
 
 private:
     NamedValueRefManager();
@@ -171,6 +171,6 @@ FO_COMMON_API auto GetValueRef(const std::string& name) -> ValueRef::ValueRef<T>
 
 //! Register and take possesion of the ValueRef object @p vref under the given @p name.
 template <typename T>
-FO_COMMON_API void RegisterValueRef(std::string name, std::unique_ptr<T>&& vref);
+FO_COMMON_API void RegisterValueRef(std::string name, std::unique_ptr<ValueRef::ValueRef<T>>&& vref);
 
 #endif // _ValueRef_h_
