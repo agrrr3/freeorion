@@ -141,7 +141,7 @@ public:
 
     //! Register the @p value_ref under the evaluated @p name.
     template <typename T>
-    void RegisterValueRef(std::string name, std::unique_ptr<T> vref);
+    void RegisterValueRef(std::string&& name, std::unique_ptr<T> vref);
 
 private:
     NamedValueRefManager();
