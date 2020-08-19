@@ -409,6 +409,9 @@
     <ClCompile Include="..\..\universe\ObjectMap.cpp">
       <Filter>Source Files\universe</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\universe\NamedValueRefManager.cpp">
+      <Filter>Source Files\universe</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\universe\Planet.cpp">
       <Filter>Source Files\universe</Filter>
     </ClCompile>
