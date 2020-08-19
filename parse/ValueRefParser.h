@@ -193,7 +193,7 @@ namespace parse { namespace detail {
     }
 
     template <typename T>
-    void open_and_register_as_string(std::string& nameref, ::parse::detail::MovableEnvelope<T>& obj, bool& pass)
+    void open_and_register_as_string(std::string& nameref, ::parse::detail::MovableEnvelope<ValueRef::ValueRef<T>>& obj, bool& pass)
     {
       if (obj.IsEmptiedEnvelope()) {
           ErrorLogger() <<
