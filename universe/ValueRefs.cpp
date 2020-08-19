@@ -257,21 +257,6 @@ std::string ValueRef<std::string>::StringResult() const {
 }
 
 template <>
-std::string ValueRef<int>::StringResult() const {
-    return std::to_string(Eval());
-}
-
-template <>
-std::string ValueRef<float>::StringResult() const {
-    return std::to_string(Eval());
-}
-
-template <>
-std::string ValueRef<double>::StringResult() const {
-    return std::to_string(Eval());
-}
-
-template <>
 std::string ValueRef<std::vector<std::string>>::StringResult() const {
     std::string s;
     for (const auto &piece : Eval()) s += piece;
@@ -283,7 +268,10 @@ std::string ValueRef<T>::StringResult() const {
     return std::to_string(Eval());
 }
 
-// instantiations
+// instantiations of to_string implementation
+template std::string ValueRef<int>::StringResult() const;
+template std::string ValueRef<float>::StringResult() const;
+template std::string ValueRef<double>::StringResult() const;
 template std::string ValueRef<PlanetEnvironment>::StringResult() const;
 template std::string ValueRef<PlanetSize>::StringResult() const;
 template std::string ValueRef<PlanetType>::StringResult() const;
