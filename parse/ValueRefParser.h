@@ -201,7 +201,7 @@ namespace parse { namespace detail {
           pass = false;
           return;
       }
-      ::RegisterValueRef<T>(nameref, std::move(obj.OpenEnvelope(pass)));
+      ::RegisterValueRef<T>(nameref, obj.OpenEnvelope(pass));
     }
 
     BOOST_PHOENIX_ADAPT_FUNCTION(void, open_and_register_as_string_, open_and_register_as_string, 3)
