@@ -174,25 +174,12 @@ template <typename T>
 ValueRef::ValueRef<T>* const GetValueRef(const std::string& name)
 { return GetNamedValueRefManager().GetValueRef<T>(name); }
 
-template <>
-ValueRef::ValueRef<int>* const GetValueRef(const std::string& name)
-{ return GetNamedValueRefManager().GetValueRef<int>(name); }
-
-template <>
-ValueRef::ValueRef<double>* const GetValueRef(const std::string& name)
-{ return GetNamedValueRefManager().GetValueRef<double>(name); }
-
 template <typename T>
-void RegisterValueRef(std::string name, std::unique_ptr<T>&& vref) {
-    return GetNamedValueRefManager().RegisterValueRef<T>(std::move(name), std::move(vref));
-}
+void RegisterValueRef(std::string name, std::unique_ptr<T>&& vref)
+{ return GetNamedValueRefManager().RegisterValueRef<T>(std::move(name), std::move(vref)); }
 
-template <>
-void RegisterValueRef(std::string name, std::unique_ptr<ValueRef::ValueRef<int>>&& vref) {
-    return GetNamedValueRefManager().RegisterValueRef<ValueRef::ValueRef<int>>(std::move(name), std::move(vref));
-}
-
-template <>
-void RegisterValueRef(std::string name, std::unique_ptr<ValueRef::ValueRef<double>>&& vref) {
-    return GetNamedValueRefManager().RegisterValueRef<ValueRef::ValueRef<double>>(std::move(name), std::move(vref));
-}
+// trigger instantiations
+template ValueRef::ValueRef<int>*    const GetValueRef(const std::string& name);
+template ValueRef::ValueRef<double>* const GetValueRef(const std::string& name);
+template void RegisterValueRef(std::string name, std::unique_ptr<ValueRef::ValueRef<int>>&& vref);
+template void RegisterValueRef(std::string name, std::unique_ptr<ValueRef::ValueRef<double>>&& vref);
