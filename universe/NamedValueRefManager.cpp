@@ -68,7 +68,7 @@ void NamedValueRefManager::CheckPendingRefs() const {
 }
 
 template <typename T>
-ValueRef::ValueRef<T>* NamedValueRefManager::GetValueRef(const std::string& name) /*const*/ {
+ValueRef::ValueRef<T>* const NamedValueRefManager::GetValueRef(const std::string& name) /*const*/ {
     InfoLogger() << "NamedValueRefManager::GetValueRef<T> look for registered valueref for \"" << name << '"';
     auto* vref = GetValueRefBase(name);
     if (vref) {
@@ -79,7 +79,7 @@ ValueRef::ValueRef<T>* NamedValueRefManager::GetValueRef(const std::string& name
 }
 
 template <>
-ValueRef::ValueRef<int>* NamedValueRefManager::GetValueRef(const std::string& name) /*const*/ {
+ValueRef::ValueRef<int>* const NamedValueRefManager::GetValueRef(const std::string& name) /*const*/ {
     InfoLogger() << "NamedValueRefManager::GetValueRef<int> look for registered valueref for \"" << name << '"';
     auto* vref = GetValueRefBase(name);
     ErrorLogger() << "Number of registered ValueRefs: " << m_value_refs.size() << " in " << this;
@@ -94,7 +94,7 @@ ValueRef::ValueRef<int>* NamedValueRefManager::GetValueRef(const std::string& na
 }
 
 template <>
-ValueRef::ValueRef<double>* NamedValueRefManager::GetValueRef(const std::string& name) /*const*/ {
+ValueRef::ValueRef<double>* const NamedValueRefManager::GetValueRef(const std::string& name) /*const*/ {
     InfoLogger() << "NamedValueRefManager::GetValueRef<double> look for registered valueref for \"" << name << '"';
     auto* vref = GetValueRefBase(name);
     ErrorLogger() << "Number of registered ValueRefs: " << m_value_refs.size() << " in " << this;
@@ -108,7 +108,7 @@ ValueRef::ValueRef<double>* NamedValueRefManager::GetValueRef(const std::string&
     return nullptr;
 }
 
-ValueRef::ValueRefBase* NamedValueRefManager::GetValueRefBase(const std::string& name) const {
+ValueRef::ValueRefBase* const NamedValueRefManager::GetValueRefBase(const std::string& name) const {
     CheckPendingRefs();
     const auto& it = m_value_refs.find(name);
     return it != m_value_refs.end() ? it->second.get() : nullptr;
@@ -161,7 +161,7 @@ void NamedValueRefManager::RegisterValueRef(std::string valueref_name, std::uniq
 NamedValueRefManager& GetNamedValueRefManager()
 { return NamedValueRefManager::GetNamedValueRefManager(); }
 
-ValueRef::ValueRefBase* GetValueRefBase(const std::string& name)
+ValueRef::ValueRefBase* const GetValueRefBase(const std::string& name)
 {
     InfoLogger() << "NamedValueRefManager::GetValueRefBase look for registered valueref for \"" << name << '"';
     if ( GetNamedValueRefManager().GetValueRefBase(name) )
@@ -171,15 +171,15 @@ ValueRef::ValueRefBase* GetValueRefBase(const std::string& name)
 }
 
 template <typename T>
-ValueRef::ValueRef<T>* GetValueRef(const std::string& name)
+ValueRef::ValueRef<T>* const GetValueRef(const std::string& name)
 { return GetNamedValueRefManager().GetValueRef<T>(name); }
 
 template <>
-ValueRef::ValueRef<int>* GetValueRef(const std::string& name)
+ValueRef::ValueRef<int>* const GetValueRef(const std::string& name)
 { return GetNamedValueRefManager().GetValueRef<int>(name); }
 
 template <>
-ValueRef::ValueRef<double>* GetValueRef(const std::string& name)
+ValueRef::ValueRef<double>* const GetValueRef(const std::string& name)
 { return GetNamedValueRefManager().GetValueRef<double>(name); }
 
 template <typename T>

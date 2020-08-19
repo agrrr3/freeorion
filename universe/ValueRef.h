@@ -103,11 +103,11 @@ public:
     //! Returns the ValueRef with the name @p name or nullptr if there is nov ValueRef with such a name or of the wrong type
     //! use the free function GetValueRef(...) instead, mainly to save some typing.
     template <typename T>
-    auto GetValueRef(const std::string& name) -> ValueRef::ValueRef<T>*;
+    auto GetValueRef(const std::string& name) -> ValueRef::ValueRef<T>* const;
 
     //! Returns the ValueRef with the name @p name; you should use the
     //! free function GetValueRef(...) instead, mainly to save some typing.
-    auto GetValueRefBase(const std::string& name) const -> ValueRef::ValueRefBase*;
+    auto GetValueRefBase(const std::string& name) const -> ValueRef::ValueRefBase* const;
 
     auto NumNamedValueRefs() const -> std::size_t { return m_value_refs.size(); }
 
@@ -164,10 +164,10 @@ FO_COMMON_API auto GetNamedValueRefManager() -> NamedValueRefManager&;
 
 //! Returns the ValueRef object registered with the given
 //! @p name.  If no such ValueRef exists, nullptr is returned instead.
-FO_COMMON_API auto GetValueRefBase(const std::string& name) -> ValueRef::ValueRefBase*;
+FO_COMMON_API auto GetValueRefBase(const std::string& name) -> ValueRef::ValueRefBase* const;
 
 template <typename T>
-FO_COMMON_API auto GetValueRef(const std::string& name) -> ValueRef::ValueRef<T>*;
+FO_COMMON_API auto GetValueRef(const std::string& name) -> ValueRef::ValueRef<T>* const;
 
 //! Register and take possesion of the ValueRef object @p vref under the given @p name.
 template <typename T>
