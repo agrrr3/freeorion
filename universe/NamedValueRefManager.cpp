@@ -125,9 +125,9 @@ NamedValueRefManager::iterator NamedValueRefManager::end() const {
 }
 
 NamedValueRefManager& NamedValueRefManager::GetNamedValueRefManager() {
-    ErrorLogger() << "NamedValueRefManager::GetNamedValueRefManager starts in process " << ::getpid() << " thread: " << std::this_thread::get_id();
+    // ErrorLogger() << "NamedValueRefManager::GetNamedValueRefManager starts in process " << ::getpid() << " thread: " << std::this_thread::get_id(); // Linux only
     static NamedValueRefManager manager; // function local 
-    ErrorLogger() << "NamedValueRefManager::GetNamedValueRefManager at " << &manager << " in process " << ::getpid() << " thread: " << std::this_thread::get_id();
+    // ErrorLogger() << "NamedValueRefManager::GetNamedValueRefManager at " << &manager << " in process " << ::getpid() << " thread: " << std::this_thread::get_id();
     return manager;
 }
 
