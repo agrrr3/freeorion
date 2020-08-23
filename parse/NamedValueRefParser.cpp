@@ -32,8 +32,9 @@ namespace parse {
                           bool& pass)
     {
         ErrorLogger() << "Registering from named_values.focs.txt : " << name << " ! ValueRef<" << typeid(T).name() << ">";
-	named_refs.emplace(name, ref_envelope.OpenEnvelope(pass));
-	// Note: using ::RegisterValueRef(name, ref_envelope.OpenEnvelope(pass)) instead would circumvent the Pending mechanism
+        //named_refs.emplace(name, ref_envelope.OpenEnvelope(pass)); // does not know how to handle different types
+        // Note: using ::RegisterValueRef(name, ref_envelope.OpenEnvelope(pass)) circumvents the Pending mechanism
+        ::RegisterValueRef<T>(name, ref_envelope.OpenEnvelope(pass));
     }
 
     BOOST_PHOENIX_ADAPT_FUNCTION(void, insert_named_ref_, insert_named_ref, 4)

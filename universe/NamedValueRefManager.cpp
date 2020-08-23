@@ -67,60 +67,74 @@ void NamedValueRefManager::CheckPendingRefs() const {
 
 }
 
+// default implementation - queries the untyped registry
 template <typename T>
 ValueRef::ValueRef<T>* const NamedValueRefManager::GetValueRef(const std::string& name) /*const*/ {
     InfoLogger() << "NamedValueRefManager::GetValueRef<T> look for registered valueref for \"" << name << '"';
-    auto* vref = GetValueRefBase(name);
-    if (vref) {
-        return dynamic_cast<ValueRef::ValueRef<T>*>(vref);
-    }
+    CheckPendingRefs();
+    auto& it = m_value_refs.find(name);
+    if ( it != m_value_refs.end() )
+        return dynamic_cast<ValueRef::ValueRef<T>*>(it->second.get());
     ErrorLogger() << "NamedValueRefManager::GetValueRef<T> found no registered valueref for \"" << name << '"';
     return nullptr;
 }
 
+// int specialisation - queries the ValueRef<int> registry
 template <>
 ValueRef::ValueRef<int>* const NamedValueRefManager::GetValueRef(const std::string& name) /*const*/ {
     InfoLogger() << "NamedValueRefManager::GetValueRef<int> look for registered valueref for \"" << name << '"';
-    auto* vref = GetValueRefBase(name);
-    ErrorLogger() << "Number of registered ValueRefs: " << m_value_refs.size() << " in " << this;
-    if (vref) {
-        return dynamic_cast<ValueRef::ValueRef<int>*>(vref);
-    }
+    CheckPendingRefs();
+    ErrorLogger() << "Number of registered ValueRefs<int>: " << m_value_refs_int.size() << " in " << this;
+    const auto& it = m_value_refs_int.find(name);
+    if (it != m_value_refs_int.end())
+        return it->second.get();
     ErrorLogger() << "NamedValueRefManager::GetValueRef<int> found no registered valueref for \"" << name << '"';
-    for(auto& k_v : m_value_refs) {
-            ErrorLogger() << "NamedValueRefManager::GetValueRef<int> contains registered valueref for \"" << k_v.first << '"';
+    for(auto& k_v : m_value_refs_int) {
+            ErrorLogger() << "NamedValueRefManager::GetValueRef<int> contains registered int valueref for \"" << k_v.first << '"';
     }
     return nullptr;
 }
 
+// double specialisation - queries the ValueRef<double> registry
 template <>
 ValueRef::ValueRef<double>* const NamedValueRefManager::GetValueRef(const std::string& name) /*const*/ {
     InfoLogger() << "NamedValueRefManager::GetValueRef<double> look for registered valueref for \"" << name << '"';
-    auto* vref = GetValueRefBase(name);
-    ErrorLogger() << "Number of registered ValueRefs: " << m_value_refs.size() << " in " << this;
-    if (vref) {
-        return dynamic_cast<ValueRef::ValueRef<double>*>(vref);
-    }
+    CheckPendingRefs();
+    ErrorLogger() << "Number of registered ValueRefs<double>: " << m_value_refs_double.size() << " in " << this;
+    const auto& it = m_value_refs_double.find(name);
+    if (it != m_value_refs_double.end())
+        return it->second.get();
     ErrorLogger() << "NamedValueRefManager::GetValueRef<double> found no registered valueref for \"" << name << '"';
-    for(auto& k_v : m_value_refs) {
-            ErrorLogger() << "NamedValueRefManager::GetValueRef<double> contains registered valueref for \"" << k_v.first << '"';
+    for(auto& k_v : m_value_refs_double) {
+            ErrorLogger() << "NamedValueRefManager::GetValueRef<double> contains registered double valueref for \"" << k_v.first << '"';
     }
     return nullptr;
 }
 
 ValueRef::ValueRefBase* const NamedValueRefManager::GetValueRefBase(const std::string& name) const {
     CheckPendingRefs();
+    /* TODO straighten out const shtuff */
+    auto* drefp = const_cast<NamedValueRefManager*>(this)->GetValueRef<double>(name);
+    //if (auto* drefp = const_cast<NamedValueRefManager*>(this)->GetValueRef<double>(name)) // TODO C++17
+    if (drefp)
+        return drefp;
+    auto* irefp = const_cast<NamedValueRefManager*>(this)->GetValueRef<int>(name);
+    //if (auto* irefp = const_cast<NamedValueRefManager*>(this)->GetValueRef<int>(name)) // TODO C++17
+    if (irefp)
+        return irefp;
     const auto& it = m_value_refs.find(name);
     return it != m_value_refs.end() ? it->second.get() : nullptr;
 }
 
 NamedValueRefManager::iterator NamedValueRefManager::begin() const {
     CheckPendingRefs();
+    // FIXME is this function actually necessary? would need to iterate over all three maps
     return m_value_refs.begin();
 }
 
 NamedValueRefManager::iterator NamedValueRefManager::end() const {
     CheckPendingRefs();
+    // FIXME see ::begin()
     return m_value_refs.end();
 }
 
@@ -155,6 +169,32 @@ void NamedValueRefManager::RegisterValueRef(std::string&& valueref_name, std::un
     }
     m_value_refs.emplace(valueref_name, std::move(std::unique_ptr<ValueRef::ValueRefBase>(std::move(vref))));
     ErrorLogger() << "Number of registered ValueRefs: " << m_value_refs.size();
+}
+
+// specialisation for registering to the ValueRef<int> registry
+template <>
+void NamedValueRefManager::RegisterValueRef(std::string&& valueref_name, std::unique_ptr<ValueRef::ValueRef<int>> vref) {
+    InfoLogger() << "Register int valueref for " << valueref_name << ": " << vref->Description();
+    if (m_value_refs_int.count(valueref_name)>0) {
+        ErrorLogger() << "Skip registration for already registered int valueref for " << valueref_name;
+        ErrorLogger() << "Number of registered int ValueRefs: " << m_value_refs_int.size();
+        return;
+    }
+    m_value_refs_int.emplace(valueref_name, std::move(vref));
+    ErrorLogger() << "Number of registered ValueRefs: " << m_value_refs_int.size();
+}
+
+// specialisation for registering to the ValueRef<double> registry
+template <>
+void NamedValueRefManager::RegisterValueRef(std::string&& valueref_name, std::unique_ptr<ValueRef::ValueRef<double>> vref) {
+    InfoLogger() << "Register double valueref for " << valueref_name << ": " << vref->Description();
+    if (m_value_refs_double.count(valueref_name)>0) {
+        ErrorLogger() << "Skip registration for already registered double valueref for " << valueref_name;
+        ErrorLogger() << "Number of registered double ValueRefs: " << m_value_refs_double.size();
+        return;
+    }
+    m_value_refs_double.emplace(valueref_name, std::move(vref));
+    ErrorLogger() << "Number of registered ValueRefs: " << m_value_refs_double.size();
 }
 
 
