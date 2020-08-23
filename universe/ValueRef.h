@@ -96,7 +96,11 @@ public:
     //using container_type = std::map<const std::string, const std::unique_ptr<ValueRef::ValueRefBase>>;
     using key_type = std::string;
     using value_type = std::unique_ptr<ValueRef::ValueRefBase>;
+    using int_value_type = std::unique_ptr<ValueRef::ValueRef<int>>;
+    using double_value_type = std::unique_ptr<ValueRef::ValueRef<double>>;
     using container_type = std::map<key_type, value_type>;
+    using int_container_type = std::map<key_type, int_value_type>;
+    using double_container_type = std::map<key_type, double_value_type>;
 
     using iterator = container_type::const_iterator;
 
@@ -154,7 +158,9 @@ private:
     mutable boost::optional<Pending::Pending<container_type>> m_pending_refs = boost::none;
 
     //! Map of ValueRef%s identified by a name
-    container_type m_value_refs;
+    double_container_type m_value_refs_double; // int value refs
+    int_container_type    m_value_refs_int; // int value refs
+    container_type        m_value_refs; // everything else
 
     static NamedValueRefManager* s_instance;
 };

@@ -34,6 +34,7 @@ namespace parse { namespace detail {
 
         boost::spirit::qi::_1_type _1;
         boost::spirit::qi::_2_type _2;
+        boost::spirit::qi::_4_type _4;
         boost::spirit::qi::_a_type _a;
         boost::spirit::qi::_b_type _b;
         boost::spirit::qi::_c_type _c;
@@ -47,12 +48,12 @@ namespace parse { namespace detail {
 
         named_lookup_expr
           =   (
-                   tok.Lookup_
+                   tok.Named_ >> tok.Value_ >> tok.Lookup_
                 >> label(tok.Name_)
                 >> tok.string
               ) [
                      ::parse::errorlog_hello_(_2),
-                     _val = construct_movable_(new_<ValueRef::NamedRef<T>>(_2))
+                     _val = construct_movable_(new_<ValueRef::NamedRef<T>>(_4))
               ]
             ;
 
