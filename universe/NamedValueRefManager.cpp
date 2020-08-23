@@ -7,6 +7,7 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string/split.hpp>
+#include <boost/log/expressions.hpp>
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/numeric.hpp>
@@ -33,6 +34,8 @@
 #include "../util/Logger.h"
 #include "../util/MultiplayerCommon.h"
 #include "../util/Random.h"
+
+namespace expr = boost::log::expressions;
 
 NamedValueRefManager* NamedValueRefManager::s_instance = nullptr;
 
@@ -139,9 +142,10 @@ NamedValueRefManager::iterator NamedValueRefManager::end() const {
 }
 
 NamedValueRefManager& NamedValueRefManager::GetNamedValueRefManager() {
-    // ErrorLogger() << "NamedValueRefManager::GetNamedValueRefManager starts in process " << ::getpid() << " thread: " << std::this_thread::get_id(); // Linux only
+    ErrorLogger() << "NamedValueRefManager::GetNamedValueRefManager starts (check the thread)"; 
+    
     static NamedValueRefManager manager; // function local 
-    // ErrorLogger() << "NamedValueRefManager::GetNamedValueRefManager at " << &manager << " in process " << ::getpid() << " thread: " << std::this_thread::get_id();
+    ErrorLogger() << "NamedValueRefManager::GetNamedValueRefManager at " << &manager;
     return manager;
 }
 
@@ -149,12 +153,15 @@ NamedValueRefManager& NamedValueRefManager::GetNamedValueRefManager() {
 unsigned int NamedValueRefManager::GetCheckSum() const {
     CheckPendingRefs();
     unsigned int retval{0};
-    /*    for (auto const& name_type_pair : m_value_refs)
-        CheckSums::CheckSumCombine(retval, name_type_pair);  // TODO FIXME
-    CheckSums::CheckSumCombine(retval, m_value_refs.size());
-
-
-    DebugLogger() << "NamedValueRefManager checksum: " << retval;*/
+    for (auto const& name_type_pair : m_value_refs)
+        CheckSums::CheckSumCombine(retval, name_type_pair);
+    for (auto const& name_type_pair : m_value_refs_int)
+        CheckSums::CheckSumCombine(retval, name_type_pair);
+    for (auto const& name_type_pair : m_value_refs_double)
+        CheckSums::CheckSumCombine(retval, name_type_pair);
+    //CheckSums::CheckSumCombine(retval, m_value_refs.size()); // why also add size?
+    
+    DebugLogger() << "NamedValueRefManager checksum: " << retval;
     return retval;
 }
 
