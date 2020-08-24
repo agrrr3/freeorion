@@ -130,18 +130,6 @@ ValueRef::ValueRefBase* const NamedValueRefManager::GetValueRefBase(const std::s
     return it != m_value_refs.end() ? it->second.get() : nullptr;
 }
 
-NamedValueRefManager::iterator NamedValueRefManager::begin() const {
-    CheckPendingRefs();
-    // FIXME is this function actually necessary? would need to iterate over all three maps
-    return m_value_refs.begin();
-}
-
-NamedValueRefManager::iterator NamedValueRefManager::end() const {
-    CheckPendingRefs();
-    // FIXME see ::begin()
-    return m_value_refs.end();
-}
-
 NamedValueRefManager& NamedValueRefManager::GetNamedValueRefManager() {
     ErrorLogger() << "NamedValueRefManager::GetNamedValueRefManager starts (check the thread)"; 
     

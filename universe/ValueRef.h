@@ -113,14 +113,6 @@ public:
     //! free function GetValueRef(...) instead, mainly to save some typing.
     auto GetValueRefBase(const std::string& name) const -> ValueRef::ValueRefBase* const;
 
-    auto NumNamedValueRefs() const -> std::size_t { return m_value_refs.size(); }
-
-    //! iterator to the first value ref
-    FO_COMMON_API auto begin() const -> iterator;
-
-    //! iterator to the last + 1th value ref
-    FO_COMMON_API auto end() const -> iterator;
-
     // Singleton
     NamedValueRefManager&  operator=(NamedValueRefManager const&) =delete; // no copy via assignment
 
