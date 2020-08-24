@@ -1,7 +1,7 @@
 #ifndef _ValueRef_h_
 #define _ValueRef_h_
 
-
+#include <mutex>
 #include "ScriptingContext.h"
 #include "../util/Export.h"
 
@@ -157,11 +157,16 @@ private:
         be assigned to m_species_types when completed.*/
     mutable boost::optional<Pending::Pending<container_type>> m_pending_refs = boost::none;
 
-    //! Map of ValueRef%s identified by a name
+    //! Map of ValueRef%s identified by a name and mutexes for those to allow asynchronous registration
     double_container_type m_value_refs_double; // int value refs
+    std::mutex            m_value_refs_double_mutex;
     int_container_type    m_value_refs_int; // int value refs
+    std::mutex            m_value_refs_int_mutex;
     container_type        m_value_refs; // everything else
+    std::mutex            m_value_refs_mutex;
 
+    // The s_instance creeation is lazily triggered via as function local.
+    // There is exactly one for all translation units.
     static NamedValueRefManager* s_instance;
 };
 
