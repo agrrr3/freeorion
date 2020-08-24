@@ -120,9 +120,6 @@ public:
 
     ~NamedValueRefManager();
 
-    /** Sets named value refs to the value of \p future. */
-    FO_COMMON_API void SetNamedValueRefs(Pending::Pending<container_type>&& future);
-
     //! Returns the instance of this singleton class; you should use the free
     //! function GetNamedValueRefManager() instead
     static NamedValueRefManager& GetNamedValueRefManager();

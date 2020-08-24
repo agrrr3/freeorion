@@ -32,8 +32,8 @@ namespace parse {
                           bool& pass)
     {
         ErrorLogger() << "Registering from named_values.focs.txt : " << name << " ! ValueRef<" << typeid(T).name() << ">";
-        //named_refs.emplace(name, ref_envelope.OpenEnvelope(pass)); // does not know how to handle different types
-        // Note: using ::RegisterValueRef(name, ref_envelope.OpenEnvelope(pass)) circumvents the Pending mechanism
+        // Note: Other parsers might also register value refs, so
+        //       we do not use the named_refs and as the normal pending mechanism does not suffice.
         ::RegisterValueRef<T>(name, ref_envelope.OpenEnvelope(pass));
     }
 
@@ -118,7 +118,7 @@ namespace parse {
             detail::parse_file<grammar, start_rule_payload>(lexer, file, named_value_refs);
 
         for (auto& k_v : named_value_refs )
-            ErrorLogger() << "named_value_refs : " << k_v.first;
+            ErrorLogger() << "Should have not returned anything: named_value_refs : " << k_v.first;
 
         return named_value_refs;
     }

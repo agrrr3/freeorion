@@ -53,29 +53,10 @@ NamedValueRefManager::~NamedValueRefManager() {
     ErrorLogger() << "NamedValueRefManager::~NameValueRefManager destruct " << this ; // FIXME
 }
 
-void NamedValueRefManager::SetNamedValueRefs(Pending::Pending<NamedValueRefManager::container_type>&& future)
-{ m_pending_refs = std::move(future); }
-
-
-void NamedValueRefManager::CheckPendingRefs() const {
-    ErrorLogger() << "Number of registered ValueRefs befor swap: " << m_value_refs.size() << " in " << this;
-    if (auto tt = Pending::WaitForPending(m_pending_refs)) {
-      std::swap(*tt, const_cast<NamedValueRefManager::container_type&>(m_value_refs));      
-	for (auto& k_v : *tt) {
-	  ErrorLogger() << "NamedValueRefManager::CheckPendingRefs restore swapped away " << k_v.first;
-	  const_cast<NamedValueRefManager::container_type&>(m_value_refs).emplace(k_v.first, std::move(k_v.second));
-	}
-	(*tt).clear();
-    }
-    ErrorLogger() << "Number of registered ValueRefs after swap: " << m_value_refs.size() << " in " << this;
-
-}
-
 // default implementation - queries the untyped registry
 template <typename T>
 ValueRef::ValueRef<T>* const NamedValueRefManager::GetValueRef(const std::string& name) /*const*/ {
     InfoLogger() << "NamedValueRefManager::GetValueRef<T> look for registered valueref for \"" << name << '"';
-    CheckPendingRefs();
     auto& it = m_value_refs.find(name);
     if ( it != m_value_refs.end() )
         return dynamic_cast<ValueRef::ValueRef<T>*>(it->second.get());
@@ -87,7 +68,6 @@ ValueRef::ValueRef<T>* const NamedValueRefManager::GetValueRef(const std::string
 template <>
 ValueRef::ValueRef<int>* const NamedValueRefManager::GetValueRef(const std::string& name) /*const*/ {
     InfoLogger() << "NamedValueRefManager::GetValueRef<int> look for registered valueref for \"" << name << '"';
-    CheckPendingRefs();
     ErrorLogger() << "Number of registered ValueRefs<int>: " << m_value_refs_int.size() << " in " << this;
     const auto& it = m_value_refs_int.find(name);
     if (it != m_value_refs_int.end())
@@ -103,7 +83,6 @@ ValueRef::ValueRef<int>* const NamedValueRefManager::GetValueRef(const std::stri
 template <>
 ValueRef::ValueRef<double>* const NamedValueRefManager::GetValueRef(const std::string& name) /*const*/ {
     InfoLogger() << "NamedValueRefManager::GetValueRef<double> look for registered valueref for \"" << name << '"';
-    CheckPendingRefs();
     ErrorLogger() << "Number of registered ValueRefs<double>: " << m_value_refs_double.size() << " in " << this;
     const auto& it = m_value_refs_double.find(name);
     if (it != m_value_refs_double.end())
@@ -116,7 +95,6 @@ ValueRef::ValueRef<double>* const NamedValueRefManager::GetValueRef(const std::s
 }
 
 ValueRef::ValueRefBase* const NamedValueRefManager::GetValueRefBase(const std::string& name) const {
-    CheckPendingRefs();
     /* TODO straighten out const shtuff */
     auto* drefp = const_cast<NamedValueRefManager*>(this)->GetValueRef<double>(name);
     //if (auto* drefp = const_cast<NamedValueRefManager*>(this)->GetValueRef<double>(name)) // TODO C++17
@@ -140,7 +118,6 @@ NamedValueRefManager& NamedValueRefManager::GetNamedValueRefManager() {
 
 
 unsigned int NamedValueRefManager::GetCheckSum() const {
-    CheckPendingRefs();
     unsigned int retval{0};
     for (auto const& name_type_pair : m_value_refs)
         CheckSums::CheckSumCombine(retval, name_type_pair);
