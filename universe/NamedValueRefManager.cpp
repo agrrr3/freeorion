@@ -132,6 +132,22 @@ unsigned int NamedValueRefManager::GetCheckSum() const {
 }
 
 
+NamedValueRefManager::any_container_type  NamedValueRefManager::GetItems() const {
+    std::function<const any_entry_type(const entry_type&)> base_to_base          = [](const entry_type& kv) { return any_entry_type(kv.first, *(kv.second.get())); };
+    std::function<const any_entry_type(const double_entry_type&)> double_to_base = [](const double_entry_type& kv) { return any_entry_type(kv.first, *(kv.second.get())); };
+    std::function<const any_entry_type(const int_entry_type&)> int_to_base       = [](const int_entry_type& kv) { return any_entry_type(kv.first, *(kv.second.get())); };
+
+    // should use C++20 ranges (or C++14, C++17 boost Range-v3 library) to avoid copying
+    any_container_type aet;
+    std::transform(m_value_refs_double.begin(), m_value_refs_double.end(), std::inserter(aet, aet.end()), double_to_base);
+    std::transform(m_value_refs_int.begin(), m_value_refs_int.end(), std::inserter(aet, aet.end()), int_to_base);
+    std::transform(m_value_refs.begin(), m_value_refs.end(), std::inserter(aet, aet.end()), base_to_base);
+    for (auto kv : aet)
+        ErrorLogger() << "NamedValueRefManager::GetItems - " << kv.first << " " << kv.second.get().StringResult() << " := " << kv.second.get().Description() ;
+    return aet;
+}
+
+
 template <typename T>
 void NamedValueRefManager::RegisterValueRef(std::string&& valueref_name, std::unique_ptr<ValueRef::ValueRef<T>> vref) {
     InfoLogger() << "Register generic valueref for " << valueref_name << ": " << vref->Description();

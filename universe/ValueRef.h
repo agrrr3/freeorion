@@ -4,7 +4,9 @@
 #include <mutex>
 #include "ScriptingContext.h"
 #include "../util/Export.h"
-
+#include <boost/range.hpp>
+#include <boost/range/adaptors.hpp>
+#include <boost/range/join.hpp>
 
 namespace ValueRef {
 
@@ -90,17 +92,23 @@ enum StatisticType : int {
 
 }
 
+
 //! Holds all FreeOrion named ValueRef%s.  ValueRef%s may be looked up by name.
-class NamedValueRefManager {
+class FO_COMMON_API NamedValueRefManager {
 public:
     //using container_type = std::map<const std::string, const std::unique_ptr<ValueRef::ValueRefBase>>;
-    using key_type = std::string;
+    using key_type = const std::string;
     using value_type = std::unique_ptr<ValueRef::ValueRefBase>;
     using int_value_type = std::unique_ptr<ValueRef::ValueRef<int>>;
     using double_value_type = std::unique_ptr<ValueRef::ValueRef<double>>;
     using container_type = std::map<key_type, value_type>;
     using int_container_type = std::map<key_type, int_value_type>;
     using double_container_type = std::map<key_type, double_value_type>;
+    using entry_type        = std::pair<key_type, value_type>;
+    using int_entry_type    = std::pair<key_type, int_value_type>;
+    using double_entry_type = std::pair<key_type, double_value_type>;
+    using any_container_type = std::map<key_type, std::reference_wrapper<ValueRef::ValueRefBase>>;
+    using any_entry_type     = std::pair<key_type, std::reference_wrapper<ValueRef::ValueRefBase>>;
 
     using iterator = container_type::const_iterator;
 
@@ -112,6 +120,9 @@ public:
     //! Returns the ValueRef with the name @p name; you should use the
     //! free function GetValueRef(...) instead, mainly to save some typing.
     auto GetValueRefBase(const std::string& name) const -> ValueRef::ValueRefBase* const;
+
+    /** returns a map with all named value refs */
+    auto GetItems() const -> any_container_type;
 
     // Singleton
     NamedValueRefManager&  operator=(NamedValueRefManager const&) =delete; // no copy via assignment
