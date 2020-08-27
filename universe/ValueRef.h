@@ -4,9 +4,6 @@
 #include <mutex>
 #include "ScriptingContext.h"
 #include "../util/Export.h"
-#include <boost/range.hpp>
-#include <boost/range/adaptors.hpp>
-#include <boost/range/join.hpp>
 
 namespace ValueRef {
 
