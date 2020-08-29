@@ -693,12 +693,15 @@ NamedRef<T>::NamedRef(std::string value_ref_name) :
     m_value_ref_name(value_ref_name)
 {
     DebugLogger() << "ctor(NamedRef<T>): " << typeid(*this).name() << " value_ref_name: " << m_value_ref_name;
-    // FIXME need to check the invariances
+    // not invariant value refs are not supported currently as we do not need those yet
     if (auto ref = GetValueRef()) {
         this->m_root_candidate_invariant = ref->RootCandidateInvariant();
         this->m_local_candidate_invariant = ref->LocalCandidateInvariant();
         this->m_target_invariant = ref->TargetInvariant();
         this->m_source_invariant = ref->SourceInvariant();;
+        if (!(this->m_root_candidate_invariant && this->m_local_candidate_invariant
+              && this->m_target_invariant && this->m_source_invariant))
+            ErrorLogger() << "Currently only invariant value refs can be named. " << m_value_ref_name;
     } else {
         this->m_root_candidate_invariant = true;
         this->m_local_candidate_invariant = true;

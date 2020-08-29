@@ -151,13 +151,15 @@ template <typename R, typename VR>
 void NamedValueRefManager::RegisterValueRefImpl(R& container, std::mutex& mutex, const std::string&& label, std::string&& valueref_name, std::unique_ptr<VR>&& vref) {
     InfoLogger() << "Register " << label << " valueref for " << valueref_name << ": " << vref->Description();
     if (container.count(valueref_name)>0) {
-        ErrorLogger() << "Skip registration for already registered " << label << " valueref for " << valueref_name;
-        ErrorLogger() << "Number of registered " << label << " ValueRefs: " << m_value_refs.size();
+        DebugLogger() << "Skip registration for already registered " << label << " valueref for " << valueref_name;
+        DebugLogger() << "Number of registered " << label << " ValueRefs: " << m_value_refs.size();
         return;
     }
     const std::lock_guard<std::mutex> lock(mutex);
-    container.emplace(valueref_name, std::move(std::move(vref)));
-    ErrorLogger() << "Number of registered " << label << " ValueRefs: " << container.size();
+    if (!(vref->RootCandidateInvariant() && vref->LocalCandidateInvariant() && vref->TargetInvariant() && vref->SourceInvariant()))
+            ErrorLogger() << "Currently only invariant value refs can be named. " << valueref_name;
+    container.emplace(valueref_name, std::move(vref));
+    DebugLogger() << "Number of registered " << label << " ValueRefs: " << container.size();
 }
 
 template <typename T>
