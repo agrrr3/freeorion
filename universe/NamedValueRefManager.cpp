@@ -147,48 +147,35 @@ NamedValueRefManager::any_container_type  NamedValueRefManager::GetItems() const
     return aet;
 }
 
+template <typename R, typename VR>
+void NamedValueRefManager::RegisterValueRefImpl(R& container, std::mutex& mutex, const std::string&& label, std::string&& valueref_name, std::unique_ptr<VR>&& vref) {
+    InfoLogger() << "Register " << label << " valueref for " << valueref_name << ": " << vref->Description();
+    if (container.count(valueref_name)>0) {
+        ErrorLogger() << "Skip registration for already registered " << label << " valueref for " << valueref_name;
+        ErrorLogger() << "Number of registered " << label << " ValueRefs: " << m_value_refs.size();
+        return;
+    }
+    const std::lock_guard<std::mutex> lock(mutex);
+    container.emplace(valueref_name, std::move(std::move(vref)));
+    ErrorLogger() << "Number of registered " << label << " ValueRefs: " << container.size();
+}
 
 template <typename T>
 void NamedValueRefManager::RegisterValueRef(std::string&& valueref_name, std::unique_ptr<ValueRef::ValueRef<T>> vref) {
-    InfoLogger() << "Register generic valueref for " << valueref_name << ": " << vref->Description();
-    if (m_value_refs.count(valueref_name)>0) {
-        ErrorLogger() << "Skip registration for already registered generic valueref for " << valueref_name;
-        ErrorLogger() << "Number of registered generic ValueRefs: " << m_value_refs.size();
-        return;
-    }
-    const std::lock_guard<std::mutex> lock(m_value_refs_mutex);
-    m_value_refs.emplace(valueref_name, std::move(std::unique_ptr<ValueRef::ValueRefBase>(std::move(vref))));
-    ErrorLogger() << "Number of registered generic ValueRefs: " << m_value_refs.size();
+    this->RegisterValueRefImpl(m_value_refs, m_value_refs_mutex, "generic", std::move(valueref_name), std::move(std::unique_ptr<ValueRef::ValueRefBase>(std::move(vref))));
 }
 
 // specialisation for registering to the ValueRef<int> registry
 template <>
 void NamedValueRefManager::RegisterValueRef(std::string&& valueref_name, std::unique_ptr<ValueRef::ValueRef<int>> vref) {
-    InfoLogger() << "Register int valueref for " << valueref_name << ": " << vref->Description();
-    if (m_value_refs_int.count(valueref_name)>0) {
-        ErrorLogger() << "Skip registration for already registered int valueref for " << valueref_name;
-        ErrorLogger() << "Number of registered int ValueRefs: " << m_value_refs_int.size();
-        return;
-    }
-    const std::lock_guard<std::mutex> lock(m_value_refs_int_mutex);
-    m_value_refs_int.emplace(valueref_name, std::move(vref));
-    ErrorLogger() << "Number of registered int ValueRefs: " << m_value_refs_int.size();
+    this->RegisterValueRefImpl(m_value_refs_int, m_value_refs_int_mutex, "int", std::move(valueref_name), std::move(vref));
 }
 
 // specialisation for registering to the ValueRef<double> registry
 template <>
 void NamedValueRefManager::RegisterValueRef(std::string&& valueref_name, std::unique_ptr<ValueRef::ValueRef<double>> vref) {
-    InfoLogger() << "Register double valueref for " << valueref_name << ": " << vref->Description();
-    if (m_value_refs_double.count(valueref_name)>0) {
-        ErrorLogger() << "Skip registration for already registered double valueref for " << valueref_name;
-        ErrorLogger() << "Number of registered double ValueRefs: " << m_value_refs_double.size();
-        return;
-    }
-    const std::lock_guard<std::mutex> lock(m_value_refs_double_mutex);
-    m_value_refs_double.emplace(valueref_name, std::move(vref));
-    ErrorLogger() << "Number of registered double ValueRefs: " << m_value_refs_double.size();
+    this->RegisterValueRefImpl(m_value_refs_double, m_value_refs_double_mutex, "double", std::move(valueref_name), std::move(vref));
 }
-
 
 NamedValueRefManager& GetNamedValueRefManager()
 { return NamedValueRefManager::GetNamedValueRefManager(); }

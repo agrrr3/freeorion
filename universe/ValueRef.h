@@ -147,8 +147,9 @@ public:
 private:
     NamedValueRefManager();
 
-    /** Assigns any m_pending_refs to m_value_refs. */
-    void CheckPendingRefs() const;
+    /** helper function for RegisterValueRef */
+    template <typename R, typename VR>
+    void RegisterValueRefImpl(R& registry, std::mutex& mutex, const std::string&& label, std::string&& valueref_name, std::unique_ptr<VR>&& vref);
 
     /** Future named value refs being parsed by parser.  mutable so that it can
         be assigned to m_species_types when completed.*/
@@ -162,7 +163,7 @@ private:
     container_type        m_value_refs; // everything else
     std::mutex            m_value_refs_mutex;
 
-    // The s_instance creeation is lazily triggered via as function local.
+    // The s_instance creation is lazily triggered via a function local.
     // There is exactly one for all translation units.
     static NamedValueRefManager* s_instance;
 };
