@@ -195,13 +195,13 @@ namespace parse { namespace detail {
     template <typename T>
     void open_and_register_as_string(std::string& nameref, ::parse::detail::MovableEnvelope<ValueRef::ValueRef<T>>& obj, bool& pass)
     {
-      if (obj.IsEmptiedEnvelope()) {
-          ErrorLogger() <<
-              "The parser attempted to extract the unique_ptr from a MovableEnvelope more than once - while looking at a valueref envelope for use in ValueRef registration ";
-          pass = false;
-          return;
-      }
-      ::RegisterValueRef<T>(nameref, obj.OpenEnvelope(pass));
+        if (obj.IsEmptiedEnvelope()) {
+            ErrorLogger() <<
+                "The parser attempted to extract the unique_ptr from a MovableEnvelope more than once - while looking at a valueref envelope for use in ValueRef registration ";
+            pass = false;
+            return;
+        }
+        ::RegisterValueRef<T>(nameref, obj.OpenEnvelope(pass));
     }
 
     BOOST_PHOENIX_ADAPT_FUNCTION(void, open_and_register_as_string_, open_and_register_as_string, 3)
@@ -246,7 +246,6 @@ namespace parse {
         detail::complex_variable_rule<int>  jumps_between;
         //complex_variable_rule<int>          jumps_between_by_empire_supply;
         detail::complex_variable_rule<int>  outposts_owned;
-        //detail::complex_variable_rule<int>  named_valueref_rule;
         detail::complex_variable_rule<int>  parts_in_ship_design;
         detail::complex_variable_rule<int>  part_class_in_ship_design;
         detail::value_ref_rule<int>         part_class_as_int;
