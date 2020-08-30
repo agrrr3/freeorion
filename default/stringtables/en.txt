@@ -12993,7 +12993,7 @@ SHP_ANTIMATTER_TANK
 Antimatter Fuel
 
 SHP_ANTIMATTER_TANK_DESC
-Moderate upgrade to each of [[shippart FU_BASIC_TANK]] ship parts. Increases [[metertype METER_FUEL]] capacity by [[value SHP_ANTIMATTER_TANK_EFFECT_MULT]] and thereby the number of jumps your ships can do without refueling.
+Moderate upgrade to each of [[shippart FU_BASIC_TANK]] ship parts. Increases [[metertype METER_FUEL]] capacity by [[value SHP_ANTIMATTER_TANK_EFFECT_MULT]] and thereby the number of jumps ships can do without refueling.
 
 SHP_ANTIMATTER_TANK_EFFECT
 Tech <i>Antimatter Fuel</i>
