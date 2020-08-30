@@ -32,8 +32,8 @@ namespace parse {
                           bool& pass)
     {
         ErrorLogger() << "Registering from named_values.focs.txt : " << name << " ! ValueRef<" << typeid(T).name() << ">";
-        // Note: Other parsers might also register value refs, so
-        //       we do not use the named_refs and as the normal pending mechanism does not suffice.
+        // Note: Other parsers might also register value refs, so the normal pending mechanism does not suffice.
+        //       So we do not collect the value refs in the given named_refs reference but register directly.
         ::RegisterValueRef<T>(name, ref_envelope.OpenEnvelope(pass));
     }
 
