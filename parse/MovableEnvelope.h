@@ -208,20 +208,6 @@ namespace parse { namespace detail {
         { return MovableEnvelope<T>(obj); }
     };
 
-    /** \p get_pointer is a functor that returns the original object of a MovableEnvelope<T> */
-    struct get_pointer {
-        template <typename T>
-        using result_type = const T*;
-
-        template <typename T>
-        result_type<T> operator() (MovableEnvelope<T>&& obj) const
-        { return obj.GetOriginalObj(); }
-
-        template <typename T>
-        result_type<T> operator() (const MovableEnvelope<T>& obj) const
-        { return obj.GetOriginalObj(); }
-    };
-
     /** Free functions converting containers of MovableEnvelope to unique_ptrs. */
     template <typename T>
     std::vector<std::unique_ptr<T>> OpenEnvelopes(const std::vector<MovableEnvelope<T>>& envelopes, bool& pass) {
