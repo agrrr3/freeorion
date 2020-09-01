@@ -3,6 +3,7 @@
 #include "ParseImpl.h"
 #include "ConditionParser.h"
 #include "ValueRefParser.h"
+#include "EnumValueRefRules.h"
 
 #include "MovableEnvelope.h"
 #include "../universe/ValueRefs.h"
@@ -49,6 +50,8 @@ namespace parse {
                 const parse::text_iterator& last) :
             grammar::base_type(start, "named_value_ref_grammar"),
             condition_parser(tok, label),
+            planet_type_rules(tok, label, condition_parser),
+            planet_environment_rules(tok, label, condition_parser),
             string_grammar(tok, label, condition_parser),
             int_rules(tok, label, condition_parser, string_grammar),
             double_rules(tok, label, condition_parser, string_grammar)
@@ -76,6 +79,12 @@ namespace parse {
                    > label(tok.Name_) > tok.string
                    > label(tok.Value_) >  qi::as<parse::detail::MovableEnvelope<ValueRef::ValueRef<double>>>()[double_rules.expr]
                     ) [ insert_named_ref_(_r1, _2, _3, _pass) ]
+                    |
+                    ( omit_[tok.Named_]  >> tok.PlanetType_ > label(tok.Name_) > tok.string > label(tok.Value_) > planet_type_rules.expr
+                    ) [ insert_named_ref_(_r1, _2, _3, _pass) ]
+                    |
+                    ( omit_[tok.Named_]  >> tok.Environment_ > label(tok.Name_) > tok.string > label(tok.Value_) >  planet_environment_rules.expr
+                    ) [ insert_named_ref_(_r1, _2, _3, _pass) ] 
                 ;
 
 
@@ -97,13 +106,15 @@ namespace parse {
 
         using start_rule = parse::detail::rule<start_rule_signature>;
 
-        parse::detail::Labeller                 label;
-        const parse::conditions_parser_grammar  condition_parser;
-        const parse::string_parser_grammar      string_grammar;
-        const parse::int_arithmetic_rules       int_rules;
-        const parse::double_parser_rules        double_rules;
-        named_value_ref_rule                    named_ref;
-        start_rule                              start;
+        parse::detail::Labeller                         label;
+        const parse::conditions_parser_grammar          condition_parser;
+        parse::detail::planet_type_parser_rules         planet_type_rules;
+        parse::detail::planet_environment_parser_rules  planet_environment_rules;
+        const parse::string_parser_grammar              string_grammar;
+        const parse::int_arithmetic_rules               int_rules;
+        const parse::double_parser_rules                double_rules;
+        named_value_ref_rule                            named_ref;
+        start_rule                                      start;
     };
 }
 

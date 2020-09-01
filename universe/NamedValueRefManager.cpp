@@ -202,3 +202,5 @@ template ValueRef::ValueRef<int>*    const GetValueRef(const std::string& name);
 template ValueRef::ValueRef<double>* const GetValueRef(const std::string& name);
 template void RegisterValueRef(std::string name, std::unique_ptr<ValueRef::ValueRef<int>>&& vref);
 template void RegisterValueRef(std::string name, std::unique_ptr<ValueRef::ValueRef<double>>&& vref);
+template void RegisterValueRef(std::string name, std::unique_ptr<ValueRef::ValueRef<PlanetType>>&& vref);
+template void RegisterValueRef(std::string name, std::unique_ptr<ValueRef::ValueRef<PlanetEnvironment>>&& vref);
