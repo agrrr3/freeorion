@@ -45,12 +45,12 @@ NamedValueRefManager::NamedValueRefManager() {
         throw std::runtime_error("Attempted to create more than one NamedValueRefManager.");
 
     // Only update the global pointer on sucessful construction.
-    ErrorLogger() << "NamedValueRefManager::NameValueRefManager constructs singleton " << this;
+    InfoLogger() << "NamedValueRefManager::NameValueRefManager constructs singleton " << this;
     s_instance = this;
 }
 
 NamedValueRefManager::~NamedValueRefManager() {
-    ErrorLogger() << "NamedValueRefManager::~NameValueRefManager destruct " << this ; // FIXME
+    ErrorLogger() << "NamedValueRefManager::~NameValueRefManager destruct " << this << " doing nothing"; // FIXME
 }
 
 // default implementation - queries the untyped registry
@@ -103,10 +103,10 @@ ValueRef::ValueRefBase* const NamedValueRefManager::GetValueRefBase(const std::s
 }
 
 NamedValueRefManager& NamedValueRefManager::GetNamedValueRefManager() {
-    ErrorLogger() << "NamedValueRefManager::GetNamedValueRefManager starts (check the thread)"; 
+    DebugLogger() << "NamedValueRefManager::GetNamedValueRefManager starts (check the thread)";
     
     static NamedValueRefManager manager; // function local 
-    ErrorLogger() << "NamedValueRefManager::GetNamedValueRefManager at " << &manager;
+    InfoLogger() << "NamedValueRefManager::GetNamedValueRefManager at " << &manager;
     return manager;
 }
 
