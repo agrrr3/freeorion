@@ -142,8 +142,6 @@ NamedValueRefManager::any_container_type  NamedValueRefManager::GetItems() const
     std::transform(m_value_refs_double.begin(), m_value_refs_double.end(), std::inserter(aet, aet.end()), double_to_base);
     std::transform(m_value_refs_int.begin(), m_value_refs_int.end(), std::inserter(aet, aet.end()), int_to_base);
     std::transform(m_value_refs.begin(), m_value_refs.end(), std::inserter(aet, aet.end()), base_to_base);
-    for (auto kv : aet)
-        ErrorLogger() << "NamedValueRefManager::GetItems - " << kv.first << " " << kv.second.get().StringResult() << " := " << kv.second.get().Description() ;
     return aet;
 }
 
@@ -164,7 +162,7 @@ void NamedValueRefManager::RegisterValueRefImpl(R& container, std::mutex& mutex,
 
 template <typename T>
 void NamedValueRefManager::RegisterValueRef(std::string&& valueref_name, std::unique_ptr<ValueRef::ValueRef<T>> vref) {
-    this->RegisterValueRefImpl(m_value_refs, m_value_refs_mutex, "generic", std::move(valueref_name), std::move(std::unique_ptr<ValueRef::ValueRefBase>(std::move(vref))));
+    this->RegisterValueRefImpl(m_value_refs, m_value_refs_mutex, "generic", std::move(valueref_name), std::move(vref));
 }
 
 // specialisation for registering to the ValueRef<int> registry
