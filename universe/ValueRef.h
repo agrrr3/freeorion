@@ -122,9 +122,9 @@ public:
     auto GetItems() const -> any_container_type;
 
     // Singleton
-    NamedValueRefManager&  operator=(NamedValueRefManager const&) =delete; // no copy via assignment
+    NamedValueRefManager&  operator=(NamedValueRefManager const&) = delete; // no copy via assignment
 
-    NamedValueRefManager(NamedValueRefManager const&) =delete;            // no copies via construction
+    NamedValueRefManager(NamedValueRefManager const&) = delete;            // no copies via construction
 
     ~NamedValueRefManager();
 
