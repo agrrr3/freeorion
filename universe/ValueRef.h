@@ -151,10 +151,6 @@ private:
     template <typename R, typename VR>
     void RegisterValueRefImpl(R& registry, std::mutex& mutex, const std::string&& label, std::string&& valueref_name, std::unique_ptr<VR>&& vref);
 
-    /** Future named value refs being parsed by parser.  mutable so that it can
-        be assigned to m_species_types when completed.*/
-    mutable boost::optional<Pending::Pending<container_type>> m_pending_refs = boost::none;
-
     //! Map of ValueRef%s identified by a name and mutexes for those to allow asynchronous registration
     double_container_type m_value_refs_double; // int value refs
     std::mutex            m_value_refs_double_mutex;
