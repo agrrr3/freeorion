@@ -150,7 +150,7 @@ void NamedValueRefManager::RegisterValueRefImpl(R& container, std::mutex& mutex,
     const std::lock_guard<std::mutex> lock(mutex);
     if (!(vref->RootCandidateInvariant() && vref->LocalCandidateInvariant() && vref->TargetInvariant() && vref->SourceInvariant()))
             ErrorLogger() << "Currently only invariant value refs can be named. " << valueref_name;
-    container.emplace(valueref_name, std::move(vref));
+    container.emplace(std::move(valueref_name), std::move(vref));
     DebugLogger() << "Number of registered " << label << " ValueRefs: " << container.size();
 }
 
