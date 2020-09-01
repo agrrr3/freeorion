@@ -123,14 +123,11 @@ parse::int_arithmetic_rules::int_arithmetic_rules(
     namespace phoenix = boost::phoenix;
     namespace qi = boost::spirit::qi;
     using phoenix::new_;
-    qi::_1_type _1;
     qi::_2_type _2;
     qi::_3_type _3;
-    qi::omit_type omit_;
     qi::_val_type _val;
     qi::_pass_type _pass;
     const boost::phoenix::function<detail::construct_movable> construct_movable_;
-    const boost::phoenix::function<detail::deconstruct_movable> deconstruct_movable_;
     const parse::detail::value_ref_rule<int>& simple = simple_int_rules.simple;
 
     statistic_value_ref_expr

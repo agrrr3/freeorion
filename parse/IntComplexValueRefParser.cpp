@@ -7,7 +7,7 @@
 
 namespace parse {
 
-  int_complex_parser_grammar::int_complex_parser_grammar(
+    int_complex_parser_grammar::int_complex_parser_grammar(
         const parse::lexer& tok,
         detail::Labeller& label,
         const int_arithmetic_rules& _int_arith_rules,
