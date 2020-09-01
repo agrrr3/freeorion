@@ -168,11 +168,6 @@ namespace parse { namespace detail {
             return std::move(obj);
         }
 
-        /** returns a raw pointer to the original object location */
-        const T* GetOriginalObj() const{
-            return original_obj;
-        }
-
     private:
         template <typename U>
         friend class MovableEnvelope;
