@@ -98,7 +98,7 @@ ValueRef::ValueRefBase* const NamedValueRefManager::GetValueRefBase(const std::s
     //if (auto* irefp = const_cast<NamedValueRefManager*>(this)->GetValueRef<int>(name)) // TODO C++17
     if (irefp)
         return irefp;
-    const auto& it = m_value_refs.find(name);
+    const auto it = m_value_refs.find(name);
     return it != m_value_refs.end() ? it->second.get() : nullptr;
 }
 
