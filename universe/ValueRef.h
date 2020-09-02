@@ -147,9 +147,13 @@ public:
 private:
     NamedValueRefManager();
 
+    /** helper function for GetValueRef */
+    template <typename V>
+    V* const GetValueRefImpl(std::map<key_type, std::unique_ptr<V>>& registry, const std::string& label, const std::string& name);
+
     /** helper function for RegisterValueRef */
     template <typename R, typename VR>
-    void RegisterValueRefImpl(R& registry, std::mutex& mutex, const std::string&& label, std::string&& valueref_name, std::unique_ptr<VR>&& vref);
+    void RegisterValueRefImpl(R& registry, std::mutex& mutex, const std::string& label, std::string&& valueref_name, std::unique_ptr<VR>&& vref);
 
     //! Map of ValueRef%s identified by a name and mutexes for those to allow asynchronous registration
     double_container_type m_value_refs_double; // int value refs

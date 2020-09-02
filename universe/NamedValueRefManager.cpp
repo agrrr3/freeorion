@@ -53,39 +53,33 @@ NamedValueRefManager::~NamedValueRefManager() {
     ErrorLogger() << "NamedValueRefManager::~NameValueRefManager destruct " << this << " doing nothing"; // FIXME
 }
 
+template <typename V>
+V* const NamedValueRefManager::GetValueRefImpl(std::map<NamedValueRefManager::key_type, std::unique_ptr<V>>& registry, const std::string& label, const std::string& name) /*const*/ {
+    DebugLogger() << "NamedValueRefManager::GetValueRef look for registered " << label << " valueref for \"" << name << '"';
+    TraceLogger() << "Number of registered " << label << " ValueRefs: " << registry.size();
+    const auto it = registry.find(name);
+    if (it != registry.end())
+        return it->second.get();
+    ErrorLogger() << "NamedValueRefManager::GetValueRef found no registered " << label << " valueref for \"" << name << '"';
+    return nullptr;
+}
+
 // default implementation - queries the untyped registry
 template <typename T>
 ValueRef::ValueRef<T>* const NamedValueRefManager::GetValueRef(const std::string& name) /*const*/ {
-    DebugLogger() << "NamedValueRefManager::GetValueRef<T> look for registered valueref for \"" << name << '"';
-    const auto it = m_value_refs.find(name);
-    if (it != m_value_refs.end() )
-        return dynamic_cast<ValueRef::ValueRef<T>*>(it->second.get());
-    ErrorLogger() << "NamedValueRefManager::GetValueRef<T> found no registered valueref for \"" << name << '"';
-    return nullptr;
+    return dynamic_cast<ValueRef::ValueRef<T>*>(this->GetValueRefImpl(m_value_refs, "generic", name));
 }
 
 // int specialisation - queries the ValueRef<int> registry
 template <>
 ValueRef::ValueRef<int>* const NamedValueRefManager::GetValueRef(const std::string& name) /*const*/ {
-    DebugLogger() << "NamedValueRefManager::GetValueRef<int> look for registered valueref for \"" << name << '"';
-    TraceLogger() << "Number of registered ValueRefs<int>: " << m_value_refs_int.size() << " in " << this;
-    const auto it = m_value_refs_int.find(name);
-    if (it != m_value_refs_int.end())
-        return it->second.get();
-    ErrorLogger() << "NamedValueRefManager::GetValueRef<int> found no registered valueref for \"" << name << '"';
-    return nullptr;
+    return this->GetValueRefImpl(m_value_refs_int, "int", name);
 }
 
 // double specialisation - queries the ValueRef<double> registry
 template <>
 ValueRef::ValueRef<double>* const NamedValueRefManager::GetValueRef(const std::string& name) /*const*/ {
-    DebugLogger() << "NamedValueRefManager::GetValueRef<double> look for registered valueref for \"" << name << '"';
-    TraceLogger() << "Number of registered ValueRefs<double>: " << m_value_refs_double.size() << " in " << this;
-    const auto it = m_value_refs_double.find(name);
-    if (it != m_value_refs_double.end())
-        return it->second.get();
-    ErrorLogger() << "NamedValueRefManager::GetValueRef<double> found no registered valueref for \"" << name << '"';
-    return nullptr;
+    return this->GetValueRefImpl(m_value_refs_double, "double", name);
 }
 
 ValueRef::ValueRefBase* const NamedValueRefManager::GetValueRefBase(const std::string& name) const {
@@ -140,7 +134,7 @@ NamedValueRefManager::any_container_type  NamedValueRefManager::GetItems() const
 }
 
 template <typename R, typename VR>
-void NamedValueRefManager::RegisterValueRefImpl(R& container, std::mutex& mutex, const std::string&& label, std::string&& valueref_name, std::unique_ptr<VR>&& vref) {
+void NamedValueRefManager::RegisterValueRefImpl(R& container, std::mutex& mutex, const std::string& label, std::string&& valueref_name, std::unique_ptr<VR>&& vref) {
     InfoLogger() << "Register " << label << " valueref for " << valueref_name << ": " << vref->Description();
     if (container.count(valueref_name)>0) {
         DebugLogger() << "Skip registration for already registered " << label << " valueref for " << valueref_name;
