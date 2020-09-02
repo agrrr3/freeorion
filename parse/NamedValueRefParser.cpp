@@ -63,7 +63,6 @@ namespace parse {
             qi::_2_type _2;
             qi::_3_type _3;
             qi::_4_type _4;
-            qi::_val_type _val;
             qi::_pass_type _pass;
             qi::omit_type omit_;
             qi::_r1_type _r1;
