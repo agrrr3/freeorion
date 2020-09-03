@@ -49,10 +49,6 @@ NamedValueRefManager::NamedValueRefManager() {
     s_instance = this;
 }
 
-NamedValueRefManager::~NamedValueRefManager() {
-    ErrorLogger() << "NamedValueRefManager::~NameValueRefManager destruct " << this << " doing nothing"; // FIXME
-}
-
 template <typename V>
 V* const NamedValueRefManager::GetValueRefImpl(std::map<NamedValueRefManager::key_type, std::unique_ptr<V>>& registry, const std::string& label, const std::string& name) /*const*/ {
     DebugLogger() << "NamedValueRefManager::GetValueRef look for registered " << label << " valueref for \"" << name << '"';

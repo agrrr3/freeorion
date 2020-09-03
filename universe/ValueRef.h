@@ -126,7 +126,7 @@ public:
 
     NamedValueRefManager(NamedValueRefManager const&) = delete;            // no copies via construction
 
-    ~NamedValueRefManager();
+    ~NamedValueRefManager() = default;
 
     //! Returns the instance of this singleton class; you should use the free
     //! function GetNamedValueRefManager() instead
