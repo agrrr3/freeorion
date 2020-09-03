@@ -116,16 +116,13 @@ namespace {
             if (!xpr::regex_search(text_it, retval.end(), match, FOCS_VALUE_SEARCH, xpr::regex_constants::match_default))
                 break;
 
-            std::string value_ref_name(match[1]);
-            auto        value_ref = GetValueRefBase(value_ref_name);
-            std::string value_str = value_ref_name;
-            std::string explanation_str(match[2].length()==0 ? "" : " (" + match[2] + ")");
-
-            if (value_ref) {
-                value_str = value_ref->StringResult();
-                if (use_description_instead_of_user_string || match[2].length()==0)
-                    explanation_str = " (" + value_ref->Description() + ")";
-            }
+            std::string value_ref_name{match[1]};
+            auto*       value_ref = GetValueRefBase(value_ref_name);
+            auto        value_str{value_ref ? value_ref->StringResult() : value_ref_name};
+            std::string explanation_str{
+                value_ref && (use_description_instead_of_user_string || (match[2].length()==0)) ?
+                    (" (" + value_ref->Description() + ")") :
+                    ((match[2].length()==0) ? "" : " (" + match[2] + ")")};
 
             auto resolved_tooltip = FOCS_VALUE_TAG_OPEN_PRE + " " + value_ref_name + ">" + value_str + explanation_str + FOCS_VALUE_TAG_CLOSE;
 
