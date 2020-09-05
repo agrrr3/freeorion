@@ -736,7 +736,7 @@ void NamedRef<T>::SetTopLevelContent(const std::string& content_name)
 template <typename T>
 const ValueRef<T>* NamedRef<T>::GetValueRef() const
 {
-    InfoLogger() << "ValueRefs::GetValueRef<T> look for registered valueref for \"" << m_value_ref_name << '"';
+    DebugLogger() << "NamedRef<T>::GetValueRef() look for registered valueref for \"" << m_value_ref_name << '"';
     return ::GetValueRef<T>(m_value_ref_name);
 }
 
