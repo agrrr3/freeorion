@@ -115,6 +115,9 @@
     <ClInclude Include="..\..\universe\Meter.h">
       <Filter>Header Files\universe</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\universe\NamedValueRefManager.h">
+      <Filter>Header Files\universe</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\universe\ObjectMap.h">
       <Filter>Header Files\universe</Filter>
     </ClInclude>
