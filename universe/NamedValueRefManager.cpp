@@ -1,3 +1,4 @@
+#include "NamedValueRefManager.h"
 #include "ValueRefs.h"
 
 #include <functional>
@@ -8,10 +9,6 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string/split.hpp>
-#include <boost/log/expressions.hpp>
-#include <boost/range/adaptor/filtered.hpp>
-#include <boost/range/adaptor/map.hpp>
-#include <boost/range/numeric.hpp>
 #include "Enums.h"
 #include "Field.h"
 #include "Fighter.h"
@@ -35,8 +32,6 @@
 #include "../util/Logger.h"
 #include "../util/MultiplayerCommon.h"
 #include "../util/Random.h"
-
-namespace expr = boost::log::expressions;
 
 NamedValueRefManager* NamedValueRefManager::s_instance = nullptr;
 
@@ -188,5 +183,105 @@ template ValueRef::ValueRef<int>*    const GetValueRef(const std::string& name);
 template ValueRef::ValueRef<double>* const GetValueRef(const std::string& name);
 template void RegisterValueRef(std::string name, std::unique_ptr<ValueRef::ValueRef<int>>&& vref);
 template void RegisterValueRef(std::string name, std::unique_ptr<ValueRef::ValueRef<double>>&& vref);
-template void RegisterValueRef(std::string name, std::unique_ptr<ValueRef::ValueRef<PlanetType>>&& vref);
 template void RegisterValueRef(std::string name, std::unique_ptr<ValueRef::ValueRef<PlanetEnvironment>>&& vref);
+template void RegisterValueRef(std::string name, std::unique_ptr<ValueRef::ValueRef<PlanetSize>>&& vref);
+template void RegisterValueRef(std::string name, std::unique_ptr<ValueRef::ValueRef<PlanetType>>&& vref);
+template void RegisterValueRef(std::string name, std::unique_ptr<ValueRef::ValueRef<StarType>>&& vref);
+template void RegisterValueRef(std::string name, std::unique_ptr<ValueRef::ValueRef<UniverseObjectType>>&& vref);
+template void RegisterValueRef(std::string name, std::unique_ptr<ValueRef::ValueRef<Visibility>>&& vref);
+
+///////////////////////////////////////////////////////////
+// NamedRef                                              //
+///////////////////////////////////////////////////////////
+namespace ValueRef {
+template <typename T>
+NamedRef<T>::NamedRef(std::string value_ref_name) :
+    m_value_ref_name(value_ref_name)
+{
+    DebugLogger() << "ctor(NamedRef<T>): " << typeid(*this).name() << " value_ref_name: " << m_value_ref_name;
+    // not invariant value refs are not supported currently as we do not need those yet
+    if (auto ref = GetValueRef()) {
+        this->m_root_candidate_invariant = ref->RootCandidateInvariant();
+        this->m_local_candidate_invariant = ref->LocalCandidateInvariant();
+        this->m_target_invariant = ref->TargetInvariant();
+        this->m_source_invariant = ref->SourceInvariant();;
+        if (!(this->m_root_candidate_invariant && this->m_local_candidate_invariant
+              && this->m_target_invariant && this->m_source_invariant))
+            ErrorLogger() << "Currently only invariant value refs can be named. " << m_value_ref_name;
+    } else {
+        this->m_root_candidate_invariant = true;
+        this->m_local_candidate_invariant = true;
+        this->m_target_invariant = true;
+        this->m_source_invariant = true;
+    }
+}
+
+template <typename T>
+bool NamedRef<T>::operator==(const ValueRef<T>& rhs) const
+{
+    if (&rhs == this)
+        return true;
+    if (typeid(rhs) != typeid(*this))
+        return false;
+    const NamedRef<T>& rhs_ = static_cast<const NamedRef<T>&>(rhs);
+    return (m_value_ref_name == rhs_.m_value_ref_name);
+}
+
+template <typename T>
+std::string NamedRef<T>::Description() const
+{ return GetValueRef() ? GetValueRef()->Description() : UserString("NAMED_REF_UNKNOWN"); }
+
+template <typename T>
+std::string NamedRef<T>::Dump(unsigned short ntabs) const
+{ return GetValueRef() ? GetValueRef()->Dump() : "NAMED_REF_UNKNOWN"; }
+
+template <typename T>
+void NamedRef<T>::SetTopLevelContent(const std::string& content_name)
+{}//{ if ( GetValueRef() ) GetValueRef()->SetTopLevelContent(content_name); } // TODO decide what to do. also setter does not fit to const return of GetValueRef
+
+template <typename T>
+const ValueRef<T>* NamedRef<T>::GetValueRef() const
+{
+    DebugLogger() << "NamedRef<T>::GetValueRef() look for registered valueref for \"" << m_value_ref_name << '"';
+    return ::GetValueRef<T>(m_value_ref_name);
+}
+
+template <typename T>
+unsigned int NamedRef<T>::GetCheckSum() const
+{
+    unsigned int retval{0};
+
+    CheckSums::CheckSumCombine(retval, "ValueRef::NamedRef");
+    CheckSums::CheckSumCombine(retval, m_value_ref_name);
+    TraceLogger() << "GetCheckSum(NamedRef<T>): " << typeid(*this).name() << " retval: " << retval;
+    return retval;
+}
+
+template <typename T>
+T NamedRef<T>::Eval(const ScriptingContext& context) const
+{
+    DebugLogger() << "NamedRef<" << typeid(T).name() << ">::Eval()";
+    const ValueRef<T>* value_ref = ::GetValueRef<T>(m_value_ref_name);
+    if (!value_ref) {
+        ErrorLogger() << "NamedRef<" << typeid(T).name() << ">::Eval did not find " << m_value_ref_name;
+        throw std::runtime_error(std::string("NamedValueLookup referenced unknown ValueRef<") + typeid(T).name() + "> named '" + m_value_ref_name + "'");
+    }
+
+    auto retval = value_ref->Eval(context);
+    TraceLogger() << "NamedRef<" << typeid(T).name() << "> name: " << m_value_ref_name << "  retval: " << retval;
+    return retval;
+}
+
+// trigger instantiations - was not necessary when NamedRef was living in ValueRefs.h/.cpp
+// it would be better if the parser would trigger instantiation implicitly
+template class NamedRef<double>;
+template class NamedRef<int>;
+// Enums
+template class NamedRef<PlanetEnvironment>;
+template class NamedRef<PlanetSize>;
+template class NamedRef<PlanetType>;
+template class NamedRef<StarType>;
+template class NamedRef<UniverseObjectType>;
+template class NamedRef<Visibility>;
+    
+} // ValueRef namespace

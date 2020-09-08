@@ -12,6 +12,7 @@
 #include "FleetPlan.h"
 #include "Fleet.h"
 #include "IDAllocator.h"
+#include "NamedValueRefManager.h"
 #include "Pathfinder.h"
 #include "Planet.h"
 #include "ShipDesign.h"
