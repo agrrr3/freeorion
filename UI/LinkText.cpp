@@ -3,6 +3,7 @@
 #include "ClientUI.h"
 #include "CUIControls.h"
 #include "../Empire/Empire.h"
+#include "../universe/NamedValueRefManager.h"
 #include "../universe/UniverseObject.h"
 #include "../util/AppInterface.h"
 #include "../util/Logger.h"

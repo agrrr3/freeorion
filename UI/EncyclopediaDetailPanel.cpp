@@ -30,6 +30,7 @@
 #include "../universe/Field.h"
 #include "../universe/FieldType.h"
 #include "../universe/Fleet.h"
+#include "../universe/NamedValueRefManager.h"
 #include "../universe/Planet.h"
 #include "../universe/ShipDesign.h"
 #include "../universe/Ship.h"
