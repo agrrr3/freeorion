@@ -2481,6 +2481,12 @@ std::string ComplexVariable<int>::Dump(unsigned short ntabs) const
     const std::string& variable_name = m_property_name.back();
     std::string retval = variable_name;
     // todo: implement like <double> case
+    if (variable_name == "GameRule")
+    {
+        if (m_string_ref1)
+            retval += " name = " + m_string_ref1->Dump(ntabs);
+    }
+
     return retval;
 }
 
@@ -2490,6 +2496,12 @@ std::string ComplexVariable<std::string>::Dump(unsigned short ntabs) const
     const std::string& variable_name = m_property_name.back();
     std::string retval = variable_name;
     // todo: implement like <double> case
+    if (variable_name == "GameRule")
+    {
+        if (m_string_ref1)
+            retval += " name = " + m_string_ref1->Dump(ntabs);
+    }
+
     return retval;
 }
 
@@ -2499,6 +2511,12 @@ std::string ComplexVariable<std::vector<std::string>>::Dump(unsigned short ntabs
     const std::string& variable_name = m_property_name.back();
     std::string retval = variable_name;
     // todo: implement like <double> case
+    if (variable_name == "GameRule")
+    {
+        if (m_string_ref1)
+            retval += " name = " + m_string_ref1->Dump(ntabs);
+    }
+
     return retval;
 }
 
