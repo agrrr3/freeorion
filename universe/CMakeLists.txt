@@ -18,6 +18,7 @@ target_sources(freeorioncommon
         ${CMAKE_CURRENT_LIST_DIR}/FleetPlan.h
         ${CMAKE_CURRENT_LIST_DIR}/IDAllocator.h
         ${CMAKE_CURRENT_LIST_DIR}/Meter.h
+        ${CMAKE_CURRENT_LIST_DIR}/NamedValueRefManager.h
         ${CMAKE_CURRENT_LIST_DIR}/ObjectMap.h
         ${CMAKE_CURRENT_LIST_DIR}/Planet.h
         ${CMAKE_CURRENT_LIST_DIR}/PopCenter.h
