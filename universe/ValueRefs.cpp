@@ -249,7 +249,22 @@ namespace {
     const std::string EMPTY_STRING;
 }
 
+// helper: support enums in ValueRef<T>::StringResult() via ADL
+// c++11 direct use of std::enable_if would confuse the signature of StringResult
+// c++17 could use: if constexpr (std::is_enum<T>::value
+template <typename T>
+typename std::enable_if<std::is_enum<T>::value, std::string>::type to_string(T val) {
+    return std::to_string(static_cast<typename std::underlying_type<T>::type>(val));
+}
+
 namespace ValueRef {
+    
+// enums and arithmetics
+template <typename T>
+std::string ValueRef<T>::StringResult() const {
+    using std::to_string;
+    return to_string(Eval()); // uses ::to_string or std::to_string per ADL (argument dependent lookup)
+}
 
 template <>
 std::string ValueRef<std::string>::StringResult() const {
@@ -263,12 +278,7 @@ std::string ValueRef<std::vector<std::string>>::StringResult() const {
     return s;
 }
 
-template <typename T>
-std::string ValueRef<T>::StringResult() const {
-    return std::to_string(Eval());
-}
-
-// instantiations of to_string implementation
+// instantiations of StringResult implementation
 template std::string ValueRef<int>::StringResult() const;
 template std::string ValueRef<float>::StringResult() const;
 template std::string ValueRef<double>::StringResult() const;
