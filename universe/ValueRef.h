@@ -19,7 +19,7 @@ struct FO_COMMON_API ValueRefBase {
     virtual bool SimpleIncrement() const         { return false; }
     virtual bool ConstantExpr() const            { return false; }
 
-    std::string InvariancePattern() const;
+    std::string InvariancePattern() const;                          //! Returns a short textual pattern indicating the invariances of this for debugging etc.
     virtual std::string Description() const = 0;                    //! Returns a user-readable text description of this ValueRef
     virtual std::string EvalAsString() const = 0;                   //! Returns a textual representation of the evaluation result  with an empty/default context
     virtual std::string Dump(unsigned short ntabs = 0) const = 0;   //! Returns a textual representation that should be parseable to recreate this ValueRef
@@ -59,7 +59,7 @@ struct FO_COMMON_API ValueRef : public ValueRefBase
       * that exist in the tree. */
     virtual T Eval(const ScriptingContext& context) const = 0;
 
-    /** Evaluates the expression tree with an empty context and retuns the
+    /** Evaluates the expression tree with an empty context and returns
       * a string representation of the result value iff the result type is
       * supported (currently std::string, int, float, double, enum).
       * See ValueRefs.cpp for specialisation implementations. */
