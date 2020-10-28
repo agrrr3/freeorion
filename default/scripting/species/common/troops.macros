@@ -39,7 +39,7 @@ BASIC_DEFENSE_TROOPS
             activation = Planet
             stackinggroup = "POPULATION_TROOPS_STACK"
             priority = [[VERY_EARLY_PRIORITY]]
-            effects = SetMaxTroops Value = Value + Target.Population * [[TROOPS_PER_POP]]
+            effects = SetMaxTroops value = Value + Target.Population * [[TROOPS_PER_POP]]
             accountinglabel = "DEF_ROOT_DEFENSE"
             
         EffectsGroup      // gives human bonuses when AI Aggression set to Beginner
