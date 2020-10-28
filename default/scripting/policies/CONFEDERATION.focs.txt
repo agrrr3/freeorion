@@ -18,7 +18,7 @@ Policy
             ]
             priority = [[DEFAULT_PRIORITY]]
             effects = 
-                SetTargetInfluence value = value + 1
+                SetTargetInfluence value = Value + 1
 
         // makes all planets less stable
         EffectsGroup
