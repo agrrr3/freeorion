@@ -1,11 +1,13 @@
 #include "NamedValueRefManager.h"
 #include "ValueRefs.h"
 
+#include <chrono>
 #include <functional>
 #include <iomanip>
 #include <iterator>
 #include <mutex>
 #include <unordered_map>
+#include <thread>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string/split.hpp>
@@ -135,6 +137,7 @@ void RegisterValueRefImpl(R& container, std::mutex& mutex, const std::string& la
         DebugLogger() << "Number of registered " << label << " ValueRefs: " << container.size();
         return;
     }
+    TraceLogger() << "RegisterValueRefImpl Check invariances for info. Then add the value ref in a thread safe way.";
     const std::lock_guard<std::mutex> lock(mutex);
     if (!(vref->RootCandidateInvariant() && vref->LocalCandidateInvariant() && vref->TargetInvariant() && vref->SourceInvariant()))
             ErrorLogger() << "Currently only invariant value refs can be named. " << valueref_name;
@@ -198,27 +201,67 @@ template void RegisterValueRef(std::string name, std::unique_ptr<ValueRef::Value
 ///////////////////////////////////////////////////////////
 namespace ValueRef {
 template <typename T>
-NamedRef<T>::NamedRef(std::string value_ref_name) :
-    m_value_ref_name(value_ref_name)
+NamedRef<T>::NamedRef(std::string value_ref_name, bool is_lookup_only) :
+    m_value_ref_name(value_ref_name),
+    m_is_lookup_only(is_lookup_only)
 {
-    DebugLogger() << "ctor(NamedRef<T>): " << typeid(*this).name() << " value_ref_name: " << m_value_ref_name;
+    TraceLogger() << "ctor(NamedRef<T>): " << typeid(*this).name() << "  value_ref_name: " << m_value_ref_name << "  is_lookup_only: " << m_is_lookup_only;
+}
+
+    // initializes invariants (on first use)
+template <typename T>
+bool NamedRef<T>::NamedRefInitInvariants()
+{
+    if (m_invariants_initialized)
+        return true;
+    auto* vref = GetValueRef();
+    if (!vref) {
+        std::chrono::milliseconds msecs(200);
+        InfoLogger() << "NamedRef<T>::NamedRefInitInvariants() could not find value ref, will sleep a bit and retry.";
+        std::this_thread::sleep_for(msecs);
+        vref = GetValueRef();
+        if (!vref) {
+            InfoLogger() << "NamedRef<T>::NamedRefInitInvariants() still could not find value ref, will sleep a bit longer and retry.";
+            std::this_thread::sleep_for(msecs);
+            std::this_thread::sleep_for(msecs);
+            vref = GetValueRef();
+            if (!vref)
+                ErrorLogger() << "NamedRef<T>::NamedRefInitInvariants() still could not find value ref. Giving up.";
+        }
+    }
+    if (vref) {
+        ValueRefBase::m_root_candidate_invariant = vref->RootCandidateInvariant();
+        ValueRefBase::m_local_candidate_invariant = vref->LocalCandidateInvariant();
+        ValueRefBase::m_target_invariant = vref->TargetInvariant();
+        ValueRefBase::m_source_invariant = vref->SourceInvariant();
+        m_invariants_initialized = true;
+        return true;
+    } else {
+        if (m_is_lookup_only) {
+            WarnLogger() << "NamedRef<T>::NamedRefInitInvariants() Trying to use invariants in a Lookup value ref without existing value ref. "
+                         << "Falling back to non-invariance will prevent performance optimisations. This may be a parse race condition.";
+        } else {
+            ErrorLogger() << "NamedRef<T>::NamedRefInitInvariants() Trying to use invariants without existing value ref (which should exist in this case)";
+        }
+        return false;
+    }
 }
 
 template <typename T>
 bool NamedRef<T>::RootCandidateInvariant() const
-{ return GetValueRef() ? GetValueRef()->RootCandidateInvariant() : false; }
+{ return (const_cast<NamedRef<T>*>(this))->NamedRefInitInvariants() ? ValueRefBase::m_root_candidate_invariant : false; }
 
 template <typename T>
 bool NamedRef<T>::LocalCandidateInvariant() const
-{ return GetValueRef() ? GetValueRef()->LocalCandidateInvariant() : false; }
+{ return (const_cast<NamedRef<T>*>(this))->NamedRefInitInvariants() ? ValueRefBase::m_local_candidate_invariant : false; }
 
 template <typename T>
 bool NamedRef<T>::TargetInvariant() const
-{ return GetValueRef() ? GetValueRef()->TargetInvariant() : false; }
+{ return (const_cast<NamedRef<T>*>(this))->NamedRefInitInvariants() ? ValueRefBase::m_target_invariant : false; }
 
 template <typename T>
 bool NamedRef<T>::SourceInvariant() const
-{ return GetValueRef() ? GetValueRef()->SourceInvariant() : false; }
+{ return (const_cast<NamedRef<T>*>(this))->NamedRefInitInvariants() ? ValueRefBase::m_source_invariant : false; }
 
 template <typename T>
 bool NamedRef<T>::SimpleIncrement() const
@@ -250,11 +293,19 @@ std::string NamedRef<T>::Dump(unsigned short ntabs) const
 template <typename T>
 void NamedRef<T>::SetTopLevelContent(const std::string& content_name)
 {
-    // only supposed to work for named-in-the-middle-case
+    if (m_is_lookup_only) {
+        DebugLogger() << "Ignored call of SetTopLevelContent(" << content_name
+                     << ") on a Lookup NamedRef for value ref " << m_value_ref_name;
+        return;
+    }
+    // only supposed to work for named-in-the-middle-case, SetTopLevelContent checks that
     if ( GetValueRef() )
         const_cast<ValueRef<T>*>(GetValueRef())->SetTopLevelContent(content_name);
     else
-        ErrorLogger() << "Unexpected call of SetTopLevelContent(" << content_name << ") on a NamedRef - unexpected because no value ref registered yet. This should not happen";
+        ErrorLogger() << "Unexpected call of SetTopLevelContent(" << content_name
+                      << ") on a " << ( content_name == "THERE_IS_NO_TOP_LEVEL_CONTENT" ? "top-level" : "named-in-the-middle" )
+                      << " NamedRef - unexpected because no value ref " << m_value_ref_name
+                      << " registered yet. Should not happen";
 }
 
 template <typename T>
