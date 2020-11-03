@@ -301,11 +301,13 @@ void NamedRef<T>::SetTopLevelContent(const std::string& content_name)
     // only supposed to work for named-in-the-middle-case, SetTopLevelContent checks that
     if ( GetValueRef() )
         const_cast<ValueRef<T>*>(GetValueRef())->SetTopLevelContent(content_name);
-    else
+    else {
+        const char* named_ref_kind = ( content_name == "THERE_IS_NO_TOP_LEVEL_CONTENT" ? "top-level" : "named-in-the-middle" );
         ErrorLogger() << "Unexpected call of SetTopLevelContent(" << content_name
-                      << ") on a " << ( content_name == "THERE_IS_NO_TOP_LEVEL_CONTENT" ? "top-level" : "named-in-the-middle" )
+                      << ") on a " << named_ref_kind
                       << " NamedRef - unexpected because no value ref " << m_value_ref_name
                       << " registered yet. Should not happen";
+    }
 }
 
 template <typename T>
