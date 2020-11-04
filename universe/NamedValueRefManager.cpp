@@ -133,8 +133,8 @@ template <typename R, typename VR>
 void RegisterValueRefImpl(R& container, std::mutex& mutex, const std::string& label, std::string&& valueref_name, std::unique_ptr<VR>&& vref) {
     InfoLogger() << "Register " << label << " valueref for " << valueref_name << ": " << vref->Description();
     if (container.count(valueref_name)>0) {
-        DebugLogger() << "Skip registration for already registered " << label << " valueref for " << valueref_name;
-        DebugLogger() << "Number of registered " << label << " ValueRefs: " << container.size();
+        TraceLogger() << "Skip registration for already registered " << label << " valueref for " << valueref_name;
+        TraceLogger() << "Number of registered " << label << " ValueRefs: " << container.size();
         return;
     }
     TraceLogger() << "RegisterValueRefImpl Check invariances for info. Then add the value ref in a thread safe way.";
@@ -142,7 +142,7 @@ void RegisterValueRefImpl(R& container, std::mutex& mutex, const std::string& la
     if (!(vref->RootCandidateInvariant() && vref->LocalCandidateInvariant() && vref->TargetInvariant() && vref->SourceInvariant()))
             ErrorLogger() << "Currently only invariant value refs can be named. " << valueref_name;
     container.emplace(std::move(valueref_name), std::move(vref));
-    DebugLogger() << "Number of registered " << label << " ValueRefs: " << container.size();
+    TraceLogger() << "Number of registered " << label << " ValueRefs: " << container.size();
 }
 }
 
@@ -168,7 +168,7 @@ NamedValueRefManager& GetNamedValueRefManager()
 
 ValueRef::ValueRefBase* const GetValueRefBase(const std::string& name)
 {
-    DebugLogger() << "NamedValueRefManager::GetValueRefBase look for registered valueref for \"" << name << '"';
+    TraceLogger() << "NamedValueRefManager::GetValueRefBase look for registered valueref for \"" << name << '"';
     auto* vref = GetNamedValueRefManager().GetValueRefBase(name);
     if (vref)
         return vref;
@@ -223,7 +223,7 @@ bool NamedRef<T>::NamedRefInitInvariants()
         std::this_thread::sleep_for(msecs);
         vref = GetValueRef();
         if (!vref) {
-            InfoLogger() << "NamedRef<T>::NamedRefInitInvariants() still could not find value ref, will sleep a bit longer and retry.";
+            TraceLogger() << "NamedRef<T>::NamedRefInitInvariants() still could not find value ref, will sleep a bit longer and retry.";
             std::this_thread::sleep_for(msecs);
             std::this_thread::sleep_for(msecs);
             vref = GetValueRef();
@@ -315,7 +315,7 @@ void NamedRef<T>::SetTopLevelContent(const std::string& content_name)
 template <typename T>
 const ValueRef<T>* NamedRef<T>::GetValueRef() const
 {
-    DebugLogger() << "NamedRef<T>::GetValueRef() look for registered valueref for \"" << m_value_ref_name << '"';
+    TraceLogger() << "NamedRef<T>::GetValueRef() look for registered valueref for \"" << m_value_ref_name << '"';
     return ::GetValueRef<T>(m_value_ref_name);
 }
 
