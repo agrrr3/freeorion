@@ -208,7 +208,9 @@ NamedRef<T>::NamedRef(std::string value_ref_name, bool is_lookup_only) :
     TraceLogger() << "ctor(NamedRef<T>): " << typeid(*this).name() << "  value_ref_name: " << m_value_ref_name << "  is_lookup_only: " << m_is_lookup_only;
 }
 
-    // initializes invariants (on first use)
+
+// waits for named ref to be registered and initializes invariants
+// called on first use, necessary for derived values/caching
 template <typename T>
 bool NamedRef<T>::NamedRefInitInvariants()
 {
@@ -265,11 +267,11 @@ bool NamedRef<T>::SourceInvariant() const
 
 template <typename T>
 bool NamedRef<T>::SimpleIncrement() const
-{ return GetValueRef() ? GetValueRef()->SimpleIncrement() : false; }
+{ return (const_cast<NamedRef<T>*>(this))->NamedRefInitInvariants() ? GetValueRef()->SimpleIncrement() : false; }
 
 template <typename T>
 bool NamedRef<T>::ConstantExpr() const
-{ return GetValueRef() ? GetValueRef()->ConstantExpr() : false; }
+{ return (const_cast<NamedRef<T>*>(this))->NamedRefInitInvariants() ? GetValueRef()->ConstantExpr() : false; }
 
 template <typename T>
 bool NamedRef<T>::operator==(const ValueRef<T>& rhs) const
