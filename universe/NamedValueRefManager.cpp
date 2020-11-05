@@ -222,13 +222,14 @@ bool NamedRef<T>::NamedRefInitInvariants()
         InfoLogger() << "NamedRef<T>::NamedRefInitInvariants() could not find value ref, will sleep a bit and retry.";
         std::this_thread::sleep_for(msecs);
         vref = GetValueRef();
-        if (!vref) {
-            TraceLogger() << "NamedRef<T>::NamedRefInitInvariants() still could not find value ref, will sleep a bit longer and retry.";
-            std::this_thread::sleep_for(msecs);
-            std::this_thread::sleep_for(msecs);
-            vref = GetValueRef();
-            if (!vref)
-                ErrorLogger() << "NamedRef<T>::NamedRefInitInvariants() still could not find value ref. Giving up.";
+        for (int i = 2; i < 5; i++) {
+            if (!vref) {
+                TraceLogger() << "NamedRef<T>::NamedRefInitInvariants() still could not find value ref (tried " << i << "times), will sleep a bit longer and retry.";
+                std::this_thread::sleep_for(i * msecs);
+                vref = GetValueRef();
+                if (!vref)
+                    ErrorLogger() << "NamedRef<T>::NamedRefInitInvariants() still could not find value ref after trying " << i << " times. Giving up.";
+            }
         }
     }
     if (vref) {
