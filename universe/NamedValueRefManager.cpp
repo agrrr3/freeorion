@@ -219,18 +219,19 @@ bool NamedRef<T>::NamedRefInitInvariants()
     auto* vref = GetValueRef();
     if (!vref) {
         std::chrono::milliseconds msecs(200);
-        InfoLogger() << "NamedRef<T>::NamedRefInitInvariants() could not find value ref, will sleep a bit and retry.";
+        DebugLogger() << "NamedRef<T>::NamedRefInitInvariants() could not find value ref, will sleep a bit and retry.";
         std::this_thread::sleep_for(msecs);
         vref = GetValueRef();
-        for (int i = 2; i < 5; i++) {
+        int tries = 5;
+        for (int i = 2; i < tries; i++) {
             if (!vref) {
                 TraceLogger() << "NamedRef<T>::NamedRefInitInvariants() still could not find value ref (tried " << i << "times), will sleep a bit longer and retry.";
                 std::this_thread::sleep_for(i * msecs);
                 vref = GetValueRef();
-                if (!vref)
-                    ErrorLogger() << "NamedRef<T>::NamedRefInitInvariants() still could not find value ref after trying " << i << " times. Giving up.";
             }
         }
+        if (!vref)
+            ErrorLogger() << "NamedRef<T>::NamedRefInitInvariants() still could not find value ref after trying " << tries << " times. Giving up.";
     }
     if (vref) {
         ValueRefBase::m_root_candidate_invariant = vref->RootCandidateInvariant();
