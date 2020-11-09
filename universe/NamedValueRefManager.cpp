@@ -104,13 +104,17 @@ NamedValueRefManager& NamedValueRefManager::GetNamedValueRefManager() {
 
 unsigned int NamedValueRefManager::GetCheckSum() const {
     unsigned int retval{0};
-    for (auto const& name_type_pair : m_value_refs)
+    for (auto const& name_type_pair : m_value_refs) {
+        DebugLogger() << "NamedValueRefManager current checksum: " << retval << " at " << name_type_pair.first;
         CheckSums::CheckSumCombine(retval, name_type_pair);
-    for (auto const& name_type_pair : m_value_refs_int)
+    }
+    for (auto const& name_type_pair : m_value_refs_int) {
+                DebugLogger() << "NamedValueRefManager current checksum: " << retval << " at " << name_type_pair.first;
+                CheckSums::CheckSumCombine(retval, name_type_pair); }
+        for (auto const& name_type_pair : m_value_refs_double) {
+                DebugLogger() << "NamedValueRefManager current checksum: " << retval << " at " << name_type_pair.first;
         CheckSums::CheckSumCombine(retval, name_type_pair);
-    for (auto const& name_type_pair : m_value_refs_double)
-        CheckSums::CheckSumCombine(retval, name_type_pair);
-
+        }
     DebugLogger() << "NamedValueRefManager checksum: " << retval;
     return retval;
 }
