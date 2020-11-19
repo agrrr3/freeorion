@@ -46,7 +46,7 @@ namespace Pending {
         Return boost::none on errors.*/
     template <typename T>
     boost::optional<T> WaitForPending(boost::optional<Pending<T>>& pending, bool do_not_care_about_result = false) {
-        std::lock_guard<std::mutex> lock(pending->m_mutex);
+        std::lock_guard<std::recursive_mutex> lock(pending->m_mutex);
         if (!pending)
             return boost::none;
 
@@ -91,7 +91,7 @@ namespace Pending {
     template <typename T>
     T& SwapPending(boost::optional<Pending<T>>& pending, T& stored) {
         if (pending) {
-            std::lock_guard<std::mutex> lock(pending->m_mutex);
+            std::lock_guard<std::recursive_mutex> lock(pending->m_mutex);
             if (auto tt = WaitForPending(pending))
                 std::swap(*tt, stored);
         }
