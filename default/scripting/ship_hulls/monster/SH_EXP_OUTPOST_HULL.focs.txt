@@ -60,7 +60,7 @@ Hull
             scope = Source
             effects = [
                 SetMaxSecondaryStat partname = "SR_GRAV_PULSE" value = 60
-                SetSecondaryStat partname = "SR_GRAV_PULE" value = 60
+                SetSecondaryStat partname = "SR_GRAV_PULSE" value = 60
             ]
     ]
     icon = ""
