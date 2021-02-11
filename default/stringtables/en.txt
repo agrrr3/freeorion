@@ -14362,6 +14362,14 @@ Tentacle
 SR_TENTACLE_DESC
 Tentacle of a kraken, can damage ships.
 
+SR_THRASHING_BODY
+Thrashing Body
+
+SR_THRASHING_BODY_DESC
+'''The fast moving body of a space monster, crushing low structured vessels in its way.
+
+A thrashing body can inflict [[encyclopedia DAMAGE_TITLE]] starting from combat round [[CLOSE_RANGE_COMBAT_ROUND]] as the targets are too far away in earlier rounds.'''
+
 SR_PLASMA_DISCHARGE
 Plasma Discharge
 
