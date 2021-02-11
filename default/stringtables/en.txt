@@ -14342,7 +14342,7 @@ SR_GRAV_PULSE
 Graviton Pulsar
 
 SR_GRAV_PULSE_DESC
-'''Graviton pulse causing damage to hull integrity to every target caught in the blast. While still deadly to fighters if the blast is spread, it causes only minor damage to ships.
+'''Graviton pulse causing damage to hull integrity to every target caught in the blast. While still deadly to fighters if the blast is spread, it causes only minor damage to ships or planet defenses.
 
 Graviton pulse inflicts [[encyclopedia DAMAGE_TITLE]] only once in combat, in combat round [[SHORT_RANGE_COMBAT_ROUND]].'''
 
