@@ -14350,7 +14350,7 @@ SR_JAWS
 Jaws
 
 SR_JAWS_DESC
-'''Jaws of a space monster, can damage ships. Huge space monsters are even capable of eating entire fleets.
+'''Jaws of a space monster, can damage ships and planets. Huge space monsters are even capable of eating entire fleets.
 
 Jaws can inflict [[encyclopedia DAMAGE_TITLE]] starting from combat round [[CLOSE_RANGE_COMBAT_ROUND]] as the targets are too far away in earlier rounds.'''
 
