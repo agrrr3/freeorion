@@ -1124,12 +1124,6 @@ Combat Rounds
 RULE_NUM_COMBAT_ROUNDS_DESC
 How many rounds of combat occur each turn.
 
-RULE_FIRST_COMBAT_ROUND_IN_SHORT_TARGETING_RANGE
-Short Range Targeting Combat Round
-
-RULE_FIRST_COMBAT_ROUND_IN_SHORT_TARGETING_RANGE_DESC
-The first combat round in which short range weapons are able to shoot at targets.
-
 RULE_FIRST_COMBAT_ROUND_IN_CLOSE_TARGETING_RANGE
 Close Range Targeting Combat Round
 
@@ -14350,7 +14344,7 @@ Graviton Pulsar
 SR_GRAV_PULSE_DESC
 '''Graviton pulse causing damage to hull integrity to every target caught in the blast. While still deadly to fighters if the blast is spread, it causes only minor damage to ships or planet defenses.
 
-Graviton pulse inflicts [[encyclopedia DAMAGE_TITLE]] only once in combat, in combat round [[value FIRST_COMBAT_ROUND_IN_SHORT_TARGETING_RANGE]].'''
+Graviton pulse inflicts [[encyclopedia DAMAGE_TITLE]] only once in combat, in combat round 2.'''
 
 SR_JAWS
 Jaws
