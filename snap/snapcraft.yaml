@@ -1,4 +1,5 @@
 name: freeorion
+base: core20
 summary: turn-based space empire and galactic conquest (4X) computer game
 description: |
   FreeOrion is a free, open source, turn-based space empire and galactic
@@ -7,15 +8,29 @@ description: |
   not a clone or remake of that series or any other game.
 confinement: strict
 adopt-info: freeorion
+architectures:
+  - build-on: amd64
 
 apps:
     freeorion:
         command: desktop-launch freeorion -S $SNAP_USER_COMMON/save
+        extensions: [gnome-3-38]
         plugs: [home, pulseaudio, opengl, network, screen-inhibit-control, browser-support, x11]
         desktop: share/applications/freeorion.desktop
         environment:
             LD_LIBRARY_PATH: $LD_LIBRARY_PATH:$SNAP/lib/freeorion
             LIBGL_DRIVERS_PATH: $SNAP/usr/lib/x86_64-linux-gnu/dri
+    freeoriond:
+        command: bin/freeoriond
+        plugs: [home, network, network-bind]
+        environment:
+            LD_LIBRARY_PATH: $LD_LIBRARY_PATH:$SNAP/lib/freeorion
+    freeoriond-dedicated:
+        command: bin/freeoriond --hostless --network.server.unconn-human-empire-players.max 0 --network.server.conn-human-empire-players.min 0
+        plugs: [home, network, network-bind]
+        environment:
+            LD_LIBRARY_PATH: $LD_LIBRARY_PATH:$SNAP/lib/freeorion
+
 parts:
     freeorion:
         source: .
@@ -42,7 +57,7 @@ parts:
             - debhelper
             - dpkg-dev
             - libalut-dev
-            - libboost-all-dev
+            - libboost1.67-dev
             - libfreetype6-dev
             - libgl1-mesa-dev
             - libglew-dev
@@ -58,13 +73,24 @@ parts:
         stage-packages:
             - mesa-utils
             - libgl1-mesa-dri
-            - python
+            - python3
+            - libpython3.8
+            - libboost-date-time1.67
+            - libboost-filesystem1.67
+            - libboost-iostreams1.67
+            - libboost-locale1.67
+            - libboost-log1.67
+            - libboost-python1.67
+            - libboost-regex1.67
+            - libboost-serialization1.67
+            - libboost-system1.67
+            - libboost-thread1.67
+            - libboost-test1.67
+            - libglew2.1
+            - libglu1-mesa
+            - libopenal1
+            - libsdl2-2.0-0
+            - libvorbis0a
+            - libpng16-16
+            - libfreetype6
         after: [ desktop-glib-only ]
-    desktop-glib-only:
-        source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
-        source-subdir: glib-only
-        plugin: make
-        build-packages:
-          - libglib2.0-dev
-        stage-packages:
-          - libglib2.0-bin
