@@ -1,5 +1,5 @@
 name: freeorion
-base: core20
+base: core18
 summary: turn-based space empire and galactic conquest (4X) computer game
 description: |
   FreeOrion is a free, open source, turn-based space empire and galactic
@@ -14,7 +14,7 @@ architectures:
 apps:
     freeorion:
         command: desktop-launch freeorion -S $SNAP_USER_COMMON/save
-        extensions: [gnome-3-38]
+        extensions: [gnome-3-34]
         plugs: [home, pulseaudio, opengl, network, screen-inhibit-control, browser-support, x11]
         desktop: share/applications/freeorion.desktop
         environment:
@@ -57,7 +57,7 @@ parts:
             - debhelper
             - dpkg-dev
             - libalut-dev
-            - libboost1.67-dev
+            - libboost1.62-dev
             - libfreetype6-dev
             - libgl1-mesa-dev
             - libglew-dev
@@ -74,23 +74,23 @@ parts:
             - mesa-utils
             - libgl1-mesa-dri
             - python3
-            - libpython3.8
-            - libboost-date-time1.67
-            - libboost-filesystem1.67
-            - libboost-iostreams1.67
-            - libboost-locale1.67
-            - libboost-log1.67
-            - libboost-python1.67
-            - libboost-regex1.67
-            - libboost-serialization1.67
-            - libboost-system1.67
-            - libboost-thread1.67
-            - libboost-test1.67
-            - libglew2.1
+            - libpython3.6
+            - libboost-date-time1.62
+            - libboost-filesystem1.62
+            - libboost-iostreams1.62
+            - libboost-locale1.62
+            - libboost-log1.62
+            - libboost-python1.62
+            - libboost-regex1.62
+            - libboost-serialization1.62
+            - libboost-system1.62
+            - libboost-thread1.62
+            - libboost-test1.62
+            - libglew2.0
             - libglu1-mesa
             - libopenal1
             - libsdl2-2.0-0
             - libvorbis0a
+            - libvorbisfile3
             - libpng16-16
             - libfreetype6
-        after: [ desktop-glib-only ]
