@@ -16,7 +16,7 @@ apps:
         command: desktop-launch freeorion -S $SNAP_USER_COMMON/save
         extensions: [gnome-3-34]
         plugs: [home, pulseaudio, opengl, network, screen-inhibit-control, browser-support, x11]
-        desktop: share/applications/freeorion.desktop
+        desktop: share/applications/org.freeorion.FreeOrion.desktop
         environment:
             LD_LIBRARY_PATH: $LD_LIBRARY_PATH:$SNAP/lib/freeorion
             LIBGL_DRIVERS_PATH: $SNAP/usr/lib/x86_64-linux-gnu/dri
@@ -35,7 +35,7 @@ parts:
     freeorion:
         source: .
         override-build: |
-            sed -i.bak -e 's|Icon=freeorion$|Icon=${SNAP}/meta/gui/icon.png|g' ../src/packaging/freeorion.desktop
+            sed -i.bak -e 's|Icon=freeorion$|Icon=${SNAP}/meta/gui/icon.png|g' ../src/packaging/org.freeorion.FreeOrion.desktop
             snapcraftctl build
         plugin: cmake
         override-pull: |
