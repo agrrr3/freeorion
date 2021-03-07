@@ -13,7 +13,7 @@ architectures:
 
 apps:
   freeorion:
-    command: bin/desktop-launch freeorion -S $SNAP_USER_COMMON/save
+    command: $SNAP/bin/freeorion -S $SNAP_USER_COMMON/save
     extensions: [gnome-3-38]
     plugs: [home, pulseaudio, opengl, network, screen-inhibit-control, browser-support, x11]
     desktop: share/applications/org.freeorion.FreeOrion.desktop
@@ -41,7 +41,8 @@ parts:
     cmake-parameters: [-DBUILD_TESTING=ON]
     override-pull: |
       snapcraftctl pull
-      version="$(git describe --tags --always --dirty)"
+      #version="$(git describe --tags --always --dirty)"
+      version="$(git log -n1 --date=short --format='%cd.%h' freeorion/$branchn)" 
       case $version in
         v*) version=$(echo $version | tail -c +2) ;;
         *)  version=$(echo $version | head -c 32) ;;
