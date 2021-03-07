@@ -38,6 +38,7 @@ parts:
             sed -i.bak -e 's|Icon=freeorion$|Icon=${SNAP}/meta/gui/icon.png|g' ../src/packaging/org.freeorion.FreeOrion.desktop
             snapcraftctl build
         plugin: cmake
+        configflags: [ -DBUILD_TESTING=ON ]
         override-pull: |
             snapcraftctl pull
             version="$(git describe --tags --always --dirty)"
