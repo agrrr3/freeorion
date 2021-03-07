@@ -13,7 +13,7 @@ architectures:
 
 apps:
   freeorion:
-    command: desktop-launch freeorion -S $SNAP_USER_COMMON/save
+    command: bin/desktop-launch freeorion -S $SNAP_USER_COMMON/save
     extensions: [gnome-3-38]
     plugs: [home, pulseaudio, opengl, network, screen-inhibit-control, browser-support, x11]
     desktop: share/applications/org.freeorion.FreeOrion.desktop
