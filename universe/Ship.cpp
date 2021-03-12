@@ -438,7 +438,7 @@ float Ship::TotalWeaponsShipDamage(float shield_DR, bool include_fighters) const
 }
 
 namespace {
-    std::vector<float> WeaponShipDamageImpl(const Ship* ship, const ShipDesign* design,
+    std::vector<float> WeaponShipDamageImpl(const std::shared_ptr<Ship> ship, const ShipDesign* design,
                                         float DR, bool max, bool include_fighters)
     {
         std::vector<float> retval;
@@ -457,9 +457,7 @@ namespace {
         int available_fighters = 0;
 
         retval.reserve(parts.size() + 1);
-        //const ScriptingContext context(ship); // XXX expects a shared_ptr ???
-        std::shared_ptr<Ship> ship_clone(ship->Clone()); // XXX ugly way to create a shared_ptr necessary for the context
-        const ScriptingContext context(ship_clone);
+        const ScriptingContext context(ship);
         int num_bouts = GetGameRules().Get<int>("RULE_NUM_COMBAT_ROUNDS");
         // for each weapon part, get its damage meter value
         for (const auto& part_name : parts) {
@@ -521,7 +519,7 @@ std::vector<float> Ship::AllWeaponsShipDamage(float shield_DR, bool include_figh
     if (!design)
         return retval;
 
-    return WeaponShipDamageImpl(this, design, shield_DR, false, include_fighters);
+    return WeaponShipDamageImpl(std::const_pointer_cast<Ship>(std::static_pointer_cast<const Ship>(shared_from_this())), design, shield_DR, false, include_fighters);
 }
 
 std::vector<float> Ship::AllWeaponsMaxShipDamage(float shield_DR , bool include_fighters) const {
@@ -531,7 +529,7 @@ std::vector<float> Ship::AllWeaponsMaxShipDamage(float shield_DR , bool include_
     if (!design)
         return retval;
 
-    return WeaponShipDamageImpl(this, design, shield_DR, true, include_fighters);
+    return WeaponShipDamageImpl(std::const_pointer_cast<Ship>(std::static_pointer_cast<const Ship>(shared_from_this())), design, shield_DR, true, include_fighters);
 }
 
 void Ship::SetFleetID(int fleet_id) {
