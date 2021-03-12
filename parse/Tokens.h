@@ -318,6 +318,7 @@
     (Or)                                        \
     (Orange)                                    \
     (Orbit)                                     \
+    (OrderedAlternativesOf)                     \
     (OrderedBombardedBy)                        \
     (OriginalType)                              \
     (OutpostsOwned)                             \
@@ -573,7 +574,8 @@
     (TopPriorityEnqueuedTech)                   \
     (TopPriorityResearchableTech)               \
     (TopPriorityTransferrableTech)              \
-    (OrderedAlternativesOf)                     \
+    (totalFighterDamageEstimation)              \
+    (totalShipDamageEstimation)                 \
     (Toxic)                                     \
     (Trade)
 

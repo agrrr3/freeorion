@@ -2392,10 +2392,10 @@ namespace {
         auto& species = ship->SpeciesName().empty() ? "Generic" : UserString(ship->SpeciesName());
         float structure = ship->GetMeter(MeterType::METER_MAX_STRUCTURE)->Current();
         float shield = ship->GetMeter(MeterType::METER_MAX_SHIELD)->Current();
-        float attack = ship->TotalWeaponsDamage();
+        float attack = ship->TotalWeaponsShipDamage(); // FIXME TotalWeaponsFighterDamage 
         float strength = std::pow(attack * structure, 0.6f);
         float typical_shot = *std::max_element(enemy_shots.begin(), enemy_shots.end());
-        float typical_strength = std::pow(ship->TotalWeaponsDamage(enemy_DR) * structure * typical_shot / std::max(typical_shot - shield, 0.001f), 0.6f);
+        float typical_strength = std::pow(ship->TotalWeaponsShipDamage(enemy_DR) * structure * typical_shot / std::max(typical_shot - shield, 0.001f), 0.6f); // FIXME TotalWeaponsFighterDamage 
         return (FlexibleFormat(UserString("ENC_SHIP_DESIGN_DESCRIPTION_STATS_STR"))
             % species
             % attack
@@ -2409,7 +2409,7 @@ namespace {
             % ship->SumCurrentPartMeterValuesForPartClass(MeterType::METER_CAPACITY, ShipPartClass::PC_COLONY)
             % ship->SumCurrentPartMeterValuesForPartClass(MeterType::METER_CAPACITY, ShipPartClass::PC_TROOPS)
             % ship->FighterMax()
-            % (attack - ship->TotalWeaponsDamage(0.0f, false))
+            % (attack - ship->TotalWeaponsShipDamage(0.0f, false)) // FIXME TotalWeaponsFighterDamage 
             % ship->SumCurrentPartMeterValuesForPartClass(MeterType::METER_MAX_CAPACITY, ShipPartClass::PC_FIGHTER_BAY)
             % strength
             % (strength / cost)
@@ -2505,7 +2505,7 @@ namespace {
                     enemy_DR = this_ship->GetMeter(MeterType::METER_MAX_SHIELD)->Initial();
                     DebugLogger() << "Using selected ship for enemy values, DR: " << enemy_DR;
                     enemy_shots.clear();
-                    auto this_damage = this_ship->AllWeaponsMaxDamage();
+                    auto this_damage = this_ship->AllWeaponsMaxShipDamage(); // FIXME FighterDamage
                     for (float shot : this_damage)
                         DebugLogger() << "Weapons Dmg " << shot;
                     enemy_shots.insert(this_damage.begin(), this_damage.end());
@@ -2640,7 +2640,7 @@ namespace {
                     enemy_DR = this_ship->GetMeter(MeterType::METER_MAX_SHIELD)->Initial();
                     DebugLogger() << "Using selected ship for enemy values, DR: " << enemy_DR;
                     enemy_shots.clear();
-                    auto this_damage = this_ship->AllWeaponsMaxDamage();
+                    auto this_damage = this_ship->AllWeaponsMaxShipDamage(); // FIXME MaxFighterDamage
                     for (float shot : this_damage)
                         DebugLogger() << "Weapons Dmg " << shot;
                     enemy_shots.insert(this_damage.begin(), this_damage.end());
