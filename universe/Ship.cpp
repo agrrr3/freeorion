@@ -438,7 +438,7 @@ float Ship::TotalWeaponsShipDamage(float shield_DR, bool include_fighters) const
 }
 
 namespace {
-    std::vector<float> WeaponShipDamageImpl(const std::shared_ptr<Ship> ship, const ShipDesign* design,
+    std::vector<float> WeaponShipDamageImpl(std::shared_ptr<const Ship> ship, const ShipDesign* design,
                                         float DR, bool max, bool include_fighters)
     {
         std::vector<float> retval;
@@ -519,7 +519,7 @@ std::vector<float> Ship::AllWeaponsShipDamage(float shield_DR, bool include_figh
     if (!design)
         return retval;
 
-    return WeaponShipDamageImpl(std::const_pointer_cast<Ship>(std::static_pointer_cast<const Ship>(shared_from_this())), design, shield_DR, false, include_fighters);
+    return WeaponShipDamageImpl(std::static_pointer_cast<const Ship>(shared_from_this()), design, shield_DR, false, include_fighters);
 }
 
 std::vector<float> Ship::AllWeaponsMaxShipDamage(float shield_DR , bool include_fighters) const {
@@ -529,7 +529,7 @@ std::vector<float> Ship::AllWeaponsMaxShipDamage(float shield_DR , bool include_
     if (!design)
         return retval;
 
-    return WeaponShipDamageImpl(std::const_pointer_cast<Ship>(std::static_pointer_cast<const Ship>(shared_from_this())), design, shield_DR, true, include_fighters);
+    return WeaponShipDamageImpl(std::static_pointer_cast<const Ship>(shared_from_this()), design, shield_DR, true, include_fighters);
 }
 
 void Ship::SetFleetID(int fleet_id) {
