@@ -148,7 +148,8 @@ ShipPart::ShipPart(ShipPartClass part_class, double capacity, double stat2,
                    std::string&& description, std::set<std::string>&& exclusions,
                    std::vector<ShipSlotType> mountable_slot_types,
                    std::string&& icon, bool add_standard_capacity_effect,
-                   std::unique_ptr<Condition::Condition>&& combat_targets) :
+                   std::unique_ptr<Condition::Condition>&& combat_targets,
+                   std::unique_ptr<ValueRef::ValueRef<double>>&& total_effect_estimation) :
     m_name(std::move(name)),
     m_description(std::move(description)),
     m_class(part_class),
@@ -164,7 +165,8 @@ ShipPart::ShipPart(ShipPartClass part_class, double capacity, double stat2,
     m_exclusions(std::move(exclusions)),
     m_icon(std::move(icon)),
     m_add_standard_capacity_effect(add_standard_capacity_effect),
-    m_combat_targets(std::move(combat_targets))
+    m_combat_targets(std::move(combat_targets)),
+    m_total_effect_estimation(std::move(total_effect_estimation))
 {
     Init(std::move(common_params.effects));
 
@@ -282,6 +284,7 @@ bool ShipPart::operator==(const ShipPart& rhs) const {
     CHECK_COND_VREF_MEMBER(m_production_cost)
     CHECK_COND_VREF_MEMBER(m_production_time)
     CHECK_COND_VREF_MEMBER(m_location)
+    CHECK_COND_VREF_MEMBER(m_total_effect_estimation)
     CHECK_COND_VREF_MEMBER(m_combat_targets)
 
     if (m_effects.size() != rhs.m_effects.size())
@@ -493,7 +496,9 @@ unsigned int ShipPart::GetCheckSum() const {
     CheckSums::CheckSumCombine(retval, m_exclusions);
     CheckSums::CheckSumCombine(retval, m_effects);
     CheckSums::CheckSumCombine(retval, m_icon);
-    CheckSums::CheckSumCombine(retval, m_add_standard_capacity_effect);
+    CheckSums::CheckSumCombine(retval, m_add_standard_capacity_effect),
+    CheckSums::CheckSumCombine(retval, m_combat_targets),
+    CheckSums::CheckSumCombine(retval, m_total_effect_estimation);
 
     return retval;
 }

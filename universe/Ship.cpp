@@ -7,6 +7,7 @@
 #include "Species.h"
 #include "UniverseObjectVisitor.h"
 #include "Universe.h"
+#include "ValueRef.h"
 #include "../Empire/EmpireManager.h"
 #include "../Empire/Empire.h"
 #include "../util/AppInterface.h"
@@ -456,6 +457,9 @@ namespace {
         int available_fighters = 0;
 
         retval.reserve(parts.size() + 1);
+        //const ScriptingContext context(ship); // XXX expects a shared_ptr ???
+        const ScriptingContext context();
+        int num_bouts = GetGameRules().Get<int>("RULE_NUM_COMBAT_ROUNDS");
         // for each weapon part, get its damage meter value
         for (const auto& part_name : parts) {
             const ShipPart* part = GetShipPart(part_name);
@@ -464,7 +468,11 @@ namespace {
             ShipPartClass part_class = part->Class();
 
             // get the attack power for each weapon part.
-            if (part_class == ShipPartClass::PC_DIRECT_WEAPON) {
+            if (part->TotalEffectEstimation()) {
+                // there is a special computation. overrides the default one
+                double estimation = part->TotalEffectEstimation()->Eval();
+                retval.emplace_back(estimation / num_bouts);  // divide by bouts because direct fire estimates for one attack
+            } else if (part_class == ShipPartClass::PC_DIRECT_WEAPON) {
                 float part_attack = ship->CurrentPartMeterValue(METER, part_name);  // used within loop that updates meters, so need current, not initial values
                 float part_shots = ship->CurrentPartMeterValue(SECONDARY_METER, part_name);
                 if (part_attack > DR)
@@ -487,7 +495,6 @@ namespace {
         int fighter_shots = std::min(available_fighters, fighter_launch_capacity);  // how many fighters launched in bout 1
         available_fighters -= fighter_shots;
         int launched_fighters = fighter_shots;
-        int num_bouts = GetGameRules().Get<int>("RULE_NUM_COMBAT_ROUNDS");
         int remaining_bouts = num_bouts - 2;  // no attack for first round, second round already added
         while (remaining_bouts > 0) {
             int fighters_launched_this_bout = std::min(available_fighters, fighter_launch_capacity);
@@ -500,7 +507,7 @@ namespace {
         // how much damage does a fighter shot do?
         fighter_damage = std::max(0.0f, fighter_damage);
 
-        retval.emplace_back(fighter_damage * fighter_shots / num_bouts); // divide by bouts because fighter calculation is for a full combat, but direct firefor one attack
+        retval.emplace_back(fighter_damage * fighter_shots / num_bouts); // divide by bouts because fighter calculation is for a full combat, but direct fire for one attack
 
         return retval;
     }
