@@ -4,7 +4,8 @@ Part
     class = ShortRange
     damage = 10
     totalFighterDamageEstimation = 0
-    totalShipDamageEstimation = (ShipPartMeter part = "SR_JAWS" meter = Capacity object = Source.ID)
+    totalShipDamageEstimation =
+        max(0,ShipPartMeter part = "SR_JAWS" meter = Capacity object = Source.ID - Target.Shield)
         * NamedRealLookup name = "NUM_REAL_COMBAT_ROUNDS_IN_CLOSE_TARGETING_RANGE"
 
     combatTargets = And [
