@@ -71,6 +71,7 @@
     (Core)                                      \
     (cos)                                       \
     (Count)                                     \
+    (countIf)                                   \
     (CountUnique)                               \
     (CounterClockwiseNextPlanetType)            \
     (CreateBuilding)                            \
@@ -573,6 +574,7 @@
     (TopPriorityResearchableTech)               \
     (TopPriorityTransferrableTech)              \
     (totalFighterDamageEstimation)              \
+    (TotalFighterShots)                         \
     (totalShipDamageEstimation)                 \
     (Toxic)                                     \
     (Trade)

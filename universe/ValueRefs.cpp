@@ -1327,6 +1327,111 @@ std::string Statistic<std::string, std::string>::Eval(const ScriptingContext& co
 }
 
 ///////////////////////////////////////////////////////////
+// TotalFighterShots (of a carrier during one battle)    //
+///////////////////////////////////////////////////////////
+TotalFighterShots::TotalFighterShots(std::unique_ptr<Condition::Condition>&& sampling_condition) :
+    Variable<int>(ReferenceType::SOURCE_REFERENCE),
+    m_sampling_condition(std::move(sampling_condition))
+{
+    this->m_root_candidate_invariant = (!m_sampling_condition || m_sampling_condition->RootCandidateInvariant());
+
+    // don't need to check if sampling condition is LocalCandidateInvariant, as
+    // all conditions aren't, but that refers to their own local candidate.  no
+    // condition is explicitly dependent on the parent context's local candidate.
+    // FIXME not sure what that above means (stolen from Statistic constructor), so i claim it is not invariant
+    this->m_local_candidate_invariant = false;
+
+    this->m_target_invariant = (!m_sampling_condition || m_sampling_condition->TargetInvariant());
+
+    this->m_source_invariant = (!m_sampling_condition || m_sampling_condition->SourceInvariant());
+}
+
+bool TotalFighterShots::operator==(const ValueRef<int>& rhs) const
+{
+    if (&rhs == this)
+        return true;
+    if (typeid(rhs) != typeid(*this))
+        return false;
+    const TotalFighterShots& rhs_ = static_cast<const TotalFighterShots&>(rhs);
+
+    if (m_sampling_condition == rhs_.m_sampling_condition) {
+        return true;
+    }
+    return false;
+}
+
+std::string TotalFighterShots::Description() const
+{
+    std::string retval = "TotalFighterShots(";
+    if (m_sampling_condition) {
+        retval += m_sampling_condition->Description();
+    }
+    retval += ")";
+    return retval;
+}
+
+std::string TotalFighterShots::Dump(unsigned short ntabs) const
+{
+    std::string retval = "TotalFighterShots";
+    if (m_sampling_condition)
+        retval += " condition = " + m_sampling_condition->Dump();
+    return retval;
+}
+
+void TotalFighterShots::SetTopLevelContent(const std::string& content_name)
+{
+    if (m_sampling_condition)
+        m_sampling_condition->SetTopLevelContent(content_name);
+}
+
+unsigned int TotalFighterShots::GetCheckSum() const
+{
+    unsigned int retval{0};
+
+    CheckSums::CheckSumCombine(retval, "ValueRef::TotalFighterShots");
+    CheckSums::CheckSumCombine(retval, m_sampling_condition);
+    TraceLogger() << "GetCheckSum(Statisic<T>): " << typeid(*this).name() << " retval: " << retval;
+    return retval;
+}
+
+int TotalFighterShots::Eval(const ScriptingContext& context) const
+{
+    Condition::ObjectSet condition_matches;
+
+    // Iterate over context, but change bout number
+    // XXX probably should rather take ship ID as argument as well
+    // XXX else i get a fighter and have to fetch me the launching ship from that
+    std::shared_ptr<const Ship> ship = std::static_pointer_cast<const Ship>(context.source);
+    if (!ship) {
+        ErrorLogger() << "TotalFighterShots condition used in context where the Source is not a ship";
+        return 0;
+    }
+
+    //XXX actually part of combat system, defined in AutoResolveCombat, maybe reuse
+    ScriptingContext mut_context(context);
+    int launch_capacity = ship->SumCurrentPartMeterValuesForPartClass(MeterType::METER_CAPACITY, ShipPartClass::PC_FIGHTER_BAY);
+    int hangar_capacity = ship->SumCurrentPartMeterValuesForPartClass(MeterType::METER_CAPACITY, ShipPartClass::PC_FIGHTER_HANGAR);
+    int launched_fighters = 0;
+    int shots_total = 0;
+    for (int bout = 1; bout <= GetGameRules().Get<int>("RULE_NUM_COMBAT_ROUNDS"); ++bout) {
+        mut_context.combat_bout = bout;
+        int launch_this_bout = std::min(launch_capacity,hangar_capacity);
+        int shots_this_turn = launched_fighters;
+        if (m_sampling_condition && launched_fighters > 0) {
+            // check if not shooting
+            condition_matches.clear();
+            m_sampling_condition->Eval(context, condition_matches);
+            if (condition_matches.size() == 0)
+                shots_this_turn = 0;
+        }
+        shots_total += shots_this_turn;
+        launched_fighters += launch_this_bout;
+    }
+
+    return shots_total;
+}
+
+///////////////////////////////////////////////////////////
 // ComplexVariable                                       //
 ///////////////////////////////////////////////////////////
 template <>
