@@ -309,6 +309,7 @@ namespace parse {
         detail::value_ref_rule<double>      int_free_variable_cast;
         detail::value_ref_rule<double>      int_statistic_cast;
         detail::value_ref_rule<double>      int_complex_variable_cast;
+        detail::value_ref_rule<double>      int_total_fighter_shots_cast;
         detail::value_ref_rule<double>      named_real_valueref;
     };
 
