@@ -440,6 +440,7 @@ float Ship::WeaponPartFighterDamage(const ShipPart* part, const ScriptingContext
 
     // usually a weapon part destroys one fighter per shot, but that can be overridden
     if (part->TotalFighterDamage()) {
+        ErrorLogger() << "WeaponPartFighterDamage PC_DIRECT_WEAPON TotalFighterDamage " << part->TotalFighterDamage()->Eval(context);
         int num_bouts = GetGameRules().Get<int>("RULE_NUM_COMBAT_ROUNDS");
         return part->TotalFighterDamage()->Eval(context) / num_bouts;
     } else
@@ -533,24 +534,35 @@ namespace {
             } else if (part_class == ShipPartClass::PC_FIGHTER_HANGAR && include_fighters) {
                 // attack strength of a ship's fighters per bout determined by the hangar...
                 // assuming all hangars on a ship are the same part type...
-                if (part->CombatTargets() && context.effect_target && part->CombatTargets()->Eval(context, context.effect_target)) {
+                if (target_ships && part->TotalShipDamage()) {
+                    ErrorLogger() << "WeaponDamageCalcImpl PC_FIGHTER_HANGAR add part->TotalShipDamage";
+                    retval.emplace_back(part->TotalShipDamage()->Eval(context));
+                    // as TotalShipDamage contains the damage from all fighters, do not further include fighter
+                    include_fighters = false;
+                } else if (part->TotalFighterDamage() && !target_ships) {
+                    ErrorLogger() << "WeaponDamageCalcImpl PC_FIGHTER_HANGAR add part->TotalFighterDamage";
+                    retval.emplace_back(part->TotalFighterDamage()->Eval(context));
+                    // as TotalFighterDamage contains the damage from all fighters, do not further include fighter
+                    include_fighters = false;
+                } else if (part->CombatTargets() && context.effect_target && part->CombatTargets()->Eval(context, context.effect_target)) {
                     fighter_damage = ship->CurrentPartMeterValue(SECONDARY_METER, part_name);
+                    available_fighters = std::max(0, static_cast<int>(ship->CurrentPartMeterValue(METER, part_name)));  // stacked meter
                 } else {
-                    ErrorLogger() << "does not match combatTargets condition";
-                    ErrorLogger() << "source: " << context.source->Owner() << "  target: " << context.effect_target->Owner();
+                    ErrorLogger() << "WeaponDamageCalcImpl PC_FIGHTER_HANGAR does not match combatTargets condition";
+                    ErrorLogger() << "WeaponDamageCalcImpl PC_FIGHTER_HANGAR source: " << context.source->Owner() << "  target: " << context.effect_target->Owner();
                     std::vector<const Condition::Condition*> target_conditions;
                     target_conditions.push_back(part->CombatTargets());
                     // target is not of the right type
                     fighter_damage = 0.0f;
-                    include_fighters = true; // FIXME should be false
+                    include_fighters = false;
                 }
-                available_fighters = std::max(0, static_cast<int>(ship->CurrentPartMeterValue(METER, part_name)));  // stacked meter
             }
         }
 
         if (!include_fighters || fighter_damage <= 0.0f || available_fighters <= 0 || fighter_launch_capacity <= 0)
             return retval;
 
+        // Calculate fighter damage manually if not
         int fighter_shots = std::min(available_fighters, fighter_launch_capacity);  // how many fighters launched in bout 1
         available_fighters -= fighter_shots;
         int launched_fighters = fighter_shots;
