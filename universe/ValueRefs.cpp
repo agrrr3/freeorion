@@ -1408,22 +1408,31 @@ int TotalFighterShots::Eval(const ScriptingContext& context) const
     //XXX actually part of combat system, defined in AutoResolveCombat, maybe reuse
     ScriptingContext mut_context(context);
     int launch_capacity = ship->SumCurrentPartMeterValuesForPartClass(MeterType::METER_CAPACITY, ShipPartClass::PC_FIGHTER_BAY);
-    int hangar_capacity = ship->SumCurrentPartMeterValuesForPartClass(MeterType::METER_CAPACITY, ShipPartClass::PC_FIGHTER_HANGAR);
+    int hangar_fighters = ship->SumCurrentPartMeterValuesForPartClass(MeterType::METER_CAPACITY, ShipPartClass::PC_FIGHTER_HANGAR);
     int launched_fighters = 0;
     int shots_total = 0;
+
     for (int bout = 1; bout <= GetGameRules().Get<int>("RULE_NUM_COMBAT_ROUNDS"); ++bout) {
+        ErrorLogger() << "TotalFighterShots setting current bout to " << bout;
         mut_context.combat_bout = bout;
-        int launch_this_bout = std::min(launch_capacity,hangar_capacity);
-        int shots_this_turn = launched_fighters;
+        int launch_this_bout = std::min(launch_capacity,hangar_fighters);
+        int shots_this_bout = launched_fighters;
+        ErrorLogger() << "TotalFighterShots   launched: " << launched_fighters << "  launch this bout +" << launch_this_bout;
         if (m_sampling_condition && launched_fighters > 0) {
             // check if not shooting
             condition_matches.clear();
-            m_sampling_condition->Eval(context, condition_matches);
-            if (condition_matches.size() == 0)
-                shots_this_turn = 0;
+            m_sampling_condition->Eval(mut_context, condition_matches);
+            if (condition_matches.size() == 0) {
+                ErrorLogger() << "TotalFighterShots condition DISALLOWS shooting";
+                shots_this_bout = 0;
+            } else {
+                ErrorLogger() << "TotalFighterShots condition ALLOWS shooting";
+            }
         }
-        shots_total += shots_this_turn;
+        ErrorLogger() << "TotalFighterShots   shots: " << shots_total << "  shots this bout +" << shots_this_bout;
+        shots_total += shots_this_bout;
         launched_fighters += launch_this_bout;
+        hangar_fighters -= launch_this_bout;
     }
 
     return shots_total;
