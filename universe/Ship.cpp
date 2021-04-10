@@ -441,10 +441,11 @@ float Ship::WeaponPartFighterDamage(const ShipPart* part, const ScriptingContext
     // usually a weapon part destroys one fighter per shot, but that can be overridden
     if (part->TotalFighterDamage()) {
         ErrorLogger() << "WeaponPartFighterDamage PC_DIRECT_WEAPON TotalFighterDamage " << part->TotalFighterDamage()->Eval(context);
-        int num_bouts = GetGameRules().Get<int>("RULE_NUM_COMBAT_ROUNDS");
-        return part->TotalFighterDamage()->Eval(context) / num_bouts;
-    } else
-        return  CurrentPartMeterValue(MeterType::METER_SECONDARY_STAT, part->Name());  // used within loop that updates meters, so need current, not initial values
+        return part->TotalFighterDamage()->Eval(context);
+    } else {
+        int num_bouts_with_fighter_targets = GetGameRules().Get<int>("RULE_NUM_COMBAT_ROUNDS") - 1;
+        return  CurrentPartMeterValue(MeterType::METER_SECONDARY_STAT, part->Name()) * num_bouts_with_fighter_targets;  // used within loop that updates meters, so need current, not initial values
+    }
 }
 
 float Ship::WeaponPartShipDamage(const ShipPart* part, const ScriptingContext& context) const {
@@ -455,23 +456,21 @@ float Ship::WeaponPartShipDamage(const ShipPart* part, const ScriptingContext& c
     // usually a weapon part does damage*shots ship damage, but that can be overridden
     if (part->TotalShipDamage()) {
         ErrorLogger() << "WeaponPartShipDamage TotalShipDamage " << part->TotalShipDamage()->Eval(context);
-        int num_bouts = GetGameRules().Get<int>("RULE_NUM_COMBAT_ROUNDS");
-        return part->TotalShipDamage()->Eval(context) / num_bouts;
+        return part->TotalShipDamage()->Eval(context);
     } else {
         float part_attack = CurrentPartMeterValue(MeterType::METER_CAPACITY, part->Name());  // used within loop that updates meters, so need current, not initial values
         float part_shots = CurrentPartMeterValue(MeterType::METER_SECONDARY_STAT, part->Name());
         float target_shield = 0.0f;
         if (context.effect_target) {
-            // TODO add target to context
-            // TODO use shield in TotalShipDamage valueref where necessary
             const Ship* target = static_cast<const Ship*>(context.effect_target.get());
             if (target) 
                 target_shield = target->GetMeter(MeterType::METER_SHIELD)->Current();
         }
         ErrorLogger() << "WeaponPartShipDamage target.Shield " << part_attack << " - " << target_shield << "  *" << part_shots;
-        if (part_attack > target_shield)
-            return (part_attack - target_shield) * part_shots;
-        else
+        if (part_attack > target_shield) {
+            int num_bouts = GetGameRules().Get<int>("RULE_NUM_COMBAT_ROUNDS");
+            return (part_attack - target_shield) * part_shots * num_bouts;
+        } else
             return 0.0f;
     }
 }
