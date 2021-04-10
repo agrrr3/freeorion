@@ -578,9 +578,9 @@ namespace {
         fighter_damage = std::max(0.0f, fighter_damage);
 
         if (target_ships)
-            retval.emplace_back(fighter_damage * fighter_shots / num_bouts); // divide by bouts because fighter calculation is for a full combat, but direct fire for one attack
+            retval.emplace_back(fighter_damage * fighter_shots);
         else
-            retval.emplace_back((float)fighter_shots / num_bouts); // divide by bouts because fighter calculation is for a full combat, but direct fire for one attack
+            retval.emplace_back((float)fighter_shots);
         return retval;
     }
 
