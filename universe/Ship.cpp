@@ -616,7 +616,7 @@ namespace {
 std::vector<float> Ship::AllWeaponsFighterDamage(bool include_fighters) const {
     std::vector<float> retval;
 
-    const ShipDesign* design = GetShipDesign(m_design_id);
+    const ShipDesign* design = GetUniverse().GetShipDesign(m_design_id);
     if (!design)
         return retval;
 
