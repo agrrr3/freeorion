@@ -7,6 +7,7 @@
 #include "UniverseObject.h"
 #include "../util/Export.h"
 
+class ScriptingContext;
 class ShipDesign;
 class ShipPart;
 
