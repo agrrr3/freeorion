@@ -241,7 +241,7 @@ bool Ship::IsArmed() const {
     ErrorLogger() << "IsArmed?";
     if ((TotalWeaponsShipDamage(0.0f, false) > 0.0f) || (TotalWeaponsFighterDamage(false) > 0.0f))
         return true;    // has non-fighter weapons damaging ships or fighters
-    if (HasFighters() && ((TotalWeaponsShipDamage(0.0f, true) > 0.0f) || (TotalWeaponsFighterDamage(false) > 0.0f)))
+    if (HasFighters() && ((TotalWeaponsShipDamage(0.0f, true) > 0.0f) || (TotalWeaponsFighterDamage(true) > 0.0f)))
         return true;    // has no non-fighter weapons but has launchable fighters that do damage
     ErrorLogger() << "IsArmed - no";
     return false;
