@@ -1301,7 +1301,7 @@ bool Fleet::BlockadedAtSystem(int start_system_id, int dest_system_id,
         if (fleet->MaxShipAgeInTurns() <= 1)
             continue;
         // These are the most costly checks.  Do them last
-        if (!fleet->HasArmedShips(objects))
+        if (!fleet->CanDamageShips(objects))
             continue;
 
         // don't exit early here, because blockade may yet be thwarted by ownership & presence check above

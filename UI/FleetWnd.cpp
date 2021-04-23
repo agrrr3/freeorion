@@ -1575,12 +1575,12 @@ void FleetDataPanel::SetStatIconValues() {
             break;
         case MeterType::METER_CAPACITY:
             icon->SetValue(damage_tally);
-            if (fleet->HasArmedShips(objects))
+            if (fleet->CanDamageShips(objects))
                 AttachChild(icon);
             break;
         case MeterType::METER_MAX_CAPACITY:
             icon->SetValue(destroy_tally);
-            if (fleet->HasArmedShips(objects))
+            if (fleet->CanDestroyFighters(objects))
                 AttachChild(icon);
             break;
         case MeterType::METER_SECONDARY_STAT:
