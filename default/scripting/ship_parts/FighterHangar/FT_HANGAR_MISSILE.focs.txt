@@ -5,14 +5,19 @@ Part
     class = FighterHangar
     // Capacity is set to launch capacity per launch bay (4)
     // MaxCapacity is also set to that value
-    // "Real" missile capacity is four times launch capacity plus once launch capacity per bay (4 per launch bay)
-    // Default value could be expecting a single launch bay
-    capacity = 0
+    // "Real" missile capacity (storage) is four times launch capacity plus once launch capacity per bay (4 per launch bay)
+    // As default for UI we put four times launch capacity
+    capacity = 16
     damage = 3
-    // There is a problem with resupply - resupply happens in Fleet.cpp in movement phase
-    // it sets for all parts the capacity to maximum capacity which overrides my definition of resupply
-    // if that is fixed, MaxCapacity should be set to real missile storage capacity to give the user a hint
+    // There is a problem with storage/resupply and launching:
+    //   resupply happens in Fleet.cpp in movement phase and sets all parts capacity to maximum capacity
+    //   but hangar capacity has to be equal to launch capacity (because missile should only launch in bout 1)
+    // without that resupply, MaxCapacity could be set to real missile storage capacity to give the user a hint
+    // or even better a launch condition which only allows launching in bout 1
 //    NoDefaultCapacityEffect
+    totalFighterDamageEstimation = min([[MISSILE_LAUNCHES]], ShipPartMeter part = "FT_HANGAR_MISSILE" meter = Capacity object = Source.ID)
+    totalShipDamageEstimation = min([[MISSILE_LAUNCHES]], Value(ShipPartMeter part = "FT_HANGAR_MISSILE" meter = Capacity object = Source.ID)) * ShipPartMeter part = "FT_HANGAR_MISSILE" meter = SecondaryStat object = Source.ID
+
     combatTargets = And [
         (CombatBout == 3)
         [[COMBAT_TARGETS_VISIBLE_ENEMY]]
@@ -33,9 +38,9 @@ Part
             stackinggroup = "SET_MISSILE_STORAGE"
             accountinglabel = "MISSILE_STORAGE_USE"
             effects = [
-             // SetMaxCapacity partname = "FT_HANGAR_MISSILE"           value = Max(0, ( SpecialCapacity  name = "MISSILE_STORAGE_CAPACITY" object = Source.ID ) - ( [[MISSILE_LAUNCHES]] ) )
-                SetMaxCapacity partname = "FT_HANGAR_MISSILE"           value = Min( ( [[MISSILE_LAUNCHES]] ) , Max(0, ( SpecialCapacity  name = "MISSILE_STORAGE_CAPACITY" object = Source.ID ) - ( [[MISSILE_LAUNCHES]] ) ) )
-                SetSpecialCapacity name = "MISSILE_STORAGE_CAPACITY" capacity = Max(0, ( SpecialCapacity  name = "MISSILE_STORAGE_CAPACITY" object = Source.ID ) - ( [[MISSILE_LAUNCHES]] ) )
+             // SetMaxCapacity partname = "FT_HANGAR_MISSILE"           value = max(0, ( SpecialCapacity  name = "MISSILE_STORAGE_CAPACITY" object = Source.ID ) - ( [[MISSILE_LAUNCHES]] ) )
+                SetMaxCapacity partname = "FT_HANGAR_MISSILE"           value = min( ( [[MISSILE_LAUNCHES]] ) , max(0, ( SpecialCapacity  name = "MISSILE_STORAGE_CAPACITY" object = Source.ID ) - ( [[MISSILE_LAUNCHES]] ) ) )
+                SetSpecialCapacity name = "MISSILE_STORAGE_CAPACITY" capacity = max(0, ( SpecialCapacity  name = "MISSILE_STORAGE_CAPACITY" object = Source.ID ) - ( [[MISSILE_LAUNCHES]] ) )
             ]
 
        EffectsGroup
@@ -62,7 +67,7 @@ Part
             accountinglabel = "MISSILE_STORAGE_FALLBACK_LABEL"
             effects = [
              // SetMaxCapacity partname = "FT_HANGAR_MISSILE" value = ( SpecialCapacity  name = "MISSILE_STORAGE_CAPACITY" object = Source.ID )
-                SetMaxCapacity partname = "FT_HANGAR_MISSILE" value = Min( ( [[MISSILE_LAUNCHES]] ) , Max(0, SpecialCapacity  name = "MISSILE_STORAGE_CAPACITY" object = Source.ID ) )
+                SetMaxCapacity partname = "FT_HANGAR_MISSILE" value = min( ( [[MISSILE_LAUNCHES]] ) , max(0, SpecialCapacity  name = "MISSILE_STORAGE_CAPACITY" object = Source.ID ) )
             ]
 
         EffectsGroup
