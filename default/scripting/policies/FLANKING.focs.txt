@@ -38,14 +38,16 @@ Policy
         // a battle do not receive or contribute to this effect.
         //
         // Multi starlane attack bonus:
-        // if, on the previous turn ships were coming in from different starlanes, give them a bonus
+        // if, on the previous turn ships were on different starlanes, give them a bonus
+        // Note: the system must be set as the final destination
         EffectsGroup
             scope = And [
                 Ship
                 OwnedBy empire = Source.Owner
                 Armed
+                (LocalCandidate.Fleet.ETA = 1)
                 Or [
-                   // Stationary ships bonus
+                   // Stationary ships bonus (prepared defensive flanking)
                    And [ Planet
                        InSystem
                        Stationary
@@ -65,13 +67,13 @@ Policy
                         )
                        )
                    ]
-                   // Multi starlane attack bonus
+                   // Multi starlane attack bonus (pincer attack)
                        (( Statistic CountUnique
                           value = LocalCandidate.PreviousSystemID
                           condition = And [
                               Fleet
                               OwnedBy empire = RootCandidate.Owner
-                              (LocalCandidate.NextSystemID = RootCandidate.Fleet.NextSystemID)
+                              (LocalCandidate.FinalDestinationID = RootCandidate.Fleet.FinalDestinationID)
                               (LocalCandidate.ETA = 1)
                               Contains condition = And [ Ship Armed ]
                           ]
