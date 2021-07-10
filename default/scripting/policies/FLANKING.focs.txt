@@ -7,30 +7,6 @@ Policy
     effectsgroups = [
         [[SPECIES_LIKES_OR_DISLIKES_POLICY_STABILITY_EFFECTS]]
 
-
-        EffectsGroup
-            scope = And [
-                Ship
-                OwnedBy empire = Source.Owner
-                Armed
-            ]
-
-            activation = Source
-            effects =
-                GenerateSitRepMessage
-                    message = "%ship% going to %system% (%rawtext:system%) coming from %system:from% (%rawtext:from%) . ETA %rawtext:eta%. %rawtext:at%"
-                    label = "Custom_001"
-                    NoStringtableLookup
-                    icon = "icons/tech/categories/spy.png"
-                    parameters = [
-                        tag = "ship"   data = Target.ID
-                        tag = "at" data = Target.SystemID
-                        tag = "system" data = Target.Fleet.NextSystemID
-                        tag = "eta"    data = Target.Fleet.ETA
-                        tag = "from"   data = Target.Fleet.PreviousSystemID
-                    ]
-                    empire = Source.Owner
-
         // Two effects: Stationary ships bonus, Multi starlane attack bonus
         //  Stationary ships bonus:
         // if, on the previous turn, the empire that adopted this policy had more ships in the system
@@ -86,19 +62,6 @@ Policy
                 SetMaxDamage partname = "SR_WEAPON_2_1" value = Value + NamedRealLookup name = "PLC_FLANKING_DAMAGE_BOOST"
                 SetMaxDamage partname = "SR_WEAPON_3_1" value = Value + NamedRealLookup name = "PLC_FLANKING_DAMAGE_BOOST"
                 SetMaxDamage partname = "SR_WEAPON_4_1" value = Value + NamedRealLookup name = "PLC_FLANKING_DAMAGE_BOOST"
-                GenerateSitRepMessage
-                    message = "Flanking bonus for %ship% going to %system% (%rawtext:system%) coming from %system:from% (%rawtext:from%) . ETA %rawtext:eta%. %rawtext:at%"
-                    label = "Custom_001"
-                    NoStringtableLookup
-                    icon = "icons/tech/categories/spy.png"
-                    parameters = [
-                        tag = "ship"   data = Target.ID
-                        tag = "at" data = Target.SystemID
-                        tag = "system" data = Target.Fleet.NextSystemID
-                        tag = "eta"    data = Target.Fleet.ETA
-                        tag = "from"   data = Target.Fleet.PreviousSystemID
-                    ]
-                    empire = Source.Owner
             ]
 
     ]
