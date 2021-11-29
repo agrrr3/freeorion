@@ -1623,7 +1623,7 @@ private:
   * condaition, ignoring any conditions listed later. If no candidate matches
   * any of the conditions, it matches nothing. */
 struct FO_COMMON_API WeightedAlternativesOf final : public Condition {
-    explicit WeightedAlternativesOf(std::vector<std::unique_ptr<Condition>>&& operands);
+    explicit WeightedAlternativesOf(std::unique_ptr<Condition>&& scope, std::vector<std::unique_ptr<Condition>>&& operands);
 
     bool operator==(const Condition& rhs) const override;
     void Eval(const ScriptingContext& parent_context, ObjectSet& matches,
@@ -1637,6 +1637,7 @@ struct FO_COMMON_API WeightedAlternativesOf final : public Condition {
     [[nodiscard]] std::unique_ptr<Condition> Clone() const override;
 
 private:
+    std::unique_ptr<Condition> m_narrowing_scope;
     std::vector<std::unique_ptr<Condition>> m_operands;
 };
 

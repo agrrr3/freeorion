@@ -10981,16 +10981,20 @@ std::unique_ptr<Condition> OrderedAlternativesOf::Clone() const
 // WeightedAlternativesOf
 ///////////////////////////////////////////////////////////
 WeightedAlternativesOf::WeightedAlternativesOf(
+    std::unique_ptr<Condition>&& narrowing_scope,
     std::vector<std::unique_ptr<Condition>>&& operands) :
     Condition(),
+    m_narrowing_scope(std::move(narrowing_scope)),
     m_operands(std::move(operands))
 {
+    // TODO check invariances regarding m_narrowing_scope
     m_root_candidate_invariant = boost::algorithm::all_of(m_operands, [](auto& e){ return !e || e->RootCandidateInvariant(); });
     m_target_invariant = boost::algorithm::all_of(m_operands, [](auto& e){ return !e || e->TargetInvariant(); });
     m_source_invariant = boost::algorithm::all_of(m_operands, [](auto& e){ return !e || e->SourceInvariant(); });
 }
 
 bool WeightedAlternativesOf::operator==(const Condition& rhs) const {
+    // TODO check m_narrowing_scope
     if (this == &rhs)
         return true;
     if (typeid(*this) != typeid(rhs))
@@ -11087,6 +11091,7 @@ void WeightedAlternativesOf::Eval(const ScriptingContext& parent_context,
 
     // Note: WeightedAlternativesOf subconditions are conditionally applied, so we have to consider both domains in the subsconditions for each search_domain
     if (search_domain == SearchDomain::NON_MATCHES) {
+        //TODO m_narrowing_scope
         int current_index = 0;
         // XXX this probably needs to be relative to the complete relevant universe, so should also include non_matches
         //int universe_non_matches_count = matches.size();
@@ -11127,12 +11132,21 @@ void WeightedAlternativesOf::Eval(const ScriptingContext& parent_context,
 
         // No operand condition was selected. State is restored. Nothing should be moved to matches input set
     } else /*(search_domain == SearchDomain::MATCHES)*/ {
-        if (matches.size() == 0)
+        ObjectSet condition_scope_non_matches = matches;
+        //temp_non_matches.reserve(matches.size());
+
+        ObjectSet condition_scope_matches;
+        condition_scope_matches.reserve(matches.size());
+        
+        //m_narrowing_scope->Eval(parent_context, condition_scope_matches, condition_scope_non_matches, SearchDomain::NON_MATCHES);
+        m_narrowing_scope->Eval(parent_context, condition_scope_matches);
+        if (condition_scope_matches.size() == 0 && matches.size() == 0)
             return;
         int current_index = 0;
         // XXX this probably needs to be relative to the complete relevant universe, so should also include non_matches
-        int universe_count = matches.size();
+        //int universe_count = matches.size();
         //int universe_count = matches.size() + non_matches.size();
+        int universe_count = condition_scope_matches.size();
         int chosen_index = RandInt(1, universe_count);
         ErrorLogger() << "Condition::WeightedAlternativesOf universe_count: " << universe_count << "  chosen_index: " << chosen_index << " matches# " << matches.size() << " non_matches# " << non_matches.size() << " MATCHES";
 
@@ -11181,6 +11195,7 @@ void WeightedAlternativesOf::Eval(const ScriptingContext& parent_context,
 }
 
 std::string WeightedAlternativesOf::Description(bool negated/* = false*/) const {
+    //TODO m_narrowing_scope
     std::string values_str;
     if (m_operands.size() == 1) {
         values_str += (!negated)
@@ -11213,6 +11228,7 @@ std::string WeightedAlternativesOf::Description(bool negated/* = false*/) const 
 }
 
 std::string WeightedAlternativesOf::Dump(unsigned short ntabs) const {
+    //TODO m_narrowing_scope
     std::string retval = DumpIndent(ntabs) + "WeightedAlternativesOf [\n";
     for (auto& operand : m_operands)
         retval += operand->Dump(ntabs+1);
@@ -11221,12 +11237,14 @@ std::string WeightedAlternativesOf::Dump(unsigned short ntabs) const {
 }
 
 void WeightedAlternativesOf::SetTopLevelContent(const std::string& content_name) {
+    //TODO m_narrowing_scope
     for (auto& operand : m_operands) {
         operand->SetTopLevelContent(content_name);
     }
 }
 
 unsigned int WeightedAlternativesOf::GetCheckSum() const {
+    //TODO m_narrowing_scope
     unsigned int retval{0};
 
     CheckSums::CheckSumCombine(retval, "Condition::WeightedAlternativesOf");
@@ -11245,7 +11263,8 @@ std::vector<const Condition*> WeightedAlternativesOf::Operands() const {
 }
 
 std::unique_ptr<Condition> WeightedAlternativesOf::Clone() const
-{ return std::make_unique<WeightedAlternativesOf>(ValueRef::CloneUnique(m_operands)); }
+{ return std::make_unique<WeightedAlternativesOf>(ValueRef::CloneUnique(m_narrowing_scope),
+                                                  ValueRef::CloneUnique(m_operands)); }
 
 ///////////////////////////////////////////////////////////
 // Described                                             //

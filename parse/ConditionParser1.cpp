@@ -154,8 +154,10 @@ namespace parse { namespace detail {
             ;
 
         weighted_alternatives_of
-            = ( omit_[tok.WeightedAlternativesOf_] > '[' > +condition_parser > lit(']'))
-            [ _val = construct_movable_(new_<Condition::WeightedAlternativesOf>(deconstruct_movable_vector_(_1, _pass))) ]
+            = ( omit_[tok.WeightedAlternativesOf_]
+                > label(tok.scope_) > condition_parser
+                > label(tok.alternatives_) > '[' > +condition_parser > lit(']') )
+            [ _val = construct_movable_(new_<Condition::WeightedAlternativesOf>(deconstruct_movable_(_1, _pass), deconstruct_movable_vector_(_2, _pass))) ]
             ;
 
         described
