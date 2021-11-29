@@ -20,6 +20,8 @@
     (All)                                       \
     (allowed)                                   \
     (AllyOf)                                    \
+    (Alternative)                               \
+    (alternatives)                              \
     (And)                                       \
     (AnyEmpire)                                 \
     (Armed)                                     \
@@ -598,6 +600,7 @@
     (TurnTechResearched)                        \
     (type)                                      \
     (Uninhabitable)                             \
+    (universe)                                  \
     (UniverseCentreX)                           \
     (UniverseCentreY)                           \
     (UniverseWidth)                             \
@@ -618,6 +621,7 @@
     (Victory)                                   \
     (VisibleToEmpire)                           \
     (visibility)                                \
+    (WeightedAlternativesOf)                    \
     (White)                                     \
     (WithinDistance)                            \
     (WithinStarlaneJumps)                       \

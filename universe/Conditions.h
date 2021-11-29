@@ -1617,6 +1617,29 @@ private:
     std::vector<std::unique_ptr<Condition>> m_operands;
 };
 
+// FIXME DOCUMENTATION
+/** Tests conditions in \a operands in order, to find the first condition that
+  * matches at least one candidate object. Matches all objects that match that
+  * condaition, ignoring any conditions listed later. If no candidate matches
+  * any of the conditions, it matches nothing. */
+struct FO_COMMON_API WeightedAlternativesOf final : public Condition {
+    explicit WeightedAlternativesOf(std::vector<std::unique_ptr<Condition>>&& operands);
+
+    bool operator==(const Condition& rhs) const override;
+    void Eval(const ScriptingContext& parent_context, ObjectSet& matches,
+              ObjectSet& non_matches, SearchDomain search_domain = SearchDomain::NON_MATCHES) const override;
+    [[nodiscard]] std::string Description(bool negated = false) const override;
+    [[nodiscard]] std::string Dump(unsigned short ntabs = 0) const override;
+    void SetTopLevelContent(const std::string& content_name) override;
+    [[nodiscard]] std::vector<const Condition*> Operands() const;
+    [[nodiscard]] unsigned int GetCheckSum() const override;
+
+    [[nodiscard]] std::unique_ptr<Condition> Clone() const override;
+
+private:
+    std::vector<std::unique_ptr<Condition>> m_operands;
+};
+
 /** Matches whatever its subcondition matches, but has a customized description
   * string that is returned by Description() by looking up in the stringtable. */
 struct FO_COMMON_API Described final : public Condition {

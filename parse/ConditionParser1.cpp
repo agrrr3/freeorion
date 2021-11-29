@@ -153,6 +153,11 @@ namespace parse { namespace detail {
             [ _val = construct_movable_(new_<Condition::OrderedAlternativesOf>(deconstruct_movable_vector_(_1, _pass))) ]
             ;
 
+        weighted_alternatives_of
+            = ( omit_[tok.WeightedAlternativesOf_] > '[' > +condition_parser > lit(']'))
+            [ _val = construct_movable_(new_<Condition::WeightedAlternativesOf>(deconstruct_movable_vector_(_1, _pass))) ]
+            ;
+
         described
             = ( omit_[tok.Described_]
                 > label(tok.description_) > tok.string
@@ -179,6 +184,7 @@ namespace parse { namespace detail {
             |   or_
             |   not_
             |   ordered_alternatives_of
+            |   weighted_alternatives_of
             |   described
             ;
 
@@ -199,6 +205,7 @@ namespace parse { namespace detail {
         or_.name("Or");
         not_.name("Not");
         ordered_alternatives_of.name("OrderedAlternativesOf");
+        weighted_alternatives_of.name("WeightedAlternativesOf");
         described.name("Described");
 
 #if DEBUG_CONDITION_PARSERS
@@ -217,6 +224,7 @@ namespace parse { namespace detail {
         debug(or_);
         debug(not_);
         debug(ordered_alternatives_of);
+        debug(weighted_alternatives_of);
         debug(described);
 #endif
     }

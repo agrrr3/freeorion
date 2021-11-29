@@ -10845,6 +10845,7 @@ void OrderedAlternativesOf::Eval(const ScriptingContext& parent_context,
         for (auto& operand : m_operands) {
             operand->Eval(parent_context, temp_objects, non_matches, SearchDomain::NON_MATCHES);
             if (!temp_objects.empty()) {
+                // i.e. there were some objects in the non_matches set which match the current operand condition
                 // Select the current operand condition. Apply it to the NON_MATCHES candidate set.
                 // We alread did the application, so we use the results
                 matches.reserve(temp_objects.size() + matches.size());
@@ -10854,6 +10855,7 @@ void OrderedAlternativesOf::Eval(const ScriptingContext& parent_context,
             // Check if the operand condition matches an object in the other input set
             operand->Eval(parent_context, matches, temp_objects, SearchDomain::MATCHES);
             if (!matches.empty()) {
+                // i.e. there were some objects in the matches set which match the current operand condition
                 // Select the current operand condition. Apply it to the NON_MATCHES candidate set.
                 // We already did the application before, but there were no matches.
                 // restore state before checking the operand
@@ -10973,6 +10975,277 @@ std::vector<const Condition*> OrderedAlternativesOf::Operands() const {
 
 std::unique_ptr<Condition> OrderedAlternativesOf::Clone() const
 { return std::make_unique<OrderedAlternativesOf>(ValueRef::CloneUnique(m_operands)); }
+
+
+///////////////////////////////////////////////////////////
+// WeightedAlternativesOf
+///////////////////////////////////////////////////////////
+WeightedAlternativesOf::WeightedAlternativesOf(
+    std::vector<std::unique_ptr<Condition>>&& operands) :
+    Condition(),
+    m_operands(std::move(operands))
+{
+    m_root_candidate_invariant = boost::algorithm::all_of(m_operands, [](auto& e){ return !e || e->RootCandidateInvariant(); });
+    m_target_invariant = boost::algorithm::all_of(m_operands, [](auto& e){ return !e || e->TargetInvariant(); });
+    m_source_invariant = boost::algorithm::all_of(m_operands, [](auto& e){ return !e || e->SourceInvariant(); });
+}
+
+bool WeightedAlternativesOf::operator==(const Condition& rhs) const {
+    if (this == &rhs)
+        return true;
+    if (typeid(*this) != typeid(rhs))
+        return false;
+
+    const WeightedAlternativesOf& rhs_ = static_cast<const WeightedAlternativesOf&>(rhs);
+
+    if (m_operands.size() != rhs_.m_operands.size())
+        return false;
+    for (unsigned int i = 0; i < m_operands.size(); ++i) {
+        CHECK_COND_VREF_MEMBER(m_operands.at(i))
+    }
+
+    return true;
+}
+
+
+void WeightedAlternativesOf::Eval(const ScriptingContext& parent_context,
+                                 ObjectSet& matches, ObjectSet& non_matches,
+                                 SearchDomain search_domain/* = SearchDomain::NON_MATCHES*/) const
+{
+    if (m_operands.empty()) {
+        ErrorLogger() << "WeightedAlternativesOf::Eval given no operands!";
+        return;
+    }
+    for (auto& operand : m_operands) {
+        if (!operand) {
+            ErrorLogger() << "WeightedAlternativesOf::Eval given null operand!";
+            return;
+        }
+    }
+
+    // WeightedAlternativesOf [ A B C ] matches all candidates which match the choosen condition.
+    // The chosen condition is decided by a weighted dice roll depending on the number of matches in the conditions
+    // The conditions A B C must be exclusive for this to work correctly
+    //    i.e. searching non_matches, matches added by A may not be added by B or C.
+    //         searching matches, matches left over by A may not be left over by B or C.
+    // Note: WeightedAlternativesOf subconditions are conditionally applied, so the algorithm works mostly the same for both search_domains
+    //
+    // WeightedAlternativesOf [ A B C ] cant be really commutative:
+    // And [
+    //    Not And [ A B ]                  // imagine candidates matching A and also candidates matching B
+    //    WeightedAlternativesOf [ A B C ] // this might select a candidate matching B
+    //    Not B                            // which then gets killed, leaving no match although the candidate matching A was fine
+    // ]
+    // So we either need to pass in the complete relevant Universe. Or simply dissallowing commutative use(?)
+    //
+    // We could specify that WeightedAlternativesOf gets evaluated last, but that is not feasable in the general case
+    // And [
+    //    And [
+    //       WeightedAlternativesOf [ A B C ] //  needs to be pulled up a level
+    //    ]
+    //    WeightedAlternativesOf [ D E ] // ok, which of the WeightedAlternativesOf comes last
+    //    Not B
+    // ]
+    // We can apply the clunky workaround we use for OrderedAlternativesOf, move conditions into all subconditions
+    // WeightedAlternativesOf [
+    //       And [ A Not B ]
+    //       And [ B Not B ]  // kills the alternative
+    //       And [ C Not B ]  // so either an A or a C will be the (correct) result
+    // ]
+    // So we either need to pass in the complete relevant Universe. Or simply dissallowing commutative use(?)
+    //
+    // We determine the number of objects in the considered universe by count matches plus non_matches -> universe_count
+    // Searching matches
+    //   current_count = 0
+    //   We roll a die in 1 to universe_matches_count -> X
+    //   try first condition, A:
+    //     Matching matches against A leaves all matching candidates, counting -> A_matches_count
+    //     If A_matches_count >= X, A is the chosen condition and the matches are OK/RETURNed
+    //     else current_count += A_matches_count, restore the matches (and non_matches)
+    //   try next condition, B
+    //     ...same as for A...
+    //   try next condition, C
+    //     ...same as for A...
+    //   so if not returned yet, we rolled higher than any of the conditions
+    //     so we need to RETURN Not Or [ A B C ] against the matches (could collect temporary non_matches on the way)
+    //
+    // Searching non_matches
+    //   current_count = 0
+    //   We roll a die in 1 to universe_count (???????????????????) -> X
+    //   try first condition, A:
+    //     Matching non_matches against A adds to matches, which then contains all matching candidates, counting -> A_matches_count
+    //     If A_matches_count >= X, A is the chosen condition and the matches are OK/RETURNed [same-as-above]
+    //     else current_count += A_matches_count, restore the non_matches (and matches)
+    //   try next condition, B
+    //     ...same as for A...
+    //   try next condition, C
+    //     ...same as for A...
+    //   so if not returned yet, we rolled higher than any of the conditions
+    //     so we need to RETURN Not Or [ A B C ] against the matches (could collect temporary non_matches on the way)
+
+    // Not WeightedAlternativesOf [ A B C ] finds 
+
+    // Note: WeightedAlternativesOf subconditions are conditionally applied, so we have to consider both domains in the subsconditions for each search_domain
+    if (search_domain == SearchDomain::NON_MATCHES) {
+        int current_index = 0;
+        // XXX this probably needs to be relative to the complete relevant universe, so should also include non_matches
+        //int universe_non_matches_count = matches.size();
+        int universe_count = matches.size() + non_matches.size();
+        int chosen_index = RandInt(1, universe_count);
+        ErrorLogger() << "Condition::WeightedAlternativesOf universe_count: " << universe_count << "  chosen_index: " << chosen_index << " NON_MATCHES";
+ 
+        ObjectSet temp_non_matches;
+        temp_non_matches.reserve(matches.size());
+
+        ObjectSet temp_matches;
+        temp_matches.reserve(non_matches.size());
+
+        for (auto& operand : m_operands) {
+            // Need to check whole universe (first non_matches, then matches) in order to keep WeightedAlternativesOf commutative
+            operand->Eval(parent_context, temp_matches, non_matches, SearchDomain::NON_MATCHES);
+            current_index += temp_matches.size();
+            if (chosen_index <= current_index) {
+                // We just evaluated the chosen operand, register the newly found matches; and return
+                matches.reserve(temp_matches.size() + matches.size());
+                FCMoveContent(temp_matches, matches);
+                return;
+            }
+            operand->Eval(parent_context, matches, temp_non_matches, SearchDomain::MATCHES);
+            current_index += temp_non_matches.size();
+            if (chosen_index <= current_index) {
+                // We just evaluated the chosen operand, register the newly found matches and non_matches; and return
+                matches.reserve(temp_matches.size() + matches.size());
+                FCMoveContent(temp_matches, matches);
+                non_matches.reserve(temp_non_matches.size() + non_matches.size());
+                FCMoveContent(temp_non_matches, non_matches);
+                return;
+            }
+            // Operand was not selected. Restore state before. Try next operand.
+            FCMoveContent(temp_matches, non_matches);
+            FCMoveContent(temp_non_matches, matches);
+        }
+
+        // No operand condition was selected. State is restored. Nothing should be moved to matches input set
+    } else /*(search_domain == SearchDomain::MATCHES)*/ {
+        if (matches.size() == 0)
+            return;
+        int current_index = 0;
+        // XXX this probably needs to be relative to the complete relevant universe, so should also include non_matches
+        int universe_count = matches.size();
+        //int universe_count = matches.size() + non_matches.size();
+        int chosen_index = RandInt(1, universe_count);
+        ErrorLogger() << "Condition::WeightedAlternativesOf universe_count: " << universe_count << "  chosen_index: " << chosen_index << " matches# " << matches.size() << " non_matches# " << non_matches.size() << " MATCHES";
+
+        ObjectSet temp_non_matches;
+        temp_non_matches.reserve(matches.size());
+
+        ObjectSet temp_matches;
+        temp_matches.reserve(non_matches.size());
+
+        for (auto& operand : m_operands) {
+            // Need to check whole universe (first matches, then non_matches) in order to keep WeightedAlternativesOf commutative
+            operand->Eval(parent_context, matches, temp_non_matches, SearchDomain::MATCHES);
+            current_index += matches.size();
+            if (chosen_index <= current_index) {
+                ErrorLogger() << "Condition::WeightedAlternativesOf current_index: " << current_index << "  found in matches MATCHES";
+                // We just evaluated the chosen operand, register the newly found non_matches; and return
+                non_matches.reserve(temp_non_matches.size() + non_matches.size());
+                FCMoveContent(temp_non_matches, non_matches);
+                return;
+            }
+            ErrorLogger() << "Condition::WeightedAlternativesOf current_index: " << current_index << " failed in matches MATCHES";
+            operand->Eval(parent_context, temp_matches, non_matches, SearchDomain::NON_MATCHES);
+            current_index += temp_matches.size();
+            if (chosen_index <= current_index) {
+                ErrorLogger() << "Condition::WeightedAlternativesOf current_index: " << current_index << "  found in non-matches MATCHES";
+                // We just evaluated the chosen operand, register the newly found non_matches and matches; and return
+                non_matches.reserve(temp_non_matches.size() + non_matches.size());
+                FCMoveContent(temp_non_matches, non_matches);
+                matches.reserve(temp_matches.size() + matches.size());
+                FCMoveContent(temp_matches, matches);
+                return;
+            }
+            ErrorLogger() << "Condition::WeightedAlternativesOf current_index: " << current_index << " failed in non-matches MATCHES";
+            // Operand was not selected. Restore state before. Try next operand.
+            FCMoveContent(temp_matches, non_matches);
+            FCMoveContent(temp_non_matches, matches);
+        }
+
+        // No operand condition was selected. Objects in matches input set do not match, so move those to non_matches input set.
+        // Basically a Not Or [ ...operands... ], (i.e. And [ Not o1 Not o2 .. ] ) or collecting all the non_matches
+        // TODO could also collect the temp_non_matches from before (but dunno about copying/removing)
+        for (auto& operand : m_operands) {
+            operand->Eval(parent_context, matches, non_matches, SearchDomain::MATCHES);
+        }
+    }
+}
+
+std::string WeightedAlternativesOf::Description(bool negated/* = false*/) const {
+    std::string values_str;
+    if (m_operands.size() == 1) {
+        values_str += (!negated)
+            ? UserString("DESC_ORDERED_ALTERNATIVES_BEFORE_SINGLE_OPERAND")
+            : UserString("DESC_NOT_ORDERED_ALTERNATIVES_BEFORE_SINGLE_OPERAND");
+        // Pushing the negation of matches to the enclosed conditions
+        values_str += m_operands[0]->Description(negated);
+        values_str += (!negated)
+            ? UserString("DESC_ORDERED_ALTERNATIVES_AFTER_SINGLE_OPERAND")
+            : UserString("DESC_NOT_ORDERED_ALTERNATIVES_AFTER_SINGLE_OPERAND");
+    } else {
+        // TODO: use per-operand-type connecting language
+        values_str += (!negated)
+            ? UserString("DESC_ORDERED_ALTERNATIVES_BEFORE_OPERANDS")
+            : UserString("DESC_NOT_ORDERED_ALTERNATIVES_BEFORE_OPERANDS");
+        for (unsigned int i = 0; i < m_operands.size(); ++i) {
+            // Pushing the negation of matches to the enclosed conditions
+            values_str += m_operands[i]->Description(negated);
+            if (i != m_operands.size() - 1) {
+                values_str += (!negated)
+                    ? UserString("DESC_ORDERED_ALTERNATIVES_BETWEEN_OPERANDS")
+                    : UserString("DESC_NOT_ORDERED_ALTERNATIVES_BETWEEN_OPERANDS");
+            }
+        }
+        values_str += (!negated)
+            ? UserString("DESC_ORDERED_ALTERNATIVES_AFTER_OPERANDS")
+            : UserString("DESC_NOT_ORDERED_ALTERNATIVES_AFTER_OPERANDS");
+    }
+    return values_str;
+}
+
+std::string WeightedAlternativesOf::Dump(unsigned short ntabs) const {
+    std::string retval = DumpIndent(ntabs) + "WeightedAlternativesOf [\n";
+    for (auto& operand : m_operands)
+        retval += operand->Dump(ntabs+1);
+    retval += DumpIndent(ntabs) + "]\n";
+    return retval;
+}
+
+void WeightedAlternativesOf::SetTopLevelContent(const std::string& content_name) {
+    for (auto& operand : m_operands) {
+        operand->SetTopLevelContent(content_name);
+    }
+}
+
+unsigned int WeightedAlternativesOf::GetCheckSum() const {
+    unsigned int retval{0};
+
+    CheckSums::CheckSumCombine(retval, "Condition::WeightedAlternativesOf");
+    CheckSums::CheckSumCombine(retval, m_operands);
+
+    TraceLogger() << "GetCheckSum(WeightedAlternativesOf): retval: " << retval;
+    return retval;
+}
+
+std::vector<const Condition*> WeightedAlternativesOf::Operands() const {
+    std::vector<const Condition*> retval;
+    retval.reserve(m_operands.size());
+    std::transform(m_operands.begin(), m_operands.end(), std::back_inserter(retval),
+                   [](auto& xx) {return xx.get();});
+    return retval;
+}
+
+std::unique_ptr<Condition> WeightedAlternativesOf::Clone() const
+{ return std::make_unique<WeightedAlternativesOf>(ValueRef::CloneUnique(m_operands)); }
 
 ///////////////////////////////////////////////////////////
 // Described                                             //
