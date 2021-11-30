@@ -11198,6 +11198,16 @@ DESC_LOCATION
 DESC_LOCATION_NOT
 ''' that is not matched by the location condition of %1% %2%'''
 
+# %1% weight valueref description
+# %2% description of condition
+DESC_WEIGHTED
+''' (chosen with weight %1%) %2%'''
+
+# %1% weight valueref description
+# %2% description of negated condition
+DESC_WEIGHTED_NOT
+''' (chosen with weight %1%) %2%'''
+
 # %1% content type description, eg. species, building, focus, tech
 # %2% name of specific scripted content, eg. Human, Imperial Palace, Industry Focus, The Physicsal Brain
 DESC_COMBAT_TARGET
