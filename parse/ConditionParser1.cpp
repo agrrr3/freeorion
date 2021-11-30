@@ -153,6 +153,14 @@ namespace parse { namespace detail {
             [ _val = construct_movable_(new_<Condition::OrderedAlternativesOf>(deconstruct_movable_vector_(_1, _pass))) ]
             ;
 
+        weighted
+            = ( omit_[tok.Weighted_]
+                > label(tok.weight_) > int_rules.expr
+                > label(tok.condition_) > condition_parser )
+            [ _val = construct_movable_(new_<Condition::Weighted>(deconstruct_movable_(_1, _pass), deconstruct_movable_(_2, _pass))) ]
+            ;
+
+        // probably allow weighted only here
         weighted_alternatives_of
             = ( omit_[tok.WeightedAlternativesOf_]
                 > label(tok.scope_) > condition_parser
@@ -187,6 +195,7 @@ namespace parse { namespace detail {
             |   not_
             |   ordered_alternatives_of
             |   weighted_alternatives_of
+            |   weighted
             |   described
             ;
 
@@ -208,6 +217,7 @@ namespace parse { namespace detail {
         not_.name("Not");
         ordered_alternatives_of.name("OrderedAlternativesOf");
         weighted_alternatives_of.name("WeightedAlternativesOf");
+        weighted_alternatives_of.name("Weighted");
         described.name("Described");
 
 #if DEBUG_CONDITION_PARSERS
@@ -227,6 +237,7 @@ namespace parse { namespace detail {
         debug(not_);
         debug(ordered_alternatives_of);
         debug(weighted_alternatives_of);
+        debug(weighted);
         debug(described);
 #endif
     }

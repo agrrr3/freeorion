@@ -11267,6 +11267,101 @@ std::unique_ptr<Condition> WeightedAlternativesOf::Clone() const
                                                   ValueRef::CloneUnique(m_operands)); }
 
 ///////////////////////////////////////////////////////////
+// Weighted
+///////////////////////////////////////////////////////////
+Weighted::Weighted(
+    std::unique_ptr<ValueRef::ValueRef<int>>&& weight,
+    std::unique_ptr<Condition>&& condition) :
+    Condition(),
+    m_weight(std::move(weight)),
+    m_condition(std::move(condition))
+{
+    // TODO
+    m_root_candidate_invariant = !m_condition || m_condition->RootCandidateInvariant();
+    m_target_invariant = !m_condition || m_condition->TargetInvariant();
+    m_source_invariant = !m_condition || m_condition->SourceInvariant();
+}
+
+bool Weighted::operator==(const Condition& rhs) const {
+    // TODO
+    if (this == &rhs)
+        return true;
+    if (typeid(*this) != typeid(rhs))
+        return false;
+
+    const Weighted& rhs_ = static_cast<const Weighted&>(rhs);
+
+    CHECK_COND_VREF_MEMBER(m_condition);
+
+    return true;
+}
+
+
+void Weighted::Eval(const ScriptingContext& parent_context,
+                                 ObjectSet& matches, ObjectSet& non_matches,
+                                 SearchDomain search_domain/* = SearchDomain::NON_MATCHES*/) const
+{
+    if (!m_weight) {
+        ErrorLogger() << "Weighted::Eval found no weight ValueRef to evaluate!";
+        return;
+    }
+    if (!m_condition) {
+        ErrorLogger() << "Weighted::Eval found no subcondition to evaluate!";
+        return;
+    }
+    return m_condition->Eval(parent_context, matches, non_matches, search_domain);
+}
+
+std::string Weighted::Description(bool negated/* = false*/) const {
+    std::string weight_str, condition_str;
+    if (m_weight)
+        weight_str = m_weight->Description();
+    else
+        weight_str = "1";
+
+    if (m_condition)
+        condition_str = m_condition->Description();
+
+    return str(FlexibleFormat((!negated)
+               ? UserString("DESC_WEIGHTED")
+               : UserString("DESC_WEIGHTED_NOT"))
+               % weight_str
+               % condition_str);
+}
+
+std::string Weighted::Dump(unsigned short ntabs) const {
+    std::string retval = DumpIndent(ntabs) + "Weighted weight = ";
+    retval += m_weight->Dump(ntabs);
+    retval += DumpIndent(ntabs) + "condition = \n";
+    retval += m_condition->Dump(ntabs+1);
+    return retval;
+}
+
+void Weighted::SetTopLevelContent(const std::string& content_name) {
+    m_weight->SetTopLevelContent(content_name);
+    m_condition->SetTopLevelContent(content_name);
+}
+
+unsigned int Weighted::GetCheckSum() const {
+    unsigned int retval{0};
+
+    CheckSums::CheckSumCombine(retval, "Condition::Weighted");
+    CheckSums::CheckSumCombine(retval, m_weight);
+    CheckSums::CheckSumCombine(retval, m_condition);
+
+    TraceLogger() << "GetCheckSum(Weighted): retval: " << retval;
+    return retval;
+}
+
+const ValueRef::ValueRef<int>* Weighted::Weight() const {
+    return m_weight.get();
+}
+
+std::unique_ptr<Condition> Weighted::Clone() const
+{ return std::make_unique<Weighted>(ValueRef::CloneUnique(m_weight),
+                                    ValueRef::CloneUnique(m_condition)); }
+
+///////////////////////////////////////////////////////////
 // Described                                             //
 ///////////////////////////////////////////////////////////
 Described::Described(std::unique_ptr<Condition>&& condition, const std::string& desc_stringtable_key) :

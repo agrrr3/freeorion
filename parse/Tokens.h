@@ -621,6 +621,8 @@
     (Victory)                                   \
     (VisibleToEmpire)                           \
     (visibility)                                \
+    (weight)                                    \
+    (Weighted)                                  \
     (WeightedAlternativesOf)                    \
     (White)                                     \
     (WithinDistance)                            \

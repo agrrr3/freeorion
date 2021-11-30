@@ -1618,6 +1618,26 @@ private:
 };
 
 // FIXME DOCUMENTATION
+struct FO_COMMON_API Weighted final : public Condition {
+    explicit Weighted(std::unique_ptr<ValueRef::ValueRef<int>>&& weight, std::unique_ptr<Condition>&& condition);
+
+    bool operator==(const Condition& rhs) const override;
+    void Eval(const ScriptingContext& parent_context, ObjectSet& matches,
+              ObjectSet& non_matches, SearchDomain search_domain = SearchDomain::NON_MATCHES) const override;
+    [[nodiscard]] std::string Description(bool negated = false) const override;
+    [[nodiscard]] std::string Dump(unsigned short ntabs = 0) const override;
+    void SetTopLevelContent(const std::string& content_name) override;
+    [[nodiscard]] const ValueRef::ValueRef<int>* Weight() const;
+    [[nodiscard]] unsigned int GetCheckSum() const override;
+
+    [[nodiscard]] std::unique_ptr<Condition> Clone() const override;
+
+private:
+    std::unique_ptr<ValueRef::ValueRef<int>> m_weight;
+    std::unique_ptr<Condition> m_condition;
+};
+
+// FIXME DOCUMENTATION
 /** Tests conditions in \a operands in order, to find the first condition that
   * matches at least one candidate object. Matches all objects that match that
   * condaition, ignoring any conditions listed later. If no candidate matches

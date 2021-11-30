@@ -37,6 +37,7 @@ namespace parse { namespace detail {
         condition_parser_rule                  not_;
         condition_parser_rule                  ordered_alternatives_of;
         condition_parser_rule                  weighted_alternatives_of;
+        condition_parser_rule                  weighted;
         condition_parser_rule                  described;
         condition_parser_rule                  start;
     };
