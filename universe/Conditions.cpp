@@ -11132,14 +11132,14 @@ void WeightedAlternativesOf::Eval(const ScriptingContext& parent_context,
 
         // No operand condition was selected. State is restored. Nothing should be moved to matches input set
     } else /*(search_domain == SearchDomain::MATCHES)*/ {
-        //ObjectSet condition_scope_non_matches = matches;
-        //temp_non_matches.reserve(matches.size());
+        ObjectSet condition_scope_non_matches;
+        temp_non_matches.reserve(matches.size() + non_matches.size());
 
         ObjectSet condition_scope_matches;
-        condition_scope_matches.reserve(matches.size());
+        condition_scope_matches.reserve(matches.size() + non_matches.size());
         
         //m_narrowing_scope->Eval(parent_context, condition_scope_matches, condition_scope_non_matches, SearchDomain::NON_MATCHES);
-        m_narrowing_scope->Eval(parent_context, condition_scope_matches);
+        m_narrowing_scope->Eval(parent_context, condition_scope_matches, condition_scope_non_matches);
         if (condition_scope_matches.size() == 0 && matches.size() == 0)
             return;
         int current_index = 0;
@@ -11171,6 +11171,7 @@ void WeightedAlternativesOf::Eval(const ScriptingContext& parent_context,
         ObjectSet temp_matches;
         temp_matches.reserve(non_matches.size());
 
+        int matches_total_count = 0;
         // remember matches_count, operand_weight, current_operand_index in order to find the chosen operand in case we roll too high
         int current_operand_index = 0;
         int matches_count[m_operands.size()];
@@ -11179,6 +11180,7 @@ void WeightedAlternativesOf::Eval(const ScriptingContext& parent_context,
             operand->Eval(parent_context, condition_scope_matches, temp_non_matches, SearchDomain::MATCHES);
             int weight = operand_weight[current_operand_index];
             matches_count[current_operand_index] = condition_scope_matches.size();
+            matches_total_count += condition_scope_matches.size();
             current_index += weight * condition_scope_matches.size();
             if (chosen_index <= current_index) {
                 ErrorLogger() << "Condition::WeightedAlternativesOf current_index: " << current_index << "  CHOSEN in MATCHES";
@@ -11214,6 +11216,30 @@ void WeightedAlternativesOf::Eval(const ScriptingContext& parent_context,
 
             current_operand_index++;
         }
+        if (matches_total_count <= universe_count) {
+            ErrorLogger() << "Condition::WeightedAlternativesOf actually not exhausted " << matches_total_count << " <= "
+                          << universe_count << " adding " << (universe_count - matches_total_count) << " missing entries";
+            current_index += universe_count - matches_total_count;
+            if (chosen_index <= current_index) {
+                ErrorLogger() << "Condition::WeightedAlternativesOf CHOSEN DEFAULT at " << chosen_index << " <= " << current_index;
+                // FIXME same as above
+                // everything in condition_scope_matches what does not match any of the operands
+                //m_operands[new_chosen_operand]->Eval(parent_context, condition_scope_matches, temp_non_matches, SearchDomain::MATCHES);
+                for (auto it = temp_non_matches.rbegin(); it != temp_non_matches.rend(); ++it)
+                {
+                    auto in_non_matches = std::find(non_matches.begin(), non_matches.end(), *it);
+                    if (in_non_matches != std::end(non_matches))
+                        temp_non_matches.pop_back();
+                    else {
+                        non_matches.push_back(std::move(*it));
+                    }
+                }
+                ErrorLogger() << "Condition::WeightedAlternativesOf substitute the matches# " << matches.size()  << " by " << condition_scope_matches.size() << " entries.";
+                matches.clear();
+                FCMoveContent(condition_scope_matches, matches);
+                return;
+            }
+        }
         // FIXME maybe reenable fallback stuff, changes 
         // No operand condition was selected. Objects in matches input set do not match, so move those to non_matches input set.
         // Basically a Not Or [ ...operands... ], (i.e. And [ Not o1 Not o2 .. ] ) or collecting all the non_matches
@@ -11224,7 +11250,7 @@ void WeightedAlternativesOf::Eval(const ScriptingContext& parent_context,
 
         // OK, lets say we had a bad chosen_index (too high)
         ErrorLogger() << "Condition::WeightedAlternativesOf bad chosen_index " << chosen_index << "  exchausted at " << current_index ;
-        unsigned int weighted_universe_count = 0;        
+        unsigned int weighted_universe_count = 0;
         unsigned int new_chosen_index = RandInt(1, current_index);
         int new_chosen_operand = -1;
         for (unsigned int i = 0; i < m_operands.size(); i++) {
