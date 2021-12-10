@@ -11011,22 +11011,10 @@ bool WeightedAlternativesOf::operator==(const Condition& rhs) const {
     return true;
 }
 
-
-void WeightedAlternativesOf::Eval(const ScriptingContext& parent_context,
-                                 ObjectSet& matches, ObjectSet& non_matches,
-                                 SearchDomain search_domain/* = SearchDomain::NON_MATCHES*/) const
+void WeightedAlternativesOf::ScopedEval(const ScriptingContext& parent_context,
+                                      ObjectSet& matches, ObjectSet& non_matches,
+                                      SearchDomain search_domain/* = SearchDomain::NON_MATCHES*/) const
 {
-    if (m_operands.empty()) {
-        ErrorLogger() << "WeightedAlternativesOf::Eval given no operands!";
-        return;
-    }
-    for (auto& operand : m_operands) {
-        if (!operand) {
-            ErrorLogger() << "WeightedAlternativesOf::Eval given null operand!";
-            return;
-        }
-    }
-
     // WeightedAlternativesOf [ A B C ] matches all candidates which match the choosen condition.
     // The chosen condition is decided by a weighted dice roll depending on the number of matches in the conditions
     // The conditions A B C must be exclusive for this to work correctly
@@ -11132,22 +11120,10 @@ void WeightedAlternativesOf::Eval(const ScriptingContext& parent_context,
 
         // No operand condition was selected. State is restored. Nothing should be moved to matches input set
     } else /*(search_domain == SearchDomain::MATCHES)*/ {
-        ObjectSet condition_scope_non_matches;
-        temp_non_matches.reserve(matches.size() + non_matches.size());
-
-        ObjectSet condition_scope_matches;
-        condition_scope_matches.reserve(matches.size() + non_matches.size());
-        
-        //m_narrowing_scope->Eval(parent_context, condition_scope_matches, condition_scope_non_matches, SearchDomain::NON_MATCHES);
-        m_narrowing_scope->Eval(parent_context, condition_scope_matches, condition_scope_non_matches);
-        if (condition_scope_matches.size() == 0 && matches.size() == 0)
-            return;
         int current_index = 0;
-        // XXX this probably needs to be relative to the complete relevant universe, so should also include non_matches
-        //int universe_count = matches.size();
-        //int universe_count = matches.size() + non_matches.size();
-        int universe_count = condition_scope_matches.size();
+        int scope_count = matches.size() + non_matches.size();
 
+        // Find out weights for the operands, assume 1 for default 
         int max_weight = 1;
         int current_weight_operand_index = 0;
         int operand_weight[m_operands.size()];
@@ -11160,131 +11136,182 @@ void WeightedAlternativesOf::Eval(const ScriptingContext& parent_context,
             max_weight = std::max(max_weight, weight);
             current_weight_operand_index++;
         }
-        int max_index = universe_count * max_weight;
+        int max_index = scope_count * max_weight;
         int chosen_index = RandInt(1, max_index);
-        ErrorLogger() << "Condition::WeightedAlternativesOf universe_count: " << universe_count << "  chosen_index: " << chosen_index << "  condition_scope_matches# "
-                      << condition_scope_matches.size() << "  matches# " << matches.size() << " non_matches# " << non_matches.size() << " MATCHES";
+        ErrorLogger() << "Condition::WeightedAlternativesOf scope_count: " << scope_count << "  chosen_index: " << chosen_index
+                      << "  matches# " << matches.size() << " non_matches# " << non_matches.size() << " MATCHES";
 
-        ObjectSet temp_non_matches;
-        temp_non_matches.reserve(matches.size());
 
         ObjectSet temp_matches;
         temp_matches.reserve(non_matches.size());
 
-        int matches_total_count = 0;
-        // remember matches_count, operand_weight, current_operand_index in order to find the chosen operand in case we roll too high
+        // Check all candidates in scope (first matches, then non_matches) in order to keep WeightedAlternativesOf commutative
+        // in case we roll too high - remember _count, _weight, _operand_index in order to find the chosen operand
+
+        ErrorLogger() << "Condition::WeightedAlternativesOf check all given subconditions for a match in "
+                      << matches.size() << " matches in narrowed scope MATCHES";
         int current_operand_index = 0;
         int matches_count[m_operands.size()];
+        ObjectSet non_matching_matches;
+        non_matching_matches.reserve(matches.size());
+        int matches_total_count = 0;
         for (auto& operand : m_operands) {
-            // Need to check whole universe given in scope (first matches, then non_matches) in order to keep WeightedAlternativesOf commutative
-            operand->Eval(parent_context, condition_scope_matches, temp_non_matches, SearchDomain::MATCHES);
+            operand->Eval(parent_context, matches, non_matching_matches, SearchDomain::MATCHES);
             int weight = operand_weight[current_operand_index];
-            matches_count[current_operand_index] = condition_scope_matches.size();
-            matches_total_count += condition_scope_matches.size();
-            current_index += weight * condition_scope_matches.size();
+            matches_count[current_operand_index] = matches.size();
+            matches_total_count += matches.size();
+            current_index += weight * matches.size();
             if (chosen_index <= current_index) {
-                ErrorLogger() << "Condition::WeightedAlternativesOf current_index: " << current_index << "  CHOSEN in MATCHES";
+                ErrorLogger() << "Condition::WeightedAlternativesOf current_index: " << current_index << "  CHOSEN "
+                              << matches.size() << " candidates in MATCHES";
                 ErrorLogger() << "Condition::WeightedAlternativesOf CHOSEN DESCRIPTION " << operand->Description();
                 // We just evaluated the chosen operand, register the newly found non_matches; and return
-                non_matches.reserve(temp_non_matches.size() + non_matches.size());
-                // merge temp_non_matches in non_matches // XXX yikes; maybe use std::mismatch?
-                for (auto it = temp_non_matches.rbegin(); it != temp_non_matches.rend(); ++it)
-                {
-                    // remove all non-matches from the matches; actually only keep those in condition_scope_matches
-                    //auto in_matches = std::find(matches.begin(), matches.end(), *it);
-                    //if (in_matches != std::end(matches)) {
-                    //    matches.erase(in_matches);
-                    //}
-                    auto in_non_matches = std::find(non_matches.begin(), non_matches.end(), *it);
-                    if (in_non_matches != std::end(non_matches))
-                        temp_non_matches.pop_back(); // should not be necessary(?) idea is you always treat the last element// or it.erase?
-                    else {
-                        non_matches.push_back(std::move(*it)); // if this is the last element in temp_non_matches does that get removed(?)
-                    }
-                }
-                //FCMoveContent(temp_non_matches, non_matches);
-
-                //
-                ErrorLogger() << "Condition::WeightedAlternativesOf substitute the matches# " << matches.size()  << " by " << condition_scope_matches.size() << " entries.";
-                matches.clear(); //XXX
-                FCMoveContent(condition_scope_matches, matches);
+                non_matches.reserve(non_matching_matches.size() + non_matches.size());
+                FCMoveContent(non_matching_matches, non_matches);
                 return;
             }
             ErrorLogger() << "Condition::WeightedAlternativesOf current_index: " << current_index << " failed in MATCHES";
-            // Operand was not selected. Restore state before. Try next operand.
-            FCMoveContent(temp_non_matches, condition_scope_matches);
-
+            FCMoveContent(non_matching_matches, matches);
             current_operand_index++;
         }
-        if (matches_total_count <= universe_count) {
-            ErrorLogger() << "Condition::WeightedAlternativesOf actually not exhausted " << matches_total_count << " <= "
-                          << universe_count << " adding " << (universe_count - matches_total_count) << " missing entries";
-            current_index += universe_count - matches_total_count;
+        // We found no subcondition match in matches before hitting the chosen index
+
+        // See if the chosen index is in the non_matches. In that case there is no match.
+        ErrorLogger() << "Condition::WeightedAlternativesOf check all given subconditions for a match in "
+                      << non_matches.size() << "non_matches in narrowed scope MATCHES";
+        current_operand_index = 0;
+        int non_matches_count[m_operands.size()];
+        ObjectSet non_matching_non_matches;
+        non_matching_non_matches.reserve(non_matches.size());
+        int non_matches_total_count = 0;
+        for (auto& operand : m_operands) {
+            operand->Eval(parent_context, non_matches, non_matching_non_matches, SearchDomain::MATCHES);
+            int weight = operand_weight[current_operand_index];
+            non_matches_count[current_operand_index] = non_matches.size();
+            non_matches_total_count += non_matches.size();
+            current_index += weight * non_matches.size();
+            if (chosen_index <= current_index) {
+                ErrorLogger() << "Condition::WeightedAlternativesOf current_index: " << current_index << "  CHOSEN 0 candidates in MATCHES";
+                ErrorLogger() << "Condition::WeightedAlternativesOf CHOSEN DESCRIPTION " << operand->Description();
+                // We just evaluated the chosen operand, so WeightedAlternativesOf does not match at all
+                non_matches.reserve(matches.size() + non_matching_non_matches.size() + non_matches.size());
+                FCMoveContent(non_matching_non_matches, non_matches);
+                FCMoveContent(matches, non_matches);
+                return;
+            }
+            ErrorLogger() << "Condition::WeightedAlternativesOf current_index: " << current_index << " failed non_matches MATCHES";
+            FCMoveContent(non_matching_non_matches, non_matches);
+            current_operand_index++;
+        }
+        // No given subcondition was chosen.
+
+        // Check if there are candidates in scope which did not match any subconditions
+        if ((matches_total_count + non_matches_total_count) < scope_count) {
+            ErrorLogger() << "Condition::WeightedAlternativesOf actually not exhausted " << matches_total_count
+                          << " + " << non_matches_total_count << " < " << scope_count
+                          << " adding " << (scope_count - matches_total_count - non_matches_total_count) << " missing entries";
+            current_index += scope_count - matches_total_count - non_matches_total_count;
             if (chosen_index <= current_index) {
                 ErrorLogger() << "Condition::WeightedAlternativesOf CHOSEN DEFAULT at " << chosen_index << " <= " << current_index;
-                // FIXME same as above
-                // everything in condition_scope_matches what does not match any of the operands
-                //m_operands[new_chosen_operand]->Eval(parent_context, condition_scope_matches, temp_non_matches, SearchDomain::MATCHES);
-                for (auto it = temp_non_matches.rbegin(); it != temp_non_matches.rend(); ++it)
-                {
-                    auto in_non_matches = std::find(non_matches.begin(), non_matches.end(), *it);
-                    if (in_non_matches != std::end(non_matches))
-                        temp_non_matches.pop_back();
-                    else {
-                        non_matches.push_back(std::move(*it));
-                    }
+                // everything in narrowed scope what does not match any of the operands
+                // Basically a Not Or [ ...operands... ], i.e. And [ Not o1 Not o2 .. ]
+                non_matches.reserve(matches.size() + non_matches.size());
+                for (auto& operand : m_operands) { 
+                    // move all matching candidates from matches to non_matches (see ::Not for MATCHES domain)
+                    operand->Eval(parent_context, non_matches, matches, SearchDomain::NON_MATCHES); 
                 }
-                ErrorLogger() << "Condition::WeightedAlternativesOf substitute the matches# " << matches.size()  << " by " << condition_scope_matches.size() << " entries.";
-                matches.clear();
-                FCMoveContent(condition_scope_matches, matches);
                 return;
             }
         }
-        // FIXME maybe reenable fallback stuff, changes 
-        // No operand condition was selected. Objects in matches input set do not match, so move those to non_matches input set.
-        // Basically a Not Or [ ...operands... ], (i.e. And [ Not o1 Not o2 .. ] ) or collecting all the non_matches
-        // TODO could also collect the temp_non_matches from before (but dunno about copying/removing)
-        //for (auto& operand : m_operands) {
-        //    operand->Eval(parent_context, matches, non_matches, SearchDomain::MATCHES);
-        //}
+        // chosen index is bad, it is higher than count of objects in scope
 
-        // OK, lets say we had a bad chosen_index (too high)
         ErrorLogger() << "Condition::WeightedAlternativesOf bad chosen_index " << chosen_index << "  exchausted at " << current_index ;
-        unsigned int weighted_universe_count = 0;
+        unsigned int weighted_scope_count = 0;
         unsigned int new_chosen_index = RandInt(1, current_index);
         int new_chosen_operand = -1;
+
+        // First look in the matches
         for (unsigned int i = 0; i < m_operands.size(); i++) {
-            ErrorLogger() << "Condition::WeightedAlternativesOf operand " << i << "  weight " << operand_weight[i] << "  count " << matches_count[i] << "  new_chosen_index " << new_chosen_index;
-            weighted_universe_count += operand_weight[i] * matches_count[i];
-            if (new_chosen_operand < 0 && new_chosen_index <= weighted_universe_count) {
+            weighted_scope_count += operand_weight[i] * matches_count[i];
+            ErrorLogger() << "Condition::WeightedAlternativesOf operand " << i << "  weight " << operand_weight[i]
+                          << "  count " << matches_count[i] << "  new_chosen_index " << new_chosen_index
+                          << "  weighted_scope_count " << weighted_scope_count;
+            if (new_chosen_operand < 0 && new_chosen_index <= weighted_scope_count) {
                 ErrorLogger() << "Condition::WeightedAlternativesOf CHOSEN operand " << i << "  weight " << operand_weight[i] << "  count " << matches_count[i];
                 new_chosen_operand = i;
             }
         }
-        ErrorLogger() << "Condition::WeightedAlternativesOf weighted_universe_count " << weighted_universe_count << "  vs current_index " << current_index ;
+        ErrorLogger() << "Condition::WeightedAlternativesOf new_chosen_index " << new_chosen_index << "  vs weighted_scope_count " << weighted_scope_count ;
         if (new_chosen_operand >= 0) {
-            // FIXME same as above
-            m_operands[new_chosen_operand]->Eval(parent_context, condition_scope_matches, temp_non_matches, SearchDomain::MATCHES);
             ErrorLogger() << "Condition::WeightedAlternativesOf CHOSEN DESCRIPTION " << m_operands[new_chosen_operand]->Description();
-            for (auto it = temp_non_matches.rbegin(); it != temp_non_matches.rend(); ++it)
-            {
-                auto in_non_matches = std::find(non_matches.begin(), non_matches.end(), *it);
-                if (in_non_matches != std::end(non_matches))
-                    temp_non_matches.pop_back();
-                else {
-                    non_matches.push_back(std::move(*it));
-                }
+            m_operands[new_chosen_operand]->Eval(parent_context, matches, non_matches, SearchDomain::MATCHES);
+            return;
+        }
+
+        // Look in the non_matches
+        for (unsigned int i = 0; i < m_operands.size(); i++) {
+            ErrorLogger() << "Condition::WeightedAlternativesOf operand " << i << "  weight " << operand_weight[i] << "  count " << matches_count[i] << "  new_chosen_index " << new_chosen_index;
+            weighted_scope_count += operand_weight[i] * non_matches_count[i];
+            if (new_chosen_operand < 0 && new_chosen_index <= weighted_scope_count) {
+                ErrorLogger() << "Condition::WeightedAlternativesOf new CHOSEN operand " << i << "  weight " << operand_weight[i]
+                              << "  count non_matches " << non_matches_count[i];
+                // Non matching was chosen, no results
+                new_chosen_operand = i;
             }
-            ErrorLogger() << "Condition::WeightedAlternativesOf substitute the matches# " << matches.size()  << " by " << condition_scope_matches.size() << " entries.";
-            matches.clear();
-            FCMoveContent(condition_scope_matches, matches);
+        }
+        if (new_chosen_operand < 0) {
+            // DEFAULT operand chosen
+            ErrorLogger() << "Condition::WeightedAlternativesOf new CHOSEN DEFAULT at " << new_chosen_index << " <= " << weighted_scope_count;
+            for (auto& operand : m_operands) { 
+                // move all matching candidates from matches to non_matches (see ::Not for MATCHES domain)
+                operand->Eval(parent_context, non_matches, matches, SearchDomain::NON_MATCHES); 
+            }
             return;
         } else {
-            ErrorLogger() << "Condition::WeightedAlternativesOf NOTHING CHOSEN";
+            ErrorLogger() << "Condition::WeightedAlternativesOf no match";
+            FCMoveContent(matches, non_matches);
             return;
-        }// 
-
+        }
     }
+}
+
+
+void WeightedAlternativesOf::Eval(const ScriptingContext& parent_context,
+                                 ObjectSet& matches, ObjectSet& non_matches,
+                                  SearchDomain search_domain/* = SearchDomain::NON_MATCHES*/) const {
+    if (m_operands.empty()) {
+        ErrorLogger() << "WeightedAlternativesOf::Eval given no operands!";
+        return;
+    }
+    for (auto& operand : m_operands) {
+        if (!operand) {
+            ErrorLogger() << "WeightedAlternativesOf::Eval given null operand!";
+            return;
+        }
+    }
+
+    // temparily ignore matches/non_matches which do not fit narrowing_scope
+    ErrorLogger() << "Condition::WeightedAlternativesOf before narrowing scope  #matches " << matches.size()
+                  << "  #non_matches " << non_matches.size();
+    ObjectSet out_of_scope;
+    out_of_scope.reserve(matches.size() + non_matches.size());
+    m_narrowing_scope->Eval(parent_context, matches, out_of_scope, SearchDomain::MATCHES);
+    m_narrowing_scope->Eval(parent_context, non_matches, out_of_scope, SearchDomain::MATCHES);
+    ErrorLogger() << "Condition::WeightedAlternativesOf after narrowing scope  #matches " << matches.size()
+                  << "  #non_matches " << non_matches.size() << "  #out_of_scope " << out_of_scope.size();
+
+    if (matches.size() == 0 && non_matches.size() == 0) {
+        // no possible matches left to check, nothing matches
+        non_matches.reserve(matches.size() + non_matches.size() + out_of_scope.size());
+        FCMoveContent(matches, non_matches);
+        FCMoveContent(out_of_scope, non_matches);
+        return;
+    }
+
+    WeightedAlternativesOf::ScopedEval(parent_context, matches, non_matches, search_domain);
+    // move out of scope candidates to non_matches
+    non_matches.reserve(non_matches.size() + out_of_scope.size());
+    FCMoveContent(out_of_scope, non_matches);
 }
 
 std::string WeightedAlternativesOf::Description(bool negated/* = false*/) const {

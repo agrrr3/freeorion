@@ -1659,6 +1659,8 @@ struct FO_COMMON_API WeightedAlternativesOf final : public Condition {
 private:
     std::unique_ptr<Condition> m_narrowing_scope;
     std::vector<std::unique_ptr<Condition>> m_operands;
+    void ScopedEval(const ScriptingContext& parent_context, ObjectSet& matches,
+              ObjectSet& non_matches, SearchDomain search_domain = SearchDomain::NON_MATCHES) const;
 };
 
 /** Matches whatever its subcondition matches, but has a customized description
