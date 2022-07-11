@@ -1,6 +1,6 @@
 ---
 name: freeorion
-base: core20
+base: core22
 summary: turn-based space empire and galactic conquest (4X) computer game
 description: |
   FreeOrion is a free, open source, turn-based space empire and galactic
@@ -16,8 +16,9 @@ architectures:
 apps:
   freeorion:
     command: usr/bin/freeorion -S $SNAP_USER_COMMON/save
-    extensions: [gnome-3-38]
-    plugs: [home, pulseaudio, opengl, network, screen-inhibit-control, browser-support, x11]
+    extensions: [gnome]
+    # TODO wayland, remove deprecated pulseaudio
+    plugs: [home, audio-playback, opengl, network, screen-inhibit-control, browser-support, x11, pulseaudio]
     desktop: usr/share/applications/org.freeorion.FreeOrion.desktop
     environment:
       LD_LIBRARY_PATH: $SNAP/usr/lib/${SNAPCRAFT_ARCH_TRIPLET}/freeorion
@@ -131,3 +132,4 @@ parts:
       - libfreetype6
       - godot3-runner
 
+build-snaps: [gnome-42-2204-sdk/latest/edge, gnome-42-2204/latest/edge]
