@@ -29,6 +29,10 @@ Policy
             ]
             effects = SetSpeed value = Value + 20
 
+        // we have two effects for applying the research bonus
+        // one for ships in a newly explored system, distributing research to the ships
+        // and a second one for flybys, where it is hard to attribute the exploring ship,
+        // giving research and max research to the empire root
         // spread research bonus even over all ships that explore system on the same turn
         EffectsGroup
             scope = And [
@@ -49,13 +53,64 @@ Policy
                     ])
         
         EffectsGroup
+            scope = Source
+            // probably we do not want to suppress effect accounting when there were no flybys
+            // the +0 will be only shown with Exploration applied and indicates where to find the result
+            activation = Source
+            //activation = NumberOf number = 1 condition = And [
+            accountinglabel = "PLC_EXPLORATION_FLYBY_RESEARCH_BONUS"
+            effects = [
+                GenerateSitRepMessage
+                    message = "SITREP_FIELD_RESEARCH"
+                    label = "SITREP_FIELD_RESEARCH_LABEL_TEST"
+                    icon = "icons/tech/environmental_encapsulation.png"
+                    parameters = [
+                        tag = "system" data = Target.ID
+                    ]
+                    empire = Source.Owner
+                    
+//                SetResearch value = Value +
+//                   NoOp(Statistic Count condition = And [
+//                      System
+//                      Or [
+//                         (CurrentTurn == TurnSystemExplored empire = Source.Owner id = NoOp(LocalCandidate.ID))
+//                         (CurrentTurn-1 == TurnSystemExplored empire = Source.Owner id = NoOp(LocalCandidate.ID))
+//                      ]
+//                      Not Contains condition = And [
+//                          Ship
+//                          OwnedBy empire = Source.Owner
+//                      ]
+//                ] )
+                  
+                SetTargetResearch value = Value +
+                  NoOp(Statistic Count condition = And [
+                      System
+//                      Or [
+//                         (CurrentTurn == TurnSystemExplored empire = Source.Owner id = NoOp(LocalCandidate.ID))
+                         (CurrentTurn-1 == TurnSystemExplored empire = Source.Owner id = NoOp(LocalCandidate.ID))
+//                      ]
+                      Not Contains condition = And [
+                          Ship
+                          OwnedBy empire = Source.Owner
+                      ]
+                ] )
+                GenerateSitRepMessage
+                    message = "To system %system% t%rawtext:turn% ex%rawtext:ex% contains:%rawtext:cont%"
+                    label = "SITREP_FIELD_RESEARCH_LABEL_CUSTOM"
+                    NoStringtableLookup
+                    icon = "icons/tech/environmental_encapsulation.png"
+                    parameters = [
+                        tag = "system" data = 124
+                        tag = "turn" data = CurrentTurn
+                        tag = "ex" data = TurnSystemExplored empire = Source.Owner id = 124
+                    ]
+                    empire = Source.Owner
+            ]
+
+        EffectsGroup
             scope = And [
                 System
                 (CurrentTurn == TurnSystemExplored empire = Source.Owner id = LocalCandidate.ID)
-                Contains And [
-                    Ship
-                    OwnedBy empire = Source.Owner
-                ]
             ]
             effects =
                 GenerateSitRepMessage
