@@ -7,6 +7,13 @@ Tech(
     researchturns=1,
     tags=["PEDIA_SPY_CATEGORY", "THEORY"],
     effectsgroups=[
+        # Note: Outpost stealth effect is defined in construction/OUTPOST.focs
+        #       Colony effects are defined in specials/planet/monster_stealth/ and common/stealth
+        EffectsGroup(
+            scope=Ship & OwnedBy(empire=Source.Owner) & Star(type=NoStar),
+            accountinglabel="SPY_DECEPTION_EMPTY_SPACE_PENALTY",
+            effects=SetStealth(value=Value + NamedReal(name="SPY_DECEPTION_EMPTY_SPACE_PENALTY", value=-10.0)),
+        ),
         EffectsGroup(
             scope=Ship & OwnedBy(empire=Source.Owner) & Star(type=NoStar),
             accountinglabel="SPY_DECEPTION_EMPTY_SPACE_PENALTY",

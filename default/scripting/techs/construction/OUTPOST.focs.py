@@ -15,6 +15,12 @@ Tech(
     unlock=Item(type=UnlockBuilding, name="BLD_ABANDON_OUTPOST"),
     # Effects for outposts
     effectsgroups=[
+        # Outposts have very basic stealth
+        EffectsGroup(
+            scope=Planet() & OwnedBy(empire=Source.Owner) & Population(high=0),
+            effects=SetStealth(value=Value + NamedInteger(name="OUTPOST_STEALTH_BONUS", value=7)),
+            accountinglabel="OUTPOST_STEALTH_LABEL",
+        ),
         # Outposts only have 50% of troops
         EffectsGroup(
             scope=Planet() & OwnedBy(empire=Source.Owner) & Population(high=0),
