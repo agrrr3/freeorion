@@ -6553,7 +6553,11 @@ OUTPOSTS_TITLE
 Outpost
 
 OUTPOSTS_TEXT
+'''
 Outposts are unmanned stations, which can be founded in places too hostile for a colony to survive. They have no [[metertype METER_POPULATION]], and normally produce no resources. But they create [[metertype METER_SUPPLY]] (with the right tech) and provide fuel and vision. Colonies can be founded on planets that already have an Outpost. Building an Outpost requires a ship with an [[shippart CO_OUTPOST_POD]]. Outposts are also formed when the Population of a colony drops to zero for any reason. You can abandon an outpost by building a [[buildingtype BLD_ABANDON_OUTPOST]] building.
+
+Outposts are usually less well protected than colonies. Outposts have only the number of [[metertype METER_MAX_TROOPS]] and an extra [[metertype METER_STEALTH]] bonus of [[value OUTPOST_STEALTH_BONUS]].
+'''
 
 HOMEWORLDS_TITLE
 Homeworld
