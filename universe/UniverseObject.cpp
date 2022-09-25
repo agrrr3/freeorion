@@ -357,7 +357,7 @@ UniverseObject::MeterMap UniverseObject::CensoredMeters(Visibility vis) const {
     return retval;
 }
 
-void UniverseObject::ResetTargetMaxUnpairedMeters() {   
+void UniverseObject::ResetTargetMaxUnpairedMeters() {
     GetMeter(MeterType::METER_STEALTH)->ResetCurrent();
     GetMeter(MeterType::METER_UNSTEALTH)->ResetCurrent();
 }

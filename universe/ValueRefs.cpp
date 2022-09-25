@@ -236,7 +236,6 @@ namespace {
         "Influence",
         "Construction",
         "Happiness",
-        "Unstealth",
 
         "Capacity",
         "SecondaryStat",
@@ -252,6 +251,7 @@ namespace {
         "RebelTroops",
         "Size",
         "Stealth",
+        "Unstealth",
         "Detection",
         "Speed"
     };

@@ -159,7 +159,6 @@ namespace parse {
             |   tok.Research_               [ _val = MeterType::METER_RESEARCH ]
             |   tok.Influence_              [ _val = MeterType::METER_INFLUENCE ]
             |   tok.Happiness_              [ _val = MeterType::METER_HAPPINESS ]
-            |   tok.Unstealth_              [ _val = MeterType::METER_UNSTEALTH ]
 
             |   tok.Defense_                [ _val = MeterType::METER_DEFENSE ]
             |   tok.Fuel_                   [ _val = MeterType::METER_FUEL ]
@@ -171,6 +170,7 @@ namespace parse {
 
             |   tok.RebelTroops_            [ _val = MeterType::METER_REBEL_TROOPS ]
             |   tok.Stealth_                [ _val = MeterType::METER_STEALTH ]
+            |   tok.Unstealth_              [ _val = MeterType::METER_UNSTEALTH ]
             |   tok.Detection_              [ _val = MeterType::METER_DETECTION ]
             |   tok.Speed_                  [ _val = MeterType::METER_SPEED ]
 
@@ -216,7 +216,6 @@ namespace parse {
             |   tok.SetResearch_            [ _val = MeterType::METER_RESEARCH ]
             |   tok.SetInfluence_           [ _val = MeterType::METER_INFLUENCE ]
             |   tok.SetHappiness_           [ _val = MeterType::METER_HAPPINESS ]
-            |   tok.SetUnstealth_           [ _val = MeterType::METER_UNSTEALTH ]
 
             |   tok.SetDefense_             [ _val = MeterType::METER_DEFENSE ]
             |   tok.SetFuel_                [ _val = MeterType::METER_FUEL ]
@@ -228,6 +227,7 @@ namespace parse {
 
             |   tok.SetRebelTroops_         [ _val = MeterType::METER_REBEL_TROOPS ]
             |   tok.SetStealth_             [ _val = MeterType::METER_STEALTH ]
+            |   tok.SetUnstealth_           [ _val = MeterType::METER_UNSTEALTH ]
             |   tok.SetDetection_           [ _val = MeterType::METER_DETECTION ]
             |   tok.SetSpeed_               [ _val = MeterType::METER_SPEED ]
 
