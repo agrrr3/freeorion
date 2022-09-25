@@ -48,6 +48,8 @@ parse::detail::simple_double_parser_rules::simple_double_parser_rules(const pars
         |   tok.MaxStockpile_
         |   tok.Stockpile_
         |   tok.Stealth_
+        |   tok.Unstealth_
+        |   tok.TargetUnstealth_
         |   tok.Detection_
         |   tok.Speed_
         |   tok.X_

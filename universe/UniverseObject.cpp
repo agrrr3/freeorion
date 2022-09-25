@@ -112,7 +112,11 @@ void UniverseObject::Copy(std::shared_ptr<const UniverseObject> copied_object,
 }
 
 void UniverseObject::Init()
-{ AddMeter(MeterType::METER_STEALTH); }
+{
+    AddMeter(MeterType::METER_STEALTH);
+    AddMeter(MeterType::METER_UNSTEALTH);
+    AddMeter(MeterType::METER_TARGET_UNSTEALTH);
+}
 
 int UniverseObject::AgeInTurns(int current_turn) const {
     if (m_created_on_turn == BEFORE_FIRST_TURN)
@@ -345,8 +349,12 @@ UniverseObject::MeterMap UniverseObject::CensoredMeters(Visibility vis) const {
     MeterMap retval;
     if (vis >= Visibility::VIS_PARTIAL_VISIBILITY) {
         retval = m_meters;
-    } else if (vis == Visibility::VIS_BASIC_VISIBILITY && m_meters.count(MeterType::METER_STEALTH))
-        retval.emplace(MeterType::METER_STEALTH, Meter{Meter::LARGE_VALUE, Meter::LARGE_VALUE});
+    } else if (vis == Visibility::VIS_BASIC_VISIBILITY) {
+        if (m_meters.count(MeterType::METER_STEALTH))
+            retval.emplace(MeterType::METER_STEALTH, Meter{Meter::LARGE_VALUE, Meter::LARGE_VALUE});
+        if (m_meters.count(MeterType::METER_UNSTEALTH))
+            retval.emplace(MeterType::METER_UNSTEALTH, Meter{Meter::DEFAULT_VALUE, Meter::DEFAULT_VALUE});
+    }
     return retval;
 }
 

@@ -218,6 +218,7 @@ namespace {
         "TargetInfluence",
         "TargetConstruction",
         "TargetHappiness",
+        "TargetUnstealth",
 
         "MaxCapacity",
         "MaxSecondaryStat",
@@ -236,6 +237,7 @@ namespace {
         "Influence",
         "Construction",
         "Happiness",
+        "Unstealth",
 
         "Capacity",
         "SecondaryStat",

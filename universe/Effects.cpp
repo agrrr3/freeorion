@@ -676,6 +676,7 @@ std::string SetMeter::Dump(uint8_t ntabs) const {
     case MeterType::METER_TARGET_INFLUENCE:    retval += "TargetInfluence"; break;
     case MeterType::METER_TARGET_CONSTRUCTION: retval += "TargetConstruction"; break;
     case MeterType::METER_TARGET_HAPPINESS:    retval += "TargetHappiness"; break;
+    case MeterType::METER_TARGET_UNSTEALTH:    retval += "TargetUnstealth"; break;
 
     case MeterType::METER_MAX_CAPACITY:        retval += "MaxCapacity"; break;
 
@@ -693,6 +694,7 @@ std::string SetMeter::Dump(uint8_t ntabs) const {
     case MeterType::METER_INFLUENCE:           retval += "Influence"; break;
     case MeterType::METER_CONSTRUCTION:        retval += "Construction"; break;
     case MeterType::METER_HAPPINESS:           retval += "Happiness"; break;
+    case MeterType::METER_UNSTEALTH:           retval += "Unstealth"; break;
 
     case MeterType::METER_CAPACITY:            retval += "Capacity"; break;
 

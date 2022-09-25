@@ -9,6 +9,7 @@ const std::map<MeterType, MeterType>& AssociatedMeterTypes() {
         {MeterType::METER_INFLUENCE,    MeterType::METER_TARGET_INFLUENCE},
         {MeterType::METER_CONSTRUCTION, MeterType::METER_TARGET_CONSTRUCTION},
         {MeterType::METER_HAPPINESS,    MeterType::METER_TARGET_HAPPINESS},
+        {MeterType::METER_UNSTEALTH,    MeterType::METER_TARGET_UNSTEALTH},
         {MeterType::METER_FUEL,         MeterType::METER_MAX_FUEL},
         {MeterType::METER_SHIELD,       MeterType::METER_MAX_SHIELD},
         {MeterType::METER_STRUCTURE,    MeterType::METER_MAX_STRUCTURE},

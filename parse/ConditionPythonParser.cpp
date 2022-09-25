@@ -571,6 +571,7 @@ void RegisterGlobalsConditions(boost::python::dict& globals) {
             {"TargetResearch",     MeterType::METER_TARGET_RESEARCH},
             {"TargetInfluence",    MeterType::METER_TARGET_INFLUENCE},
             {"TargetHappiness",    MeterType::METER_TARGET_HAPPINESS},
+            {"TargetUnstealth",    MeterType::METER_TARGET_UNSTEALTH},
             {"MaxDefense",         MeterType::METER_MAX_DEFENSE},
             {"MaxFuel",            MeterType::METER_MAX_FUEL},
             {"MaxShield",          MeterType::METER_MAX_SHIELD},
@@ -585,6 +586,7 @@ void RegisterGlobalsConditions(boost::python::dict& globals) {
             {"Research",           MeterType::METER_RESEARCH},
             {"Influence",          MeterType::METER_INFLUENCE},
             {"Happiness",          MeterType::METER_HAPPINESS},
+            {"Unstealth",          MeterType::METER_UNSTEALTH},
 
             {"Defense",            MeterType::METER_DEFENSE},
             {"Fuel",               MeterType::METER_FUEL},
