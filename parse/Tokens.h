@@ -450,6 +450,7 @@
     (SetTargetResearch)                         \
     (SetTexture)                                \
     (SetTroops)                                 \
+    (SetUnstealth)                              \
     (SetVisibility)
 
 #define TOKEN_SEQ_13                            \
