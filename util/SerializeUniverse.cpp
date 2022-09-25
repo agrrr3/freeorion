@@ -288,7 +288,7 @@ namespace {
         "pop", "ind", "res", "inf", "con", "stb",
         "cap", "sec",
         "ful", "shd", "str", "def", "sup", "sto", "trp",
-        "reb", "siz", "slt", "det", "spd",
+        "reb", "siz", "slt", "ust", "det", "spd",
         "num"};
     static_assert([]() -> bool {
         for (const auto& tag : tags)
@@ -306,6 +306,7 @@ namespace {
     }
     static_assert(MeterTypeTag(MeterType::INVALID_METER_TYPE) == "inv");
     static_assert(MeterTypeTag(MeterType::METER_DEFENSE) == "def");
+    static_assert(MeterTypeTag(MeterType::METER_UNSTEALTH) == "ust");
     static_assert(MeterTypeTag(MeterType::NUM_METER_TYPES) == "num");
 
     constexpr MeterType MeterTypeFromTag(std::string_view sv) {
