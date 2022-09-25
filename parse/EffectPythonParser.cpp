@@ -293,7 +293,6 @@ void RegisterGlobalsEffects(py::dict& globals) {
             {"SetTargetResearch",     MeterType::METER_TARGET_RESEARCH},
             {"SetTargetInfluence",    MeterType::METER_TARGET_INFLUENCE},
             {"SetTargetHappiness",    MeterType::METER_TARGET_HAPPINESS},
-            {"SetTargetUnstealth",    MeterType::METER_TARGET_UNSTEALTH},
 
             {"SetMaxDefense",         MeterType::METER_MAX_DEFENSE},
             {"SetMaxFuel",            MeterType::METER_MAX_FUEL},

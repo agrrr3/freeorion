@@ -448,7 +448,6 @@
     (SetTargetInfluence)                        \
     (SetTargetPopulation)                       \
     (SetTargetResearch)                         \
-    (SetTargetUnstealth)                        \
     (SetTexture)                                \
     (SetTroops)                                 \
     (SetVisibility)
@@ -545,7 +544,6 @@
     (TargetInfluence)                           \
     (TargetPopulation)                          \
     (TargetResearch)                            \
-    (TargetUnstealth)                           \
     (Tech)                                      \
     (Terran)                                    \
     (TheEmpire)                                 \

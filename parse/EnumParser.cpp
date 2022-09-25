@@ -145,7 +145,6 @@ namespace parse {
             |   tok.TargetResearch_         [ _val = MeterType::METER_TARGET_RESEARCH ]
             |   tok.TargetInfluence_        [ _val = MeterType::METER_TARGET_INFLUENCE ]
             |   tok.TargetHappiness_        [ _val = MeterType::METER_TARGET_HAPPINESS ]
-            |   tok.TargetUnstealth_        [ _val = MeterType::METER_TARGET_UNSTEALTH ]
             |   tok.MaxDefense_             [ _val = MeterType::METER_MAX_DEFENSE ]
             |   tok.MaxFuel_                [ _val = MeterType::METER_MAX_FUEL ]
             |   tok.MaxShield_              [ _val = MeterType::METER_MAX_SHIELD ]
@@ -202,7 +201,6 @@ namespace parse {
             |   tok.SetTargetResearch_      [ _val = MeterType::METER_TARGET_RESEARCH ]
             |   tok.SetTargetInfluence_     [ _val = MeterType::METER_TARGET_INFLUENCE ]
             |   tok.SetTargetHappiness_     [ _val = MeterType::METER_TARGET_HAPPINESS ]
-            |   tok.SetTargetUnstealth_     [ _val = MeterType::METER_TARGET_UNSTEALTH ]
 
             |   tok.SetMaxDefense_          [ _val = MeterType::METER_MAX_DEFENSE ]
             |   tok.SetMaxFuel_             [ _val = MeterType::METER_MAX_FUEL ]

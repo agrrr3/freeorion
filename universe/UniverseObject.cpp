@@ -115,7 +115,6 @@ void UniverseObject::Init()
 {
     AddMeter(MeterType::METER_STEALTH);
     AddMeter(MeterType::METER_UNSTEALTH);
-    AddMeter(MeterType::METER_TARGET_UNSTEALTH);
 }
 
 int UniverseObject::AgeInTurns(int current_turn) const {
@@ -358,10 +357,9 @@ UniverseObject::MeterMap UniverseObject::CensoredMeters(Visibility vis) const {
     return retval;
 }
 
-void UniverseObject::ResetTargetMaxUnpairedMeters() {
-    auto it = m_meters.find(MeterType::METER_STEALTH);
-    if (it != m_meters.end())
-        it->second.ResetCurrent();
+void UniverseObject::ResetTargetMaxUnpairedMeters() {   
+    GetMeter(MeterType::METER_STEALTH)->ResetCurrent();
+    GetMeter(MeterType::METER_UNSTEALTH)->ResetCurrent();
 }
 
 void UniverseObject::ResetPairedActiveMeters() {
@@ -377,7 +375,6 @@ void UniverseObject::ResetPairedActiveMeters() {
 }
 
 void UniverseObject::ClampMeters() {
-    auto it = m_meters.find(MeterType::METER_STEALTH);
-    if (it != m_meters.end())
-        it->second.ClampCurrentToRange();
+    GetMeter(MeterType::METER_STEALTH)->ClampCurrentToRange();
+    GetMeter(MeterType::METER_UNSTEALTH)->ClampCurrentToRange();
 }
