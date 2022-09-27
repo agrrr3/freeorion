@@ -7,17 +7,8 @@ Policy
     effectsgroups = [
         [[SPECIES_LIKES_OR_DISLIKES_POLICY_STABILITY_EFFECTS]]
 
-        EffectsGroup
-            scope = And [
-                Ship
-                OwnedBy empire = Source.Owner
-            ]
-            effects = [
-                SetDetection value = Value + (NamedReal name = "CONTINUOUS_SCANNING_RANGE_BOOST" value = 5.0)
-                SetStealth value = Value - (NamedReal name = "CONTINUOUS_SCANNING_STEALTH_PENALTY" value = 10.0)
-            ]
-
-        EffectsGroup
+         // first five turns increase detection
+         EffectsGroup
             scope = And [
                 Capital
                 OwnedBy empire = Source.Owner
@@ -25,10 +16,57 @@ Policy
             effects = SetEmpireMeter
                 empire = Source.Owner
                 meter = "METER_DETECTION_STRENGTH"
-                value = Value + min((NamedReal name = "CONTINUOUS_SCANNING_MAX_DETECTION_BOOST" value = 20.0),
+                value = Value + min((NamedReal name = "CONTINUOUS_SCANNING_MAX_DETECTION_BOOST" value = 5.0),
                                     TurnsSincePolicyAdopted empire = Source.Owner name = ThisPolicy)
+
+        // then start increasing unstealth
+        EffectsGroup
+            scope = And [
+//                Or [
+//                   Ship
+//                   And [ Planet    Or [ Species   OwnedBy affiliation = AnyEmpire ] ]
+//                ]
+Ship
+                Not Or [
+                    OwnedBy empire = Source.Owner
+                    OwnedBy affiliation = AllyOf empire = Source.Owner
+                ]
+                (RootCandidate.Unstealth < (NamedReal name = "CONTINUOUS_SCANNING_MAX_UNSTEALTH" value = 10.0))
+                // TODO base this actually on detection range of Source.Owner ships
+                VisibleToEmpire empire = Source.Owner
+            ]
+            activation = And [
+                ( NamedRealLookup name = "CONTINUOUS_SCANNING_MAX_DETECTION_BOOST"
+                  < TurnsSincePolicyAdopted empire = Source.Owner name = ThisPolicy )
+            ]
+            stackinggroup = "CONTINUOUS_SCANNING_ADD_UNSTEALTH_STACK"
+            accountinglabel = "CONTINUOUS_SCANNING_ADD_UNSTEALTH_LABEL"
+            effects = [
+                SetUnstealth value = Value + 1.01
+                //If condition = And [ Source
+                //    OwnedBy affiliation = Human ] effects =
+                GenerateSitRepMessage
+                    message = "Add unstealth to %ship% by %empire%"
+                    label = "CONTINUOUS_SCANNING_ADD_UNSTEALTH_LABEL"
+                    NoStringtableLookup
+                    icon = "icons/species/hhhoh.png"
+                    parameters = [
+                        tag = "empire" data = Source.Owner
+                        tag = "ship"   data = Target.ID
+                    ]
+                    affiliation = AnyEmpire
+            ]
+
+        // increase ship detection range
+        EffectsGroup
+            scope = And [ Ship OwnedBy empire = Source.Owner ]
+            activation = Source
+            effects = SetDetection value = Value + min((NamedReal name = "CONTINUOUS_SCANNING_RANGE_BOOST" value = 10.0),
+                                                       TurnsSincePolicyAdopted empire = Source.Owner name = ThisPolicy)
+
     ]
     graphic = "icons/policies/military_continuous_scanning.png"
 
 #include "/scripting/policies/policies.macros"
 #include "/scripting/common/priorities.macros"
+

@@ -51,6 +51,48 @@ STANDARD_METER_GROWTH
                 SetInfluence value = Value + min(max(Value(Target.TargetInfluence) - Value, -1), 1)
             ]
 
+        // decrease ship unstealthiness if stationary and was not suspicious
+        EffectsGroup
+            scope = Source
+            activation = And [
+                Ship
+                Stationary
+                (Value(Source.Unstealth) > 0)
+                (Value(Source.Unstealth) <= Source.Unstealth)
+            ]
+            accountinglabel = "UNSUSPICOUS_UNSTEALTH_DECREASE_LABEL"
+            priority = [[AFTER_ALL_TARGET_MAX_METERS_PRIORITY]]
+            effects = [
+                SetUnstealth value = max(0, Value - 1)
+            ]
+
+        // decrease planet unstealthiness if unsuspicious
+        EffectsGroup
+            scope = Source
+            activation = And [
+                Planet
+                (Source.Unstealth > 0)
+                (Value(Source.Unstealth) <= Source.Unstealth)
+                //(Source.Research = Source.TargetResearch)
+                //(Source.Industry = Source.TargetIndustry)
+                //(Source.Influence = Source.TargetInfluence)
+            ]
+            accountinglabel = "UNSUSPICOUS_UNSTEALTH_DECREASE_LABEL"
+            priority = [[AFTER_ALL_TARGET_MAX_METERS_PRIORITY]]
+            effects = [
+                SetUnstealth value = max(0, Value - 1)
+            ]
+
+        // apply unstealthiness to stealth
+        EffectsGroup
+            scope = Source
+            activation = Or [ Ship Planet ]
+            accountinglabel = "UNSTEALTH_STEALTH_DECREASE_LABEL"
+            priority = [[END_CLEANUP_PRIORITY]]
+            effects = [
+                SetStealth value = Value - Value(Source.Unstealth)
+            ]
+
         // removes residual production from a dead planet
         EffectsGroup
             scope = Source
