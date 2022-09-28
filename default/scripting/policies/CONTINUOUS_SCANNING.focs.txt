@@ -43,6 +43,19 @@ Policy
             accountinglabel = "CONTINUOUS_SCANNING_ADD_UNSTEALTH_LABEL"
             effects = [
                 SetUnstealth value = Value + 1.01
+                GenerateSitRepMessage
+                    message = "Add unstealth to sh:%ship% pl:%planet% by %empire%  %rawtext:unst% -> %rawtext:crunst%:"
+                    label = "CONTINUOUS_SCANNING_ADD_UNSTEALTH_LABEL"
+                    NoStringtableLookup
+                    icon = "icons/species/hhhoh.png"
+                    parameters = [
+                        tag = "empire" data = Source.Owner
+                        tag = "ship"   data = Target.ID
+                        tag = "planet" data = Target.ID
+                        tag = "unst"   data = Value(Source.Unstealth)
+                        tag = "crunst" data = Source.Unstealth
+                    ]
+                    affiliation = AnyEmpire
             ]
 
         // increase ship detection range
