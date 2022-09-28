@@ -64,6 +64,16 @@ STANDARD_METER_GROWTH
             priority = [[AFTER_ALL_TARGET_MAX_METERS_PRIORITY]]
             effects = [
                 SetUnstealth value = max(0, Value - 1)
+                GenerateSitRepMessage
+                    message = "Decrease unstealth of %ship% (%empire%) because it was unsuspicious"
+                    label = "UNSUSPICOUS_UNSTEALTH_DECREASE_LABEL"
+                    NoStringtableLookup
+                    icon = "icons/species/sly.png"
+                    parameters = [
+                        tag = "empire" data = Source.Owner
+                        tag = "ship"   data = Target.ID
+                    ]
+                    affiliation = AnyEmpire
             ]
 
         // decrease planet unstealthiness if unsuspicious
@@ -81,6 +91,16 @@ STANDARD_METER_GROWTH
             priority = [[AFTER_ALL_TARGET_MAX_METERS_PRIORITY]]
             effects = [
                 SetUnstealth value = max(0, Value - 1)
+                GenerateSitRepMessage
+                    message = "Decrease unstealth of %planet% (%empire%) because it was unsuspicious"
+                    label = "UNSUSPICOUS_UNSTEALTH_DECREASE_LABEL"
+                    NoStringtableLookup
+                    icon = "icons/species/sly.png"
+                    parameters = [
+                        tag = "empire" data = Source.Owner
+                        tag = "planet"   data = Target.ID
+                    ]
+                    affiliation = AnyEmpire
             ]
 
         // apply unstealthiness to stealth
