@@ -963,7 +963,7 @@ namespace {
 
         for (auto meter : {MeterType::METER_SHIELD,     MeterType::METER_FUEL,
                            MeterType::METER_DETECTION,  MeterType::METER_STEALTH,
-                           MeterType::METER_SPEED})
+                           MeterType::METER_UNSTEALTH,  MeterType::METER_SPEED})
         { meters_icons.emplace_back(meter, ClientUI::MeterIcon(meter)); }
 
         m_stat_icons.reserve(meters_icons.size());
