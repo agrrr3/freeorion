@@ -359,7 +359,9 @@ UniverseObject::MeterMap UniverseObject::CensoredMeters(Visibility vis) const {
 
 void UniverseObject::ResetTargetMaxUnpairedMeters() {
     GetMeter(MeterType::METER_STEALTH)->ResetCurrent();
-    GetMeter(MeterType::METER_UNSTEALTH)->ResetCurrent();
+    // Unstealth meter should persist, even if it is not a Target/Max meter
+    auto* m = GetMeter(MeterType::METER_UNSTEALTH);
+    m->SetCurrent(m->Initial());
 }
 
 void UniverseObject::ResetPairedActiveMeters() {
