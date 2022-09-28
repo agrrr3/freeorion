@@ -22,11 +22,11 @@ Policy
         // then start increasing unstealth
         EffectsGroup
             scope = And [
-//                Or [
-//                   Ship
-//                   And [ Planet    Or [ Species   OwnedBy affiliation = AnyEmpire ] ]
-//                ]
-Ship
+                Or [
+                   Ship
+                   And [ Planet    Or [ Species   OwnedBy affiliation = AnyEmpire ] ]
+                ]
+
                 Not Or [
                     OwnedBy empire = Source.Owner
                     OwnedBy affiliation = AllyOf empire = Source.Owner
@@ -43,18 +43,6 @@ Ship
             accountinglabel = "CONTINUOUS_SCANNING_ADD_UNSTEALTH_LABEL"
             effects = [
                 SetUnstealth value = Value + 1.01
-                //If condition = And [ Source
-                //    OwnedBy affiliation = Human ] effects =
-                GenerateSitRepMessage
-                    message = "Add unstealth to %ship% by %empire%"
-                    label = "CONTINUOUS_SCANNING_ADD_UNSTEALTH_LABEL"
-                    NoStringtableLookup
-                    icon = "icons/species/hhhoh.png"
-                    parameters = [
-                        tag = "empire" data = Source.Owner
-                        tag = "ship"   data = Target.ID
-                    ]
-                    affiliation = AnyEmpire
             ]
 
         // increase ship detection range
