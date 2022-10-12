@@ -14593,6 +14593,9 @@ Fleet Unstealthiness
 FLEET_UNSTEALTHY_SHIPS_THRESHOLD
 Number of ships in a system owned by the same empire, above which ships receive a stealth penalty
 
+#SPY_DECEPTION_STATIONARY_PATROL_MAX_STEALTH_MALUS
+SPY_DECEPTION_STATIONARY_PATROL
+Turns of System Exploration
 
 ##
 ## Technology refinement

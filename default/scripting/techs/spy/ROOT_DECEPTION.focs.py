@@ -57,5 +57,19 @@ Tech(
             )
             # large fleets only start affecting stealth when there are more than the threshold of ships in a single system
         ),
+        EffectsGroup(
+            # "quasi-source": Ship & Stationary() & OwnedBy(empire=Source.Owner),
+            scope= (Planet() | Ship) & ~OwnedBy(empire=Source.Owner) & Contains(Ship & Stationary() & OwnedBy(empire=Source.Owner)),
+            accountinglabel="SPY_DECEPTION_STATIONARY_PATROL",
+            # needs to use maximum value per all such ships in this system
+            effects=SetStealth(value=Value
+                               + max(CurrentTurn - Statistic(float,
+                                                             Min,
+                                                             value=LocalCandidate.ArrivedOnTurn,
+                                                             condition=(Object(Target.SystemID)
+                                                                        & Contains(Ship & Stationary() & ~OwnedBy(empire=Target.Owner)))),
+
+                                     Target.ArrivedOnTurn, NamedReal(name="SPY_DECEPTION_STATIONARY_PATROL_MAX_STEALTH_MALUS", value=7.0))),
+        ),
     ],
 )
