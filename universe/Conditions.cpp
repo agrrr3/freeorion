@@ -9307,24 +9307,50 @@ bool FleetSupplyableByEmpire::operator==(const Condition& rhs) const {
 
 namespace {
     struct FleetSupplyableSimpleMatch {
-        FleetSupplyableSimpleMatch(int empire_id, const SupplyManager& supply) :
+        FleetSupplyableSimpleMatch(int empire_id, const SupplyManager& supply, const ScriptingContext& context) :
             m_empire_id(empire_id),
-            m_supply(supply)
+            m_supply(supply),
+            m_context(context)
         {}
 
         bool operator()(const UniverseObject* candidate) const {
             if (!candidate)
                 return false;
 
+            auto system_id = candidate->SystemID();
+            auto previous_system_id = INVALID_OBJECT_ID;
             const auto& empire_supplyable_systems = m_supply.FleetSupplyableSystemIDs();
-            auto it = empire_supplyable_systems.find(m_empire_id);
-            if (it == empire_supplyable_systems.end())
+            auto supplyable_systems_it = empire_supplyable_systems.find(m_empire_id);
+            if (supplyable_systems_it == empire_supplyable_systems.end())
                 return false;
-            return it->second.count(candidate->SystemID());
+
+            if (system_id == INVALID_OBJECT_ID) {
+                ErrorLogger() << "AAA candidate " << candidate->ID() << " is moving "; 
+                // candidate is moving, need to check the next and previous systems of the fleet
+                auto fleet = dynamic_cast<const Fleet*>(candidate);
+                if (!fleet)
+                    if (auto ship = dynamic_cast<const Ship*>(candidate))
+                        fleet = m_context.ContextObjects().getRaw<Fleet>(ship->FleetID());
+                if (!fleet)
+                    return false;
+                system_id = fleet->NextSystemID();
+                previous_system_id = fleet->PreviousSystemID();
+                ErrorLogger() << "AAA fleet " << candidate->ID() << " is moving from " << system_id << " to " << previous_system_id; 
+                if (system_id == INVALID_OBJECT_ID || previous_system_id == INVALID_OBJECT_ID)
+                    return false;
+                // also the previous system needs to be supplied
+                if (supplyable_systems_it->second.find(previous_system_id) == supplyable_systems_it->second.end())
+                    return false;
+                ErrorLogger() << "AAA fleet " << candidate->ID() << " previous system is supplied " << previous_system_id;
+            }
+            if (supplyable_systems_it->second.find(system_id) != supplyable_systems_it->second.end())
+                ErrorLogger() << "AAA fleet " << candidate->ID() << " (next?) system is supplied " << system_id;
+            return supplyable_systems_it->second.find(system_id) != supplyable_systems_it->second.end();
         }
 
         int m_empire_id;
         const SupplyManager& m_supply;
+        const ScriptingContext& m_context;
     };
 }
 
@@ -9339,7 +9365,7 @@ void FleetSupplyableByEmpire::Eval(const ScriptingContext& parent_context,
         // evaluate empire id once, and use to check all candidate objects
         int empire_id = m_empire_id->Eval(parent_context);
         EvalImpl(matches, non_matches, search_domain,
-                 FleetSupplyableSimpleMatch(empire_id, parent_context.supply));
+                 FleetSupplyableSimpleMatch(empire_id, parent_context.supply, parent_context));
     } else {
         // re-evaluate empire id for each candidate object
         Condition::Eval(parent_context, matches, non_matches, search_domain);
@@ -9377,7 +9403,7 @@ bool FleetSupplyableByEmpire::Match(const ScriptingContext& local_context) const
 
     int empire_id = m_empire_id->Eval(local_context);
 
-    return FleetSupplyableSimpleMatch(empire_id, local_context.supply)(candidate);
+    return FleetSupplyableSimpleMatch(empire_id, local_context.supply, local_context)(candidate);
 }
 
 void FleetSupplyableByEmpire::SetTopLevelContent(const std::string& content_name) {
