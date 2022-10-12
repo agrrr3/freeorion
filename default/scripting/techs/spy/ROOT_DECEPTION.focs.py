@@ -15,11 +15,6 @@ Tech(
             effects=SetStealth(value=Value + NamedReal(name="SPY_DECEPTION_EMPTY_SPACE_PENALTY", value=-10.0)),
         ),
         EffectsGroup(
-            scope=Ship & OwnedBy(empire=Source.Owner) & Star(type=NoStar),
-            accountinglabel="SPY_DECEPTION_EMPTY_SPACE_PENALTY",
-            effects=SetStealth(value=Value + NamedReal(name="SPY_DECEPTION_EMPTY_SPACE_PENALTY", value=-10.0)),
-        ),
-        EffectsGroup(
             scope=Ship & OwnedBy(empire=Source.Owner) & Star(type=Red),
             accountinglabel="SPY_DECEPTION_DIM_STAR_PENALTY",
             effects=SetStealth(value=Value + NamedReal(name="SPY_DECEPTION_DIM_STAR_PENALTY", value=-5.0)),
@@ -56,6 +51,24 @@ Tech(
                 )
             )
             # large fleets only start affecting stealth when there are more than the threshold of ships in a single system
+        ),
+        EffectsGroup(
+            scope= (Planet() | Ship)
+                   & ~OwnedBy(empire=Source.Owner) & ~OwnedBy(affiliation=AllyOf, empire=Source.Owner)
+                   & ContainedBy(Contains(Ship & Stationary & OwnedBy(empire=Source.Owner)))
+            ,
+            stackinggroup="SPY_DECEPTION_STATIONARY_PATROL_STACK",
+            accountinglabel="SPY_DECEPTION_STATIONARY_PATROL_LABEL",
+            # needs to use maximum value per all such ships in this system
+            effects=[SetStealth(value=Value
+                               - MinOf(int,
+                                       CurrentTurn - MinOf(int, CurrentTurn, Statistic(int,
+                                                               Min,
+                                                               value=LocalCandidate.ArrivedOnTurn,
+                                                               condition=(ContainedBy(Object(id=Target.SystemID))
+                                                                          & (Ship & Stationary & ~OwnedBy(empire=Target.Owner))))),
+                                       NamedInteger(name="SPY_DECEPTION_STATIONARY_PATROL_MAX_STEALTH_MALUS", value=7))
+                                )], # ..SetStealth # ..effects
         ),
     ],
 )

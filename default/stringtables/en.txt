@@ -6488,6 +6488,8 @@ If an empire owns more than [[value FLEET_UNSTEALTHY_SHIPS_THRESHOLD]] in a syst
 
 Space ships, buildings, specials, systems and planets have a Stealth meter.
 
+[[SPY_PLANET_STEALTH_MOD_DESC]]
+
 [[DETECTION_STAR_MODIFIERS]]'''
 
 METER_DETECTION_VALUE_LABEL
@@ -14574,6 +14576,8 @@ SPY_PLANET_STEALTH_MOD_DESC
 
 • [[encyclopedia OUTPOSTS_TITLE]] have an extra [[value OUTPOST_STEALTH_BONUS]] [[metertype METER_STEALTH]] bonus as they are less detectable than a colony with an average stealth trait.
 
+• Ships stopping in foreign systems immediately start patroling, decreasing [[metertype METER_STEALTH]] of foreign planets the longer they stay. The ships which started patroling first decreases [[metertype METER_STEALTH]] by 1 per turn of stay, up to [[value SPY_DECEPTION_STATIONARY_PATROL_MAX_STEALTH_MALUS]] turns. Planets are considered if unowned or owned by non-allied empires.
+
 • Due to [[FLEET_UNSTEALTHINESS]], when there are more than [[value FLEET_UNSTEALTHY_SHIPS_THRESHOLD]] ships of the same empire in a system, their [[metertype METER_STEALTH]] is reduced by [[value FLEET_UNSTEALTH_SHIPS_SCALING]] multiplied by the square root of [[value FLEET_UNSTEALTHY_SHIPS_THRESHOLD]] less than the number of ships that empire has in the system.
 
 • Ships in systems with [[STAR_NONE]] receive a [[value SPY_DECEPTION_EMPTY_SPACE_PENALTY]] penalty to [[metertype METER_STEALTH]] due to being [[SPY_DECEPTION_EMPTY_SPACE_PENALTY]].
@@ -14593,6 +14597,11 @@ Fleet Unstealthiness
 FLEET_UNSTEALTHY_SHIPS_THRESHOLD
 Number of ships in a system owned by the same empire, above which ships receive a stealth penalty
 
+SPY_DECEPTION_STATIONARY_PATROL_LABEL
+Turns of System Patrol
+
+SPY_DECEPTION_STATIONARY_PATROL_MAX_STEALTH_MALUS
+Maximum Decrease of Planetary Stealth by System Patrol
 
 ##
 ## Technology refinement
