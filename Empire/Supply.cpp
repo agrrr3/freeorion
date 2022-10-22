@@ -890,66 +890,28 @@ void SupplyManager::Update(const ScriptingContext& context) {
             TraceLogger(supply) << " ... " << a;
     }
 
-    // add traversals for borders
-    for (auto& [empire_id, traversals] : ally_merged_supply_starlane_traversals) {
-    }
+
     // iterate...
     bool something_changed = true;
     std::size_t limit = 50;
     while (something_changed && limit-- > 0) {
-        TraceLogger(supply) << "--------------- NEW ROUND -------- up to " << limit;
         const auto initial{ally_merged_supply_starlane_traversals};
 
         // add allied supply starlane traversals to empires' traversals, so that
         // allies can use eachothers' supply networks
         for (auto& [empire_id, traversals] : ally_merged_supply_starlane_traversals) {
-            TraceLogger(supply) << "===== Empire " << empire_id << " ===== limit " << limit;
             const auto ally_ids = allies_of(empire_id);
             const auto& unobstructed_systems = empire_supply_unobstructed_systems[empire_id];
-            for (auto ally_id : ally_ids) {
-                TraceLogger(supply) << "Empire " << empire_id << "  ally" << ally_id;
-            }
-            const auto& empire_direct_supplied_systems = m_empire_propagated_supply_ranges[empire_id];
+
             for (auto& [prior_empire_id, prior_traversals] : initial) {
-                TraceLogger(supply) << "Check if Empire " << prior_empire_id << " and " << empire_id << " are allies";
                 if (!ally_ids.count(prior_empire_id))
                     continue; // only copy traversals of allied empires
                 const auto& prior_empire_direct_supplied_systems = m_empire_propagated_supply_ranges[prior_empire_id];
-                TraceLogger(supply) << "= = = = = Empire " << prior_empire_id << " = = = = =  and " << empire_id << " are allies";
+
                 for (auto& [sys_A, sys_B] : prior_traversals) {
-                    if (prior_empire_direct_supplied_systems.count(sys_A))
-                        TraceLogger(supply) << "prior directly supplied A " << sys_A;
-                    if (prior_empire_direct_supplied_systems.count(sys_B))
-                        TraceLogger(supply) << "prior directly supplied B " << sys_B;
-//                    if ((prior_empire_direct_supplied_systems.count(sys_A) && ally_merged_fleet_supplyable_system_ids[prior_empire_id].count(sys_B))
-//                        || (prior_empire_direct_supplied_systems.count(sys_B) && ally_merged_fleet_supplyable_system_ids[prior_empire_id].count(sys_A)))
-                    if (prior_empire_direct_supplied_systems.count(sys_A) && prior_empire_direct_supplied_systems.count(sys_B))
-                    {
-                        TraceLogger(supply) << "yay, added to " << empire_id;
-                        traversals.emplace(sys_A, sys_B);} // only copy traversals to and from systems the allied empire directly propagated
-                    else if (prior_empire_direct_supplied_systems.count(sys_A)) {
-                        /* border */
-                        for (auto ally_id : ally_ids) {
-                            TraceLogger(supply) << "check if ally " << ally_id << " directly supplied B " << sys_B;
-                            if( m_empire_propagated_supply_ranges[ally_id].count(sys_B) ) {
-                                TraceLogger(supply) << "ally " << ally_id << " directly supplied B " << sys_B;
-                                traversals.emplace(sys_A, sys_B);
-                                break;
-                            }
-                        }
-                    } else if (prior_empire_direct_supplied_systems.count(sys_B)) {
-                        /* also border */
-                        for (auto ally_id : ally_ids) {
-                            TraceLogger(supply) << "check if ally " << ally_id << " directly supplied A " << sys_A;
-                            if( m_empire_propagated_supply_ranges[ally_id].count(sys_A) ) {
-                                TraceLogger(supply) << "ally " << ally_id << " directly supplied A " << sys_A;
-                                traversals.emplace(sys_A, sys_B);
-                                break;
-                            }
-                        }
-                    } else {
-                        TraceLogger(supply) << "nope, no luck " << empire_id << "  A " << sys_A << " - " << sys_B << " B";
-                    }
+                    if (prior_empire_direct_supplied_systems.count(sys_A) &&
+                        prior_empire_direct_supplied_systems.count(sys_B))
+                    { traversals.emplace(sys_A, sys_B);} // only copy traversals to and from systems the allied empire directly propagated
                 }
             }
         }
