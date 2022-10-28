@@ -1,0 +1,33 @@
+Policy
+    name = "PLC_BLIND_TRUST"
+    description = "PLC_BLIND_TRUST_DESC"
+    short_description = "PLC_BLIND_TRUST_SHORT_DESC"
+    category = "MILITARY_CATEGORY"
+    adoptioncost = 5.0
+    exclusions = [ ]
+    effectsgroups = [
+        [[SPECIES_LIKES_OR_DISLIKES_POLICY_STABILITY_EFFECTS]]
+
+        // makes planets more stable at cost of research and supply range
+        EffectsGroup
+            scope = And [
+                Or [ Planet Ship ]
+                OwnedBy empire = Source.Owner
+// XXX maybe TODO: SupplyingEmpire should return the "starlane owner" for a ship on a starlane
+                Not SupplyingEmpire = Source.Owner
+// TODO implement: EmpiresAffiliationCount
+// TODO implement: PeacefulWith
+// TODO implement:  "|" operator for affiliations (treating enums like bitfields?)
+// complex valueref returning the number of "matching" relationships between the giving empires
+// so if the source owner and the supplying system's owner are at peace or allied, there will be one matching relationship, else zero
+                (1 == EmpiresAffiliationCount affiliations=AllyOf|PeacefulWith empire = ( Source.Owner, Source.SupplyingEmpire ))
+// TODO add branch if going to enter that kind peaceful/allied territory
+            ]
+            effects = [
+                SetDetection value = 0
+// TODO add some benefit
+            ]
+    ]
+    graphic = "icons/policies/blind_trust.png"
+
+#include "/scripting/policies/policies.macros"
