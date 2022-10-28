@@ -30,11 +30,11 @@ BuildingType
         // takes the maximum age of all lighthouse buildings in the system regardless of owner (by just triggering for the oldest ones)
         EffectsGroup
             scope = WithinDistance distance = 0.00001 condition = Source
-            stackinggroup = "LIGHTHOUSE_CATALOG_STEALTH_STACK"
             activation = (Source.Age >= (Statistic Max value = LocalCandidate.Age condition = And [
                 InSystem id = Source.SystemID
                 Building name = "BLD_LIGHTHOUSE"
             ]))
+            stackinggroup = "LIGHTHOUSE_CATALOG_STEALTH_STACK"
             accountinglabel = "BLD_LIGHTHOUSE_CATALOG_STEALTH_LABEL"
             effects = SetStealth value = Value - min(Source.Age, NamedReal name = "BLD_LIGHTHOUSE_CATALOG_STEALTH_MALUS" value = 10)
 
