@@ -44,7 +44,7 @@ XENOPHOBIC_SELF
             accountinglabel = "XENOPHOBIC_LABEL_SELF"
             priority = [[TARGET_POPULATION_LAST_BEFORE_OVERRIDE_PRIORITY]]
 
-            effects = SetTargetPopulation value = Value + max(
+            effects = [ SetTargetPopulation value = Value + max(
                 -3 * Target.HabitableSize,  // Cap malus at the self-sustaining bonus
                 Target.HabitableSize * (NamedReal name = "XENOPHOBIC_TARGET_POPULATION_PERJUMP" value = -0.2)
                 * Statistic Sum
@@ -58,6 +58,26 @@ XENOPHOBIC_SELF
                         WithinStarlaneJumps jumps = (NamedIntegerLookup name = "XENOPHOBIC_MAX_JUMPS") condition = Source
                     ]
                 )
+                GenerateSitRepMessage
+                    message = "A number: %rawtext:number%  at %planet%"
+                    label = "SITREP_FIELD_RESEARCH_LABEL"
+                    NoStringtableLookup
+                    icon = "icons/tech/environmental_encapsulation.png"
+                    parameters = [tag = "number" data = Statistic Sum
+                    value = (1 + NamedIntegerLookup name = "XENOPHOBIC_MAX_JUMPS"
+                        - JumpsBetween object = Target.ID object = LocalCandidate.ID)
+                    condition = And [
+                        Planet
+                        Species
+                        Not Species name = Source.Species
+                        Not HasTag name = "LOW_BRAINPOWER"
+                        WithinStarlaneJumps jumps = (NamedIntegerLookup name = "XENOPHOBIC_MAX_JUMPS") condition = Source
+                    ]
+                    tag = "planet" data = Source.ID
+                    ]
+                    empire = Source.Owner
+
+]
 '''
 
 XENOPHOBIC_SELFSUSTAINING_QUALIFYING_PLANET_COUNT
