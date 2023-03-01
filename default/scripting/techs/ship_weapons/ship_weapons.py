@@ -68,7 +68,11 @@ def WEAPON_UPGRADE_CAPACITY_EFFECTS(tech_name: str, part_name: str, value: int):
                     "shippart": part_name,
                     "tech": CurrentContent,
                     # str(CurrentContent) -> <ValueRefString object at 0x...>
-                    "dam": NamedReal(name=tech_name + "_UPGRADE_DAMAGE", value=value * SHIP_WEAPON_DAMAGE_FACTOR),
+                    "dam": "test" + str(type(CurrentContent)) + "test",
+                    #"dam": NamedReal(name=CurrentContent + "_UPGRADE_DAMAGE", value=value * SHIP_WEAPON_DAMAGE_FACTOR),
+                    # this does some string-magic based on the _Y naming convention for ship weapon upgrade tech where Y is the weapon level
+                    # TypeError: No registered converter was able to produce a C++ rvalue of type std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > from this Python object of type ValueRefString
+
                     "sum": NamedReal(name=tech_name + "_UPGRADED_DAMAGE", value=SHIP_WEAPON_DAMAGE_FACTOR * (PartCapacity(name=part_name) + (value * (int(tech_name[-1])-1)))),
                 },
                 empire=Target.Owner,
