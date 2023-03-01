@@ -13,8 +13,9 @@ def WEAPON_BASE_EFFECTS(part_name: str):
             scope=EMPIRE_OWNED_SHIP_WITH_PART(part_name),
             accountinglabel=part_name,
             effects=[
-                SetMaxCapacity(partname=part_name, value=Value + PartCapacity(name=part_name)),
-                SetMaxSecondaryStat(partname=part_name, value=Value + PartSecondaryStat(name=part_name)),
+                # XXX these NamedReals exist for the pedia; if the pedia gets better support for looking up part capacity etc these should be removed
+                SetMaxCapacity(partname=part_name, value=Value + NamedReal(name=part_name+"_PART_CAPACITY", value=PartCapacity(name=part_name))),
+                SetMaxSecondaryStat(partname=part_name, value=Value + NamedReal(name=part_name + "_PART_SECONDARY_STAT", value=PartSecondaryStat(name=part_name))),
             ],
         ),
         # The following is really only needed on the first resupplied turn after an upgrade is researched, since the resupply currently
@@ -25,12 +26,29 @@ def WEAPON_BASE_EFFECTS(part_name: str):
             accountinglabel=part_name,
             effects=SetCapacity(partname=part_name, value=Value + ARBITRARY_BIG_NUMBER_FOR_METER_TOPUP),
         ),
+        # this is currently only used for registering a NamedReal per part_name
+        EffectsGroup(
+            scope=Source & Ship & Planet(), # i.e. impossible condition -> empty scope
+            activation=(CurrentTurn == TurnTechResearched(empire=Source.Owner, name=CurrentContent)),
+            effects=GenerateSitRepMessage(
+                message="SITREP_WEAPONS_RESEARCHED",
+                label="SITREP_WEAPONS_RESEARCHED_LABEL",
+                icon="icons/sitrep/weapon_upgrade.png",
+                parameters={
+                    "empire": Source.Owner,
+                    "shippart": part_name,
+                    "tech": CurrentContent,
+                    "dam": NamedReal(name=part_name+"_SCALED_PART_CAPACITY", value=PartCapacity(name=part_name) * SHIP_WEAPON_DAMAGE_FACTOR),
+                },
+                empire=Target.Owner,
+            ),
+        ),
     ]
 
 
 # @1@ part name
 # @2@ value added to max capacity
-def WEAPON_UPGRADE_CAPACITY_EFFECTS(part_name: str, value: int):
+def WEAPON_UPGRADE_CAPACITY_EFFECTS(tech_name: str, part_name: str, value: int):
     return [
         EffectsGroup(
             scope=EMPIRE_OWNED_SHIP_WITH_PART(part_name) & SHIP_PART_UPGRADE_RESUPPLY_CHECK(CurrentContent),
@@ -49,7 +67,9 @@ def WEAPON_UPGRADE_CAPACITY_EFFECTS(part_name: str, value: int):
                     "empire": Source.Owner,
                     "shippart": part_name,
                     "tech": CurrentContent,
-                    "dam": value * SHIP_WEAPON_DAMAGE_FACTOR,
+                    # str(CurrentContent) -> <ValueRefString object at 0x...>
+                    "dam": NamedReal(name=tech_name + "_UPGRADE_DAMAGE", value=value * SHIP_WEAPON_DAMAGE_FACTOR),
+                    "sum": NamedReal(name=tech_name + "_UPGRADED_DAMAGE", value=SHIP_WEAPON_DAMAGE_FACTOR * (PartCapacity(name=part_name) + (value * (int(tech_name[-1])-1)))),
                 },
                 empire=Target.Owner,
             ),
