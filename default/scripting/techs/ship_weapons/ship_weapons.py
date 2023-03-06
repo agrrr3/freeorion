@@ -36,7 +36,7 @@ def WEAPON_BASE_EFFECTS(part_name: str):
         # this is currently only used for registering a NamedReal per part_name
         EffectsGroup(
             scope=Source & Ship & Planet(),  #  i.e. impossible condition -> empty scope
-            activation=(CurrentTurn == TurnTechResearched(empire=Source.Owner, name=CurrentContent)),
+            activation=(1 == 0),  # do not activate
             effects=GenerateSitRepMessage(
                 message="SITREP_WEAPONS_RESEARCHED",
                 label="SITREP_WEAPONS_RESEARCHED_LABEL",
