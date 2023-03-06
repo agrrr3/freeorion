@@ -36,7 +36,7 @@ def WEAPON_BASE_EFFECTS(part_name: str):
         # this is currently only used for registering a NamedReal per part_name
         EffectsGroup(
             scope=Source & Ship & Planet(),  #  i.e. impossible condition -> empty scope
-            activation=(1 == 0),  # do not activate
+            activation=(CurrentTurn == -2),  # do not activate
             effects=GenerateSitRepMessage(
                 message="SITREP_WEAPONS_RESEARCHED",
                 label="SITREP_WEAPONS_RESEARCHED_LABEL",
@@ -81,8 +81,9 @@ def WEAPON_UPGRADE_CAPACITY_EFFECTS(tech_name: str, part_name: str, value: int):
                     "dam": NamedReal(name=tech_name + "_UPGRADE_DAMAGE", value=value * SHIP_WEAPON_DAMAGE_FACTOR),
                     "sum": NamedReal(
                         name=tech_name + "_UPGRADED_DAMAGE",
-                        value=SHIP_WEAPON_DAMAGE_FACTOR
-                        * (PartCapacity(name=part_name) + (value * (int(tech_name[-1]) - 1))),
+                        value=PartCapacity(name=part_name)
+                        + (SHIP_WEAPON_DAMAGE_FACTOR
+                        * (value * (int(tech_name[-1]) - 1))),
                     ),
                 },
                 empire=Target.Owner,
