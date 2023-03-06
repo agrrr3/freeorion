@@ -33,26 +33,6 @@ def WEAPON_BASE_EFFECTS(part_name: str):
             accountinglabel=part_name,
             effects=SetCapacity(partname=part_name, value=Value + ARBITRARY_BIG_NUMBER_FOR_METER_TOPUP),
         ),
-        # this is currently only used for registering a NamedReal per part_name
-        EffectsGroup(
-            scope=Source & Ship & Planet(),  #  i.e. impossible condition -> empty scope
-            activation=(CurrentTurn == -2),  # do not activate
-            effects=GenerateSitRepMessage(
-                message="SITREP_WEAPONS_RESEARCHED",
-                label="SITREP_WEAPONS_RESEARCHED_LABEL",
-                icon="icons/sitrep/weapon_upgrade.png",
-                parameters={
-                    "empire": Source.Owner,
-                    "shippart": part_name,
-                    "tech": CurrentContent,
-                    "dam": NamedReal(
-                        name=part_name + "_SCALED_PART_CAPACITY",
-                        value=PartCapacity(name=part_name) * SHIP_WEAPON_DAMAGE_FACTOR,
-                    ),
-                },
-                empire=Target.Owner,
-            ),
-        ),
     ]
 
 
@@ -82,8 +62,7 @@ def WEAPON_UPGRADE_CAPACITY_EFFECTS(tech_name: str, part_name: str, value: int):
                     "sum": NamedReal(
                         name=tech_name + "_UPGRADED_DAMAGE",
                         value=PartCapacity(name=part_name)
-                        + (SHIP_WEAPON_DAMAGE_FACTOR
-                        * (value * (int(tech_name[-1]) - 1))),
+                        + (SHIP_WEAPON_DAMAGE_FACTOR * (value * (int(tech_name[-1]) - 1))),
                     ),
                 },
                 empire=Target.Owner,
