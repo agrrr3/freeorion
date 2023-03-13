@@ -6,8 +6,23 @@ from techs.techs import (
 )
 
 
+def STATISTIC_IF_TECH_RESEARCHED(tech_name: str):
+    IMPOSSIBLY_LARGE_TURN = 2**15
+    valref = TurnTechResearched(empire=Source.Owner, name=tech_name) < IMPOSSIBLY_LARGE_TURN
+    return StatisticIf(float, condition = Source & valref)
+
 # @1@ part name
 def WEAPON_BASE_EFFECTS(part_name: str):
+    # DOES NOT WORK - empire/Source does not exist (before game start) or is not set (while game runs)
+    tech_name_prefix = "SHP_" + part_name[3:-2] + "_"
+    #best_tech_level_vref = STATISTIC_IF_TECH_RESEARCHED(tech_name_prefix + "4") + STATISTIC_IF_TECH_RESEARCHED(tech_name_prefix + "3") + STATISTIC_IF_TECH_RESEARCHED(tech_name_prefix + "2") + STATISTIC_IF_TECH_RESEARCHED(tech_name_prefix + "1") + TurnTechResearched(empire=Source.Owner, name="SHP_WEAPON_1_2")
+    best_tech_level_vref = TurnTechResearched(empire=Source.Owner, name="SHP_WEAPON_1_2")
+    #
+    # this wont work... best_tech_level is a ValueRef and we do not have support for dynamic names... in principle it should be ok for the lookup part
+    # best_tech_damage = NamedRealLookup(name=tech_name_prefix + best_tech_level
+    # so i fake the damage
+    best_tech_damage_vref = 1*best_tech_level_vref 
+
     return [
         EffectsGroup(
             scope=EMPIRE_OWNED_SHIP_WITH_PART(part_name),
@@ -32,6 +47,16 @@ def WEAPON_BASE_EFFECTS(part_name: str):
             scope=EMPIRE_OWNED_SHIP_WITH_PART(part_name) & Turn(high=LocalCandidate.LastTurnResupplied),
             accountinglabel=part_name,
             effects=SetCapacity(partname=part_name, value=Value + ARBITRARY_BIG_NUMBER_FOR_METER_TOPUP),
+        ),
+        EffectsGroup(
+            scope=Source,
+            activation=None,
+            effects = [
+                SetMaxCapacity(
+                    partname="fake",
+                    value=NamedReal(name=part_name + "_CAPACITY_WITH_CURRENT_TECH", value=best_tech_damage_vref)
+                ),
+            ],
         ),
     ]
 

@@ -15663,6 +15663,8 @@ SR_WEAPON_1_1_DESC
 
 Upgrading the weapon technology will increase the shot damage.
 
+Current: [[value SR_WEAPON_1_1_CAPACITY_WITH_CURRENT_TECH]]
+
 The weapon's [[encyclopedia DAMAGE_TITLE]] is a combination of the shot damage and any active modifiers. Each mass driver on a ship built by a species with the piloting trait will do an additional 6 damage per piloting level (-6 for Bad Pilots). The Mass Driver has [[value SR_WEAPON_1_1_PART_CAPACITY]] basic shot damage. Upgrade tech [[tech SHP_WEAPON_1_2]] increases this by [[value SHP_WEAPON_1_2_UPGRADE_DAMAGE]].'''
 
 SR_WEAPON_2_1
