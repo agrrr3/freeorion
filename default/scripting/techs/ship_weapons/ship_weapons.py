@@ -8,6 +8,14 @@ from techs.techs import (
 
 # @1@ part name
 def WEAPON_BASE_EFFECTS(part_name: str, emulate_default_effects: bool = False):
+    # The following is really only needed on the first resupplied turn after an upgrade is researched, since the resupply currently
+    # takes place in a portion of the turn before meters are updated, but currently there is no good way to restrict this to
+    # only that first resupply (and it is simply mildly inefficient to repeat the topup later).
+    topup_effects_group = EffectsGroup(
+        scope=EMPIRE_OWNED_SHIP_WITH_PART(part_name) & Turn(high=LocalCandidate.LastTurnResupplied),
+        accountinglabel=part_name,
+        effects=SetCapacity(partname=part_name, value=Value + ARBITRARY_BIG_NUMBER_FOR_METER_TOPUP),
+    )
     return (
         [
             EffectsGroup(
@@ -33,14 +41,7 @@ def WEAPON_BASE_EFFECTS(part_name: str, emulate_default_effects: bool = False):
                     ),
                 ],
             ),
-            # The following is really only needed on the first resupplied turn after an upgrade is researched, since the resupply currently
-            # takes place in a portion of the turn before meters are updated, but currently there is no good way to restrict this to
-            # only that first resupply (and it is simply mildly inefficient to repeat the topup later).
-            EffectsGroup(
-                scope=EMPIRE_OWNED_SHIP_WITH_PART(part_name) & Turn(high=LocalCandidate.LastTurnResupplied),
-                accountinglabel=part_name,
-                effects=SetCapacity(partname=part_name, value=Value + ARBITRARY_BIG_NUMBER_FOR_METER_TOPUP),
-            ),
+            topup_effects_group,
         ]
         if emulate_default_effects
         else [
@@ -54,6 +55,7 @@ def WEAPON_BASE_EFFECTS(part_name: str, emulate_default_effects: bool = False):
                     + NamedReal(name=part_name + "_PART_SECONDARY_STAT", value=PartSecondaryStat(name=part_name)),
                 ),
             ),
+            topup_effects_group,
         ]
     )
 
