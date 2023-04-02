@@ -471,9 +471,11 @@ float Ship::WeaponPartFighterDamage(const ShipPart* part, const ScriptingContext
 
     // usually a weapon part destroys one fighter per shot, but that can be overridden
     if (part->TotalFighterDamage()) {
+        ErrorLogger() << "XLWeaponPartFighterDamage part damage was overridden " << part->Name();
         return part->TotalFighterDamage()->Eval(context);
     } else {
         const int num_bouts_with_fighter_targets = GetGameRules().Get<int>("RULE_NUM_COMBAT_ROUNDS") - 1;
+        ErrorLogger() << "XLWeaponPartFighterDamage standard part damage " << part->Name() << " : " << CurrentPartMeterValue(MeterType::METER_SECONDARY_STAT, part->Name()) << " * " << num_bouts_with_fighter_targets;
         return CurrentPartMeterValue(MeterType::METER_SECONDARY_STAT, part->Name()) * num_bouts_with_fighter_targets;  // used within loop that updates meters, so need current, not initial values
     }
 }
@@ -484,6 +486,7 @@ float Ship::WeaponPartShipDamage(const ShipPart* part, const ScriptingContext& c
 
     // usually a weapon part does damage*shots ship damage, but that can be overridden
     if (part->TotalShipDamage()) {
+        ErrorLogger() << "XLWeaponPartShipDamage part damage was overridden " << part->Name();
         return part->TotalShipDamage()->Eval(context);
     } else {
         const float part_attack = CurrentPartMeterValue(MeterType::METER_CAPACITY, part->Name());  // used within loop that updates meters, so need current, not initial values
@@ -493,6 +496,7 @@ float Ship::WeaponPartShipDamage(const ShipPart* part, const ScriptingContext& c
             const Ship* target = static_cast<const Ship*>(context.effect_target);
             target_shield = target->GetMeter(MeterType::METER_SHIELD)->Current();
         }
+        ErrorLogger() << "XLWeaponPartShipDamage standard part damage " << part->Name() << " : " << part_shots << " * (" << part_attack << " - " << target_shield << ")*4(?)";        
         if (part_attack > target_shield) {
             const int num_bouts = GetGameRules().Get<int>("RULE_NUM_COMBAT_ROUNDS");
             return (part_attack - target_shield) * part_shots * num_bouts;

@@ -595,7 +595,8 @@ void ShipDamageBrowseWnd::UpdateEffectLabelsAndValues(GG::Y& top) {
         label->Resize(GG::Pt(MeterBrowseLabelWidth() - MeterBrowseValueWidth(), m_row_height));
         AttachChild(label);
 
-        auto value = GG::Wnd::Create<CUILabel>(ColouredNumber(part_attack) + " / " + ColouredNumber(part_fighters_shot, 0));
+        ErrorLogger() << "XLUELAV " << name << " " << part_name << " : " << part_attack << "/" << part_fighters_shot;
+        auto value = GG::Wnd::Create<CUILabel>("XLUELAV: " + ColouredNumber(part_attack) + " / " + ColouredNumber(part_fighters_shot, 0));
         value->MoveTo(GG::Pt(MeterBrowseLabelWidth() - MeterBrowseValueWidth(), top));
         value->Resize(GG::Pt(2*MeterBrowseValueWidth(), m_row_height));
         AttachChild(value);
@@ -622,7 +623,7 @@ namespace {
 
             m_label_control = GG::Wnd::Create<CUILabel>(std::move(label), GG::FORMAT_RIGHT);
 
-            std::string qty_text = (qty > 1) ? ColourWrappedtext("* " + IntToString(qty), QTY_COLOR) : "";
+            std::string qty_text = "XLSFBR: " + (qty > 1) ? ColourWrappedtext("* " + IntToString(qty), QTY_COLOR) : "";
             m_qty_control = GG::Wnd::Create<CUILabel>(std::move(qty_text));
 
             std::string value_text;

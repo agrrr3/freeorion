@@ -274,7 +274,7 @@ void SDLGUI::SDLInit() {
         m_gl_context = SDL_GL_CreateContext(m_window);
     GLenum glew_status = glewInit();
 
-    if (!m_window || !m_gl_context || GLEW_OK != glew_status) {
+    if (!m_window || !m_gl_context /*|| GLEW_OK != glew_status*/) {
         std::string msg;
         if (!m_window) {
             msg = "Unable to create window.";

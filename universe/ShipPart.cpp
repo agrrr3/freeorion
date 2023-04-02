@@ -139,7 +139,7 @@ namespace {
     {
         std::vector<Effect::EffectsGroup> retval;
         retval.reserve(effects.size() + 2);
-
+        ErrorLogger() << "ShipPart::InitEffects AXEL for " << name << " " << (add_standard_capacity_effect?"add_standard_capacity_effect":"no_standard_capacity_effect");
         if ((capacity != 0 || secondary_stat != 0) && add_standard_capacity_effect) {
             switch (part_class) {
             case ShipPartClass::PC_COLONY:
@@ -390,6 +390,7 @@ bool ShipPart::operator==(const ShipPart& rhs) const {
 }
 
 float ShipPart::Capacity() const {
+    ErrorLogger() << "ShipPart::Capacity AXEL for " << m_name << " " << (m_add_standard_capacity_effect?"add_standard_capacity_effect":"no_standard_capacity_effect");
     switch (m_class) {
     case ShipPartClass::PC_ARMOUR:
         return m_capacity * (m_add_standard_capacity_effect ? GetGameRules().Get<double>("RULE_SHIP_STRUCTURE_FACTOR") : 1.0f);

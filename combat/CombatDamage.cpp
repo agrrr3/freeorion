@@ -63,6 +63,7 @@ namespace {
                 // attack strength of a ship's fighters per bout determined by the hangar...
                 // assuming all hangars on a ship are the same part type...
                 if (target_ships && part->TotalShipDamage()) {
+ErrorLogger() << "XLWeaponDamageCalcImpl " << part_name << " PC_FIGHTER_HANGAR overridden ship damage";
                     retval.push_back(part->TotalShipDamage()->Eval(context));
                     // as TotalShipDamage contains the damage from all fighters, do not further include fighter
                     include_fighters = false;
@@ -76,8 +77,10 @@ namespace {
                     fighter_damage = ship->CurrentPartMeterValue(SECONDARY_METER, part_name);
                     available_fighters = std::max(0, static_cast<int>(
                         ship->CurrentPartMeterValue(METER, part_name)));  // stacked meter
+                    ErrorLogger() << "XLWeaponDamageCalcImpl " << part_name << " PC_FIGHTER_HANGAR not overridden ship damage. damage meter " << fighter_damage << " * " << available_fighters << " fighters ";
                 } else {
                     // target is not of the right type; no damage; stop checking hangars/launch bays
+ErrorLogger() << "XLWeaponDamageCalcImpl " << part_name << " PC_FIGHTER_HANGAR ignore damage, as not a valid target";
                     fighter_damage = 0.0f;
                     include_fighters = false;
                 }
