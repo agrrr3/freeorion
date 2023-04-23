@@ -1328,6 +1328,8 @@ namespace {
                     return true;
                 if (m_empire_id == candidate->Owner())
                     return false;
+                if (candidate->Owner() == DUMMY_EVIL_EMPIRE)
+                    return true;
                 DiplomaticStatus status = m_context.ContextDiploStatus(m_empire_id, candidate->Owner());
                 return (status == DiplomaticStatus::DIPLO_WAR);
                 break;
@@ -1338,6 +1340,8 @@ namespace {
                     return false;
                 if (m_empire_id == candidate->Owner())
                     return false;
+                if (candidate->Owner() == DUMMY_EVIL_EMPIRE)
+                    return false;
                 DiplomaticStatus status = m_context.ContextDiploStatus(m_empire_id, candidate->Owner());
                 return (status == DiplomaticStatus::DIPLO_PEACE);
                 break;
@@ -1347,6 +1351,8 @@ namespace {
                 if (m_empire_id == ALL_EMPIRES)
                     return false;
                 if (m_empire_id == candidate->Owner())
+                    return false;
+                if (m_empire_id == DUMMY_EVIL_EMPIRE)
                     return false;
                 DiplomaticStatus status = m_context.ContextDiploStatus(m_empire_id, candidate->Owner());
                 return (status >= DiplomaticStatus::DIPLO_ALLIED);
@@ -1367,7 +1373,7 @@ namespace {
             }
 
             case EmpireAffiliationType::AFFIL_HUMAN: {
-                if (candidate->Unowned())
+                if (candidate->Unowned() || candidate->Owner() == DUMMY_EVIL_EMPIRE)
                     return false;
                 if (GetEmpireClientType(candidate->Owner()) == Networking::ClientType::CLIENT_TYPE_HUMAN_PLAYER)
                     return true;
