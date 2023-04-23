@@ -612,7 +612,7 @@ namespace {
     ////////////////////////////////////////////////
     // ShipDataPanel
     ////////////////////////////////////////////////
-    /** Shows info about a single ship. */
+    /** Shows stats of a single ship. Used in ShipRows in the FleetWnd to show ships of a fleet. */
     class ShipDataPanel : public GG::Control {
     public:
         ShipDataPanel(GG::X w, GG::Y h, int ship_id);
@@ -866,6 +866,7 @@ namespace {
         const ObjectMap& o = u.Objects();
         const ScriptingContext context{u, Empires()};
 
+        ErrorLogger() << "XL ShipDataPanel::StatValue" << stat_name;
         if (auto ship = o.get<Ship>(m_ship_id)) {
             if (stat_name == MeterType::METER_CAPACITY)
                 return ship->TotalWeaponsShipDamage(context, 0.0f, true);

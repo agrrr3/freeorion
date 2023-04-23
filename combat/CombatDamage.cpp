@@ -78,8 +78,16 @@ ErrorLogger() << "XLWeaponDamageCalcImpl " << part_name << " PC_FIGHTER_HANGAR o
                     available_fighters = std::max(0, static_cast<int>(
                         ship->CurrentPartMeterValue(METER, part_name)));  // stacked meter
                     ErrorLogger() << "XLWeaponDamageCalcImpl " << part_name << " PC_FIGHTER_HANGAR not overridden ship damage. damage meter " << fighter_damage << " * " << available_fighters << " fighters ";
+                    if (fighter_damage == 0 && available_fighters == 0)
+                        ErrorLogger() << "XLWeaponDamageCalcImpl ship  age: " << ship->AgeInTurns(context.current_turn) << "(@" << context.current_turn << ")" << " dump: " << ship->Dump();
                 } else {
                     // target is not of the right type; no damage; stop checking hangars/launch bays
+                    ErrorLogger() << "XLWeaponDamageCalcImpl ship  age: " << ship->AgeInTurns(context.current_turn) << "(@" << context.current_turn << ")" << " dump: " << ship->Dump();
+                    ErrorLogger() << "XLWeaponDamageCalcImpl " << part_name << " dump TargetConditions " << part->CombatTargets()->Description();
+                    if (!context.effect_target)
+                        ErrorLogger() << "XLWeaponDamageCalcImpl " << part_name << " PC_FIGHTER_HANGAR no effedct_target";
+                    else
+                        ErrorLogger() << "XLWeaponDamageCalcImpl " << part_name << " PC_FIGHTER_HANGAR effect_target " << context.effect_target->Dump();
 ErrorLogger() << "XLWeaponDamageCalcImpl " << part_name << " PC_FIGHTER_HANGAR ignore damage, as not a valid target";
                     fighter_damage = 0.0f;
                     include_fighters = false;
@@ -143,6 +151,8 @@ ErrorLogger() << "XLWeaponDamageCalcImpl " << part_name << " PC_FIGHTER_HANGAR i
         target->SetID(TEMPORARY_OBJECT_ID); // also see InsertTemp function usage
         target->GetMeter(MeterType::METER_STRUCTURE)->Set(structure, structure);
         target->GetMeter(MeterType::METER_MAX_STRUCTURE)->Set(structure, structure);
+        // ensure weapons do think this is an enemy
+        target->SetOwner(DUMMY_EVIL_EMPIRE); 
         // Shield value is used for structural damage estimation
         target->GetMeter(MeterType::METER_SHIELD)->Set(shields, shields);
 
@@ -183,6 +193,10 @@ std::vector<float> Combat::WeaponDamageImpl(
 
     if (target_ships) {
         auto temp_ship = TempShipForDamageCalcs(source, context);
+        if (source->Unowned()) {
+            temp_ship->SetOwner(1); //XXX does this always work for targeting? all empires should be enemies of the neutral fraction. or do i need to
+            ErrorLogger() << "XL Combat::WeaponDamageImpl passed UNOWNED source ship " << source->Name() << " creating temporary ship to test targetting condition on " << temp_ship->Dump();
+        }
         ScriptingContext temp_ship_context{context, empire_object_vis, empire_object_visibility_turns,
                                            source.get(), temp_ship.get()};
 
@@ -191,6 +205,7 @@ std::vector<float> Combat::WeaponDamageImpl(
 
     } else {
         // create temporary fighter to test targetting condition on...
+        ErrorLogger() << "XL Combat::WeaponDamageImpl create temporary fighter to test targetting condition on.";
         auto temp_fighter = TempFighterForDamageCalcs(source, context);
         ScriptingContext temp_fighter_context{context, empire_object_vis, empire_object_visibility_turns,
                                               source.get(), temp_fighter.get()};
@@ -216,6 +231,10 @@ std::map<int, Combat::FighterBoutInfo> Combat::ResolveFighterBouts(
     Universe::EmpireObjectVisibilityTurnMap empire_object_visibility_turns{
         {ship->Owner(), {{TEMPORARY_OBJECT_ID, {{Visibility::VIS_FULL_VISIBILITY, context.current_turn}}}}}};
     auto temp_ship = TempShipForDamageCalcs(ship, context);
+    if (ship->Unowned()) {
+//        temp_ship->SetOwner(1); //XXX does this always work for targeting? all empires should be enemies of the neutral fraction. or do i need to
+        ErrorLogger() << "XL Combat::ResolveFighterBouts passed UNOWNED ship " << ship->Name() << " creating temporary ship to test targetting condition on " << temp_ship->Dump();
+    }
     ScriptingContext ship_target_context{context, empire_object_vis, empire_object_visibility_turns,
                                          ship.get(), temp_ship.get()};
 
