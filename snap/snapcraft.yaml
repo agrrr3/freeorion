@@ -1,6 +1,7 @@
 ---
 name: freeorion
 base: core22
+compression: lzo
 summary: turn-based space empire and galactic conquest (4X) computer game
 description: |
   FreeOrion is a free, open source, turn-based space empire and galactic
@@ -19,25 +20,34 @@ plugs:
     default-provider: mesa-core22
 apps:
   freeorion:
-    after: [graphics-core22]
-    command: usr/bin/freeorion -S $SNAP_USER_COMMON/save
+    command: freeorion -S $SNAP_USER_COMMON/save
+#    command: bin/freeorion-snap-wrapper.sh -S $SNAP_USER_COMMON/save
 #    extensions: [gnome]
     plugs:
-      - home
-      - pulseaudio
+      - home # exposes non-hidden files and directories in homedir for savefiles and using different scripting folders
+      - audio-playback # AFAIK needs pulseaudio in LD_LIBRARY_PATH
+#      - pulseaudio DEPRECATED since snap 2.41 (use audio-playback instead; we do not need microphone input)
       - opengl
       - network
       - screen-inhibit-control
       - browser-support
+      - desktop
+#      - desktop-legacy # necessary for accessibility features and CJKV input (I do not think we are in any way accessible :( )
       - x11
       - wayland
     command-chain:
       - bin/graphics-core22-wrapper
     desktop: usr/share/applications/org.freeorion.FreeOrion.desktop
     environment:
-      LD_LIBRARY_PATH: $SNAP/usr/lib/${CRAFT_ARCH_TRIPLET}/freeorion:$SNAP/usr/lib/${CRAFT_ARCH_TRIPLET}
-      LIBGL_DRIVERS_PATH: $SNAP/usr/lib/${CRAFT_ARCH_TRIPLET}/dri
+#  $SNAP/usr/lib/x86_64-linux-gnu/pulseaudio/ for audio-output plug
+#  not sure where gnome-platform comes from, but we need some of the parts...
+#  $SNAP/gnome-platform/usr/lib/x86_64-linux-gnu             for libOpenGL (and probably other libs)
+# https://forum.snapcraft.io/t/the-audio-playback-interface/13089/6
+      LD_LIBRARY_PATH: $SNAP/usr/lib/${CRAFT_ARCH_TRIPLET}/freeorion:$SNAP/usr/lib/${CRAFT_ARCH_TRIPLET}/pulseaudio:$SNAP/gnome-platform/usr/lib/${CRAFT_ARCH_TRIPLET}:$SNAP/usr/lib/${CRAFT_ARCH_TRIPLET}
+      LIBGL_DRIVERS_PATH: $SNAP/graphics/usr/lib/i386-linux-gnu/dri:$SNAP/graphics/usr/lib/x86_64-linux-gnu/dri:${LIBGL_DRIVERS_PATH:+:$LIBGL_DRIVERS_PATH}
+#      LIBGL_DRIVERS_PATH: $SNAP/usr/lib/${CRAFT_ARCH_TRIPLET}/dri
       # PYTHONPATH: $SNAP_DESKTOP_RUNTIME/usr/lib/python3.10
+      PULSE_SERVER: $XDG_RUNTIME_DIR/../pulse/native
   freeorion-godot:
     # LD_LIBRARY_PATH=$SNAP/usr/lib/x86_64-linux-gnu/freeorion:$SNAP/usr/lib/x86_64-linux-gnu/:$SNAP/usr/lib/x86_64-linux-gnu/pulseaudio LIBGL_DRIVERS_PATH=$SNAP/usr/lib/x86_64-linux-gnu/dri godot3-runner   --resource.path $SNAP/usr/share/freeorion/default/ -S $SNAP_USER_COMMON/save
     command: usr/bin/godot3-runner --main-pack $SNAP/usr/share/freeorion/freeorion.pck --resource.path $SNAP/usr/share/freeorion/default/ -S $SNAP_USER_COMMON/save
@@ -73,6 +83,13 @@ layout:
     symlink: $SNAP/graphics/drirc.d
 
 parts:
+#  # add a wrapper script; e.g. so pulseaudio libs can be found
+#  wrapper:
+#    plugin: dump
+#    after: [freeorion]
+#    source: .
+#    organize:
+#      freeorion-snap-wrapper.sh: bin/freeorion-snap-wrapper.sh
   freeorion:
     source: .
     override-build: |
@@ -156,15 +173,15 @@ parts:
       - libenet7
   # Find files provided by the base and platform snap and ensure they aren't
   # duplicated in this snap; boilerplate inspired by gnome-calculator snapcraft.yaml
-  cleanup:
-    after: [freeorion]
-    plugin: nil
-    build-snaps: [core22, gtk-common-themes, gnome-42-2204]
-    override-prime: |
-      set -eux
-      for snap in "core22" "gtk-common-themes" "gnome-42-2204"; do
-        cd "/snap/$snap/current" && find . -type f,l -name *.so.* -exec rm -f "$CRAFT_PRIME/{}" \;
-      done
+#  cleanup:
+#    after: [freeorion]
+#    plugin: nil
+#    build-snaps: [core22, gtk-common-themes, gnome-42-2204]
+#    override-prime: |
+#      set -eux
+#      for snap in "core22" "gtk-common-themes" "gnome-42-2204"; do
+#        cd "/snap/$snap/current" && find . -type f,l -name *.so.* -exec rm -f "$CRAFT_PRIME/{}" \;
+#      done
   graphics-core22-cleanup:
     after: [freeorion]
     source: https://github.com/MirServer/graphics-core22.git
@@ -174,3 +191,7 @@ parts:
       ${CRAFT_PART_SRC}/bin/graphics-core22-cleanup mesa-core22 nvidia-core22
     prime:
       - bin/graphics-core22-wrapper
+hooks:
+  configure:
+    plugs:
+      - opengl
