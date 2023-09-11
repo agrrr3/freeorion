@@ -20,7 +20,7 @@ plugs:
     default-provider: mesa-core22
 apps:
   freeorion:
-    command: freeorion -S $SNAP_USER_COMMON/save
+    command: usr/bin/freeorion -S $SNAP_USER_COMMON/save
 #    command: bin/freeorion-snap-wrapper.sh -S $SNAP_USER_COMMON/save
 #    extensions: [gnome]
     plugs:
