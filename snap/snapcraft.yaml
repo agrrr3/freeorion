@@ -11,13 +11,28 @@ confinement: strict
 adopt-info: freeorion
 architectures:
   - build-on: amd64
-
 # Build OK but release fails? Check https://dashboard.snapcraft.io/snaps/freeorion/collaboration/
+plugs:
+  graphics-core22:
+    interface: content
+    target: $SNAP/graphics
+    default-provider: mesa-core22
 apps:
   freeorion:
+    after: [graphics-core22]
     command: usr/bin/freeorion -S $SNAP_USER_COMMON/save
-    extensions: [gnome]
-    plugs: [home, pulseaudio, opengl, network, screen-inhibit-control, browser-support, x11]
+#    extensions: [gnome]
+    plugs:
+      - home
+      - pulseaudio
+      - opengl
+      - network
+      - screen-inhibit-control
+      - browser-support
+      - x11
+      - wayland
+    command-chain:
+      - bin/graphics-core22-wrapper
     desktop: usr/share/applications/org.freeorion.FreeOrion.desktop
     environment:
       LD_LIBRARY_PATH: $SNAP/usr/lib/${CRAFT_ARCH_TRIPLET}/freeorion:$SNAP/usr/lib/${CRAFT_ARCH_TRIPLET}
@@ -43,6 +58,7 @@ apps:
     command: usr/bin/freeoriond --hostless --network.server.unconn-human-empire-players.max 0 --network.server.conn-human-empire-players.min 0
     plugs: [home, network, network-bind]
     environment:
+#      LD_LIBRARY_PATH: $SNAP/usr/lib/${CRAFT_ARCH_TRIPLET}/freeorion
       LD_LIBRARY_PATH: $SNAP/usr/lib/${CRAFT_ARCH_TRIPLET}/freeorion:$SNAP/usr/lib/${CRAFT_ARCH_TRIPLET}:$SNAP_DESKTOP_RUNTIME/usr/lib/${CRAFT_ARCH_TRIPLET}
       #PYTHONPATH: $SNAP_DESKTOP_RUNTIME/usr/lib/python3.10
 
@@ -51,6 +67,10 @@ layout:
   # $SNAP depends on the release number so it is unknown/wrong/different in the build step
   /usr/lib/${CRAFT_ARCH_TRIPLET}/freeorion:
     symlink: $SNAP/usr/lib/${CRAFT_ARCH_TRIPLET}/freeorion
+  /usr/share/libdrm:
+    bind: $SNAP/graphics/libdrm
+  /usr/share/drirc.d:
+    symlink: $SNAP/graphics/drirc.d
 
 parts:
   freeorion:
@@ -145,3 +165,12 @@ parts:
       for snap in "core22" "gtk-common-themes" "gnome-42-2204"; do
         cd "/snap/$snap/current" && find . -type f,l -name *.so.* -exec rm -f "$CRAFT_PRIME/{}" \;
       done
+  graphics-core22-cleanup:
+    after: [freeorion]
+    source: https://github.com/MirServer/graphics-core22.git
+    plugin: dump
+    override-prime: |
+      craftctl default
+      ${CRAFT_PART_SRC}/bin/graphics-core22-cleanup mesa-core22 nvidia-core22
+    prime:
+      - bin/graphics-core22-wrapper
