@@ -21,8 +21,6 @@ plugs:
 apps:
   freeorion:
     command: usr/bin/freeorion -S $SNAP_USER_COMMON/save
-#    command: bin/freeorion-snap-wrapper.sh -S $SNAP_USER_COMMON/save
-#    extensions: [gnome]
     plugs:
       - home # exposes non-hidden files and directories in homedir for savefiles and using different scripting folders
       - audio-playback # AFAIK needs pulseaudio in LD_LIBRARY_PATH
@@ -30,7 +28,7 @@ apps:
       - opengl
       - network
       - screen-inhibit-control
-      - browser-support
+      - browser-support # forgot what we need this for
       - desktop
 #      - desktop-legacy # necessary for accessibility features and CJKV input (I do not think we are in any way accessible :( )
       - x11
@@ -39,20 +37,18 @@ apps:
       - bin/graphics-core22-wrapper
     desktop: usr/share/applications/org.freeorion.FreeOrion.desktop
     environment:
-#  $SNAP/usr/lib/x86_64-linux-gnu/pulseaudio/ for audio-output plug
+#     LD_LIBRARY_PATH: $SNAP/usr/lib/x86_64-linux-gnu/pulseaudio/ # for audio output # https://forum.snapcraft.io/t/the-audio-playback-interface/13089/6
 #  not sure where gnome-platform comes from, but we need some of the parts...
-#  $SNAP/gnome-platform/usr/lib/x86_64-linux-gnu             for libOpenGL (and probably other libs)
-# https://forum.snapcraft.io/t/the-audio-playback-interface/13089/6
+#     LD_LIBRARY_PATH: $SNAP/gnome-platform/usr/lib/x86_64-linux-gnu             for libOpenGL (and probably other libs)
       LD_LIBRARY_PATH: $SNAP/usr/lib/${CRAFT_ARCH_TRIPLET}/freeorion:$SNAP/usr/lib/${CRAFT_ARCH_TRIPLET}/pulseaudio:$SNAP/gnome-platform/usr/lib/${CRAFT_ARCH_TRIPLET}:$SNAP/usr/lib/${CRAFT_ARCH_TRIPLET}
       LIBGL_DRIVERS_PATH: $SNAP/graphics/usr/lib/i386-linux-gnu/dri:$SNAP/graphics/usr/lib/x86_64-linux-gnu/dri:${LIBGL_DRIVERS_PATH:+:$LIBGL_DRIVERS_PATH}
-#      LIBGL_DRIVERS_PATH: $SNAP/usr/lib/${CRAFT_ARCH_TRIPLET}/dri
       # PYTHONPATH: $SNAP_DESKTOP_RUNTIME/usr/lib/python3.10
       PULSE_SERVER: $XDG_RUNTIME_DIR/../pulse/native
   freeorion-godot:
     # LD_LIBRARY_PATH=$SNAP/usr/lib/x86_64-linux-gnu/freeorion:$SNAP/usr/lib/x86_64-linux-gnu/:$SNAP/usr/lib/x86_64-linux-gnu/pulseaudio LIBGL_DRIVERS_PATH=$SNAP/usr/lib/x86_64-linux-gnu/dri godot3-runner   --resource.path $SNAP/usr/share/freeorion/default/ -S $SNAP_USER_COMMON/save
     command: usr/bin/godot3-runner --main-pack $SNAP/usr/share/freeorion/freeorion.pck --resource.path $SNAP/usr/share/freeorion/default/ -S $SNAP_USER_COMMON/save
     extensions: [gnome]
-    plugs: [home, pulseaudio, opengl, network, screen-inhibit-control, browser-support, x11]
+    plugs: [home, pulseaudio, opengl, network, screen-inhibit-control, browser-support, x11, wayland]
     desktop: usr/share/applications/org.freeorion.FreeOrion.desktop
     environment:
       LD_LIBRARY_PATH: $SNAP/usr/lib/${CRAFT_ARCH_TRIPLET}/freeorion:$SNAP/usr/lib/${CRAFT_ARCH_TRIPLET}
@@ -83,13 +79,6 @@ layout:
     symlink: $SNAP/graphics/drirc.d
 
 parts:
-#  # add a wrapper script; e.g. so pulseaudio libs can be found
-#  wrapper:
-#    plugin: dump
-#    after: [freeorion]
-#    source: .
-#    organize:
-#      freeorion-snap-wrapper.sh: bin/freeorion-snap-wrapper.sh
   freeorion:
     source: .
     override-build: |
