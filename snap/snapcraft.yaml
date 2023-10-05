@@ -134,7 +134,7 @@ parts:
       - libalut-dev
       - libboost1.74-all-dev
       - libfreetype6-dev
-#      - libgl1-mesa-dev
+      - libgl1-mesa-dev
       - libglew-dev
       - libjpeg-dev
       - libogg-dev
@@ -149,6 +149,9 @@ parts:
     stage-packages:
       - mesa-utils
       - libgl1-mesa-dri
+      - libglu1-mesa
+      - libgl1-mesa-glx
+      - libglew2.2
       # - python3
       # - libpython3.8
       - libboost-date-time1.74.0
@@ -162,8 +165,6 @@ parts:
       - libboost-system1.74.0
       - libboost-thread1.74.0
       - libboost-test1.74.0
-      - libglew2.2
-#      - libglu1-mesa
       - libopenal1
       - libsdl2-2.0-0
       - libvorbis0a
