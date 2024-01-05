@@ -2288,8 +2288,8 @@ namespace {
         }
     }
 
-    bool GetFleetsVisibleToEmpireAtSystem(std::set<int>& visible_fleets, int empire_id, int system_id,
-                                          const ScriptingContext& context)
+    bool HasBlockadeOrGetFleetsVisibleToEmpireAtSystem(std::set<int>& visible_fleets, int empire_id,
+                                                       int system_id, const ScriptingContext& context)
     {
         const ObjectMap& objects{context.ContextObjects()};
 
@@ -2303,7 +2303,7 @@ namespace {
         if (empire_id != ALL_EMPIRES && !context.GetEmpire(empire_id))
             return false; // no such empire
 
-        TraceLogger(combat) << "\t** GetFleetsVisibleToEmpire " << empire_id << " at system " << system->Name();
+        TraceLogger(combat) << "\t** HasBlockadeOrGetFleetsVisibleToEmpireAtSystem " << empire_id << " at system " << system->Name();
         // first pass over all fleets, to find a blockade and handle empire visibility
         // for visible fleets by an empire, check visibility of fleets by that empire
         for (const auto* fleet : objects.findRaw<Fleet>(fleet_ids)) {
@@ -2537,8 +2537,8 @@ namespace {
 
             // what fleets can the aggressive empire see?
             std::set<int> aggressive_empire_visible_fleets;
-            bool blockade = GetFleetsVisibleToEmpireAtSystem(aggressive_empire_visible_fleets, aggressive_empire_id,
-                                                             system_id, context);
+            bool blockade = HasBlockadeOrGetFleetsVisibleToEmpireAtSystem(aggressive_empire_visible_fleets,
+                                                                          aggressive_empire_id, system_id, context);
             if (blockade)
                 return true; // at least one fleet is blockaded, there must be conflict
 
