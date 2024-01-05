@@ -2313,10 +2313,18 @@ namespace {
                 TraceLogger(combat) << "\t\tfleet (" << fleet->ID() << ") is blockaded. Shortcut determining visibility. ";
                 return true; // found a blockade -> combat ensues
             }
-            if (empire_id == ALL_EMPIRES)
+            DebugLogger(combat) << "\t\tfleet (" << fleet->ID() << ") is NOT blockaded. Carry on. ";
+            if (empire_id != ALL_EMPIRES) {
+                DebugLogger(combat) << "\t\tfleet (" << fleet->ID() << ") is a monster/independend fleet";
                 continue;   // don't care about monsters yet
-            if (fleet->OwnedBy(empire_id))
+            }
+            DebugLogger(combat) << "\t\tfleet (" << fleet->ID() << ") is still NOT blockaded. Carry on. ";
+            if (fleet->OwnedBy(empire_id)) {
+                DebugLogger(combat) << "\t\tfleet (" << fleet->ID() << ") belongs to the aggressor " << empire_id;
                 continue;   // don't care about fleets owned by the same empire for determining combat conditions
+            }
+            DebugLogger(combat) << "\t\tfleet (" << fleet->ID() << ") is still still NOT blockaded. Carry on. ";
+            DebugLogger(combat) << "\t\tis fleet (" << fleet->ID() << ") visible for enemy? " << empire_id;
             Visibility fleet_vis = context.ContextVis(fleet->ID(), empire_id);
             TraceLogger(combat) << "\t\tfleet (" << fleet->ID() << ") has visibility rank " << fleet_vis;
             if (fleet_vis >= Visibility::VIS_BASIC_VISIBILITY)
