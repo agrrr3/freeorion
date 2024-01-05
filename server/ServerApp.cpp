@@ -2288,7 +2288,7 @@ namespace {
         }
     }
 
-    void GetFleetsVisibleToEmpireAtSystem(std::set<int>& visible_fleets, int empire_id, int system_id,
+    bool GetFleetsVisibleToEmpireAtSystem(std::set<int>& visible_fleets, int empire_id, int system_id,
                                           const ScriptingContext& context)
     {
         const ObjectMap& objects{context.ContextObjects()};
@@ -2296,28 +2296,34 @@ namespace {
         visible_fleets.clear();
         auto* system = objects.getRaw<System>(system_id);
         if (!system)
-            return; // no such system
+            return false; // no such system
         const auto& fleet_ids = system->FleetIDs();
         if (fleet_ids.empty())
-            return; // no fleets to be seen
+            return false; // no fleets to be seen
         if (empire_id != ALL_EMPIRES && !context.GetEmpire(empire_id))
-            return; // no such empire
+            return false; // no such empire
 
         TraceLogger(combat) << "\t** GetFleetsVisibleToEmpire " << empire_id << " at system " << system->Name();
+        // first pass over all fleets, to find a blockade and handle empire visibility
         // for visible fleets by an empire, check visibility of fleets by that empire
-        if (empire_id != ALL_EMPIRES) {
-            for (const auto* fleet : objects.findRaw<Fleet>(fleet_ids)) {
-                if (!fleet)
-                    continue;
-                if (fleet->OwnedBy(empire_id))
-                    continue;   // don't care about fleets owned by the same empire for determining combat conditions
-                Visibility fleet_vis = context.ContextVis(fleet->ID(), empire_id);
-                TraceLogger(combat) << "\t\tfleet (" << fleet->ID() << ") has visibility rank " << fleet_vis;
-                if (fleet_vis >= Visibility::VIS_BASIC_VISIBILITY)
-                    visible_fleets.emplace(fleet->ID());
+        for (const auto* fleet : objects.findRaw<Fleet>(fleet_ids)) {
+            if (!fleet)
+                continue;
+            if (fleet->Blockaded(context)) {
+                TraceLogger(combat) << "\t\tfleet (" << fleet->ID() << ") is blockaded. Shortcut determining visibility. ";
+                return true; // found a blockade -> combat ensues
             }
-            return;
+            if (empire_id == ALL_EMPIRES)
+                continue;   // don't care about monsters yet
+            if (fleet->OwnedBy(empire_id))
+                continue;   // don't care about fleets owned by the same empire for determining combat conditions
+            Visibility fleet_vis = context.ContextVis(fleet->ID(), empire_id);
+            TraceLogger(combat) << "\t\tfleet (" << fleet->ID() << ") has visibility rank " << fleet_vis;
+            if (fleet_vis >= Visibility::VIS_BASIC_VISIBILITY)
+                visible_fleets.emplace(fleet->ID());
         }
+        if (empire_id != ALL_EMPIRES)
+            return false;
 
 
         // now considering only fleets visible to monsters
@@ -2351,6 +2357,7 @@ namespace {
                 }
             }
         }
+        return false;
     }
 
     void GetPlanetsVisibleToEmpireAtSystem(std::set<int>& visible_planets, int empire_id, int system_id,
@@ -2530,8 +2537,10 @@ namespace {
 
             // what fleets can the aggressive empire see?
             std::set<int> aggressive_empire_visible_fleets;
-            GetFleetsVisibleToEmpireAtSystem(aggressive_empire_visible_fleets, aggressive_empire_id,
-                                             system_id, context);
+            bool blockade = GetFleetsVisibleToEmpireAtSystem(aggressive_empire_visible_fleets, aggressive_empire_id,
+                                                             system_id, context);
+            if (blockade)
+                return true; // at least one fleet is blockaded, there must be conflict
 
             // is any fleet owned by an empire at war with aggressive empire?
             for (const auto* fleet : objects.findRaw<Fleet>(aggressive_empire_visible_fleets)) {
