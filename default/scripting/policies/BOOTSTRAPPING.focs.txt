@@ -22,13 +22,24 @@ Policy
                 // increase target stability by 10 on first turn, decreasing each turn to 0 at turn 20
                 SetTargetHappiness value = Value + 
                     0.5 * max(0.0, (NamedReal name = "PLC_BOOTSTRAPPING_MAX_TURNS" value = 20.0) - Target.TurnsSinceColonization)
+            ]
 
+        EffectsGroup
+            scope = And [
+                Species
+                Population high = (NamedReal name = "PLC_BOOTSTRAPPING_MAX_POP" value = 10.0)
+                OwnedBy empire = Source.Owner
+            ]
+            priority = [[TARGET_LAST_BEFORE_OVERRIDE_PRIORITY]]
+            effects = [
                 // increase stability growth rate
                 SetHappiness value = Value + min(abs(Value(Target.TargetHappiness) - Value), 1) *
                     (Value < Value(Target.TargetHappiness))
             ]
+
     ]
     graphic = "icons/policies/economic_colonial_bootstrapping.png"
 
 #include "/scripting/macros/base_prod.macros"
 #include "/scripting/policies/policies.macros"
+#include "/scripting/macros/priorities.macros"
