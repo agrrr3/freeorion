@@ -45,7 +45,7 @@ from focs._effects import (
 )
 from macros.misc import DESCRIPTION_EFFECTSGROUP_MACRO
 from macros.opinion import POLICY_DISLIKE_SCALING
-from macros.priorities import AFTER_ALL_TARGET_MAX_METERS_PRIORITY
+from macros.priorities import (AFTER_ALL_TARGET_MAX_METERS_PRIORITY, METER_OVERRIDE_PRIORITY)
 
 _STABILITY_PER_LIKED_FOCUS = 2.0
 
@@ -196,7 +196,7 @@ _COMMON_HAPPINESS_EFFECTS = [
         scope=IsSource,
         activation=Contains(IsBuilding(name=["BLD_CONC_CAMP"])),
         accountinglabel="CONCENTRATION_CAMPS_LABEL",
-        priority=AFTER_ALL_TARGET_MAX_METERS_PRIORITY,
+        priority=METER_OVERRIDE_PRIORITY,
         effects=[SetHappiness(value=0), SetTargetHappiness(value=0)],
     ),
 ]
