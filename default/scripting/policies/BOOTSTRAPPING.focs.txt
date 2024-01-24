@@ -27,7 +27,7 @@ Policy
         EffectsGroup
             scope = And [
                 Species
-                Population high = (NamedReal name = "PLC_BOOTSTRAPPING_MAX_POP" value = 10.0)
+                Population high = NamedRealLookup name = "PLC_BOOTSTRAPPING_MAX_POP"
                 OwnedBy empire = Source.Owner
             ]
             priority = [[TARGET_LAST_BEFORE_OVERRIDE_PRIORITY]]
