@@ -117,8 +117,7 @@ def WEAPON_UPGRADE_SECONDARY_STAT_EFFECTS(
         # Inform the researching empire that ships in supply will get upgraded before next combat
         EffectsGroup(
             scope=IsSource,
-#            activation=(CurrentTurn == TurnTechResearched(empire=Source.Owner, name=CurrentContent)),
-            activation=(CurrentTurn == CurrentTurn),
+            activation=(CurrentTurn == TurnTechResearched(empire=Source.Owner, name=CurrentContent)),
             effects=GenerateSitRepMessage(
                 message="SITREP_WEAPON_SHOTS_UPGRADED",
                 label="SITREP_WEAPON_SHOTS_UPGRADED_LABEL",
@@ -138,20 +137,12 @@ def WEAPON_UPGRADE_SECONDARY_STAT_EFFECTS(
                     # 2) trying to get the new value from the highest known one
                     # 3) forget about it
                     "shotsum": 
-                        # Statistic Max value = VALUE condition = SAMPLING_CONDITION
-                        Statistic(
+                        extra_shots + Statistic(
                             float,
                             Max,
-                            #value = ShipPartMeter(part = part_name, meter = MaxSecondaryStat, ship = LocalCandidate.ID),
-#                             value = ShipPartMeter(part = part_name, meter = "METER_MAX_SECONDARY_STAT", ship = LocalCandidate),
-# results in a zero:
-                            value = ShipPartMeter(part = part_name, meter = "METER_MAX_SECONDARY_STAT", ship = LocalCandidate.ID),
-# TypeError: No registered converter was able to produce a C++ rvalue of type std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > from this Python object of type __MeterType
-#                            value = ShipPartMeter(part = part_name, meter = MaxSecondaryStat, ship = LocalCandidate.ID),
-# works; results in the highest object id of all your own ships; what a pity that we do not need that
-#                            value = LocalCandidate.ID,
-                            condition=Ship
-                            & OwnedBy(empire=Source.Owner)),
+                            value=ShipPartMeter(part = part_name, meter = "MaxSecondaryStat", ship = LocalCandidate.ID),
+                            condition=Ship & OwnedBy(empire = Source.Owner)
+                        ),
                 },
                 empire=Target.Owner,
             ),
