@@ -875,8 +875,6 @@ namespace {
 
     value_ref_wrapper<double> insert_ship_part_meter_(const boost::python::tuple& args, const boost::python::dict& kw) {
         std::unique_ptr<ValueRef::ValueRef<std::string>> part;
-        ErrorLogger() << "insert_ship_part_meter";
-        ErrorLogger() << "insert_ship_part_meter part";
         if (kw.has_key("part")) {
             auto part_args = boost::python::extract<value_ref_wrapper<std::string>>(kw["part"]);
             if (part_args.check()) {
@@ -885,7 +883,7 @@ namespace {
                 part = std::make_unique<ValueRef::Constant<std::string>>(boost::python::extract<std::string>(kw["part"])());
             }
         }
-        ErrorLogger() << "insert_ship_part_meter meter";
+
         std::unique_ptr<ValueRef::ValueRef<std::string>> meter;
         auto meter_args = boost::python::extract<value_ref_wrapper<std::string>>(kw["meter"]);
         if (meter_args.check()) {
@@ -894,7 +892,6 @@ namespace {
             meter = std::make_unique<ValueRef::Constant<std::string>>(boost::python::extract<std::string>(kw["meter"])());
         }
 
-        ErrorLogger() << "insert_ship_part_meter ship";
         std::unique_ptr<ValueRef::ValueRef<int>> ship_id;
         auto ship_args = boost::python::extract<value_ref_wrapper<int>>(kw["ship"]);
         if (ship_args.check()) {
