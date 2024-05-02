@@ -1,6 +1,7 @@
 from focs._tech import *
 from macros.base_prod import TECH_COST_MULTIPLIER
 from techs.ship_weapons.ship_weapons import WEAPON_UPGRADE_CAPACITY_EFFECTS
+#from techs.ship_weapons.ship_weapons import WEAPON_UPGRADE_SECONDARY_STAT_EFFECTS
 
 Tech(
     name="SHP_WEAPON_1_4",
@@ -12,5 +13,6 @@ Tech(
     tags=["PEDIA_SR_WEAPON_TECHS"],
     prerequisites=["SHP_WEAPON_1_3"],
     effectsgroups=WEAPON_UPGRADE_CAPACITY_EFFECTS("SHP_WEAPON_1_4", "SR_WEAPON_1_1", 1),
+    #effectsgroups=WEAPON_UPGRADE_SECONDARY_STAT_EFFECTS("SHP_WEAPON_1_4", "SR_WEAPON_0_1", 1),
     graphic="icons/ship_parts/mass-driver-4.png",
 )

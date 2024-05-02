@@ -3919,6 +3919,8 @@ GenerateSitRepMessage::GenerateSitRepMessage(std::string message_string,
 {}
 
 void GenerateSitRepMessage::Execute(ScriptingContext& context) const {
+    ErrorLogger(effects) << "DEBUG ship_part_meter GenerateSitRepMessage::Execute";
+    ErrorLogger() << "DEBUG ship_part_meter GenerateSitRepMessage::Execute\n" << this->Dump();
     const int recipient_id = m_recipient_empire_id ? m_recipient_empire_id->Eval(context) : ALL_EMPIRES;
 
     // track any ship designs used in message, which any recipients must be
@@ -3934,7 +3936,8 @@ void GenerateSitRepMessage::Execute(ScriptingContext& context) const {
     for (auto& [param_tag, param_ref] : m_message_parameters) {
         if (!param_ref)
             ErrorLogger(effects) << "GenerateSitRepMessage::Execute got null parameter reference for tag: " << param_tag;
-
+        else
+            ErrorLogger(effects) << "DEBUG ship_part_meter GenerateSitRepMessage::Execute param_ref:\n" << param_ref->Dump();
         std::string param_val{param_ref ? param_ref->Eval(context) : std::string()};
         // special case for ship designs: make sure sitrep recipient knows about the design
         // so the sitrep won't have errors about unknown designs being referenced

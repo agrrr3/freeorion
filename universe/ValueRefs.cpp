@@ -368,6 +368,7 @@ namespace {
     static_assert(NameToMeterCX("not a meter") == MeterType::INVALID_METER_TYPE, "Name to Meter conversion failed for invalid meter type!");
     static_assert(NameToMeterCX("Population") == MeterType::METER_POPULATION, "Name to Meter conversion failed for 'Population' meter!");
     static_assert(NameToMeterCX("Speed") == MeterType::METER_SPEED, "Name to Meter conversion failed for 'Speed' meter!");
+    static_assert(NameToMeterCX("SecondaryStat") == MeterType::METER_SECONDARY_STAT, "Name to Meter conversion failed for 'SecondaryStat' meter!");
 }
 
 MeterType NameToMeter(std::string_view name) noexcept { return NameToMeterCX(name); }
@@ -1496,6 +1497,8 @@ std::string Variable<std::string>::Eval(const ScriptingContext& context) const
 template <>
 std::string Statistic<std::string, std::string>::Eval(const ScriptingContext& context) const
 {
+    ErrorLogger() << "DEBUG ship_part_meter Evaluate Statistic";
+    ErrorLogger() << "DEBUG ship_part_meter Evaluate Statistic" << this->Dump();
     const auto* scond = m_sampling_condition.get();
     if (!scond)
         return "";
@@ -2189,6 +2192,7 @@ template <>
 double ComplexVariable<double>::Eval(const ScriptingContext& context) const
 {
     const std::string& variable_name = m_property_name.back();
+    ErrorLogger() << "DEBUG ship_part_meter  evaluate a ComplexVariable " << variable_name;
 
     std::function<float (const ShipHull&)> hull_property{nullptr};
 
@@ -2518,25 +2522,30 @@ double ComplexVariable<double>::Eval(const ScriptingContext& context) const
 
     }
     else if (variable_name == "ShipPartMeter") {
+        ErrorLogger() << "DEBUG ship_part_meter  evaluate ShipPartMeter";
         int object_id = INVALID_OBJECT_ID;
         if (m_int_ref1)
             object_id = m_int_ref1->Eval(context);
+        ErrorLogger() << "DEBUG ship_part_meter  look at object" << object_id;
         auto ship = context.ContextObjects().getRaw<const Ship>(object_id);
         if (!ship)
-            return 0.0;
+            return 100.0;
+        ErrorLogger() << "DEBUG ship_part_meter  found ship " << object_id;
 
         if (!m_string_ref1)
             return 0.0;
         std::string part_name = m_string_ref1->Eval(context);
         if (part_name.empty())
             return 0.0;
-
+        ErrorLogger() << "DEBUG ship_part_meter  found part name " << part_name;
+        
         if (!m_string_ref2)
             return 0.0;
         std::string meter_name = m_string_ref2->Eval(context);
         if (meter_name.empty())
             return 0.0;
 
+        ErrorLogger() << "DEBUG ship_part_meter  look up meter type " << meter_name;
         MeterType meter_type = NameToMeter(meter_name);
         if (meter_type != MeterType::INVALID_METER_TYPE) {
             if (m_return_immediate_value)
@@ -2545,7 +2554,7 @@ double ComplexVariable<double>::Eval(const ScriptingContext& context) const
                 return ship->InitialPartMeterValue(meter_type, part_name);
         }
     }
-
+    ErrorLogger() << "DEBUG ship_part_meter  evaluate valueref fallthrough";
     return 0.0;
 }
 
