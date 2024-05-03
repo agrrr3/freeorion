@@ -136,8 +136,7 @@ def WEAPON_UPGRADE_SECONDARY_STAT_EFFECTS(
                     #    a named value ref to a list of strings could help for lazy eval
                     # 2) trying to get the new value from the highest known one
                     # 3) forget about it
-                    "shotsum": 
-                        extra_shots + Statistic(
+                    "shotsum": extra_shots + Statistic(
                             float,
                             Max,
                             value=ShipPartMeter(part = part_name, meter = "MaxSecondaryStat", ship = LocalCandidate.ID),
