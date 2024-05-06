@@ -884,13 +884,9 @@ namespace {
             }
         }
 
-        std::unique_ptr<ValueRef::ValueRef<std::string>> meter;
-        auto meter_args = boost::python::extract<value_ref_wrapper<std::string>>(kw["meter"]);
-        if (meter_args.check()) {
-            meter = ValueRef::CloneUnique(meter_args().value_ref);
-        } else {
-            meter = std::make_unique<ValueRef::Constant<std::string>>(boost::python::extract<std::string>(kw["meter"])());
-        }
+        //std::unique_ptr<ValueRef::ValueRef<std::string>> meter_type_name;
+        auto meter_name = ValueRef::MeterToName(boost::python::extract<enum_wrapper<MeterType>>(kw["meter"])().value);
+        auto meter_type = std::make_unique<ValueRef::Constant<std::string>>(std::string{meter_name});
 
         std::unique_ptr<ValueRef::ValueRef<int>> ship_id;
         auto ship_args = boost::python::extract<value_ref_wrapper<int>>(kw["ship"]);
@@ -906,7 +902,7 @@ namespace {
             nullptr,
             nullptr,
             std::move(part),
-            std::move(meter)
+            std::move(meter_type)
         ));
     }
 
