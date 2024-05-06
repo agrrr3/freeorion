@@ -115,6 +115,9 @@ def WEAPON_UPGRADE_SECONDARY_STAT_EFFECTS(
             effects=SetMaxSecondaryStat(partname=part_name, value=Value + extra_shots),
         ),
         # Inform the researching empire that ships in supply will get upgraded before next combat
+        # TODO use conditional If effect to print a different message using a different shotsum e.g. "?" when there are no ships built yet
+        #      or do value_ref<string> ops (which does not exist yet AFAIK)
+        #         ("?" * StatisticIf(float, ~( Ship & OwnedBy(empire = Source.Owner) & DesignHasPart(part_name) ) )) + Statistic(...            
         EffectsGroup(
             scope=IsSource,
             activation=(CurrentTurn == TurnTechResearched(empire=Source.Owner, name=CurrentContent)),
@@ -134,14 +137,14 @@ def WEAPON_UPGRADE_SECONDARY_STAT_EFFECTS(
                     # 0) count the bonus in an empire meter
                     # 1) register all relevant tech names before calling this; and check here if those are researched
                     #    a named value ref to a list of strings could help for lazy eval
-                    # 2) trying to get the new value from the highest known one
+                    # 2) trying to get the new value from the highest known one - note this only works if a ship with the part is built
                     # 3) forget about it
                     "shotsum": extra_shots + Statistic(
                             float,
                             Max,
-                            value=ShipPartMeter(part = part_name, meter = "MaxSecondaryStat", ship = LocalCandidate.ID),
+                            value=ShipPartMeter(part = part_name, meter = MaxSecondaryStat, ship = LocalCandidate.ID),
                             condition=Ship & OwnedBy(empire = Source.Owner)
-                        ),
+                    ),
                 },
                 empire=Target.Owner,
             ),
