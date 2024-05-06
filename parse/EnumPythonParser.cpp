@@ -33,7 +33,7 @@ void RegisterGlobalsEnums(boost::python::dict& globals) {
     }
 
 // TODO more meter types
-    for (const auto& op : std::initializer_list<std::pair<const char*, ::MeterType>>{
+    for (const auto& op : std::initializer_list<std::pair<const char*, MeterType>>{
             {"Capacity",         MeterType::METER_CAPACITY},
             {"MaxCapacity",      MeterType::METER_MAX_CAPACITY},
             {"SecondaryStat",    MeterType::METER_SECONDARY_STAT},
