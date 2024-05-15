@@ -312,12 +312,14 @@ class ShipDesigner:
             elif partclass in WEAPONS:
                 shots = self._calculate_weapon_shots(part)
                 allowed_targets = get_allowed_targets(part.name)
-                split_damage_factor = get_multi_target_split_damage_factor(allowed_targets)
                 if allowed_targets & AIDependencies.CombatTarget.SHIP:
+                    split_damage_factor = get_multi_target_split_damage_factor(allowed_targets, AIDependencies.CombatTarget.SHIP)
                     self.design_stats.attacks[capacity] = self.design_stats.attacks.get(capacity, 0) + split_damage_factor * shots
                 if allowed_targets & AIDependencies.CombatTarget.FIGHTER:
+                    split_damage_factor = get_multi_target_split_damage_factor(allowed_targets, AIDependencies.CombatTarget.FIGHTER)
                     self.design_stats.flak_shots += split_damage_factor * shots
                 if allowed_targets & AIDependencies.CombatTarget.PLANET:
+                    split_damage_factor = get_multi_target_split_damage_factor(allowed_targets, AIDependencies.CombatTarget.PLANET)
                     self.design_stats.damage_vs_planets += split_damage_factor * capacity * shots
                 # XXX reset damage for multiple flux lances - handling part exclusions would be better
                 if part.name == AIDependencies.SR_FLUX_LANCE:
