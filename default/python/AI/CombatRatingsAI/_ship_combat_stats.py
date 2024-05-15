@@ -118,15 +118,14 @@ class ShipCombatStats:
         num_bouts = fo.getGameRules().getInt("RULE_NUM_COMBAT_ROUNDS")
         for firing_bout in range(num_bouts - 1):
             if firing_bout < full_launch_bouts:
-                flying_fighters = (flying_fighters * survival_rate) + self._fighter_launch_rate
+                flying_fighters = flying_fighters + self._fighter_launch_rate
             elif firing_bout == full_launch_bouts:
                 # now handle a bout with lower capacity launch
                 flying_fighters = (flying_fighters * survival_rate) + (
                     self._fighter_capacity % self._fighter_launch_rate
                 )
-            else:
-                flying_fighters = flying_fighters * survival_rate
             total_fighter_damage += self._fighter_damage * flying_fighters
+            flying_fighters = flying_fighters * survival_rate
         return total_fighter_damage / num_bouts
 
     def get_rating_vs_planets(self) -> float:
