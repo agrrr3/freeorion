@@ -54,7 +54,7 @@ import AIDependencies
 import FleetUtilsAI
 from AIDependencies import INVALID_ID, Tags
 from aistate_interface import get_aistate
-from CombatRatingsAI import get_allowed_targets, species_shield_bonus
+from CombatRatingsAI import get_allowed_targets, species_shield_bonus, get_multi_target_split_damage_factor
 from freeorion_tools import (
     get_ship_part,
     get_species_attack_troops,
@@ -312,12 +312,13 @@ class ShipDesigner:
             elif partclass in WEAPONS:
                 shots = self._calculate_weapon_shots(part)
                 allowed_targets = get_allowed_targets(part.name)
+                split_damage_factor = get_multi_target_split_damage_factor(allowed_targets)
                 if allowed_targets & AIDependencies.CombatTarget.SHIP:
-                    self.design_stats.attacks[capacity] = self.design_stats.attacks.get(capacity, 0) + shots
+                    self.design_stats.attacks[capacity] = self.design_stats.attacks.get(capacity, 0) + split_damage_factor * shots
                 if allowed_targets & AIDependencies.CombatTarget.FIGHTER:
-                    self.design_stats.flak_shots += shots
+                    self.design_stats.flak_shots += split_damage_factor * shots
                 if allowed_targets & AIDependencies.CombatTarget.PLANET:
-                    self.design_stats.damage_vs_planets += capacity * shots
+                    self.design_stats.damage_vs_planets += split_damage_factor * capacity * shots
                 # XXX reset damage for multiple flux lances - handling part exclusions would be better
                 if part.name == AIDependencies.SR_FLUX_LANCE:
                     lance_counter += 1
@@ -1164,7 +1165,7 @@ class WarShipDesigner(MilitaryShipDesignerBaseClass):
         # fighting capability to deal with weaker enemy ships, troopers and so on. But this is only meant as last resort
         # and any design that actually deals damage through shields is to be prefered, i.e. should get a better rating.
         total_dmg = max(self._total_dmg_vs_shields(), self._total_dmg() / 1000)
-        if total_dmg <= 0:
+        if total_dmg <= 0 && point_defense <= 0:
             return INVALID_DESIGN_RATING
         combat_rating = self._combat_rating()
         speed_factor = self._speed_factor()
