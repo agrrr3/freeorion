@@ -25,13 +25,13 @@ def get_multi_target_split_damage_factor(allowed_targets: int, target_class: int
     If the military AI puts the ship to the correct use, the expected damage will be higher
     than a simple division by the number of classes.
     """
-    if not (allowed_target & target_class):
+    if not (allowed_targets & target_class):
         # not possible to hurt intended target - we should not get here
         return 0.0
     target_classes_cnt = 0
-    target_classes_cnt += int (allowed_targets & AIDependencies.CombatTarget.FIGHTER)
-    #target_classes_cnt += int (allowed_targets & AIDependencies.CombatTarget.PLANET) # damage is not considered in design value
-    target_classes_cnt += int (allowed_targets & AIDependencies.CombatTarget.SHIP)
+    target_classes_cnt += int (allowed_targets & CombatTarget.FIGHTER)
+    #target_classes_cnt += int (allowed_targets & CombatTarget.PLANET) # damage is not considered in design value
+    target_classes_cnt += int (allowed_targets & CombatTarget.SHIP)
     match target_classes_cnt:
         case 0 | 1:
             # no relevant distractions, single resulting damage type
@@ -50,12 +50,12 @@ def get_multi_target_split_damage_factor(allowed_targets: int, target_class: int
     # the expected number of targets is usually fighters > ships > planets, so
     # e.g. planets should not distract much from other targets
     match target_class:
-        case AIDependencies.CombatTarget.FIGHTER:
-            if (allowed_targets & AIDependencies.CombatTarget.SHIP): factor *= 0.95
-        case AIDependencies.CombatTarget.PLANET:
-            if (allowed_targets & AIDependencies.CombatTarget.SHIP): factor *= 0.9
-            if (allowed_targets & AIDependencies.CombatTarget.FIGHTER): factor *= 0.7
-        case AIDependencies.CombatTarget.SHIP:
-            if (allowed_targets & AIDependencies.CombatTarget.FIGHTER): factor *= 0.8
+        case CombatTarget.FIGHTER:
+            if (allowed_targets & CombatTarget.SHIP): factor *= 0.95
+        case CombatTarget.PLANET:
+            if (allowed_targets & CombatTarget.SHIP): factor *= 0.9
+            if (allowed_targets & CombatTarget.FIGHTER): factor *= 0.7
+        case CombatTarget.SHIP:
+            if (allowed_targets & CombatTarget.FIGHTER): factor *= 0.8
 
     return factor
