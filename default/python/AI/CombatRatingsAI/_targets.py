@@ -25,20 +25,37 @@ def get_multi_target_split_damage_factor(allowed_targets: int, target_class: int
     If the military AI puts the ship to the correct use, the expected damage will be higher
     than a simple division by the number of classes.
     """
-    match target_class:
-        case AIDependencies.CombatTarget.PLANET:
-            class_factor = 0.8
-        case AIDependencies.CombatTarget.SHIP:
-            class_factor = 1.1
-        case _:
-            class_factor = 1.0
+    if not (allowed_target & target_class):
+        # not possible to hurt intended target - we should not get here
+        return 0.0
     target_classes_cnt = 0
-    # TODO the expected number of targets is usually fighters > ships > planets, so e.g. planets should not distract much from other targets; so probably the result should depend on a certain target class
-    #target_classes_cnt += int (allowed_targets & AIDependencies.CombatTarget.FIGHTER) # point defense is not valued in the ship designer yet
-    target_classes_cnt += int (allowed_targets & AIDependencies.CombatTarget.PLANET)
+    target_classes_cnt += int (allowed_targets & AIDependencies.CombatTarget.FIGHTER)
+    #target_classes_cnt += int (allowed_targets & AIDependencies.CombatTarget.PLANET) # damage is not considered in design value
     target_classes_cnt += int (allowed_targets & AIDependencies.CombatTarget.SHIP)
-    if target_classes_cnt == 2:
-        return 0.7 * class_factor
-    if target_classes_cnt == 3:
-        return 0.5 * class_factor
-    return class_factor
+    match target_classes_cnt:
+        case 0 | 1:
+            # no relevant distractions, single resulting damage type
+            return 1.0
+        case 2:
+            # one type of distraction, two types of resulting damage
+            factor = 0.7
+        case 3:
+            # two types of distraction, three types of resulting damage
+            factor = 0.5
+        case _:
+            # error
+            return 0.0
+
+    # factoring in distraction by other targets
+    # the expected number of targets is usually fighters > ships > planets, so
+    # e.g. planets should not distract much from other targets
+    match target_class:
+        case AIDependencies.CombatTarget.FIGHTER:
+            if (allowed_targets & AIDependencies.CombatTarget.SHIP): factor *= 0.95
+        case AIDependencies.CombatTarget.PLANET:
+            if (allowed_targets & AIDependencies.CombatTarget.SHIP): factor *= 0.9
+            if (allowed_targets & AIDependencies.CombatTarget.FIGHTER): factor *= 0.7
+        case AIDependencies.CombatTarget.SHIP:
+            if (allowed_targets & AIDependencies.CombatTarget.FIGHTER): factor *= 0.8
+
+    return factor

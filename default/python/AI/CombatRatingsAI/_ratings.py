@@ -34,16 +34,16 @@ def get_empire_standard_military_ship_stats() -> ShipCombatStats:
 def default_ship_stats() -> ShipCombatStats:
     """Return some ship stats to assume if no other intel is available.
 
-    :return: Some weak standard ship
+    :return: Some weak standard ship average
     """
     return ShipCombatStats(
         attacks={AttackDamage(6.0): AttackCount(1)},
         structure=15,
         shields=0,
-        fighter_capacity=0,
-        fighter_launch_rate=0,
-        fighter_damage=0,
-        flak_shots=0,
+        fighter_capacity=3,
+        fighter_launch_rate=2,
+        fighter_damage=4,
+        flak_shots=1,
         has_interceptors=False,
         damage_vs_planets=0,
         has_bomber=False,

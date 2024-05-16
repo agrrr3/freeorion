@@ -360,6 +360,7 @@ class ShipDesigner:
                     if allowed_targets & AIDependencies.CombatTarget.FIGHTER:
                         self.design_stats.has_interceptors = True
                     if allowed_targets & AIDependencies.CombatTarget.PLANET:
+                        self.design_stats.fighter_damage = self._calculate_hangar_damage(part)
                         self.design_stats.has_bomber = True
 
         if len(bay_parts) > 0:
@@ -897,6 +898,13 @@ class ShipDesigner:
         rating, parts = self._combinatorial_filling(available_parts)
         return rating, parts
 
+    def _total_shots_vs_fighters(self):
+        """Return the total number of shots against fighters
+
+        :return: summed up shot count vs fighter crafts
+        """
+        return self.design_stats.flak_shots
+
     def _total_dmg_vs_shields(self):
         """Sum up and return the damage of weapon parts vs a shielded enemy as defined in additional_specifications.
 
@@ -1167,7 +1175,7 @@ class WarShipDesigner(MilitaryShipDesignerBaseClass):
         # fighting capability to deal with weaker enemy ships, troopers and so on. But this is only meant as last resort
         # and any design that actually deals damage through shields is to be prefered, i.e. should get a better rating.
         total_dmg = max(self._total_dmg_vs_shields(), self._total_dmg() / 1000)
-        if total_dmg <= 0 && point_defense <= 0:
+        if total_dmg <= 0:
             return INVALID_DESIGN_RATING
         combat_rating = self._combat_rating()
         speed_factor = self._speed_factor()
