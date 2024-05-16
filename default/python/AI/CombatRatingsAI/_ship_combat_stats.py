@@ -80,15 +80,39 @@ class ShipCombatStats:
 
         my_hit_points = self._structure
         if enemy_stats:
-            my_hit_points *= self._calculate_shield_factor(enemy_stats.attacks, self.shields)
+            shield_factor = self._calculate_shield_factor(enemy_stats.attacks, self.shields)
+            flak_factor = self._calculate_flak_factor(enemy_stats, self.flak_shots)
+            # XXX not sure how those factors combine if an enemy has both weapon types
+            my_hit_points *= max(shield_factor, flak_factor)
             my_total_attack = sum(n * max(dmg - enemy_stats.shields, 0.001) for dmg, n in self.attacks.items())
         else:
+            # assumes no shields
             my_total_attack = sum(n * dmg for dmg, n in self.attacks.items())
-            my_hit_points += self.shields
+            # assuming we get hit 3 times before dying
+            my_hit_points += self.shields * 3
+            # assuming point defens prevents being hit once by fighter
+            # XXX check if AI uses damage scaling / use AI Dependency here
+            my_hit_points += self.shots * 4
 
         my_total_attack += self._estimate_fighter_damage()
         # TODO: Consider enemy fighters
         return my_total_attack * my_hit_points
+
+    def _calculate_flak_factor(self, enemy_stats : "ShipCombatStats", my_flak_shots: float) -> float:
+        """
+        Calculates flak factor based on enemy fighter attacks and our flak_shots
+        """
+        capacity = enemy_stats._fighter_capacity
+        launch_rate = enemy_stats._fighter_launch_rate
+        damage = enemy_stats._fighter_damage
+        if enemy_stats._has_interceptors or damage <= 0 or capacity < 1 or launch_rate < 1 or my_flak_shots <= 0.0:
+            return 1.0
+        enemy_fighter_dmg = _estimate_fighter_damage_vs_flak(capacity, launch_rate, damage, 0.0)
+        enemy_fighter_dmg_vs_flak = _estimate_fighter_damage_vs_flak(capacity, launch_rate, damage, my_flak_shots)
+        # TODO sanity check
+        flak_factor = enemy_fighter_dmg_vs_flak / enemy_fighter_dmg
+        return max(1.0, flak_factor)
+
 
     def _calculate_shield_factor(self, e_attacks: dict[AttackDamage, AttackCount], my_shields: float) -> float:
         """
@@ -108,24 +132,37 @@ class ShipCombatStats:
             return 1.0
 
     def _estimate_fighter_damage(self):
-        if self._fighter_launch_rate == 0:
+        """Estimates how much structural damage the fighters of this carrier in an average bout"""
+        capacity = self._fighter_capacity
+        launch_rate = self._fighter_launch_rate
+        damage = self._fighter_damage
+        enemy_flak_shots = -1
+        return _estimate_fighter_damage_vs_flak(capacity,launch_rate,damage,enemy_flak_shots)
+
+    def _estimate_fighter_damage_vs_flak(capacity, launch_rate, damage, opposing_flak):
+        """Estimates how much structural damage the given fighters do in an average bout"""
+        if launch_rate <= 0:
             return 0
-        full_launch_bouts = self._fighter_capacity // self._fighter_launch_rate
-        survival_rate = 0.2  # TODO estimate chance of a fighter not to be shot down in a bout
+        full_launch_bouts = capacity // launch_rate
+        generic_survival_rate = 0.2  # TODO estimate chance of a fighter not to be shot down in a bout
         flying_fighters = 0
         total_fighter_damage = 0
         # Cut that values down to a single turn (four bouts means max three launch bouts)
         num_bouts = fo.getGameRules().getInt("RULE_NUM_COMBAT_ROUNDS")
         for firing_bout in range(num_bouts - 1):
             if firing_bout < full_launch_bouts:
-                flying_fighters = flying_fighters + self._fighter_launch_rate
+                flying_fighters = flying_fighters + launch_rate
             elif firing_bout == full_launch_bouts:
                 # now handle a bout with lower capacity launch
-                flying_fighters = (flying_fighters * survival_rate) + (
-                    self._fighter_capacity % self._fighter_launch_rate
+                flying_fighters = flying_fighters + (
+                    fighter_capacity % launch_rate
                 )
-            total_fighter_damage += self._fighter_damage * flying_fighters
-            flying_fighters = flying_fighters * survival_rate
+            total_fighter_damage += fighter_damage * flying_fighters
+            if opposing_flak == -1:
+                flying_fighters = flying_fighters * generic_survival_rate
+            else:
+                # TODO check if there is overkilling of fighters or not
+                flying_fighter = max(0, flying_fighter - opposing_flak)
         return total_fighter_damage / num_bouts
 
     def get_rating_vs_planets(self) -> float:
