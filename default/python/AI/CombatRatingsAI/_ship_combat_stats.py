@@ -81,7 +81,7 @@ class ShipCombatStats:
         my_hit_points = self._structure
         if enemy_stats:
             shield_factor = self._calculate_shield_factor(enemy_stats.attacks, self.shields)
-            flak_factor = self._calculate_flak_factor(enemy_stats, self.flak_shots)
+            flak_factor = self._calculate_flak_factor(enemy_stats, self._flak_shots)
             # XXX not sure how those factors combine if an enemy has both weapon types
             my_hit_points *= max(shield_factor, flak_factor)
             my_total_attack = sum(n * max(dmg - enemy_stats.shields, 0.001) for dmg, n in self.attacks.items())
@@ -107,8 +107,8 @@ class ShipCombatStats:
         damage = enemy_stats._fighter_damage
         if enemy_stats._has_interceptors or damage <= 0 or capacity < 1 or launch_rate < 1 or my_flak_shots <= 0.0:
             return 1.0
-        enemy_fighter_dmg = _estimate_fighter_damage_vs_flak(capacity, launch_rate, damage, 0.0)
-        enemy_fighter_dmg_vs_flak = _estimate_fighter_damage_vs_flak(capacity, launch_rate, damage, my_flak_shots)
+        enemy_fighter_dmg = self._estimate_fighter_damage_vs_flak(capacity, launch_rate, damage, 0.0)
+        enemy_fighter_dmg_vs_flak = self._estimate_fighter_damage_vs_flak(capacity, launch_rate, damage, my_flak_shots)
         # TODO sanity check
         flak_factor = enemy_fighter_dmg_vs_flak / enemy_fighter_dmg
         return max(1.0, flak_factor)
@@ -137,9 +137,9 @@ class ShipCombatStats:
         launch_rate = self._fighter_launch_rate
         damage = self._fighter_damage
         enemy_flak_shots = -1
-        return _estimate_fighter_damage_vs_flak(capacity,launch_rate,damage,enemy_flak_shots)
+        return self._estimate_fighter_damage_vs_flak(capacity,launch_rate,damage,enemy_flak_shots)
 
-    def _estimate_fighter_damage_vs_flak(capacity, launch_rate, damage, opposing_flak):
+    def _estimate_fighter_damage_vs_flak(self, capacity, launch_rate, damage, opposing_flak):
         """Estimates how much structural damage the given fighters do in an average bout"""
         if launch_rate <= 0:
             return 0
@@ -155,14 +155,14 @@ class ShipCombatStats:
             elif firing_bout == full_launch_bouts:
                 # now handle a bout with lower capacity launch
                 flying_fighters = flying_fighters + (
-                    fighter_capacity % launch_rate
+                    capacity % launch_rate
                 )
-            total_fighter_damage += fighter_damage * flying_fighters
+            total_fighter_damage += damage * flying_fighters
             if opposing_flak == -1:
                 flying_fighters = flying_fighters * generic_survival_rate
             else:
                 # TODO check if there is overkilling of fighters or not
-                flying_fighter = max(0, flying_fighter - opposing_flak)
+                flying_fighters = max(0, flying_fighters - opposing_flak)
         return total_fighter_damage / num_bouts
 
     def get_rating_vs_planets(self) -> float:
