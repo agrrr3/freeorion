@@ -1,5 +1,5 @@
 import freeOrionAIInterface as fo
-from logging import debug, warning
+from logging import trace, warning
 from typing import Optional
 
 from math import sqrt
@@ -84,8 +84,6 @@ class ShipCombatStats:
             # calculate extension of survival by using shields or flak
             shield_factor = self._calculate_shield_factor(enemy_stats.attacks, self.shields)
             flak_factor = self._calculate_flak_factor(enemy_stats, self._flak_shots)
-            debug(f"enemy with fighters {enemy_stats._fighter_capacity}x{enemy_stats._fighter_damage}d, flak shots {self._flak_shots}");
-            debug(f"shield_factor {shield_factor}  flak_factor {flak_factor}")
             if shield_factor > 1.0 and flak_factor > 1.0:
                 # whatever kills us first
                 my_hit_points *= min(shield_factor, flak_factor)
@@ -93,7 +91,6 @@ class ShipCombatStats:
                 my_hit_points *= max(shield_factor, flak_factor)
             my_total_attack = sum(n * max(dmg - enemy_stats.shields, 0.001) for dmg, n in self.attacks.items())
         else:
-            debug(f"no enemy, flak shots {self._flak_shots}");
             # assumes no shields
             my_total_attack = sum(n * dmg for dmg, n in self.attacks.items())
             # assuming we get hit 3 times before dying
@@ -121,10 +118,10 @@ class ShipCombatStats:
         if my_flak_shots <= 0.0:
             return 1.0
         if damage <= 0 or capacity < 1 or launch_rate < 1:
-            debug(f"flak factor 1.0 because enemy is not a carrier ({launch_rate}/{capacity} * {damage}d)")
+            trace(f"flak factor 1.0 because enemy is not a carrier ({launch_rate}/{capacity} * {damage}d)")
             return 1.0
         if enemy_stats._has_interceptors:
-            debug(f"flak factor 1.0 because enemy is an interceptor carrier / unable to hurt us")
+            trace(f"flak factor 1.0 because enemy is an interceptor carrier / unable to hurt us")
             return 1.0
         enemy_fighter_dmg = self._estimate_fighter_damage_vs_flak(capacity, launch_rate, damage, 0.0)
         enemy_fighter_dmg_vs_flak = self._estimate_fighter_damage_vs_flak(capacity, launch_rate, damage, my_flak_shots)
