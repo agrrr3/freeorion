@@ -1,4 +1,4 @@
-from logging import debug,error
+from logging import error
 
 from AIDependencies import CombatTarget
 
@@ -49,7 +49,6 @@ def get_multi_target_split_damage_factor(allowed_targets: int, target_class: int
     # factoring in distraction by other targets
     # the expected number of targets is usually fighters > ships > planets, so
     # e.g. planets should not distract much from other targets
-    debug(f"factor {factor}")
     match target_class:
         case CombatTarget.FIGHTER:
             if (allowed_targets & CombatTarget.SHIP): factor *= 0.95
