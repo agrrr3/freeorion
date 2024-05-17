@@ -1,4 +1,4 @@
-from logging import error
+from logging import debug,error
 
 from AIDependencies import CombatTarget
 
@@ -26,12 +26,12 @@ def get_multi_target_split_damage_factor(allowed_targets: int, target_class: int
     than a simple division by the number of classes.
     """
     if not (allowed_targets & target_class):
-        # not possible to hurt intended target - we should not get here
+        error(f"bad call, not possible to target intended target ({(allowed_targets, target_class)}")
         return 0.0
     target_classes_cnt = 0
-    target_classes_cnt += int (allowed_targets & CombatTarget.FIGHTER)
-    #target_classes_cnt += int (allowed_targets & CombatTarget.PLANET) # damage is not considered in design value
-    target_classes_cnt += int (allowed_targets & CombatTarget.SHIP)
+    target_classes_cnt += int (allowed_targets & CombatTarget.FIGHTER != 0)
+    #target_classes_cnt += int (allowed_targets & CombatTarget.PLANET != 0) # damage is not considered in design value
+    target_classes_cnt += int (allowed_targets & CombatTarget.SHIP != 0)
     match target_classes_cnt:
         case 0 | 1:
             # no relevant distractions, single resulting damage type
@@ -43,12 +43,13 @@ def get_multi_target_split_damage_factor(allowed_targets: int, target_class: int
             # two types of distraction, three types of resulting damage
             factor = 0.5
         case _:
-            # error
+            error("bad target class count %i" % target_classes_cnt)
             return 0.0
 
     # factoring in distraction by other targets
     # the expected number of targets is usually fighters > ships > planets, so
     # e.g. planets should not distract much from other targets
+    debug(f"factor {factor}")
     match target_class:
         case CombatTarget.FIGHTER:
             if (allowed_targets & CombatTarget.SHIP): factor *= 0.95
