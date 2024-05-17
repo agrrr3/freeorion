@@ -1,7 +1,8 @@
 import freeOrionAIInterface as fo
-from logging import warning
+from logging import debug, warning
 from typing import Optional
 
+from math import sqrt
 from AIDependencies import CombatTarget
 from aistate_interface import get_aistate
 from CombatRatingsAI._targets import get_allowed_targets
@@ -80,19 +81,26 @@ class ShipCombatStats:
 
         my_hit_points = self._structure
         if enemy_stats:
+            # calculate extension of survival by using shields or flak
             shield_factor = self._calculate_shield_factor(enemy_stats.attacks, self.shields)
             flak_factor = self._calculate_flak_factor(enemy_stats, self._flak_shots)
-            # XXX not sure how those factors combine if an enemy has both weapon types
-            my_hit_points *= max(shield_factor, flak_factor)
+            debug(f"enemy with fighters {enemy_stats._fighter_capacity}x{enemy_stats._fighter_damage}d, flak shots {self._flak_shots}");
+            debug(f"shield_factor {shield_factor}  flak_factor {flak_factor}")
+            if shield_factor > 1.0 and flak_factor > 1.0:
+                # whatever kills us first
+                my_hit_points *= min(shield_factor, flak_factor)
+            else:
+                my_hit_points *= max(shield_factor, flak_factor)
             my_total_attack = sum(n * max(dmg - enemy_stats.shields, 0.001) for dmg, n in self.attacks.items())
         else:
+            debug(f"no enemy, flak shots {self._flak_shots}");
             # assumes no shields
             my_total_attack = sum(n * dmg for dmg, n in self.attacks.items())
             # assuming we get hit 3 times before dying
             my_hit_points += self.shields * 3
             # assuming point defens prevents being hit once by fighter
             # XXX check if AI uses damage scaling / use AI Dependency here
-            my_hit_points += self.shots * 4
+            my_hit_points += self._flak_shots * 4
 
         my_total_attack += self._estimate_fighter_damage()
         # TODO: Consider enemy fighters
@@ -100,23 +108,41 @@ class ShipCombatStats:
 
     def _calculate_flak_factor(self, enemy_stats : "ShipCombatStats", my_flak_shots: float) -> float:
         """
-        Calculates flak factor based on enemy fighter attacks and our flak_shots
+        Calculates flak factor based on enemy fighter attacks and our flak_shots.
+        I.e. if the flak shots negate half the damage, the flak factor is 2.0
+        Mimimum flak factor is 1.0
+        Maximum flak factor is less the number of combat bouts the enemy fighter are afloat. I.e. 3.0 for 4 combat bouts
+        A typical flak factor is 2.67 for 3 flak shots vs a striker hangar for 4 combat bouts.
+        Flak factor is 1.0 against interceptors
         """
         capacity = enemy_stats._fighter_capacity
         launch_rate = enemy_stats._fighter_launch_rate
         damage = enemy_stats._fighter_damage
-        if enemy_stats._has_interceptors or damage <= 0 or capacity < 1 or launch_rate < 1 or my_flak_shots <= 0.0:
+        if my_flak_shots <= 0.0:
+            return 1.0
+        if damage <= 0 or capacity < 1 or launch_rate < 1:
+            debug(f"flak factor 1.0 because enemy is not a carrier ({launch_rate}/{capacity} * {damage}d)")
+            return 1.0
+        if enemy_stats._has_interceptors:
+            debug(f"flak factor 1.0 because enemy is an interceptor carrier / unable to hurt us")
             return 1.0
         enemy_fighter_dmg = self._estimate_fighter_damage_vs_flak(capacity, launch_rate, damage, 0.0)
         enemy_fighter_dmg_vs_flak = self._estimate_fighter_damage_vs_flak(capacity, launch_rate, damage, my_flak_shots)
-        # TODO sanity check
-        flak_factor = enemy_fighter_dmg_vs_flak / enemy_fighter_dmg
+        if enemy_fighter_dmg < enemy_fighter_dmg_vs_flak:
+            error(f"Bad calculation of flak_factor {enemy_fighter_dmg} should be greater than {enemy_fighter_dmg_vs_flak}")
+        flak_factor = enemy_fighter_dmg / enemy_fighter_dmg_vs_flak
+        if flak_factor > fo.getGameRules().getInt("RULE_NUM_COMBAT_ROUNDS") - 1:
+            error(f"Bad calculation of flak_factor ({flak_factor}). Should never be higher than number of combat bouts that fighters do damage")
+        # usefulness of enemy point defense depends on us using fighters
         return max(1.0, flak_factor)
 
 
     def _calculate_shield_factor(self, e_attacks: dict[AttackDamage, AttackCount], my_shields: float) -> float:
         """
         Calculates shield factor based on enemy attacks and our shields.
+        I.e. if the shields negate half the damage, the shield factor is 2.0.
+        Mimimum shield factor is 1.0
+        Maximum shield factor is capped at 10.0 ; in theory it is unlimited if all damage gets negated.
         It is possible to have e_attacks with number attacks == 0,
         in that case we consider that there is an issue with the enemy stats and we jut set value to 1.0.
         """
