@@ -97,11 +97,6 @@ class ShipCombatStats:
                     adjusted_flak_factor = 1.0 + ((flak_factor - 1.0) * min(1.0, unflak_damage_portion))
                     if adjusted_flak_factor < 1.0:
                         error(f"bad calculation, adjusted_flak_factor ({adjusted_flak_factor}) must be >= 1.0  (flak_factor {flak_factor}  unflak_damage_portion {unflak_damage_portion})")
-                        error(f"             ... {unflak_damage_portion} = {unflak_bout_damage} / {total_bout_damage}")
-                        error(f"             ... {total_bout_damage} = {unshielded_bout_damage} + ({unflak_bout_damage} / {flak_factor})")
-                        error(f"             ... enemy launch {enemy_stats._fighter_launch_rate} / {enemy_stats._fighter_capacity} fighters {enemy_stats._fighter_damage}d")
-                        error(f"             ... own structure {self._structure}  shields {self.shields}  flak_shots {self._flak_shots}§")
-
                     my_hit_points *= max(1.0, adjusted_flak_factor)
                 else:
                     my_hit_points *= max(shield_factor, flak_factor)
