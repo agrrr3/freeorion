@@ -183,8 +183,15 @@ class ShipDesigner:
             ]
         )
         if self._orbital() and self.design_stats.speed > 0:
+            debug("orbital spent resources on speed")
             rating = min(-100, rating - 99999)
-        return rating if rating < 0 else self._rating_function()
+        if rating < 0:
+            debug("neg rating from missing reqs etc %d" % (rating))
+            return rating
+        else:
+            r = self._rating_function()
+            debug("rating this design %d" % (r))
+            return r
 
     def _minimum_fuel(self):
         return self.additional_specifications.minimum_fuel
@@ -318,6 +325,9 @@ class ShipDesigner:
                 if allowed_targets & AIDependencies.CombatTarget.FIGHTER:
                     split_damage_factor = get_multi_target_split_damage_factor(allowed_targets, AIDependencies.CombatTarget.FIGHTER)
                     self.design_stats.flak_shots += split_damage_factor * shots
+                    if self.design_stats.flak_shots <= 0:
+                        warning(f"WEAPON {part.name} able to destroy fighters should result in effective flak shots > 0  ({shots}x *{split_damage_factor})")
+                    debug(f"WEAPON {part.name} got effective flak shots {self.design_stats.flak_shots}§")
                 if allowed_targets & AIDependencies.CombatTarget.PLANET:
                     split_damage_factor = get_multi_target_split_damage_factor(allowed_targets, AIDependencies.CombatTarget.PLANET)
                     self.design_stats.damage_vs_planets += split_damage_factor * capacity * shots
