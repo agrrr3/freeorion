@@ -157,14 +157,6 @@ class ShipCombatStats:
         else:
             return 1.0
 
-    def _estimate_fighter_damage(self):
-        """Estimates how much structural damage the fighters of this carrier in an average bout"""
-        capacity = self._fighter_capacity
-        launch_rate = self._fighter_launch_rate
-        damage = self._fighter_damage
-        enemy_flak_shots = -1
-        return self._estimate_fighter_damage_vs_flak(capacity,launch_rate,damage,enemy_flak_shots)
-
     def _estimate_fighter_damage_vs_flak(self, capacity, launch_rate, damage, opposing_flak):
         """Estimates how much structural damage the given fighters do in an average bout"""
         if launch_rate <= 0:
@@ -190,6 +182,14 @@ class ShipCombatStats:
                 # TODO check if there is overkilling of fighters or not
                 flying_fighters = max(0, flying_fighters - opposing_flak)
         return total_fighter_damage / num_bouts
+
+    def _estimate_fighter_damage(self):
+        """Estimates how much structural damage the fighters of this carrier in an average bout"""
+        capacity = self._fighter_capacity
+        launch_rate = self._fighter_launch_rate
+        damage = self._fighter_damage
+        enemy_flak_shots = -1
+        return self._estimate_fighter_damage_vs_flak(capacity,launch_rate,damage,enemy_flak_shots)
 
     def get_rating_vs_planets(self) -> float:
         """Heuristic to estimate combat strength against planets"""
