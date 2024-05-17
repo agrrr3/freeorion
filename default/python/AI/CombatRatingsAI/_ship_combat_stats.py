@@ -81,13 +81,30 @@ class ShipCombatStats:
         my_hit_points = self._structure
         if enemy_stats:
             # calculate extension of survival by using shields or flak
-            shield_factor = self._calculate_shield_factor(enemy_stats.attacks, self.shields)
-            flak_factor = self._calculate_flak_factor(enemy_stats, self._flak_shots)
+            shield_factor, unshielded_bout_damage = self._calculate_shield_factor(enemy_stats.attacks, self.shields)
+            flak_factor, unflak_bout_damage = self._calculate_flak_factor(enemy_stats, self._flak_shots)
             if shield_factor > 1.0 and flak_factor > 1.0:
-                # whatever kills us first
+                # apply bonus of whatever kills us first; probably a partial/linear approach like below is more correct
                 my_hit_points *= min(shield_factor, flak_factor)
             else:
-                my_hit_points *= max(shield_factor, flak_factor)
+                if flak_factor > 1.0 and unshielded_bout_damage > 0.0:
+                    # basic idea: only a part of the factor should be applied if fighter damage is only a part of the damage
+                    # XXX probably this can be extended to accomodate all cases at once
+                    total_bout_damage = unshielded_bout_damage + (unflak_bout_damage / flak_factor)
+                    unflak_damage_portion = unflak_bout_damage / total_bout_damage
+                    if unflak_damage_portion > 1.0 or unflak_damage_portion <=0:
+                        error(f"bad calculation, unflak_damage_portion ({unflak_damage_portion}) can never be > 1.0 or <= 0.0")
+                    adjusted_flak_factor = 1.0 + ((flak_factor - 1.0) * min(1.0, unflak_damage_portion))
+                    if adjusted_flak_factor < 1.0:
+                        error(f"bad calculation, adjusted_flak_factor ({adjusted_flak_factor}) must be >= 1.0  (flak_factor {flak_factor}  unflak_damage_portion {unflak_damage_portion})")
+                        error(f"             ... {unflak_damage_portion} = {unflak_bout_damage} / {total_bout_damage}")
+                        error(f"             ... {total_bout_damage} = {unshielded_bout_damage} + ({unflak_bout_damage} / {flak_factor})")
+                        error(f"             ... enemy launch {enemy_stats._fighter_launch_rate} / {enemy_stats._fighter_capacity} fighters {enemy_stats._fighter_damage}d")
+                        error(f"             ... own structure {self._structure}  shields {self.shields}  flak_shots {self._flak_shots}§")
+
+                    my_hit_points *= max(1.0, adjusted_flak_factor)
+                else:
+                    my_hit_points *= max(shield_factor, flak_factor)
             my_total_attack = sum(n * max(dmg - enemy_stats.shields, 0.001) for dmg, n in self.attacks.items())
         else:
             # assumes no shields
@@ -102,7 +119,7 @@ class ShipCombatStats:
         # TODO: Consider enemy fighters
         return my_total_attack * my_hit_points
 
-    def _calculate_flak_factor(self, enemy_stats : "ShipCombatStats", my_flak_shots: float) -> float:
+    def _calculate_flak_factor(self, enemy_stats : "ShipCombatStats", my_flak_shots: float) -> (float, float):
         """
         Calculates flak factor based on enemy fighter attacks and our flak_shots.
         I.e. if the flak shots negate half the damage, the flak factor is 2.0
@@ -114,15 +131,15 @@ class ShipCombatStats:
         capacity = enemy_stats._fighter_capacity
         launch_rate = enemy_stats._fighter_launch_rate
         damage = enemy_stats._fighter_damage
-        if my_flak_shots <= 0.0:
-            return 1.0
         if damage <= 0 or capacity < 1 or launch_rate < 1:
             debug(f"flak factor 1.0 because enemy is not a carrier ({launch_rate}/{capacity} * {damage}d)")
-            return 1.0
+            return (1.0, 0.0)
         if enemy_stats._has_interceptors:
             debug("flak factor 1.0 because enemy is an interceptor carrier / unable to hurt us")
-            return 1.0
+            return (1.0, 0.0)
         enemy_fighter_dmg = self._estimate_fighter_damage_vs_flak(capacity, launch_rate, damage, 0.0)
+        if my_flak_shots <= 0.0:
+            return (1.0, enemy_fighter_dmg)
         enemy_fighter_dmg_vs_flak = self._estimate_fighter_damage_vs_flak(capacity, launch_rate, damage, my_flak_shots)
         if enemy_fighter_dmg < enemy_fighter_dmg_vs_flak:
             error(f"Bad calculation of flak_factor {enemy_fighter_dmg} should be greater than {enemy_fighter_dmg_vs_flak}")
@@ -130,10 +147,10 @@ class ShipCombatStats:
         if flak_factor > fo.getGameRules().getInt("RULE_NUM_COMBAT_ROUNDS") - 1:
             error(f"Bad calculation of flak_factor ({flak_factor}). Should never be higher than number of combat bouts that fighters do damage")
         # usefulness of enemy point defense depends on us using fighters
-        return max(1.0, flak_factor)
+        return (max(1.0, flak_factor), enemy_fighter_dmg)
 
 
-    def _calculate_shield_factor(self, e_attacks: dict[AttackDamage, AttackCount], my_shields: float) -> float:
+    def _calculate_shield_factor(self, e_attacks: dict[AttackDamage, AttackCount], my_shields: float) -> (float, float):
         """
         Calculates shield factor based on enemy attacks and our shields.
         I.e. if the shields negate half the damage, the shield factor is 2.0.
@@ -149,9 +166,9 @@ class ShipCombatStats:
             e_net_attack = sum(n * max(dmg - my_shields, 0.001) for dmg, n in e_attacks.items())
             e_net_attack = max(e_net_attack, 0.1 * e_total_attack)
             shield_factor = e_total_attack / e_net_attack
-            return max(1.0, shield_factor)
+            return (max(1.0, shield_factor), e_total_attack)
         else:
-            return 1.0
+            return (1.0, e_total_attack)
 
     def _estimate_fighter_damage_vs_flak(self, capacity, launch_rate, damage, opposing_flak):
         """Estimates how much structural damage the given fighters do in an average bout"""
