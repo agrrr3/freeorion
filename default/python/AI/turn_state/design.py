@@ -39,7 +39,7 @@ def get_design_repository() -> dict[PriorityType, tuple[float, int, int, float]]
     for timer_name, priority_type, designer in designers:
         design_timer.start(timer_name)
         design_repository[priority_type] = designer().optimize_design()
-    best_military_stats = ShipDesignAI.WarShipDesigner().optimize_design()
+    best_military_stats = ShipDesignAI.WarShipDesigner().optimize_design(verbose=True)
     best_carrier_stats = ShipDesignAI.CarrierShipDesigner().optimize_design()
     best_stats = best_military_stats + best_carrier_stats if random.random() < 0.8 else best_military_stats
     best_stats.sort(reverse=True)
