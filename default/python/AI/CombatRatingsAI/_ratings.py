@@ -34,7 +34,7 @@ def get_empire_standard_military_ship_stats() -> ShipCombatStats:
 def default_ship_stats() -> ShipCombatStats:
     """Return some ship stats to assume if no other intel is available.
 
-    :return: Some weak standard ship average
+    :return: Some weak standard ship
     """
     return ShipCombatStats(
         attacks={AttackDamage(6.0): AttackCount(1)},
