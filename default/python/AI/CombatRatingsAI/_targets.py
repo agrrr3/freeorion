@@ -18,6 +18,7 @@ def get_allowed_targets(partname: str) -> int:
             _issued_errors.add(partname)
         return CombatTarget.ANY
 
+
 def get_multi_target_split_damage_factor(allowed_targets: int, target_class: int) -> float:
     """
     Return a heuristic factor how much expected damage needs to be scaled down
@@ -29,9 +30,9 @@ def get_multi_target_split_damage_factor(allowed_targets: int, target_class: int
         error(f"bad call, not possible to target intended target ({(allowed_targets, target_class)}")
         return 0.0
     target_classes_cnt = 0
-    target_classes_cnt += int (allowed_targets & CombatTarget.FIGHTER != 0)
-    #target_classes_cnt += int (allowed_targets & CombatTarget.PLANET != 0) # damage is not considered in design value
-    target_classes_cnt += int (allowed_targets & CombatTarget.SHIP != 0)
+    target_classes_cnt += int(allowed_targets & CombatTarget.FIGHTER != 0)
+    # target_classes_cnt += int (allowed_targets & CombatTarget.PLANET != 0) # damage is not considered in design value
+    target_classes_cnt += int(allowed_targets & CombatTarget.SHIP != 0)
     if target_classes_cnt in [0, 1]:
         # no relevant distractions, single resulting damage type
         return 1.0
@@ -49,15 +50,15 @@ def get_multi_target_split_damage_factor(allowed_targets: int, target_class: int
     # the expected number of targets is usually fighters > ships > planets, so
     # e.g. planets should not distract much from other targets
     if target_class == CombatTarget.FIGHTER:
-        if (allowed_targets & CombatTarget.SHIP):
+        if allowed_targets & CombatTarget.SHIP:
             factor *= 0.95
     elif target_class == CombatTarget.PLANET:
-        if (allowed_targets & CombatTarget.SHIP):
+        if allowed_targets & CombatTarget.SHIP:
             factor *= 0.9
-        if (allowed_targets & CombatTarget.FIGHTER):
+        if allowed_targets & CombatTarget.FIGHTER:
             factor *= 0.7
     elif target_class == CombatTarget.SHIP:
-        if (allowed_targets & CombatTarget.FIGHTER):
+        if allowed_targets & CombatTarget.FIGHTER:
             factor *= 0.8
 
     return factor

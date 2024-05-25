@@ -92,11 +92,15 @@ class ShipCombatStats:
                     # XXX probably this can be extended to accomodate all cases at once
                     total_bout_damage = unshielded_bout_damage + (unflak_bout_damage / flak_factor)
                     unflak_damage_portion = unflak_bout_damage / total_bout_damage
-                    if unflak_damage_portion > 1.0 or unflak_damage_portion <=0:
-                        error(f"bad calculation, unflak_damage_portion ({unflak_damage_portion}) can never be > 1.0 or <= 0.0")
+                    if unflak_damage_portion > 1.0 or unflak_damage_portion <= 0:
+                        error(
+                            f"bad calculation, unflak_damage_portion ({unflak_damage_portion}) can never be > 1.0 or <= 0.0"
+                        )
                     adjusted_flak_factor = 1.0 + ((flak_factor - 1.0) * min(1.0, unflak_damage_portion))
                     if adjusted_flak_factor < 1.0:
-                        error(f"bad calculation, adjusted_flak_factor ({adjusted_flak_factor}) must be >= 1.0  (flak_factor {flak_factor}  unflak_damage_portion {unflak_damage_portion})")
+                        error(
+                            f"bad calculation, adjusted_flak_factor ({adjusted_flak_factor}) must be >= 1.0  (flak_factor {flak_factor}  unflak_damage_portion {unflak_damage_portion})"
+                        )
                     my_hit_points *= max(1.0, adjusted_flak_factor)
                 else:
                     my_hit_points *= max(shield_factor, flak_factor)
@@ -114,7 +118,7 @@ class ShipCombatStats:
         # TODO: Consider enemy fighters
         return my_total_attack * my_hit_points
 
-    def _calculate_flak_factor(self, enemy_stats : "ShipCombatStats", my_flak_shots: float) -> (float, float):
+    def _calculate_flak_factor(self, enemy_stats: "ShipCombatStats", my_flak_shots: float) -> (float, float):
         """
         Calculates flak factor based on enemy fighter attacks and our flak_shots.
         I.e. if the flak shots negate half the damage, the flak factor is 2.0
@@ -137,13 +141,16 @@ class ShipCombatStats:
             return (1.0, enemy_fighter_dmg)
         enemy_fighter_dmg_vs_flak = self._estimate_fighter_damage_vs_flak(capacity, launch_rate, damage, my_flak_shots)
         if enemy_fighter_dmg < enemy_fighter_dmg_vs_flak:
-            error(f"Bad calculation of flak_factor {enemy_fighter_dmg} should be greater than {enemy_fighter_dmg_vs_flak}")
+            error(
+                f"Bad calculation of flak_factor {enemy_fighter_dmg} should be greater than {enemy_fighter_dmg_vs_flak}"
+            )
         flak_factor = enemy_fighter_dmg / enemy_fighter_dmg_vs_flak
         if flak_factor > fo.getGameRules().getInt("RULE_NUM_COMBAT_ROUNDS") - 1:
-            error(f"Bad calculation of flak_factor ({flak_factor}). Should never be higher than number of combat bouts that fighters do damage")
+            error(
+                f"Bad calculation of flak_factor ({flak_factor}). Should never be higher than number of combat bouts that fighters do damage"
+            )
         # usefulness of enemy point defense depends on us using fighters
         return (max(1.0, flak_factor), enemy_fighter_dmg)
-
 
     def _calculate_shield_factor(self, e_attacks: dict[AttackDamage, AttackCount], my_shields: float) -> (float, float):
         """
@@ -180,9 +187,7 @@ class ShipCombatStats:
                 flying_fighters = flying_fighters + launch_rate
             elif firing_bout == full_launch_bouts:
                 # now handle a bout with lower capacity launch
-                flying_fighters = flying_fighters + (
-                    capacity % launch_rate
-                )
+                flying_fighters = flying_fighters + (capacity % launch_rate)
             total_fighter_damage += damage * flying_fighters
             if opposing_flak == -1:
                 flying_fighters = flying_fighters * generic_survival_rate
@@ -197,7 +202,7 @@ class ShipCombatStats:
         launch_rate = self._fighter_launch_rate
         damage = self._fighter_damage
         enemy_flak_shots = -1
-        return self._estimate_fighter_damage_vs_flak(capacity,launch_rate,damage,enemy_flak_shots)
+        return self._estimate_fighter_damage_vs_flak(capacity, launch_rate, damage, enemy_flak_shots)
 
     def get_rating_vs_planets(self) -> float:
         """Heuristic to estimate combat strength against planets"""
