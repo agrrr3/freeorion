@@ -19,6 +19,26 @@ def get_allowed_targets(partname: str) -> int:
         return CombatTarget.ANY
 
 
+def get_distractability_factor(target_class: int, allowed_targets: int) -> float:
+    """
+    Return a factor for the likeliness to be distracted by other targets.
+    The expected number of targets is usually fighters > ships > planets, so
+     e.g. planets are expected to not distract much from other targets
+    """
+    if target_class == CombatTarget.FIGHTER:
+        if allowed_targets & CombatTarget.SHIP:
+            return 0.95
+    elif target_class == CombatTarget.PLANET:
+        if allowed_targets & CombatTarget.SHIP:
+            return 0.9
+        if allowed_targets & CombatTarget.FIGHTER:
+            return 0.7
+    elif target_class == CombatTarget.SHIP:
+        if allowed_targets & CombatTarget.FIGHTER:
+            return 0.8
+    return 1.0
+
+
 def get_multi_target_split_damage_factor(allowed_targets: int, target_class: int) -> float:
     """
     Return a heuristic factor how much expected damage needs to be scaled down
@@ -46,19 +66,4 @@ def get_multi_target_split_damage_factor(allowed_targets: int, target_class: int
         error("bad target class count %i" % target_classes_cnt)
         return 0.0
 
-    # factoring in distraction by other targets
-    # the expected number of targets is usually fighters > ships > planets, so
-    # e.g. planets should not distract much from other targets
-    if target_class == CombatTarget.FIGHTER:
-        if allowed_targets & CombatTarget.SHIP:
-            factor *= 0.95
-    elif target_class == CombatTarget.PLANET:
-        if allowed_targets & CombatTarget.SHIP:
-            factor *= 0.9
-        if allowed_targets & CombatTarget.FIGHTER:
-            factor *= 0.7
-    elif target_class == CombatTarget.SHIP:
-        if allowed_targets & CombatTarget.FIGHTER:
-            factor *= 0.8
-
-    return factor
+    return factor * get_distractability_factor(target_class)
