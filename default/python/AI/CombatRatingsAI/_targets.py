@@ -32,34 +32,32 @@ def get_multi_target_split_damage_factor(allowed_targets: int, target_class: int
     target_classes_cnt += int (allowed_targets & CombatTarget.FIGHTER != 0)
     #target_classes_cnt += int (allowed_targets & CombatTarget.PLANET != 0) # damage is not considered in design value
     target_classes_cnt += int (allowed_targets & CombatTarget.SHIP != 0)
-    match target_classes_cnt:
-        case 0 | 1:
-            # no relevant distractions, single resulting damage type
-            return 1.0
-        case 2:
-            # one type of distraction, two types of resulting damage
-            factor = 0.7
-        case 3:
-            # two types of distraction, three types of resulting damage
-            factor = 0.5
-        case _:
-            error("bad target class count %i" % target_classes_cnt)
-            return 0.0
+    if target_classes_cnt in [0, 1]:
+        # no relevant distractions, single resulting damage type
+        return 1.0
+    elif target_classes_cnt == 2:
+        # one type of distraction, two types of resulting damage
+        factor = 0.7
+    elif target_classes_cnt == 3:
+        # two types of distraction, three types of resulting damage
+        factor = 0.5
+    else:
+        error("bad target class count %i" % target_classes_cnt)
+        return 0.0
 
     # factoring in distraction by other targets
     # the expected number of targets is usually fighters > ships > planets, so
     # e.g. planets should not distract much from other targets
-    match target_class:
-        case CombatTarget.FIGHTER:
-            if (allowed_targets & CombatTarget.SHIP):
-                factor *= 0.95
-        case CombatTarget.PLANET:
-            if (allowed_targets & CombatTarget.SHIP):
-                factor *= 0.9
-            if (allowed_targets & CombatTarget.FIGHTER):
-                factor *= 0.7
-        case CombatTarget.SHIP:
-            if (allowed_targets & CombatTarget.FIGHTER):
-                factor *= 0.8
+    if target_class == CombatTarget.FIGHTER:
+        if (allowed_targets & CombatTarget.SHIP):
+            factor *= 0.95
+    elif target_class == CombatTarget.PLANET:
+        if (allowed_targets & CombatTarget.SHIP):
+            factor *= 0.9
+        if (allowed_targets & CombatTarget.FIGHTER):
+            factor *= 0.7
+    elif target_class == CombatTarget.SHIP:
+        if (allowed_targets & CombatTarget.FIGHTER):
+            factor *= 0.8
 
     return factor
