@@ -1231,6 +1231,7 @@ bool BombardOrder::UndoImpl(ScriptingContext& context) const {
         return false;
     }
 
+    // XXX next line wrong? there might be still other ships bombing the planet. same goes for invasion
     planet->SetIsAboutToBeBombarded(false);
     ship->ClearBombardPlanet();
 
