@@ -3635,7 +3635,7 @@ namespace {
             ship->ClearBombardPlanet();
         for (auto* planet : objects.allRaw<Planet>()) {
             if (planet->IsAboutToBeBombarded()) {
-                //DebugLogger() << "CleanUpBombardmentStateInfo: " << planet->Name() << " was about to be bombarded";
+                DebugLogger() << "CleanUpBombardmentStateInfo: " << planet->Name() << " was about to be bombarded";
                 planet->ResetIsAboutToBeBombarded();
             }
         }
