@@ -589,9 +589,9 @@ namespace {
         const ClientApp* app = ClientApp::GetApp();
         if (!app)
             return retval;
-        for (const auto& id_and_order : app->Orders()) {
-            if (auto order = std::dynamic_pointer_cast<BombardOrder>(id_and_order.second)) {
-                retval[order->PlanetID()].insert(id_and_order.first);
+        for (const auto& [order_id, order] : app->Orders()) {
+            if (auto order = std::dynamic_pointer_cast<BombardOrder>(order)) {
+                retval[order->PlanetID()].insert(order_id);
             }
         }
         return retval;
