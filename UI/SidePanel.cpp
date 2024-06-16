@@ -590,8 +590,8 @@ namespace {
         if (!app)
             return retval;
         for (const auto& [order_id, order] : app->Orders()) {
-            if (auto order = std::dynamic_pointer_cast<BombardOrder>(order)) {
-                retval[order->PlanetID()].insert(order_id);
+            if (auto bombard_order = std::dynamic_pointer_cast<BombardOrder>(order)) {
+                retval[bombard_order->PlanetID()].insert(order_id);
             }
         }
         return retval;
