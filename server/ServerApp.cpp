@@ -3636,9 +3636,13 @@ namespace {
         std::set<int> bombard_planet_ids;
         for (auto* ship : objects.allRaw<Ship>()) {
             if (ship->OrderedBombardPlanet() != INVALID_OBJECT_ID)
+{
+                DebugLogger() << "CleanUpBombardmentStateInfo: found ship("<< ship->ID() <<") to bombard planet(" <<ship->OrderedBombardPlanet()<<")";
                 bombard_planet_ids.insert(ship->OrderedBombardPlanet());
+}
         }
         for (auto* planet : objects.allRaw<Planet>()) {
+            if (planet->IsAboutToBeBombarded()) DebugLogger() << "CleanUpBombardmentStateInfo: " << planet->Name() << " planet(" << planet->ID() << ") IsAboutToBeBombarded";
             if (planet->IsAboutToBeBombarded() && !bombard_planet_ids.contains(planet->ID())) {
                 DebugLogger() << "CleanUpBombardmentStateInfo: " << planet->Name() << " lost all bombarders";
                 planet->ResetIsAboutToBeBombarded();
