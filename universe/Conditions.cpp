@@ -10433,7 +10433,7 @@ namespace {
             if (candidate->ObjectType() != UniverseObjectType::OBJ_PLANET)
                 return false;
             const int planet_id = candidate->ID();
-            DebugLogger() << "OrderedBombardedSimpleMatch() planet(" << planet_id << ") IsAboutToBeBombarded " << (candidate->IsAboutToBeBombarded()?"yes":"no");
+            DebugLogger() << "OrderedBombardedSimpleMatch() planet(" << planet_id << ") IsAboutToBeBombarded " << (static_cast<const Planet*>(candidate)->IsAboutToBeBombarded()?"yes":"no");
             if (planet_id == INVALID_OBJECT_ID)
                 return false;
 
