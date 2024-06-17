@@ -197,7 +197,8 @@ std::string Ship::Dump(uint8_t ntabs) const {
           .append(" species name: ").append(m_species_name)
           .append(" produced by empire id: ").append(std::to_string(m_produced_by_empire_id))
           .append(" arrived on turn: ").append(std::to_string(m_arrived_on_turn))
-          .append(" last resupplied on turn: ").append(std::to_string(m_last_resupplied_on_turn));
+          .append(" last resupplied on turn: ").append(std::to_string(m_last_resupplied_on_turn))
+          .append(" keep bombarding: ").append(std::to_string(OrderedBombardPlanet()));
     if (!m_part_meters.empty()) {
         retval.append(" part meters: ");
         for (const auto& [meter_type_part_name, meter] : m_part_meters) {
