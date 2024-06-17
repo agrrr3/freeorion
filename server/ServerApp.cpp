@@ -3631,11 +3631,16 @@ namespace {
     /** Removes bombardment state info from objects. Actual effects of
       * bombardment are handled during */
     void CleanUpBombardmentStateInfo(ObjectMap& objects) {
-        for (auto* ship : objects.allRaw<Ship>())
-            ship->ClearBombardPlanet();
+        // XXX maybe check if bombarded planet still exists(?)
+        // XXX maybe use IDSet / flat_set ??
+        std::set<int> bombard_planet_ids;
+        for (auto* ship : objects.allRaw<Ship>()) {
+            if (ship->OrderedBombardPlanet() != INVALID_OBJECT_ID)
+                bombard_planet_ids.insert(ship->OrderedBombardPlanet());
+        }
         for (auto* planet : objects.allRaw<Planet>()) {
-            if (planet->IsAboutToBeBombarded()) {
-                DebugLogger() << "CleanUpBombardmentStateInfo: " << planet->Name() << " was about to be bombarded";
+            if (planet->IsAboutToBeBombarded() && !bombard_planet_ids.contains(planet->ID())) {
+                DebugLogger() << "CleanUpBombardmentStateInfo: " << planet->Name() << " lost all bombarders";
                 planet->ResetIsAboutToBeBombarded();
             }
         }
@@ -4213,10 +4218,6 @@ void ServerApp::PreCombatProcessTurns() {
     // inform players of order execution
     m_networking.SendMessageAll(TurnProgressMessage(Message::TurnProgressPhase::PROCESSING_ORDERS));
 
-    // clear bombardment state before executing orders, so result after is only
-    // determined by what orders set.
-    CleanUpBombardmentStateInfo(m_universe.Objects());
-
     ScriptingContext context{m_universe, m_empires, m_galaxy_setup_data, m_species_manager, m_supply_manager};
 
     // execute orders
@@ -4417,6 +4418,9 @@ void ServerApp::PostCombatProcessTurns() {
     ScriptingContext context{m_universe, m_empires, m_galaxy_setup_data,
                              m_species_manager, m_supply_manager};
 
+    // 
+    CleanUpBombardmentStateInfo(m_universe.Objects());
+        
     // post-combat visibility update
     m_universe.UpdateEmpireObjectVisibilities(context);
     m_universe.UpdateEmpireLatestKnownObjectsAndVisibilityTurns(context.current_turn);
