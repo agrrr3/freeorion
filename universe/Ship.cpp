@@ -668,7 +668,9 @@ void Ship::SetBombardPlanet(int planet_id) {
 }
 
 void Ship::ClearBombardPlanet()
-{ SetBombardPlanet(INVALID_OBJECT_ID); }
+{
+    DebugLogger() << "Ship::ClearBombardPlanetal() on ship(" << ID() << ") would have bombarded planet (" <<  OrderedBombardPlanet() << ")";
+    SetBombardPlanet(INVALID_OBJECT_ID); }
 
 void Ship::ResetTargetMaxUnpairedMeters() {
     UniverseObject::ResetTargetMaxUnpairedMeters();
