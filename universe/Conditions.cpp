@@ -10433,6 +10433,7 @@ namespace {
             if (candidate->ObjectType() != UniverseObjectType::OBJ_PLANET)
                 return false;
             const int planet_id = candidate->ID();
+            DebugLogger() << "OrderedBombardedSimpleMatch() planet(" << planet_id << ") IsAboutToBeBombarded " << (candidate->IsAboutToBeBombarded()?"yes":"no");
             if (planet_id == INVALID_OBJECT_ID)
                 return false;
 
@@ -10441,7 +10442,10 @@ namespace {
                 if (obj->ObjectType() != UniverseObjectType::OBJ_SHIP)
                     continue;
                 if (static_cast<const Ship*>(obj)->OrderedBombardPlanet() == planet_id)
+{
+                    DebugLogger() << "OrderedBombardedSimpleMatch() planet(" << planet_id << ") found ship(" << obj->ID() << ")";
                     return true;
+}
             }
             return false;
         }
@@ -10454,6 +10458,7 @@ void OrderedBombarded::Eval(const ScriptingContext& parent_context,
                             ObjectSet& matches, ObjectSet& non_matches,
                             SearchDomain search_domain) const
 {
+    DebugLogger() << "OrderedBombarded::Eval";
     bool simple_eval_safe = parent_context.condition_root_candidate || RootCandidateInvariant();
     if (simple_eval_safe) {
         // evaluate contained objects once and check for all candidates
