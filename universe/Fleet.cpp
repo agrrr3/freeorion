@@ -892,6 +892,10 @@ void Fleet::MoveAlongPath(ScriptingContext& context, const std::vector<MovePathN
         return ships;
     }();
 
+    // clean up orders from old system
+    for (auto* ship : ships)
+        ship->ClearBombardPlanet();
+
     auto* current_system = objects.getRaw<System>(SystemID());
     auto* const initial_system = current_system;
 

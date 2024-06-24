@@ -1627,6 +1627,35 @@ namespace {
 
         return retval;
     }
+
+    /** Returns Ship%s which are in a system where they were bombarding a given Planet last turn.
+      * @param target_planet_id ID of the Planet */
+    auto AlreadyBombardingShips(int target_planet_id, ScriptingContext& context) {
+        std::vector<Ship*> retval;
+
+        const int empire_id = GGHumanClientApp::GetApp()->EmpireID();
+        if (empire_id == ALL_EMPIRES)
+            return retval;
+
+        ObjectMap& o = context.ContextObjects();
+        //ObjectMap& o{context.ContextObjects()};
+
+        const auto* target_planet = o.getRaw<Planet>(target_planet_id);
+        if (!target_planet)
+            return retval;
+        const int system_id = target_planet->SystemID();
+        const auto* system = o.getRaw<System>(system_id);
+        if (!system)
+            return retval;
+
+        retval.reserve(10); // guesstimate
+        for (Ship* ship : o.allRaw<Ship>()) {
+            if (ship->OrderedBombardPlanet() == target_planet_id)
+                retval.push_back(ship);
+        }
+
+        return retval;
+    }
 }
 
 void SidePanel::PlanetPanel::Clear() {
@@ -1810,8 +1839,9 @@ void SidePanel::PlanetPanel::Refresh(ScriptingContext& context_in) {
     const bool show_annex_button = !mine && (being_annexed || annexable || (populated && !being_invaded && species));
 
 
-    const bool being_bombarded =  planet->IsAboutToBeBombarded();
-    const bool bombardable =      at_war_with_me && visible && !being_bombarded && !bombard_ships.empty();
+    auto bombarding_ships = AlreadyBombardingShips(planet->ID(), context_in);
+    const bool being_bombarded =  planet->IsAboutToBeBombarded() && !bombarding_ships.empty();
+    const bool bombardable =      at_war_with_me && visible && !bombard_ships.empty();
 
 
     if (populated || SHOW_ALL_PLANET_PANELS) {
@@ -2707,17 +2737,36 @@ void SidePanel::PlanetPanel::ClickBombard() {
     if (empire_id == ALL_EMPIRES)
         return;
 
+    // just for client bookkeeping
+    // Stop bombarding if we were already bombarding last turn
+    bool already_bombarding_last_turn = false;
+    if (planet->IsAboutToBeBombarded()) {
+        auto bombarding_ships = AlreadyBombardingShips(planet->ID(), context);
+        if (!bombarding_ships.empty())
+            already_bombarding_last_turn = true;
+        DebugLogger() << "SidePanel::PlanetPanel::ClickBombard planet was bombarded. And are " << (already_bombarding_last_turn?"":"no ") << "already bombarding ships in this system.";
+        // cancel previous turn bombarding
+        // XXX not sure our change goes to the real planet
+        planet->ResetIsAboutToBeBombarded();
+        for (auto ship : bombarding_ships) 
+            ship->ClearBombardPlanet();
+    }
+
     const auto pending_bombard_orders = PendingBombardOrders();
     const auto it = pending_bombard_orders.find(m_planet_id);
 
     if (it != pending_bombard_orders.end()) {
+        DebugLogger() << "SidePanel::PlanetPanel::ClickBombard rescinding bombard orders";
         auto& planet_bombard_orders = it->second;
         // cancel previous bombard orders for this planet
         for (int order_id : planet_bombard_orders)
             GGHumanClientApp::GetApp()->Orders().RescindOrder(order_id, context);
 
+    } else if (already_bombarding_last_turn) {
+        ErrorLogger() << "SidePanel::PlanetPanel::ClickBombard was bombarding but has no bombard orders";
     } else {
         // order selected bombard ships to bombard planet
+        DebugLogger() << "SidePanel::PlanetPanel::ClickBombard order ships to bombard";
         auto bombard_ships = ValidSelectedBombardShips(planet->SystemID(), context);
         if (bombard_ships.empty())
             bombard_ships = AutomaticallyChosenBombardShips(m_planet_id, context);

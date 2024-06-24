@@ -151,6 +151,7 @@ public:
     void Copy(const Fleet& copied_fleet, const Universe& universe, int empire_id = ALL_EMPIRES);
 
     /** Moves fleet and its ships, consumes fuel or resupplies ships,
+      * clears up standing ship orders,
       * and sets systems as explored for empires. */
     void MoveAlongPath(ScriptingContext& context, const std::vector<MovePathNode>& move_path);
 

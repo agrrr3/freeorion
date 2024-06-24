@@ -3629,7 +3629,7 @@ namespace {
     }
 
     /** Removes bombardment state info from objects. Actual effects of
-      * bombardment are handled during */
+      * bombardment are handled during effects processing */
     void CleanUpBombardmentStateInfo(ObjectMap& objects) {
         // XXX maybe check if bombarded planet still exists(?)
         // XXX maybe use IDSet / flat_set ??
