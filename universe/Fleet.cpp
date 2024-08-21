@@ -914,9 +914,8 @@ void Fleet::MoveAlongPath(ScriptingContext& context, const std::vector<MovePathN
 
 
         if (const auto system = objects.getRaw<System>(it->object_id)) {
-            // node is a system.  explore system for all owners of this fleet
+            // node is a system
             if (this_owner_empire) {
-                this_owner_empire->AddExploredSystem(it->object_id, context.current_turn, objects);
                 this_owner_empire->RecordPendingLaneUpdate(it->object_id, m_prev_system, objects); // specifies the lane from it->object_id back to m_prev_system is available
             }
 
