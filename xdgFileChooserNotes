@@ -1,0 +1,47 @@
+== Figuring out dbus calls ==
+
+$ qdbus | grep org.freedesktop # or even better...
+$ qdbus org.freedesktop.       # ...TAB TAB completion
+$ qdbus org.freedesktop.portal.Desktop /org/freedesktop/portal/desktop  | grep FileChooser
+
+
+https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.FileChooser.html#org-freedesktop-portal-filechooser-openfile
+OpenFile (
+  IN parent_window s,
+  IN title s,
+  IN options a{sv},
+  OUT handle o
+)
+
+
+https://gist.github.com/KerJoe/bb7e5b3165f9661a5146160ed30b2776
+    QDBusMessage message = QDBusMessage::createMethodCall(
+        "org.freedesktop.portal.Desktop",
+        "/org/freedesktop/portal/desktop",
+        "org.freedesktop.portal.FileChooser",
+        "OpenFile");
+
+    ;
+    message << ""               // No parent Window
+            << "Open File"      // Window title
+            << QVariantMap {};  // No options
+
+
+=== DBUS call parameters CHOOSE FILE ===
+
+$ dbus-send --session --print-reply --dest=org.freedesktop.portal.Desktop --type=method_call /org/freedesktop/portal/desktop org.freedesktop.portal.FileChooser.OpenFile string:"" string:"Open File"  array:string:"test"
+Error org.freedesktop.DBus.Error.InvalidArgs: Der Nachrichtentyp »(ssas)« entspricht nicht dem erwarteten Typ »(ssa{sv})«
+man dbus-send
+  dbus-send does not permit empty containers or nested containers (e.g. arrays of variants).
+
+https://stackoverflow.com/questions/8846671/how-to-use-a-variant-dictionary-asv-in-dbus-send
+But possible gdbus
+
+syntax of a{sv} arguments to gdbus: "{'String': <'variant_value'>, 'String2': <'variant_value'>}"
+More generally, gdbus expects arguments to be in serialized GVariant format, which is described here: docs.gtk.org/glib/gvariant-text-format.html (Exception: stand-alone strings don't need quotes.)
+
+$ man gdbus
+# gdbus call --session -d org.freedesktop.portal.Desktop -o /org/freedesktop/portal/desktop -m org.freedesktop.portal.FileChooser.OpenFile "''" "'Open File'" "{'VariantName': <'VariantValue'>}"
+$ gdbus call --session -d org.freedesktop.portal.Desktop -o /org/freedesktop/portal/desktop -m org.freedesktop.portal.FileChooser.OpenFile "''" "'Open File'" "{}"   # GOOD GOOD GOOD
+(objectpath '/org/freedesktop/portal/desktop/request/1_325/t',)
+
