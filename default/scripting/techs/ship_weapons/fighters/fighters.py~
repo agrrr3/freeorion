@@ -1,0 +1,7 @@
+
+# Tech Upgrade a direct weapon number of shots each turn if it was resupplied after the tech was researched.
+# Be careful this does show in the ship damage/shot estimates in the ship designer UI if the tech is not researched.
+# @1@ tech name
+# @2@ part name
+# @3@ extra_shots gets added to max secondary stat
+def HANGAR_UPGRADE_SECONDARY_STAT_EFFECT(tech_name: str, part_name: str, base_damage_bonus: int):
