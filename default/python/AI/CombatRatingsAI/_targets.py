@@ -19,7 +19,7 @@ def get_allowed_targets(partname: str) -> int:
         return CombatTarget.ANY
 
 
-def get_distractability_factor(target_class: int, allowed_targets: int) -> float:
+def get_distractability_factor(allowed_targets: int, target_class: int) -> float:
     """
     Return a factor for the likeliness to be distracted by other targets.
     The expected number of targets is usually fighters > ships > planets, so
@@ -66,4 +66,4 @@ def get_multi_target_split_damage_factor(allowed_targets: int, target_class: int
         error("bad target class count %i" % target_classes_cnt)
         return 0.0
 
-    return factor * get_distractability_factor(target_class)
+    return factor * get_distractability_factor(allowed_targets, target_class)
