@@ -1154,19 +1154,19 @@ std::vector<std::pair<double, int>> Pathfinder::ImmediateNeighbors(int system_id
 std::vector<std::pair<double, int>> Pathfinder::PathfinderImpl::ImmediateNeighbors(
     int system_id, int empire_id) const
 {
-    if (empire_id == ALL_EMPIRES) {
-        if (!m_graph_impl.system_graph) [[unlikely]] {
-            ErrorLogger() << "No system graph in PathfinderImpl::ImmediateNeighbors";
+    // immediate neighbors for a system do not depend on the empire knowledge; use the generic system graph
+    if (!m_graph_impl.system_graph) [[unlikely]] {
+        ErrorLogger() << "No system graph in PathfinderImpl::ImmediateNeighbors";
+        auto graph_it = m_graph_impl.empire_system_graph_views.find(empire_id);
+        if (graph_it != m_graph_impl.empire_system_graph_views.end()) {
+            ErrorLogger() << "Also no fallback empire system graph in PathfinderImpl::ImmediateNeighbors";
+            return ImmediateNeighborsImpl(graph_it->second, system_id, m_system_id_to_graph_index);
+        } else {
             return {};
         }
-        return ImmediateNeighborsImpl(*m_graph_impl.system_graph, system_id,
-                                      m_system_id_to_graph_index);
-    } else {
-        auto graph_it = m_graph_impl.empire_system_graph_views.find(empire_id);
-        if (graph_it != m_graph_impl.empire_system_graph_views.end())
-            return ImmediateNeighborsImpl(graph_it->second, system_id, m_system_id_to_graph_index);
     }
-    return {};
+    return ImmediateNeighborsImpl(*m_graph_impl.system_graph, system_id,
+                                  m_system_id_to_graph_index);
 }
 
 void Pathfinder::PathfinderImpl::WithinJumpsCacheHit(
