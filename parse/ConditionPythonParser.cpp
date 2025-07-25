@@ -883,6 +883,8 @@ void RegisterGlobalsConditions(boost::python::dict& globals) {
     globals["Stationary"] = make_wrapped<Condition::Stationary>();
     globals["NoConditionLog"] = make_wrapped<Condition::NoOp>();
 
+    globals["NoOpLog"] = make_wrapped<Condition::NoOp>();
+
     globals["Unowned"] = make_wrapped<Condition::EmpireAffiliation>(EmpireAffiliationType::AFFIL_NONE);
     globals["IsHuman"] = make_wrapped<Condition::EmpireAffiliation>(EmpireAffiliationType::AFFIL_HUMAN);
 
