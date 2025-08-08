@@ -669,7 +669,7 @@ namespace {
 
         return boost::python::object();
     }
-
+    // check
     boost::python::object insert_1arg_(const PythonParser& parser, const ValueRef::OpType op, const boost::python::tuple& args, const boost::python::dict& kw) {
         if (args[0] == parser.type_int) {
             std::unique_ptr<ValueRef::ValueRef<int>> operand;
@@ -1111,7 +1111,7 @@ namespace {
     }
 
     boost::python::object insert_const_(const PythonParser& parser, const boost::python::object& type, const boost::python::object& value) {
-         if (type == parser.type_int) {
+        if (type == parser.type_int) {
             return boost::python::object(value_ref_wrapper<int>(std::make_shared<ValueRef::Constant<int>>(
                 boost::python::extract<int>(value)
             )));
@@ -1124,6 +1124,16 @@ namespace {
                           << boost::python::extract<std::string>(boost::python::str(type))();
 
             throw std::runtime_error(std::string("Not implemented ") + __func__);
+        }
+    }
+
+    boost::python::object insert_no_op_value(const PythonParser& parser, const boost::python::object& type, const boost::python::object& value) {
+        if (type == parser.type_int || type == parser.type_float) {
+          ErrorLogger() << "insert_no_op_value int|float  type " << type;
+            return insert_const_(parser, type, value);
+        } else {
+          ErrorLogger() << "insert_no_op_value something else" << value <"   type " << type;
+            return value;
         }
     }
 }
@@ -1240,6 +1250,16 @@ void RegisterGlobalsValueRefs(boost::python::dict& globals, const PythonParser& 
         const auto f = [&parser, e](const boost::python::tuple& args, const boost::python::dict& kw) { return insert_minmaxoneof_(parser, e, args, kw); };
         globals[op.first] = boost::python::raw_function(f, 3);
     }
+
+    // NoOpValue placeholder
+    //    globals["NoOpValue"] = insert_no_op_value;
+    globals["NoOpValue"] = boost::python::raw_function([&parser](const boost::python::tuple& args, const boost::python::dict& kw) {
+      if (boost::python::len(args) != 1 ) {
+	ErrorLogger() << "NoOpValue got bad args";
+      }
+      return insert_1arg_(parser, ValueRef::OpType::ABS, args, kw);
+    }, 2);
+//    globals[op.first] = boost::python::raw_function([&parser, op](const boost::python::tuple& args, const boost::python::dict& kw) { return insert_1arg_(parser, op.second, args, kw); }, 2);
 
     const auto f_insert_statistic_if = [&parser](const boost::python::tuple& args, const boost::python::dict& kw) { return insert_statistic_(parser, ValueRef::StatisticType::IF, args, kw); };
     globals["StatisticIf"] = boost::python::raw_function(f_insert_statistic_if, 1);
