@@ -331,7 +331,7 @@ Capital = _Condition()
 IsHuman = _Condition()
 Fleet = _Condition()
 Stationary = _Condition()
-NoOpLog = _Condition()
+NoOpCondition = _Condition()
 IsSource = _Condition()
 IsRootCandidate = _Condition()
 IsTarget = _Condition()
@@ -388,7 +388,7 @@ def GameRule(
     name: str,
 ) -> _T: ...
 
-NoEffect = _Effect()
+NoOpEffect = _Effect()
 
 def Conditional(
     *,
