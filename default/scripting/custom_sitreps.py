@@ -18,6 +18,9 @@ from focs._effects import (
     LocalCandidate,
     Location,
     Number,
+    NoOpCondition,
+    NoOpEffect,
+    NoOpValue,
     OneOf,
     OwnedBy,
     OwnerHasTech,
@@ -51,15 +54,20 @@ effectsgroups = [
     # however, since it is the primary way we introduce the custom sitrep capability to players, we use stringtable references so that the message and label may be more
     # readily translated into multiple languages as part of our standard distribution.
     EffectsGroup(
-        scope=IsSource,
+        scope=IsSource & NoOpCondition,
         activation=Turn(low=0, high=0),
-        effects=GenerateSitRepMessage(
+        effects=[
+            GenerateSitRepMessage(
             message="CUSTOM_SITREP_INTRODUCTION",
             label="SITREP_WELCOME_LABEL",
             icon="icons/tech/categories/spy.png",
-            parameters={"tech": "SPY_CUSTOM_ADVISORIES", "system": Target.SystemID},
+            parameters={"tech": "SPY_CUSTOM_ADVISORIES", "system": Target.SystemID
+                        , "test": NoOpValue(1)
+                        },
             empire=Source.Owner,
-        ),
+            ),
+            NoOpEffect
+        ]
     ),
     # for reference, the following is fully custom format (in english) of the intrduction sitrep above, except that it has a different label.
     # Note that the message and label are directly provided here rather than being stringtable keys,
