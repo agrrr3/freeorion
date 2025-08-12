@@ -189,6 +189,7 @@ class Target:
     DesignID: _DesignID
     Construction: Any
     PreviousSystemID: _SystemID
+    NextSystemID: _SystemID
     TurnsSinceFocusChange: int
     Population: float
     Happiness: float
