@@ -17,6 +17,7 @@ from focs._effects import (
     Value,
 )
 from focs._tech import *
+from macros.priorities import EARLY_AFTER_ALL_TARGET_MAX_METERS_PRIORITY
 
 Tech(
     name="SPY_ROOT_DECEPTION",
@@ -49,6 +50,7 @@ Tech(
         ),
         EffectsGroup(
             scope=Ship & InSystem() & OwnedBy(empire=Source.Owner),
+            priority=EARLY_AFTER_ALL_TARGET_MAX_METERS_PRIORITY,
             accountinglabel="FLEET_UNSTEALTHINESS",
             effects=SetStealth(
                 value=Value
@@ -57,7 +59,7 @@ Tech(
                     condition=Ship
                     & InSystem(id=Target.SystemID)
                     & OwnedBy(empire=Source.Owner)
-                    & Stealth(high=Target.Stealth)
+                    & (Value(Target.Stealth)>=Value(LocalCandidate.Stealth))
                 )
             ),
         ),
