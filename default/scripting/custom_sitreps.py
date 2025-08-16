@@ -18,6 +18,7 @@ from focs._effects import (
     IsSource,
     LocalCandidate,
     Location,
+    NoStringtableLookup,
     Number,
     OneOf,
     OwnedBy,
