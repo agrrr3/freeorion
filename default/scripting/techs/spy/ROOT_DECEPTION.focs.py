@@ -64,10 +64,10 @@ Tech(
                     condition=Ship
                     & ~InSystem()
                     & (
-                        (LocalCandidate.NextSystemID == Target.NextSystemID)
-                        | (LocalCandidate.NextSystemID == Target.PreviousSystemID)
-                        | (LocalCandidate.PreviousSystemID == Target.NextSystemID)
-                        | (LocalCandidate.PreviousSystemID == Target.PreviousSystemID)
+                        (LocalCandidate.Fleet.NextSystemID == Target.Fleet.NextSystemID)
+                        | (LocalCandidate.Fleet.NextSystemID == Target.Fleet.PreviousSystemID)
+                        | (LocalCandidate.Fleet.PreviousSystemID == Target.Fleet.NextSystemID)
+                        | (LocalCandidate.Fleet.PreviousSystemID == Target.Fleet.PreviousSystemID)
                     )
                     & OwnedBy(empire=Source.Owner),
                 )
