@@ -12,6 +12,7 @@ from focs._effects import (
     Source,
     Star,
     StatisticCount,
+    Stealth,
     Target,
     Value,
 )
@@ -51,7 +52,13 @@ Tech(
             accountinglabel="FLEET_UNSTEALTHINESS",
             effects=SetStealth(
                 value=Value
-                - StatisticCount(float, condition=Ship & InSystem(id=Target.SystemID) & OwnedBy(empire=Source.Owner))
+                - StatisticCount(
+                    float,
+                    condition=Ship
+                    & InSystem(id=Target.SystemID)
+                    & OwnedBy(empire=Source.Owner)
+                    & Stealth(high=Target.Stealth)
+                )
             ),
         ),
         # Do test a) ships going via different starlanes to/from the same system
@@ -64,7 +71,7 @@ Tech(
                     - StatisticCount(
                         float,
                         condition=Ship
-                        & ~InSystem()
+                        & ~InSystem()            & Stealth(high=Target.Stealth)
                         & (
                             (
                                 (LocalCandidate.Fleet.NextSystemID == Target.Fleet.NextSystemID)
