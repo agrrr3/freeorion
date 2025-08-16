@@ -108,6 +108,10 @@ class _Planet:
     Owner: _Empire
     Happiness: float
 
+class _Fleet:
+    PreviousSystemID: _SystemID
+    NextSystemID: _SystemID
+
 class Source:
     """
     FOCS Source condition is IsSource, this class is for value ref Source.<something>
@@ -187,7 +191,7 @@ class Target:
     OriginalType: _PlanetType
     NextBestPlanetType: _PlanetType
     DesignID: _DesignID
-    Fleet: Fleet
+    Fleet: _Fleet
     Construction: Any
     PreviousSystemID: _SystemID
     NextSystemID: _SystemID

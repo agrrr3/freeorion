@@ -12,7 +12,6 @@ from focs._effects import (
     Enqueued,
     Fleet,
     GasGiantType,
-    GenerateSitRepMessage,
     InSystem,
     IsBuilding,
     IsSource,
