@@ -18,6 +18,7 @@ from focs._effects import (
     Star,
     Statistic,
     StatisticCount,
+    StatisticIf,
     Stealth,
     Target,
     Value,
@@ -41,33 +42,29 @@ def count_lower_stealth_ships_statistic_valref():
     )
 
 
+lower_stealth_cond = (
+    Ship
+    & InSystem(id=Target.SystemID)
+    & OwnedBy(empire=Source.Owner)
+    & (Value(Target.Stealth) < Value(LocalCandidate.Stealth))
+)
+
+
 def min_effective_stealth_of_more_stealthy_ships_valref():
     return MinOf(
         float,
         Value(Target.Stealth) - SpecialCapacity(name=lower_stealth_count_special, object=Target.ID),
         MaxOf(
             float,
-            9999
-            * StatisticIf(
-                condition=~(
-                    Ship
-                    & InSystem(id=Target.SystemID)
-                    & OwnedBy(empire=Source.Owner)
-                    & (Value(Target.Stealth) < Value(LocalCandidate.Stealth))
-                )
-            ),
             Statistic(
                 float,
                 Min,
                 value=Value(LocalCandidate.Stealth)
                 - SpecialCapacity(name=lower_stealth_count_special, object=LocalCandidate.ID),
-                condition=Ship
-                & InSystem(id=Target.SystemID)
-                & OwnedBy(empire=Source.Owner)
-                & (Value(Target.Stealth) < Value(LocalCandidate.Stealth))
-                & NoOpCondition,
+                condition=lower_stealth_cond & NoOpCondition,
             ),
-        ),
+            (9999.0 * StatisticIf(float, condition=~lower_stealth_cond)) # Max/overrides iff no lower_stealt_cond matches
+        )
     )
 
 
