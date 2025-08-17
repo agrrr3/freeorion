@@ -3,8 +3,10 @@ from focs._effects import (
     EffectsGroup,
     InSystem,
     Min,
+    MinOf,
     NamedReal,
     Neutron,
+    NoOpCondition,
     NoStar,
     OwnedBy,
     Red,
@@ -40,7 +42,7 @@ def count_lower_stealth_ships_statistic_valref():
 
 
 def min_effective_stealth_of_more_stealthy_ships_valref():
-    return Statistic(
+    return MinOf(float, Value(Target.Stealth) - SpecialCapacity(name=lower_stealth_count_special, object=Target.ID), Statistic(
         float,
         Min,
         value=Value(LocalCandidate.Stealth)
@@ -48,8 +50,9 @@ def min_effective_stealth_of_more_stealthy_ships_valref():
         condition=Ship
         & InSystem(id=Target.SystemID)
         & OwnedBy(empire=Source.Owner)
-        & (Value(Target.Stealth) <= Value(LocalCandidate.Stealth)),
-    )
+        & (Value(Target.Stealth) < Value(LocalCandidate.Stealth))
+        & NoOpCondition,
+    ))
 
 
 Tech(
