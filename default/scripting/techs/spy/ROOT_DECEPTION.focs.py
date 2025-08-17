@@ -12,6 +12,7 @@ from focs._effects import (
     SetStealth,
     Ship,
     Source,
+    SpecialCapacity,
     Star,
     Statistic,
     StatisticCount,
