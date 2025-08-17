@@ -42,17 +42,33 @@ def count_lower_stealth_ships_statistic_valref():
 
 
 def min_effective_stealth_of_more_stealthy_ships_valref():
-    return MinOf(float, Value(Target.Stealth) - SpecialCapacity(name=lower_stealth_count_special, object=Target.ID), Statistic(
+    return MinOf(
         float,
-        Min,
-        value=Value(LocalCandidate.Stealth)
-        - SpecialCapacity(name=lower_stealth_count_special, object=LocalCandidate.ID),
-        condition=Ship
-        & InSystem(id=Target.SystemID)
-        & OwnedBy(empire=Source.Owner)
-        & (Value(Target.Stealth) < Value(LocalCandidate.Stealth))
-        & NoOpCondition,
-    ))
+        Value(Target.Stealth) - SpecialCapacity(name=lower_stealth_count_special, object=Target.ID),
+        MaxOf(
+            float,
+            9999
+            * StatisticIf(
+                condition=~(
+                    Ship
+                    & InSystem(id=Target.SystemID)
+                    & OwnedBy(empire=Source.Owner)
+                    & (Value(Target.Stealth) < Value(LocalCandidate.Stealth))
+                )
+            ),
+            Statistic(
+                float,
+                Min,
+                value=Value(LocalCandidate.Stealth)
+                - SpecialCapacity(name=lower_stealth_count_special, object=LocalCandidate.ID),
+                condition=Ship
+                & InSystem(id=Target.SystemID)
+                & OwnedBy(empire=Source.Owner)
+                & (Value(Target.Stealth) < Value(LocalCandidate.Stealth))
+                & NoOpCondition,
+            ),
+        ),
+    )
 
 
 Tech(
