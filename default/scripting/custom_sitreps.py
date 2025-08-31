@@ -55,14 +55,16 @@ effectsgroups = [
     # readily translated into multiple languages as part of our standard distribution.
     EffectsGroup(
         scope=IsSource & NoOpCondition,
-        activation=Turn(low=0, high=0),
+        activation=Turn(low=0, high=10),
         effects=[
             GenerateSitRepMessage(
             message="CUSTOM_SITREP_INTRODUCTION",
             label="SITREP_WELCOME_LABEL",
             icon="icons/tech/categories/spy.png",
             parameters={"tech": "SPY_CUSTOM_ADVISORIES", "system": Target.SystemID
-                        , "test": NoOpValue(1)
+                        , "test": NoOpValue(int, 1)
+                        , "test2": NoOpValue(float, 1.1)
+                        , "test3": NoOpValue(str, 'strii')
                         },
             empire=Source.Owner,
             ),
