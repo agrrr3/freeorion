@@ -3,7 +3,6 @@ from focs._effects import (
     EffectsGroup,
     InSystem,
     Min,
-    MinOf,
     NamedReal,
     Neutron,
     NoOpCondition,
@@ -27,10 +26,11 @@ from focs._tech import *
 from macros.priorities import (
     AFTER_ALL_TARGET_MAX_METERS_PRIORITY,
     EARLY_AFTER_ALL_TARGET_MAX_METERS_PRIORITY,
+    LATE_AFTER_ALL_TARGET_MAX_METERS_PRIORITY,
 )
 
 lower_stealth_count_special = "LOWER_STEALTH_COUNT_SPECIAL"
-
+base_stealth_special = "BASE_STEALTH_SPECIAL"
 
 def count_lower_stealth_ships_statistic_valref():
     return StatisticCount(
@@ -48,11 +48,18 @@ target_has_lower_stealth_cond = (
     & (Value(Target.Stealth) < Value(LocalCandidate.Stealth))
 )
 
+target_has_less_or_equal_stealth_cond = (
+    Ship
+    & InSystem(id=Target.SystemID)
+    & OwnedBy(empire=Source.Owner)
+    & (SpecialCapacity(name=base_stealth_special,object=Target.ID) <= SpecialCapacity(name=base_stealth_special,object=LocalCandidate.ID)))
+
 target_has_at_least_stealth_cond = (
     Ship
     & InSystem(id=Target.SystemID)
     & OwnedBy(empire=Source.Owner)
-    & (Value(Target.Stealth) >= Value(LocalCandidate.Stealth))
+    #& (Value(Target.Stealth) >= Value(LocalCandidate.Stealth))
+    & (SpecialCapacity(name=base_stealth_special,object=Target.ID) >= SpecialCapacity(name=base_stealth_special,object=LocalCandidate.ID))
 )
 
 target_has_more_stealth_cond = (
@@ -60,27 +67,25 @@ target_has_more_stealth_cond = (
     & InSystem(id=Target.SystemID)
     & OwnedBy(empire=Source.Owner)
     #& (Value(Target.Stealth) > Value(LocalCandidate.Stealth))
-    & (SpecialCapacity(name="INDEPENDENT_COLONY_POPULATION_SPECIAL",object=Target.ID)  > Value(LocalCandidate.Stealth))
+    & (SpecialCapacity(name=base_stealth_special,object=Target.ID) > SpecialCapacity(name=base_stealth_special,object=LocalCandidate.ID))
 )
 
 bla = "bla"
 
+ # setting highest base stealth ships, always has ( base_stealth - unstealthiness )
 def min_effective_stealth_of_more_stealthy_ships_valref():
-    return (MinOf(
-        float,
-        Value(Target.Stealth) - SpecialCapacity(name=lower_stealth_count_special, object=Target.ID),
-        StatisticIf(float, condition=target_has_lower_stealth_cond) * Statistic(
+    return (StatisticIf(float, condition=target_has_less_or_equal_stealth_cond)
+            * MinOf(float, Statistic(
                 float,
                 Min,
-                value=#SpecialCapacity(name="INDEPENDENT_COLONY_POPULATION_SPECIAL",object=LocalCandidate.ID)
-                Value(LocalCandidate.Stealth)
+                value= SpecialCapacity(name=base_stealth_special, object=LocalCandidate.ID)
                 - SpecialCapacity(name=lower_stealth_count_special, object=LocalCandidate.ID),
                 condition=target_has_lower_stealth_cond&NoOpCondition,
-        ),
+            ),
+            (SpecialCapacity(name=base_stealth_special,object=Target.ID) - SpecialCapacity(name=lower_stealth_count_special,object=LocalCandidate.ID))
+            )
     )
-    +
-    #(~(StatisticIf(float, condition=target_has_lower_stealth_cond)))*10000.0
-    (StatisticIf(float, condition=target_has_more_stealth_cond)*1000))
+    + (StatisticIf(float, condition=target_has_at_least_stealth_cond)*1000)
 
 
 Tech(
@@ -115,24 +120,26 @@ Tech(
         # temporarily note amount of fleet unstealthiness before capping
         EffectsGroup(
             scope=Ship & InSystem() & OwnedBy(empire=Source.Owner),
-            priority=EARLY_AFTER_ALL_TARGET_MAX_METERS_PRIORITY,
+            priority=AFTER_ALL_TARGET_MAX_METERS_PRIORITY,
             effects=[
                 SetSpecialCapacity(
                     name=lower_stealth_count_special, capacity=count_lower_stealth_ships_statistic_valref()
                 ),
-                AddSpecial(name="INDEPENDENT_COLONY_POPULATION_SPECIAL",capacity=Value(Target.Stealth)),
+                AddSpecial(name=base_stealth_special,capacity=Value(Target.Stealth)),
             ]
         ),
-        EffectsGroup(scope=All, effects=[
+        EffectsGroup(scope=All, priority=EARLY_AFTER_ALL_TARGET_MAX_METERS_PRIORITY, effects=[
             RemoveSpecial(name="INDEPENDENT_COLONY_TROOPS"),
             RemoveSpecial(name="INDEPENDENT_COLONY_SHIELDS_SPECIAL"),
+            RemoveSpecial(name="INDEPENDENT_COLONY_TROOPS_SPECIAL"),
+            RemoveSpecial(name="INDEPENDENT_COLONY_SHIELD_SPECIAL"),
             ]
         ),
         # apply the lowest resulting stealth of ships of higher/equal stealth
         EffectsGroup(
             scope=Ship & InSystem() & OwnedBy(empire=Source.Owner),
             accountinglabel="FLEET_UNSTEALTHINESS",
-            priority=AFTER_ALL_TARGET_MAX_METERS_PRIORITY,
+            priority=LATE_AFTER_ALL_TARGET_MAX_METERS_PRIORITY,
             effects=[
                 AddSpecial(name="INDEPENDENT_COLONY_TROOPS_SPECIAL",capacity=min_effective_stealth_of_more_stealthy_ships_valref()),
                 SetStealth(value=min_effective_stealth_of_more_stealthy_ships_valref()),
