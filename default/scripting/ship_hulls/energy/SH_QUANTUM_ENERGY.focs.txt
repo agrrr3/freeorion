@@ -7,16 +7,12 @@ Hull
     stealth = -15
     structure = 50
     slots = [
-        Slot type = External position = (0.10, 0.25)
-        Slot type = External position = (0.22, 0.25)
-        Slot type = External position = (0.34, 0.25)
-        Slot type = External position = (0.46, 0.25)
-        Slot type = External position = (0.58, 0.25)
-        Slot type = External position = (0.70, 0.25)
-        Slot type = External position = (0.82, 0.25)
-        Slot type = Internal position = (0.22, 0.50)
-        Slot type = Internal position = (0.34, 0.50)
-        Slot type = Internal position = (0.46, 0.50)
+        Slot type = External position = (0.85, 0.15)
+        Slot type = External position = (0.90, 0.50)
+        Slot type = External position = (0.85, 0.85)
+        Slot type = Internal position = (0.20, 0.45)
+        Slot type = Internal position = (0.66, 0.45)
+        Slot type = Core position = (0.42, 0.45)
     ]
     buildcost = 60 * [[FLEET_UPKEEP_MULTIPLICATOR]] * [[SHIP_HULL_COST_MULTIPLIER]]
     buildtime = 5
@@ -43,8 +39,8 @@ Hull
         [[UNOWNED_GOOD_VISION]]
         [[UNOWNED_MOVE]]
     ]
-    icon = "icons/ship_hulls/quantum_energy_hull_small.png"
-    graphic = "hulls_design/quantum_energy_hull.png"
+    icon = "hulls_design/hammeraquaedukt_hull.png"
+    graphic = "hulls_design/hammeraquaedukt_hull.png"
 
 #include "energy.macros"
 
