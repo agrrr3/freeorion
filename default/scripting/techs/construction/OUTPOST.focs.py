@@ -10,7 +10,8 @@ from focs._effects import (
     IsTarget,
     MaxOf,
     MinOf,
-    NoConditionLog,
+    NoOpCondition,
+    NoOpValue,
     NumPoliciesAdopted,
     OwnedBy,
     Planet,
@@ -39,11 +40,26 @@ from macros.priorities import (
 #connectyy = Planet() & OwnedBy(empire=Source.Owner) & ResourceSupplyConnected(empire=Source.Owner,condition=Ship & InSystem(id=Target.SystemID))
 
 # in MoveTo effect
-connecty =                                            ResourceSupplyConnected(empire=Source.Owner,condition=IsTarget)
-# 
-# 3 connectyy = System & Contains(Planet() & OwnedBy(empire=Source.Owner)) & ResourceSupplyConnected(empire=Source.Owner,condition=IsTarget)
-connectyy = System & Contains(Planet() & OwnedBy(empire=Source.Owner)) & ResourceSupplyConnected(empire=Source.Owner,condition=IsTarget)
+## FIXME? it seems a ship on a starlane is ResourceSupplyConnect to id 133 whatever that object is (not a system)
+##  also it seems the effect is done twice and on second time fails because of moving from 133 to 133 
+#connecty =                                            ResourceSupplyConnected(empire=Source.Owner,condition=IsTarget)
 
+# take the last system as a reference, that will also work for a ship on a starlane
+connectyInSystem =                                                               ResourceSupplyConnected(empire=Source.Owner,condition=IsTarget)
+connectyStarlane =                                                               ResourceSupplyConnected(empire=Source.Owner,condition=Object(id=Target.Fleet.PreviousSystemID))
+#connecty = ( InSystem() & connectyInSystem ) | ( (~InSystem()) & connectyStarlane )
+#connecty = ( InSystem() & connectyInSystem ) | ~( InSystem() | ~connectyStarlane )
+#targetSystemAlsoOnStarlane = (IsTarget & InSystem()) | (Object(id=Target.Fleet.PreviousSystemID) & ~InSystem())
+targetSystemAlsoOnStarlane = Object(id=Target.Fleet.PreviousSystemID) & NoOpCondition & ~InSystem() & NoOpCondition
+#connecty = ResourceSupplyConnected(empire=Source.Owner,condition=targetSystemAlsoOnStarlane)
+#connecty = ResourceSupplyConnected(empire=Source.Owner,condition=Object(id=Target.Fleet.PreviousSystemID) & NoOpCondition & ~InSystem() & NoOpCondition)
+# ~InSystem does not work to check if the Target is on a starlane. Note that the target is a ship and not a fleet.
+connecty = ResourceSupplyConnected(empire=Source.Owner,condition=Object(id=Target.Fleet.PreviousSystemID)|Object(id=Target.ID))
+#connectyy = System & Contains(Planet() & OwnedBy(empire=Source.Owner)) & NoOpCondition & ResourceSupplyConnected(empire=Source.Owner,condition=NoOpCondition & Object(id=Target.Fleet.PreviousSystemID)) & NoOpCondition
+connectyyInSystem = System & Contains(Planet() & OwnedBy(empire=Source.Owner)) & ResourceSupplyConnected(empire=Source.Owner,condition=IsTarget)
+connectyyStarlane = System & Contains(Planet() & OwnedBy(empire=Source.Owner)) & NoOpCondition & ResourceSupplyConnected(empire=Source.Owner,condition=Object(id=Target.Fleet.PreviousSystemID)) & NoOpCondition
+#connectyy = ( InSystem() & connectyyInSystem ) | ( (~InSystem()) & connectyyStarlane )
+connectyy = System & Contains(Planet() & OwnedBy(empire=Source.Owner)) & connecty
 # Object(id=Source.SystemID)
 Tech(
     name="CON_OUTPOST",
@@ -65,17 +81,8 @@ Tech(
             & (LocalCandidate.Age==1),
             priority=BEFORE_ANYTHING_ELSE_PRIORITY,
             effects=[
-                MoveTo(
-#                    destination=NumberOf(number=1, condition=Fleet & ~Contains(LocalCandidate.Age==1) & NoConditionLog & OwnedBy(empire=Source.Owner) & NoConditionLog & connecty & NoConditionLog)
-                    destination=NoConditionLog & NumberOf(number=1, condition=System
-                        & Contains(Planet() & OwnedBy(empire=Source.Owner))
-                        & NoConditionLog
-                        & connecty
-                        & NoConditionLog
-                    )
-                ),
-                GenerateSitRepMessage(  # and tell the owner it happened                                                                                                                                                                   
-                    message="EFFECT send %ship% from %planet%  age: %rawtext%   targets: %rawtext:targets%  maybe: %system:maybe%",
+                GenerateSitRepMessage(  # and tell the owner it happened
+                    message="EFFECT send %ship% from %planet%  age: %rawtext%   targets: %rawtext:targets%  maybe: %system:maybe% (%rawtext:maybe%)",
                     label="Custom_1",
                     stringtablelookup=False,
                     icon="icons/tech/categories/spy.png",
@@ -87,9 +94,15 @@ Tech(
                             int,
                             condition=connectyy
                         ),
-                        "maybe":Statistic(int, Mode, value=LocalCandidate.SystemID, condition=NumberOf(number=1, condition=connectyy)),
+                        "maybe":Statistic(int, Mode, value=NoOpValue(int, LocalCandidate.SystemID), condition=NumberOf(number=1, condition=connectyy)),
                     },
                     empire=Target.Owner,
+                ),
+                MoveTo(
+                    destination=NumberOf(number=1, condition=System
+                        & Contains(Planet() & OwnedBy(empire=Source.Owner))
+                        & connecty
+                    )
                 ),
 
             ]
