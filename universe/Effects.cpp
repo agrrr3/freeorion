@@ -53,7 +53,9 @@ namespace {
     /** creates a new fleet at a specified \a x and \a y location within the
      * Universe, and and inserts \a ship into it.  Used when a ship has been
      * moved by the MoveTo effect separately from the fleet that previously
-     * held it.  All ships need to be within fleets. */
+     * held it.
+     * This version will not change the System of the ship.
+     * All ships need to be within fleets. */
     std::shared_ptr<Fleet> CreateNewFleet(
         double x, double y, Ship* ship, ScriptingContext& context,
         FleetAggression aggression = FleetAggression::INVALID_FLEET_AGGRESSION)
@@ -83,7 +85,7 @@ namespace {
      * when a ship has been moved by the MoveTo effect separately from the
      * fleet that previously held it.  Also used by CreateShip effect to give
      * the new ship a fleet.  All ships need to be within fleets. */
-    std::shared_ptr<Fleet> CreateNewFleet(
+    std::shared_ptr<Fleet> CreateNewFleetAndUpdateSystem(
         System* system, Ship* ship, ScriptingContext& context,
         FleetAggression aggression = FleetAggression::INVALID_FLEET_AGGRESSION)
     {
@@ -1638,7 +1640,7 @@ void SetOwner::Execute(ScriptingContext& context) const {
         // move ship into new fleet
         std::shared_ptr<Fleet> new_fleet;
         if (auto system = objects.getRaw<System>(ship->SystemID())) {
-            new_fleet = CreateNewFleet(system, ship, context, aggr);
+            new_fleet = CreateNewFleetAndUpdateSystem(system, ship, context, aggr);
         } else {
             auto x = ship->X();
             auto y = ship->Y();
@@ -2177,7 +2179,7 @@ void CreateShip::Execute(ScriptingContext& context) const {
 
     context.ContextUniverse().SetEmpireKnowledgeOfShipDesign(design_id, empire_id);
 
-    CreateNewFleet(system, ship.get(), context);
+    CreateNewFleetAndUpdateSystem(system, ship.get(), context);
 
     // apply after-creation effects
     ScriptingContext local_context{context, ScriptingContext::Target{}, ship.get(), ScriptingContext::DEFAULT_CURRENT_VALUE};
@@ -3001,7 +3003,6 @@ void MoveTo::Execute(ScriptingContext& context) const {
         // handle ship system
         if (initial_ship_sys_id != dest_sys_id) {
             // ship is moving to a different system or from its initial system to non-system location
-
             if (auto const new_sys = objects.getRaw<System>(dest_sys_id)) {
                 // (move and) insert ship into new system
                 new_sys->Insert(ship, System::NO_ORBIT, context.current_turn, context.ContextObjects());
@@ -3048,7 +3049,7 @@ void MoveTo::Execute(ScriptingContext& context) const {
 
             if (auto dest_system = objects.getRaw<System>(dest_sys_id)) {
                 // creates new fleet, inserts fleet into system and ship into fleet
-                CreateNewFleet(dest_system, ship, context, aggr);
+                CreateNewFleetAndUpdateSystem(dest_system, ship, context, aggr);
                 ExploreSystem(dest_sys_id, ship->Owner(), context);
 
             } else {
