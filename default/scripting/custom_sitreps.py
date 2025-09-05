@@ -59,6 +59,7 @@ debug_starlane_travel = EffectsGroup(
 )
 
 
+invalid_object_id=-1
 # Important, the following line "effectsgroups = [" is functional and important, do not change it
 effectsgroups = [
     # normally, for a custom sitrep the player will write their own message here, and label, and not look them up in the Stringtable.  For this first custom sitrep,
@@ -73,6 +74,40 @@ effectsgroups = [
             icon="icons/tech/categories/spy.png",
             parameters={"tech": "SPY_CUSTOM_ADVISORIES", "system": Target.SystemID},
             empire=Source.Owner,
+        ),
+    ),
+    EffectsGroup( # TODO ~= operator
+        scope=Ship & ~(LocalCandidate.Fleet.SystemID == LocalCandidate.SystemID),
+        activation=IsSource,
+        effects=GenerateSitRepMessage(  # and tell the owner it happened                                                                                                                                                                   
+            message="CONSISTENCY FAILED  %ship% in %system% (%rawtext:system%)  is in %fleet% (%rawtext:fleet%) in %system:fleetsystem% (%rawtext:fleetsystem%))",
+            label="DEBUG_BAD_SYSTEM_DATA_LABEL",
+            stringtablelookup=False,
+            icon="icons/tech/categories/spy.png",
+            parameters={
+                "ship": Target.ID,
+                "system": Target.SystemID,
+                "fleet": Target.Fleet.ID,
+                "fleetsystem": Target.Fleet.SystemID,
+            },
+            empire=Target.Owner,
+        ),
+    ),
+    EffectsGroup( # TODO ~= operator
+        scope=Ship  & ((InSystem() & (LocalCandidate.Fleet.SystemID == invalid_object_id))|(~InSystem() & ~(LocalCandidate.Fleet.SystemID == invalid_object_id))),
+        activation=IsSource,
+        effects=GenerateSitRepMessage(  # and tell the owner it happened                                                                                                                                                                   
+            message="INSYSTEM FAILED  %ship% in %system% (%rawtext:system%)  is in %fleet% (%rawtext:fleet%) in %system:fleetsystem% _(%rawtext:fleetsystem%)_)",
+            label="DEBUG_BAD_SYSTEM_DATA_LABEL",
+            stringtablelookup=False,
+            icon="icons/tech/categories/spy.png",
+            parameters={
+                "ship": Target.ID,
+                "system": Target.SystemID,
+                "fleet": Target.Fleet.ID,
+                "fleetsystem": Target.Fleet.SystemID,
+            },
+            empire=Target.Owner,
         ),
     ),
     # for reference, the following is fully custom format (in english) of the intrduction sitrep above, except that it has a different label.
