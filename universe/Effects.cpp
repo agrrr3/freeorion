@@ -68,6 +68,7 @@ namespace {
 
         fleet->AddShips({ship->ID()});
         ship->SetFleetID(fleet->ID());
+	DebugLogger() << "AXELnew fleet id " << fleet->ID() << "  ship id " << ship->ID()  << "  ship systemID " << ship->SystemID() << "  fleet systemID" << fleet->SystemID();
 
         fleet->Rename(fleet->GenerateFleetName(context));
         fleet->GetMeter(MeterType::METER_STEALTH)->SetCurrent(Meter::LARGE_VALUE);
@@ -2903,7 +2904,7 @@ void MoveTo::Execute(ScriptingContext& context) const {
     // early exit if there are no valid locations - can't move anything if there's nowhere to move to
     if (valid_locations.empty())
         return;
-
+    DebugLogger() << "AXELowners #valid_locations: " << valid_locations.size();
     // "randomly" pick a destination
     auto destination = valid_locations.front();
     if (!destination) {
@@ -2990,19 +2991,20 @@ void MoveTo::Execute(ScriptingContext& context) const {
 
 
         auto const old_fleet = objects.getRaw<Fleet>(ship->FleetID());
-        //DebugLogger() << "old fleet? " << (old_fleet ? old_fleet->ID() : INVALID_OBJECT_ID);
+        DebugLogger() << "AXEL old fleet? " << (old_fleet ? old_fleet->ID() : INVALID_OBJECT_ID);
 
 
         const bool same_owner = !ship->Unowned() && (ship->Owner() == destination->Owner());
         const int dest_sys_id = destination->SystemID();
         const int initial_ship_sys_id = ship->SystemID();
-        //DebugLogger() << "owners same: " << same_owner << "  dest sys: " << dest_sys_id
-        //            << "  initial ship sys: " << initial_ship_sys_id;
+        DebugLogger() << "AXELowners same: " << same_owner << "  dest sys: " << dest_sys_id
+                    << "  initial ship sys: " << initial_ship_sys_id;
 
 
         // handle ship system
         if (initial_ship_sys_id != dest_sys_id) {
             // ship is moving to a different system or from its initial system to non-system location
+	  DebugLogger() << "AXELowners moveTo destination :  dest sys: " << dest_sys_id;
             if (auto const new_sys = objects.getRaw<System>(dest_sys_id)) {
                 // (move and) insert ship into new system
                 new_sys->Insert(ship, System::NO_ORBIT, context.current_turn, context.ContextObjects());
@@ -3017,7 +3019,7 @@ void MoveTo::Execute(ScriptingContext& context) const {
 
         // handle ship fleet
         if (dest_fleet && same_owner) {
-            //DebugLogger() << "moving ship into existing same-owner fleet";
+            DebugLogger() << "AXELmoving ship into existing same-owner fleet";
             // ship is moving to a different fleet owned by the same empire, so
             // can be inserted into it.
             if (old_fleet)
@@ -3027,7 +3029,7 @@ void MoveTo::Execute(ScriptingContext& context) const {
             ship->SetFleetID(dest_fleet->ID());
 
         } else if (dest_sys_id != INVALID_OBJECT_ID && dest_sys_id == initial_ship_sys_id) {
-            //DebugLogger() << "moving ship to non-fleety object in the same system; no fleet change";
+            DebugLogger() << "AXELmoving ship to non-fleety object in the same system; no fleet change";
             // ship is moving to the system it is/was already in, but isn't being or
             // can't be moved into a specific fleet with the same owner, so the ship
             // can be left in its current fleet and at its current location
@@ -3035,13 +3037,13 @@ void MoveTo::Execute(ScriptingContext& context) const {
         } else if (dest_sys_id == INVALID_OBJECT_ID &&
                    std::pair{ship->X(), ship->Y()} == std::pair{destination->X(), destination->Y()})
         {
-            //DebugLogger() << "ship already at non-system destination; no fleet change";
+            DebugLogger() << "AXELship already at non-system destination; no fleet change";
             // ship is moving to the same location it's already at, but isn't
             // being moved to a specific fleet, so the ship can be
             // left in its current fleet and at its current location
 
         } else {
-            //DebugLogger() << "need new fleet!";
+            DebugLogger() << "AXELneed new fleet!";
             // need to create a new fleet for ship
 
             // if ship is armed use old fleet's aggression. otherwise use auto-determined aggression
