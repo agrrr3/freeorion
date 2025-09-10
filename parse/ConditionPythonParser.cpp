@@ -113,9 +113,11 @@ condition_wrapper operator|(const value_ref_wrapper<int>& lhs, const value_ref_w
 condition_wrapper operator~(const condition_wrapper& lhs)
 { return make_wrapped<Condition::Not>(lhs.condition->Clone()); }
 
-condition_wrapper operator~(const value_ref_wrapper<int>& lhs)
+condition_wrapper operator~(const value_ref_wrapper<double>& lhs)
 { return ~(lhs.operator condition_wrapper()); }
 
+condition_wrapper operator~(const value_ref_wrapper<int>& lhs)
+{ return ~(lhs.operator condition_wrapper()); }
 
 namespace {
     using ValueRef::CloneUnique;
