@@ -2,10 +2,8 @@ from focs._effects import (
     BlackHole,
     EffectsGroup,
     InSystem,
-    Min,
     NamedReal,
     Neutron,
-    NoOpCondition,
     NoStar,
     OwnedBy,
     Red,
@@ -15,9 +13,7 @@ from focs._effects import (
     Source,
     SpecialCapacity,
     Star,
-    Statistic,
     StatisticCount,
-    StatisticIf,
     Stealth,
     Target,
     Value,
@@ -94,7 +90,7 @@ Tech(
         # Do test a) ships going via different starlanes to/from the same system
         EffectsGroup(
             scope=Ship & ~InSystem() & OwnedBy(empire=Source.Owner),
-            accountinglabel="FLEET_UNSTEALTHINESS_STARLANE",
+            accountinglabel="FLEET_UNSTEALTHINESS",
             effects=[
                 SetStealth(
                     value=Value
