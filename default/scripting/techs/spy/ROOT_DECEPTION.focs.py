@@ -41,9 +41,10 @@ def count_lower_stealth_ships_statistic_valref():
         & (Value(Target.Stealth) >= Value(LocalCandidate.Stealth)),
     )
 
-target_has_lower_stealth_cond = (
+target_has_less_stealth_cond = (
     Ship
     & InSystem(id=Target.SystemID)
+    & ~IsTarget
     & OwnedBy(empire=Source.Owner)
     & (Value(Target.Stealth) < Value(LocalCandidate.Stealth))
 )
@@ -51,41 +52,65 @@ target_has_lower_stealth_cond = (
 target_has_less_or_equal_stealth_cond = (
     Ship
     & InSystem(id=Target.SystemID)
+    & ~IsTarget
     & OwnedBy(empire=Source.Owner)
     & (SpecialCapacity(name=base_stealth_special,object=Target.ID) <= SpecialCapacity(name=base_stealth_special,object=LocalCandidate.ID)))
 
-target_has_at_least_stealth_cond = (
+target_has_equal_or_more_stealth_cond = (
     Ship
     & InSystem(id=Target.SystemID)
+    & ~IsTarget
     & OwnedBy(empire=Source.Owner)
     #& (Value(Target.Stealth) >= Value(LocalCandidate.Stealth))
     & (SpecialCapacity(name=base_stealth_special,object=Target.ID) >= SpecialCapacity(name=base_stealth_special,object=LocalCandidate.ID))
 )
 
+# works: there are ships which have less stealth
 target_has_more_stealth_cond = (
     Ship
     & InSystem(id=Target.SystemID)
+    & ~IsTarget
     & OwnedBy(empire=Source.Owner)
     #& (Value(Target.Stealth) > Value(LocalCandidate.Stealth))
     & (SpecialCapacity(name=base_stealth_special,object=Target.ID) > SpecialCapacity(name=base_stealth_special,object=LocalCandidate.ID))
 )
 
+# works: there are ships which have more stealth than the candidate
+candidate_has_less_stealth_cond = (
+    Ship
+    & InSystem(id=Target.SystemID)
+    & ~IsTarget
+    & OwnedBy(empire=Source.Owner)
+    & (SpecialCapacity(name=base_stealth_special,object=Target.ID) < SpecialCapacity(name=base_stealth_special,object=LocalCandidate.ID))
+    #& ~( Ship & InSystem(id=Target.SystemID) & OwnedBy(empire=Source.Owner)
+    #     & (SpecialCapacity(name=base_stealth_special,object=Target.ID) < SpecialCapacity(name=base_stealth_special,object=LocalCandidate.ID)))
+)
+
+# there are no ships which have more stealth
+target_has_most_stealth_cond = (
+    Ship
+    & InSystem(id=Target.SystemID)
+    & ~IsTarget
+    & OwnedBy(empire=Source.Owner)
+    & ~candidate_has_less_stealth_cond
+)
+
 bla = "bla"
+
+def stealth_result(obj):
+    return SpecialCapacity(name=base_stealth_special, object=obj) - SpecialCapacity(name=lower_stealth_count_special, object=obj)
 
  # setting highest base stealth ships, always has ( base_stealth - unstealthiness )
 def min_effective_stealth_of_more_stealthy_ships_valref():
-    return (StatisticIf(float, condition=target_has_less_or_equal_stealth_cond)
-            * MinOf(float, Statistic(
+    return stealth_result(Target.ID) - (StatisticIf(float, condition=candidate_has_less_stealth_cond) * stealth_result(Target.ID)) + MinOf(float, Statistic(
                 float,
                 Min,
-                value= SpecialCapacity(name=base_stealth_special, object=LocalCandidate.ID)
-                - SpecialCapacity(name=lower_stealth_count_special, object=LocalCandidate.ID),
-                condition=target_has_lower_stealth_cond&NoOpCondition,
+                value=stealth_result(LocalCandidate.ID),
+                condition=target_has_less_stealth_cond&NoOpCondition,
             ),
-            (SpecialCapacity(name=base_stealth_special,object=Target.ID) - SpecialCapacity(name=lower_stealth_count_special,object=LocalCandidate.ID))
+            (SpecialCapacity(name=base_stealth_special,object=Target.ID) - SpecialCapacity(name=lower_stealth_count_special,object=Target.ID))
             )
-    )
-    + (StatisticIf(float, condition=target_has_at_least_stealth_cond)*1000)
+    #+ 
 
 
 Tech(
@@ -144,9 +169,10 @@ Tech(
                 #AddSpecial(name="INDEPENDENT_COLONY_TROOPS_SPECIAL",capacity=min_effective_stealth_of_more_stealthy_ships_valref()),
                 #SetStealth(value=min_effective_stealth_of_more_stealthy_ships_valref()),
                 #AddSpecial(name="INDEPENDENT_COLONY_SHIELD_SPECIAL",capacity=min_effective_stealth_of_more_stealthy_ships_valref()),
-                #SetShield(value=Value+min_effective_stealth_of_more_stealthy_ships_valref()),
+                SetShield(value=stealth_result(Target.ID)),
+                SetMaxShield(value=stealth_result(Target.ID)),
                 #SetShield(value=SpecialCapacity(base_stealth_special)-SpecialCapacity(lower_stealth_count_special)),
-                SetStealth(value=SpecialCapacity(name=base_stealth_special, object=Target.ID)-SpecialCapacity(name=lower_stealth_count_special, object=Target.ID)),
+                SetStealth(value=min_effective_stealth_of_more_stealthy_ships_valref()),
             ]
         ),
         # Do test a) ships going via different starlanes to/from the same system
