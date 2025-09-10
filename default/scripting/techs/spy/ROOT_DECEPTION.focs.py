@@ -27,6 +27,7 @@ from macros.priorities import (
 lower_stealth_count_special = "LOWER_STEALTH_COUNT_SPECIAL"
 base_stealth_special = "BASE_STEALTH_SPECIAL"
 
+
 def count_lower_stealth_ships_statistic_valref():
     return StatisticCount(
         float,
@@ -35,6 +36,7 @@ def count_lower_stealth_ships_statistic_valref():
         & OwnedBy(empire=Source.Owner)
         & (Value(Target.Stealth) >= Value(LocalCandidate.Stealth)),
     )
+
 
 Tech(
     name="SPY_ROOT_DECEPTION",
@@ -73,8 +75,8 @@ Tech(
                 SetSpecialCapacity(
                     name=lower_stealth_count_special, capacity=count_lower_stealth_ships_statistic_valref()
                 ),
-                AddSpecial(name=base_stealth_special,capacity=Value(Target.Stealth)),
-            ]
+                AddSpecial(name=base_stealth_special, capacity=Value(Target.Stealth)),
+            ],
         ),
         # apply the lowest resulting stealth of ships of higher/equal stealth
         EffectsGroup(
@@ -82,10 +84,11 @@ Tech(
             accountinglabel="FLEET_UNSTEALTHINESS",
             priority=LATE_AFTER_ALL_TARGET_MAX_METERS_PRIORITY,
             effects=[
-                SetStealth(value=
-                           SpecialCapacity(name=base_stealth_special, object=Target.ID)
-                           -SpecialCapacity(name=lower_stealth_count_special, object=Target.ID)),
-            ]
+                SetStealth(
+                    value=SpecialCapacity(name=base_stealth_special, object=Target.ID)
+                    - SpecialCapacity(name=lower_stealth_count_special, object=Target.ID)
+                ),
+            ],
         ),
         # Do test a) ships going via different starlanes to/from the same system
         EffectsGroup(
