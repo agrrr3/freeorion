@@ -141,16 +141,18 @@ Tech(
             accountinglabel="FLEET_UNSTEALTHINESS",
             priority=LATE_AFTER_ALL_TARGET_MAX_METERS_PRIORITY,
             effects=[
-                AddSpecial(name="INDEPENDENT_COLONY_TROOPS_SPECIAL",capacity=min_effective_stealth_of_more_stealthy_ships_valref()),
-                SetStealth(value=min_effective_stealth_of_more_stealthy_ships_valref()),
-                AddSpecial(name="INDEPENDENT_COLONY_SHIELD_SPECIAL",capacity=min_effective_stealth_of_more_stealthy_ships_valref()),
-                SetShield(value=Value+min_effective_stealth_of_more_stealthy_ships_valref()),
+                #AddSpecial(name="INDEPENDENT_COLONY_TROOPS_SPECIAL",capacity=min_effective_stealth_of_more_stealthy_ships_valref()),
+                #SetStealth(value=min_effective_stealth_of_more_stealthy_ships_valref()),
+                #AddSpecial(name="INDEPENDENT_COLONY_SHIELD_SPECIAL",capacity=min_effective_stealth_of_more_stealthy_ships_valref()),
+                #SetShield(value=Value+min_effective_stealth_of_more_stealthy_ships_valref()),
+                #SetShield(value=SpecialCapacity(base_stealth_special)-SpecialCapacity(lower_stealth_count_special)),
+                SetStealth(value=SpecialCapacity(name=base_stealth_special, object=Target.ID)-SpecialCapacity(name=lower_stealth_count_special, object=Target.ID)),
             ]
         ),
         # Do test a) ships going via different starlanes to/from the same system
         EffectsGroup(
             scope=Ship & ~InSystem() & OwnedBy(empire=Source.Owner),
-            accountinglabel="FLEET_UNSTEALTHINESS",
+            accountinglabel="FLEET_UNSTEALTHINESS_STARLANE",
             effects=[
                 SetStealth(
                     value=Value
