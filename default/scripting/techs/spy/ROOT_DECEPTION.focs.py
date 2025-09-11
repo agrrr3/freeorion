@@ -97,12 +97,16 @@ target_has_most_stealth_cond = (
 
 bla = "bla"
 
+#def StatisticElse(type_: type[_T], *, condition: _Condition) -> _T: ...
+def StatisticElse(type_, *, condition) :
+    return (1 - StatisticIf(type_, condition=condition));
+
 def stealth_result(obj):
     return SpecialCapacity(name=base_stealth_special, object=obj) - SpecialCapacity(name=lower_stealth_count_special, object=obj)
 
  # setting highest base stealth ships, always has ( base_stealth - unstealthiness )
 def min_effective_stealth_of_more_stealthy_ships_valref():
-    return stealth_result(Target.ID) - (StatisticIf(float, condition=candidate_has_less_stealth_cond) * stealth_result(Target.ID)) + MinOf(float, Statistic(
+    return (StatisticElse(float, condition=candidate_has_less_stealth_cond) * stealth_result(Target.ID)) + MinOf(float, Statistic(
                 float,
                 Min,
                 value=stealth_result(LocalCandidate.ID),
