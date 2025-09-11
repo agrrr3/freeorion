@@ -18,6 +18,7 @@ from focs._effects import (
     Statistic,
     StatisticCount,
     StatisticIf,
+    StatisticElse,
     Stealth,
     Target,
     Value,
@@ -96,10 +97,6 @@ target_has_most_stealth_cond = (
 )
 
 bla = "bla"
-
-#def StatisticElse(type_: type[_T], *, condition: _Condition) -> _T: ...
-def StatisticElse(type_, *, condition) :
-    return (1 - StatisticIf(type_, condition=condition));
 
 def stealth_result(obj):
     return SpecialCapacity(name=base_stealth_special, object=obj) - SpecialCapacity(name=lower_stealth_count_special, object=obj)
