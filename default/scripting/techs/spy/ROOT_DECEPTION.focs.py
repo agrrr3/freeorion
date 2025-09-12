@@ -6,7 +6,6 @@ from focs._effects import (
     Min,
     NamedReal,
     Neutron,
-    NoOpCondition,
     NoOpValue,
     NoStar,
     OwnedBy,
@@ -84,12 +83,7 @@ def stealth_result(obj, debug=False):
             name=lower_stealth_count_special, object=obj
         )
 
-
-# setting highest base stealth ships, always has ( base_stealth - unstealthiness )
-
-#    return 100 + 
-
-
+#    iff the target does have the maximum stealth of all base_cond matches this returns 0
 def min_effective_stealth_of_more_stealthy_ships_valref_for_not_max_stealth_ships(base_cond):
     return MinOf(
         float,
@@ -106,6 +100,11 @@ def min_effective_stealth_of_more_stealthy_ships_valref_for_not_max_stealth_ship
     )
 
 
+# returns a valueref<float> of target stealth resulting from perfect ignorance linear unstealthiness given the base_cond
+#    normal linear unstealthiness reduces a target stealth by the count of ships which do not have higher stealth
+#    this results in a stealth decrease which does not leak information about unseen higher-stealth ships
+#    if there are a lot higher-stealth ships, normal linear unstealthiness would lead to the higher-stealth ships ending with lower stealth
+#    perfect ignorance linear unstealthiness solves this weirdness by lowering stealth to the lowest stealth of initially-higher stealth ships
 def min_effective_stealth_of_more_stealthy_ships_valref(base_cond):
     return (
         StatisticElse(float, condition=candidate_has_less_stealth_cond(base_cond)) * stealth_result(Target.ID)
@@ -187,11 +186,7 @@ Tech(
             accountinglabel="FLEET_UNSTEALTHINESS",
             priority=LATE_AFTER_ALL_TARGET_MAX_METERS_PRIORITY,
             effects=[
-                SetMaxStructure(value=100+count_lower_stealth_ships_statistic_valref(own_ships_on_targetz_starlane)),
-                SetStructure(value=100+count_lower_stealth_ships_statistic_valref(own_ships_on_targetz_starlane)),
-                SetMaxShield(value=StatisticCount(float, condition=own_ships_on_targetz_starlane)),
-                SetShield(value=StatisticCount(float, condition=own_ships_on_targetz_starlane)),
-                SetStealth(value=100+min_effective_stealth_of_more_stealthy_ships_valref(own_ships_on_targetz_starlane & ~IsTarget)),
+                SetStealth(value=min_effective_stealth_of_more_stealthy_ships_valref(own_ships_on_targetz_starlane & ~IsTarget)),
             ],
         ),
     ],
