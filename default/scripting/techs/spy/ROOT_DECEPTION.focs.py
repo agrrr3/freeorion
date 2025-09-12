@@ -25,7 +25,6 @@ from focs._effects import (
 )
 from focs._tech import *
 from macros.priorities import (
-    EARLY_AFTER_ALL_TARGET_MAX_METERS_PRIORITY,
     AFTER_ALL_TARGET_MAX_METERS_PRIORITY,
     LATE_AFTER_ALL_TARGET_MAX_METERS_PRIORITY,
 )
@@ -140,15 +139,6 @@ Tech(
             scope=Ship & OwnedBy(empire=Source.Owner) & Star(type=[BlackHole]),
             accountinglabel="SPY_DECEPTION_SUBSTELLAR_INTERFERENCE",
             effects=SetStealth(value=Value + NamedReal(name="SPY_DECEPTION_BLACK_INTERFERENCE", value=10.0)),
-        ),
-        # clean up specials for debugging
-        EffectsGroup(
-            scope=Ship & OwnedBy(empire=Source.Owner),
-            priority=EARLY_AFTER_ALL_TARGET_MAX_METERS_PRIORITY,
-            effects=[
-                RemoveSpecial(name=base_stealth_special, object=Target.ID),
-                RemoveSpecial(name=lower_stealth_count_special, object=Target.ID),
-            ]
         ),
         # temporarily note amount of fleet unstealthiness before capping
         EffectsGroup(
