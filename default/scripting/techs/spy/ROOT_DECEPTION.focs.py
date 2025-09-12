@@ -89,8 +89,6 @@ def stealth_result(obj, debug=False):
 
 #    return 100 + 
 
-def min_effective_stealth_of_more_stealthy_ships_valref_debug(base_cond):
-    return StatisticElse(float, condition=candidate_has_less_stealth_cond(base_cond)) * stealth_result(Target.ID, False) + min_effective_stealth_of_more_stealthy_ships_valref_for_not_max_stealth_ships(base_cond)
 
 def min_effective_stealth_of_more_stealthy_ships_valref_for_not_max_stealth_ships(base_cond):
     return MinOf(
@@ -124,17 +122,6 @@ Tech(
     researchturns=1,
     tags=["PEDIA_SPY_CATEGORY", "THEORY"],
     effectsgroups=[
-        EffectsGroup(
-            scope=Ship & OwnedBy(empire=Source.Owner), # & Stealth(high=0.0),
-            priority=0,
-            accountinglabel="SPY_DECEPTION_RESET",
-            effects= [
-                SetStealth(value=0.0),
-                AddSpecial(name=lower_stealth_count_special, capacity=0),
-                AddSpecial(name=base_stealth_special, capacity=0),
-            ]
-                
-        ),
         EffectsGroup(
             scope=Ship & OwnedBy(empire=Source.Owner) & Star(type=[NoStar]),
             accountinglabel="SPY_DECEPTION_EMPTY_SPACE_PENALTY",
@@ -204,7 +191,7 @@ Tech(
                 SetStructure(value=100+count_lower_stealth_ships_statistic_valref(own_ships_on_targetz_starlane)),
                 SetMaxShield(value=StatisticCount(float, condition=own_ships_on_targetz_starlane)),
                 SetShield(value=StatisticCount(float, condition=own_ships_on_targetz_starlane)),
-                SetStealth(value=100+min_effective_stealth_of_more_stealthy_ships_valref_debug(own_ships_on_targetz_starlane & ~IsTarget)),
+                SetStealth(value=100+min_effective_stealth_of_more_stealthy_ships_valref(own_ships_on_targetz_starlane & ~IsTarget)),
             ],
         ),
     ],
