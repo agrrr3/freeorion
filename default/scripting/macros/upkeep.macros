@@ -40,10 +40,35 @@ MARINE_RECRUITMENT_POLICY_MULTIPLIER
 '''(1 - 0.5*(Statistic If condition = And [Source EmpireHasAdoptedPolicy empire = Source.Owner name = "PLC_MARINE_RECRUITMENT"]))
 '''
 
+// XXX maybe use a NamedValue for each design or store the complexity in the ship design itself in order to prevent recalculation
+// cant discriminate part names ; there is no support for list type attributes.
+// (3 > Statistic UniqueCount value = LocalCandidate. candidate = CONDITION_RESULT_IS_OBJECTS
 DESIGN_SIMPLICITY_POLICY_MULTIPLIER
-'''(1 - 0.2*(Statistic If condition = And [
-    Source
-    EmpireHasAdoptedPolicy empire = Source.Owner name = "PLC_DESIGN_SIMPLICITY"
-    ((PartsInShipDesign design = UsedInDesignID) <= 6)  // Used in part or hull cost expressions, in which "UsedInDesignID" will contain the ID of the ship design in which the part is being used
-]))
+'''(1 - (Statistic If condition = And [
+      Source
+      EmpireHasAdoptedPolicy empire = Source.Owner name = "PLC_DESIGN_SIMPLICITY"
+      DesignHasPartClass low = 0 high = 0 class = Colony  // does not decrease costs of colony or outpost ships
+   ] * [[DESIGN_SIMPLICITY_COMPLEXITY_FACTOR_FOR_ARG1_VREF([[DESIGN_SIMPLICITY_COMPLEXITY_COUNT_VREF]])]]
+)
+'''
+
+DESIGN_SIMPLICITY_COMPLEXITY_COUNT_VREF
+'''
+( Statistic           If condition = DesignHasPartClass low = 1 class = ShortRange
+          + Statistic If condition = DesignHasPartClass low = 1 class = FighterBay
+          + Statistic If condition = DesignHasPartClass low = 1 class = FighterHangar
+          + Statistic If condition = DesignHasPartClass low = 1 class = Shield
+          + Statistic If condition = DesignHasPartClass low = 1 class = Armour
+          + Statistic If condition = DesignHasPartClass low = 1 class = Troops
+          + Statistic If condition = DesignHasPartClass low = 1 class = Fuel
+          + Statistic If condition = DesignHasPartClass low = 1 class = Speed
+          + Statistic If condition = DesignHasPartClass low = 1 class = Stealth
+          + Statistic If condition = DesignHasPartClass low = 1 class = Detection
+          + Statistic If condition = DesignHasPartClass low = 1 class = General
+          + Statistic If condition = DesignHasPartClass low = 1 class = Bombard
+          + Statistic If condition = DesignHasPartClass low = 1 class = Research
+          + Statistic If condition = DesignHasPartClass low = 1 class = Industry
+          + Statistic If condition = DesignHasPartClass low = 1 class = Influence
+          + Statistic If condition = DesignHasPartClass low = 1 class = ProductionLocation
+)
 '''
