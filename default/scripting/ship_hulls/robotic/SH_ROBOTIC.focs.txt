@@ -38,6 +38,24 @@ Hull
         [[SCAVANGE_FUEL_UNOWNED]]
         [[UNOWNED_GOOD_VISION]]
         [[UNOWNED_MOVE]]
+
+	EffectsGroup
+	  scope = Source
+	  activation = Source
+	  effects = 
+	                     GenerateSitRepMessage
+                    message = "For ship %ship%  design complexity: %rawtext:complexity%  factor3: %rawtext:factor%  current policy factor: %rawtext:policyfactor%"
+                    label = "EFFECT_ANCIENT_SHIP_RUMORS_LABEL"
+NoStringtableLookup
+                    icon = "icons/specials_huge/ancient_ruins_excavated.png"
+                    parameters = [
+                        tag = "ship" data = Source.ID
+			tag = "complexity" data = [[DESIGN_SIMPLICITY_SOURCE_COMPLEXITY_COUNT_VREF]]
+			tag = "factor" data = 1.0 * [[DESIGN_SIMPLICITY_COMPLEXITY_FACTOR_FOR_ARG1_VREF([[DESIGN_SIMPLICITY_SOURCE_COMPLEXITY_COUNT_VREF]])]]
+			tag = "policyfactor" data = 1.0 * [[DESIGN_SIMPLICITY_POLICY_MULTIPLIER]] 
+                    ]
+		    empire = Source.Owner
+          
     ]
     icon = "icons/ship_hulls/robotic_hull_small.png"
     graphic = "hulls_design/robotic_hull.png"
