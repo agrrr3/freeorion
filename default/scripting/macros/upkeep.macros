@@ -68,8 +68,7 @@ DESIGN_SIMPLICITY_SOURCE_COMPLEXITY_COUNT_VREF
           + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = Industry ]
           + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = Influence ]
           + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = ProductionLocation ]
-          + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = Colony ]
-          + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = Colony ]
+          + (4 * Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = Colony ])
 )
 '''
 
