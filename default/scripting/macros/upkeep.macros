@@ -45,31 +45,31 @@ DESIGN_SIMPLICITY_POLICY_MULTIPLIER
    Statistic If condition = And [
          Source
          EmpireHasAdoptedPolicy empire = Source.Owner name = "PLC_DESIGN_SIMPLICITY"
-      ] * (1.0 - [[DESIGN_SIMPLICITY_COMPLEXITY_FACTOR_FOR_ARG1_VREF([[DESIGN_SIMPLICITY_COMPLEXITY_COUNT_VREF]])]])
+      ] * (1.0 - [[DESIGN_SIMPLICITY_COMPLEXITY_FACTOR_FOR_ARG1_VREF([[DESIGN_SIMPLICITY_SOURCE_COMPLEXITY_COUNT_VREF]])]])
   )
 )
 '''
 
 // Note: colony part class increases complexity by 2; every other classe by 1
-DESIGN_SIMPLICITY_COMPLEXITY_COUNT_VREF
-'''( Statistic        If condition = DesignHasPartClass low = 1 class = ShortRange
-          + Statistic If condition = DesignHasPartClass low = 1 class = FighterBay
-          + Statistic If condition = DesignHasPartClass low = 1 class = FighterHangar
-          + Statistic If condition = DesignHasPartClass low = 1 class = Shield
-          + Statistic If condition = DesignHasPartClass low = 1 class = Armour
-          + Statistic If condition = DesignHasPartClass low = 1 class = Troops
-          + Statistic If condition = DesignHasPartClass low = 1 class = Fuel
-          + Statistic If condition = DesignHasPartClass low = 1 class = Speed
-          + Statistic If condition = DesignHasPartClass low = 1 class = Stealth
-          + Statistic If condition = DesignHasPartClass low = 1 class = Detection
-          + Statistic If condition = DesignHasPartClass low = 1 class = General
-          + Statistic If condition = DesignHasPartClass low = 1 class = Bombard
-          + Statistic If condition = DesignHasPartClass low = 1 class = Research
-          + Statistic If condition = DesignHasPartClass low = 1 class = Industry
-          + Statistic If condition = DesignHasPartClass low = 1 class = Influence
-          + Statistic If condition = DesignHasPartClass low = 1 class = ProductionLocation
-          + Statistic If condition = DesignHasPartClass low = 1 class = Colony
-          + Statistic If condition = DesignHasPartClass low = 1 class = Colony
+DESIGN_SIMPLICITY_SOURCE_COMPLEXITY_COUNT_VREF
+'''( Statistic        If condition = And [ Source  DesignHasPartClass low = 1 class = ShortRange ]
+          + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = FighterBay ]
+          + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = FighterHangar ]
+          + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = Shield ]
+          + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = Armour ]
+          + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = Troops ]
+          + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = Fuel ]
+          + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = Speed ]
+          + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = Stealth ]
+          + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = Detection ]
+          + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = General ]
+          + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = Bombard ]
+          + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = Research ]
+          + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = Industry ]
+          + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = Influence ]
+          + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = ProductionLocation ]
+          + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = Colony ]
+          + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = Colony ]
 )
 '''
 
