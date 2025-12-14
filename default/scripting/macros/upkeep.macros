@@ -40,21 +40,19 @@ MARINE_RECRUITMENT_POLICY_MULTIPLIER
 '''(1 - 0.5*(Statistic If condition = And [Source EmpireHasAdoptedPolicy empire = Source.Owner name = "PLC_MARINE_RECRUITMENT"]))
 '''
 
-// XXX maybe use a NamedValue for each design or store the complexity in the ship design itself in order to prevent recalculation
-// cant discriminate part names ; there is no support for list type attributes.
-// (3 > Statistic UniqueCount value = LocalCandidate. candidate = CONDITION_RESULT_IS_OBJECTS
 DESIGN_SIMPLICITY_POLICY_MULTIPLIER
-'''(NamedRealLookup(name = "DESIGN_SIMPLICITY_COMPLEXITY_FACTOR_A") * Statistic If condition = And [
-      Source
-      EmpireHasAdoptedPolicy empire = Source.Owner name = "PLC_DESIGN_SIMPLICITY"
-      DesignHasPartClass low = 0 high = 0 class = Colony  // does not decrease costs of colony or outpost ships
-   ]
+'''(1.0 - (
+   Statistic If condition = And [
+         Source
+         EmpireHasAdoptedPolicy empire = Source.Owner name = "PLC_DESIGN_SIMPLICITY"
+      ] * (1.0 - [[DESIGN_SIMPLICITY_COMPLEXITY_FACTOR_FOR_ARG1_VREF([[DESIGN_SIMPLICITY_COMPLEXITY_COUNT_VREF]])]])
+  )
 )
 '''
 
+// Note: colony part class increases complexity by 2; every other classe by 1
 DESIGN_SIMPLICITY_COMPLEXITY_COUNT_VREF
-'''
-( Statistic           If condition = DesignHasPartClass low = 1 class = ShortRange
+'''( Statistic        If condition = DesignHasPartClass low = 1 class = ShortRange
           + Statistic If condition = DesignHasPartClass low = 1 class = FighterBay
           + Statistic If condition = DesignHasPartClass low = 1 class = FighterHangar
           + Statistic If condition = DesignHasPartClass low = 1 class = Shield
@@ -70,5 +68,25 @@ DESIGN_SIMPLICITY_COMPLEXITY_COUNT_VREF
           + Statistic If condition = DesignHasPartClass low = 1 class = Industry
           + Statistic If condition = DesignHasPartClass low = 1 class = Influence
           + Statistic If condition = DesignHasPartClass low = 1 class = ProductionLocation
+          + Statistic If condition = DesignHasPartClass low = 1 class = Colony
+          + Statistic If condition = DesignHasPartClass low = 1 class = Colony
 )
 '''
+
+// The formula defining the cost factor depending on the complexity
+// note this gets calculated every time complexity is checked
+// should return 1.0 for values higher than DESIGN_SIMPLICITY_COMPLEXITY_MAX_COUNT_A
+DESIGN_SIMPLICITY_COMPLEXITY_FACTOR_FOR_ARG1_VREF
+'''
+(@1@ > [[DESIGN_SIMPLICITY_COMPLEXITY_MAX_COUNT_A]] ? 1.0 :
+ ( @1@ > [[DESIGN_SIMPLICITY_COMPLEXITY_MAX_COUNT_AA]] ? 0.95 :
+   ( @1@ > [[DESIGN_SIMPLICITY_COMPLEXITY_MAX_COUNT_AAA]] ? 0.9 : 0.8 )
+ )
+)
+'''
+DESIGN_SIMPLICITY_COMPLEXITY_MAX_COUNT_AAA
+'''2'''
+DESIGN_SIMPLICITY_COMPLEXITY_MAX_COUNT_AA
+'''3'''
+DESIGN_SIMPLICITY_COMPLEXITY_MAX_COUNT_A
+'''4'''
