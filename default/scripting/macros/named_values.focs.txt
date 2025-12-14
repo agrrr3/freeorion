@@ -69,7 +69,7 @@ NamedReal name = "PLC_LIBERTY_DISLIKE_FACTOR" value = 2.0
 
 NamedReal name = "PLC_CONFORMANCE_DISLIKE_FACTOR" value = 0.5
 
-// UI and (currently unsupported) AI
+// UI and (currently unsupported) AI for design simplicity policy
 NamedInteger name = "DESIGN_SIMPLICITY_COMPLEXITY_MAX_COUNT_AAA" value = [[DESIGN_SIMPLICITY_COMPLEXITY_MAX_COUNT_AAA]]
 NamedInteger name = "DESIGN_SIMPLICITY_COMPLEXITY_MAX_COUNT_AA"  value = [[DESIGN_SIMPLICITY_COMPLEXITY_MAX_COUNT_AA]]
 NamedInteger name = "DESIGN_SIMPLICITY_COMPLEXITY_MAX_COUNT_A"   value = [[DESIGN_SIMPLICITY_COMPLEXITY_MAX_COUNT_A]]
@@ -82,25 +82,7 @@ DESIGN_SIMPLICITY_COMPLEXITY_FACTOR_AA
 '''[[DESIGN_SIMPLICITY_COMPLEXITY_FACTOR_FOR_ARG1_VREF([[DESIGN_SIMPLICITY_COMPLEXITY_MAX_COUNT_AA]])]]'''
 DESIGN_SIMPLICITY_COMPLEXITY_FACTOR_A
 '''[[DESIGN_SIMPLICITY_COMPLEXITY_FACTOR_FOR_ARG1_VREF([[DESIGN_SIMPLICITY_COMPLEXITY_MAX_COUNT_A]])]]'''
-// The formula defining the cost factor depending on the complexity
-// note this gets calculated every time complexity is checked
-// should return 0.0 for values higher than DESIGN_SIMPLICITY_COMPLEXITY_MAX_COUNT_A
-DESIGN_SIMPLICITY_COMPLEXITY_FACTOR_FOR_ARG1_VREF
-'''
-(@1@ > [[DESIGN_SIMPLICITY_COMPLEXITY_MAX_COUNT_A]] ? 0.0 :
- ( @1@ > [[DESIGN_SIMPLICITY_COMPLEXITY_MAX_COUNT_AA]] ? 0.95 :
-   ( @1@ > [[DESIGN_SIMPLICITY_COMPLEXITY_MAX_COUNT_AAA]] ? 0.9 : 0.8 )
- )
-)
-'''
-DESIGN_SIMPLICITY_COMPLEXITY_MAX_COUNT_AAA
-'''2'''
-DESIGN_SIMPLICITY_COMPLEXITY_MAX_COUNT_AA
-'''3'''
-DESIGN_SIMPLICITY_COMPLEXITY_MAX_COUNT_A
-'''4'''
-
-
+// design simplicity depends on upkeep macros
 
 NamedReal name = "FLD_NEBULA_SPEED_MALUS" value = 20
 NamedReal name = "FLD_NEBULA_STEALTH_BONUS" value = 20
@@ -122,6 +104,7 @@ NamedReal name = "FU_RAMSCOOP_REFUEL" value = 0.4
 
 
 #include "/scripting/ship_hulls/hull_structures.macros"
+#include "/scripting/macros/upkeep.macros"
 #include "/scripting/macros/misc.macros"
 #include "/scripting/macros/base_prod.macros"
 #include "/scripting/macros/priorities.macros"
