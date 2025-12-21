@@ -69,7 +69,7 @@ NamedReal name = "PLC_LIBERTY_DISLIKE_FACTOR" value = 2.0
 
 NamedReal name = "PLC_CONFORMANCE_DISLIKE_FACTOR" value = 0.5
 
-// UI and (currently unsupported) AI for design simplicity policy
+// UI (and AI) for design simplicity policy
 NamedInteger name = "PLC_DESIGN_SIMPLICITY_COMPLEXITY_MAX_COUNT_AAA" value = [[DESIGN_SIMPLICITY_COMPLEXITY_MAX_COUNT_AAA]]
 NamedInteger name = "PLC_DESIGN_SIMPLICITY_COMPLEXITY_MAX_COUNT_AA"  value = [[DESIGN_SIMPLICITY_COMPLEXITY_MAX_COUNT_AA]]
 NamedInteger name = "PLC_DESIGN_SIMPLICITY_COMPLEXITY_MAX_COUNT_A"   value = [[DESIGN_SIMPLICITY_COMPLEXITY_MAX_COUNT_A]]
