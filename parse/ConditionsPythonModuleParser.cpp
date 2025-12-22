@@ -11,10 +11,40 @@
 namespace py = boost::python;
 
 namespace {
+    using ValueRef::CloneUnique;
+    using boost::python::extract;
+
+    condition_wrapper insert_design_has_part_class_(const boost::python::tuple& args, const boost::python::dict& kw) {
+        ShipPartClass name = extract<enum_wrapper<ShipPartClass>>(kw["name"])().value;
+
+        std::unique_ptr<ValueRef::ValueRef<int>> low;
+        if (kw.has_key("low")) {
+            auto low_args = extract<value_ref_wrapper<int>>(kw["low"]);
+            if (low_args.check()) {
+                low = CloneUnique(low_args().value_ref);
+            } else {
+                low = make_constant<int>(extract<int>(kw["low"])());
+            }
+        }
+
+        std::unique_ptr<ValueRef::ValueRef<int>> high;
+        if (kw.has_key("high")) {
+            auto high_args = extract<value_ref_wrapper<int>>(kw["high"]);
+            if (high_args.check()) {
+                high = CloneUnique(high_args().value_ref);
+            } else {
+                high = make_constant<int>(extract<int>(kw["high"])());
+            }
+        }
+
+        return make_wrapped<Condition::DesignHasPartClass>(
+            std::move(name),
+            std::move(low),
+            std::move(high));
+    }
 }
 
 BOOST_PYTHON_MODULE(_conditions) {
-    boost::python::docstring_options doc_options(true, true, false);
-
+    boost::python::def("DesignHasPartClass", boost::python::raw_function(insert_design_has_part_class_);
 }
 
