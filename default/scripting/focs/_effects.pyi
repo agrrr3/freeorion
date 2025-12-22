@@ -27,6 +27,7 @@ from focs._types import (
     _PlanetSize,
     _PlanetType,
     _Resource,
+    _ShipPartClass,
     _SpeciesValue,
     _StarType,
     _StringParam,
@@ -79,6 +80,24 @@ Adequate = _PlanetEnvironment()
 Poor = _PlanetEnvironment()
 Hostile = _PlanetEnvironment()
 Uninhabitable = _PlanetEnvironment()
+
+ShortRange = _ShipPartClass()
+FighterBay = _ShipPartClass()
+FighterHangar = _ShipPartClass()
+Shield = _ShipPartClass()
+Armour = _ShipPartClass()
+Troops = _ShipPartClass()
+Detection = _ShipPartClass()
+Stealth = _ShipPartClass()
+Fuel = _ShipPartClass()
+Colony = _ShipPartClass()
+Speed = _ShipPartClass()
+General = _ShipPartClass()
+Bombard = _ShipPartClass()
+Industry = _ShipPartClass()
+Research = _ShipPartClass()
+Influence = _ShipPartClass()
+ProductionLocation = _ShipPartClass()
 
 ThisSpecies = _SpeciesValue()
 ThisBuilding = _BuildingType()
@@ -380,6 +399,7 @@ def Turn(*, high: _FloatParam = ..., low: _FloatParam = ...) -> _Condition: ...
 def Structure(*, low: _FloatParam = ..., high: _FloatParam = ...) -> _Condition: ...
 def ResupplyableBy(*, empire: _EmpireId) -> _Condition: ...
 def DesignHasPart(*, name: str, low: int = ..., high: int = ...) -> _Condition: ...
+def DesignHasPartClass(*, name: _ShipPartClass, low: int = ..., high: int = ...) -> _Condition: ...
 def EmpireHasAdoptedPolicy(*, name: str, empire: _EmpireId = _Empire()) -> _Condition: ...
 def ProducedByEmpire(*, empire: _Empire) -> _Condition: ...
 def HasStarlane(from_: _Condition) -> _Condition: ...
