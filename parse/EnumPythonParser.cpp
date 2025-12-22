@@ -5,6 +5,7 @@
 #include "../universe/BuildingType.h"
 #include "../universe/Enums.h"
 #include "../universe/Planet.h"
+#include "../universe/ShipPart.h"
 #include "../universe/Species.h"
 #include "../universe/System.h"
 #include "../universe/ValueRef.h"
@@ -111,6 +112,28 @@ void RegisterGlobalsEnums(boost::python::dict& globals) {
             {"GasGiantType",  PlanetType::PT_GASGIANT}})
     {
         globals[op.first] = enum_wrapper<PlanetType>(op.second);
+    }
+
+    for (const auto& op : std::initializer_list<std::pair<const char*, ShipPartClass>>{
+            {"ShortRange", ShipPartClass::PC_DIRECT_WEAPON},
+            {"FighterBay", ShipPartClass::PC_FIGHTER_BAY},
+            {"FighterHangar", ShipPartClass::PC_FIGHTER_HANGAR},
+            {"Shield", ShipPartClass::PC_SHIELD},
+            {"Armour", ShipPartClass::PC_ARMOUR},
+            {"Troops", ShipPartClass::PC_TROOPS},
+            {"Detection", ShipPartClass::PC_DETECTION},
+            {"Stealth", ShipPartClass::PC_STEALTH},
+            {"Fuel", ShipPartClass::PC_FUEL},
+            {"Colony", ShipPartClass::PC_COLONY},
+            {"Speed", ShipPartClass::PC_SPEED},
+            {"General", ShipPartClass::PC_GENERAL},
+            {"Bombard", ShipPartClass::PC_BOMBARD},
+            {"Industry", ShipPartClass::PC_INDUSTRY},
+            {"Research", ShipPartClass::PC_RESEARCH},
+            {"Influence", ShipPartClass::PC_INFLUENCE},
+            {"ProductionLocation", ShipPartClass::PC_PRODUCTION_LOCATION}})
+    {
+        globals[op.first] = enum_wrapper<ShipPartClass>(op.second);
     }
 
     for (const auto& op : std::initializer_list<std::pair<const char*, UnlockableItemType>>{
