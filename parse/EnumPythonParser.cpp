@@ -115,23 +115,23 @@ void RegisterGlobalsEnums(boost::python::dict& globals) {
     }
 
     for (const auto& op : std::initializer_list<std::pair<const char*, ShipPartClass>>{
-            {"ShortRange", ShipPartClass::PC_DIRECT_WEAPON},
-            {"FighterBay", ShipPartClass::PC_FIGHTER_BAY},
-            {"FighterHangar", ShipPartClass::PC_FIGHTER_HANGAR},
-            {"Shield", ShipPartClass::PC_SHIELD},
-            {"Armour", ShipPartClass::PC_ARMOUR},
-            {"Troops", ShipPartClass::PC_TROOPS},
-            {"Detection", ShipPartClass::PC_DETECTION},
-            {"Stealth", ShipPartClass::PC_STEALTH},
-            {"Fuel", ShipPartClass::PC_FUEL},
-            {"Colony", ShipPartClass::PC_COLONY},
-            {"Speed", ShipPartClass::PC_SPEED},
-            {"General", ShipPartClass::PC_GENERAL},
-            {"Bombard", ShipPartClass::PC_BOMBARD},
-            {"Industry", ShipPartClass::PC_INDUSTRY},
-            {"Research", ShipPartClass::PC_RESEARCH},
-            {"Influence", ShipPartClass::PC_INFLUENCE},
-            {"ProductionLocation", ShipPartClass::PC_PRODUCTION_LOCATION}})
+            {"ShortRangeClass", ShipPartClass::PC_DIRECT_WEAPON},
+            {"FighterBayClass", ShipPartClass::PC_FIGHTER_BAY},
+            {"FighterHangarClass", ShipPartClass::PC_FIGHTER_HANGAR},
+            {"ShieldClass", ShipPartClass::PC_SHIELD},
+            {"ArmourClass", ShipPartClass::PC_ARMOUR},
+            {"TroopsClass", ShipPartClass::PC_TROOPS},
+            {"DetectionClass", ShipPartClass::PC_DETECTION},
+            {"StealthClass", ShipPartClass::PC_STEALTH},
+            {"FuelClass", ShipPartClass::PC_FUEL},
+            {"ColonyClass", ShipPartClass::PC_COLONY},
+            {"SpeedClass", ShipPartClass::PC_SPEED},
+            {"GeneralClass", ShipPartClass::PC_GENERAL},
+            {"BombardClass", ShipPartClass::PC_BOMBARD},
+            {"IndustryClass", ShipPartClass::PC_INDUSTRY},
+            {"ResearchClass", ShipPartClass::PC_RESEARCH},
+            {"InfluenceClass", ShipPartClass::PC_INFLUENCE},
+            {"ProductionLocationClass", ShipPartClass::PC_PRODUCTION_LOCATION}})
     {
         globals[op.first] = enum_wrapper<ShipPartClass>(op.second);
     }
