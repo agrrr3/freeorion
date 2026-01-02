@@ -488,17 +488,27 @@ float ShipPart::ProductionCost(int empire_id, int location_id, const ScriptingCo
         return ARBITRARY_LARGE_COST;
 
     auto empire = context.GetEmpire(empire_id);
-    auto source = empire ? empire->Source(context.ContextObjects()) : nullptr;
-    if (!source && !m_production_cost->SourceInvariant())
+    if (context.source) {
+      ErrorLogger() << "Reusing source from context " << context.source->ID();
+      const ScriptingContext design_id_context{
+        context, ScriptingContext::Source{}, context.source,
+        ScriptingContext::Target{}, const_cast<UniverseObject*>(location), // won't be modified when evaluating a ValueRef, but needs to be a pointer to mutable to be passed as the target object
+        in_design_id, PRODUCTION_BLOCK_SIZE};
+
+      return static_cast<float>(m_production_cost->Eval(design_id_context));
+    } else {
+      auto source = empire ? empire->Source(context.ContextObjects()) : nullptr;
+      if (!source && !m_production_cost->SourceInvariant())
         return ARBITRARY_LARGE_COST;
+      ErrorLogger() << "Reusing source from EmpireSource " << source.get()->ID();
 
-
-    const ScriptingContext design_id_context{
+      const ScriptingContext design_id_context{
         context, ScriptingContext::Source{}, source.get(),
         ScriptingContext::Target{}, const_cast<UniverseObject*>(location), // won't be modified when evaluating a ValueRef, but needs to be a pointer to mutable to be passed as the target object
         in_design_id, PRODUCTION_BLOCK_SIZE};
 
-    return static_cast<float>(m_production_cost->Eval(design_id_context));
+      return static_cast<float>(m_production_cost->Eval(design_id_context));
+    }
 }
 
 int ShipPart::ProductionTime(int empire_id, int location_id, const ScriptingContext& context,
