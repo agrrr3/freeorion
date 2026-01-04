@@ -2911,7 +2911,7 @@ namespace {
             // apply various species to ship, re-calculating the meter values for each
             for (std::string& species_name : species_list) {
                 temp->SetSpecies(std::move(species_name), species_manager);
-		temp->SetOwner(client_empire_id); //FIXME what about monsters?
+		temp->SetOwner(client_empire_id); //FIXME monsters should not get this (currently those get the empire bonuses
                 universe.UpdateMeterEstimates(temp->ID(), context);
                 temp->Resupply(context.current_turn);
                 detailed_description.append(GetDetailedDescriptionStats(temp, enemy_DR, enemy_shots, cost));
