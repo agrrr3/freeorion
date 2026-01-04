@@ -2805,7 +2805,35 @@ std::vector<std::string> ComplexVariable<std::vector<std::string>>::Eval(
 
         const auto& pols = empire->AvailablePolicies();
         return std::vector<std::string>{pols.begin(), pols.end()};
-    }
+    } else if (m_property_name == "PartClassesInShipDesign") {
+            int design_id = INVALID_DESIGN_ID;
+            if (m_int_ref1) {
+                design_id = m_int_ref1->Eval(context);
+                if (design_id == INVALID_DESIGN_ID)
+                    return {};
+            }
+            else {
+              return {};
+            }
+
+            const ShipDesign* design = context.ContextUniverse().GetShipDesign(design_id);
+            if (!design)
+                return {};
+            std::vector<std::string> partClasses;
+            // reusing already counted part classes
+            partClasses.reserve(design->PartClassCount().size());
+            for (auto const& [partClass, count] : design->PartClassCount()) {
+                if (count > 0) {
+                    DebugLogger() << "Adding part class entry for " << partClass << " - has count " << count << " in design "  << design_id;
+                    partClasses.push_back(std::string(to_string(partClass)));
+                } else {
+                    ErrorLogger() << "Unexpected part class entry for " << partClass << " - has zero count in design "  << design_id;
+                }
+            }
+            return partClasses;
+        }
+
+        LOG_UNKNOWN_VARIABLE_PROPERTY_TRACE(std::vector<std::string>)
 
     return {};
 }
