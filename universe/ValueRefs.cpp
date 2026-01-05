@@ -512,6 +512,20 @@ std::string ComplexVariableDump(std::string_view property_name,
     return retval;
 }
 
+std::string ReduceVectorDescription(StatisticType stat_type, std::string_view value_desc)
+{
+    std::string stringtable_key{"DESC_VAR_"};
+    stringtable_key.append(to_string(stat_type)); // assumes that all StatisticType names are ALL_CAPS
+
+    if (UserStringExists(stringtable_key)) {
+        boost::format formatter = FlexibleFormat(UserString(stringtable_key));
+        formatter % value_desc;
+        return boost::io::str(formatter);
+    }
+
+    return UserString("DESC_VAR_REDUCE_VECTOR");
+}
+
 std::string StatisticDescription(StatisticType stat_type, std::string_view value_desc,
                                  std::string_view condition_desc)
 {
