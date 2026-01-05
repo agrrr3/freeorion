@@ -11506,6 +11506,9 @@ starlane jumps between systems containing objects with ids %1% and %2%
 DESC_VAR_STATISTIC
 Statistic
 
+DESC_VAR_REDUCE_VECTOR
+ReduceVector
+
 DESC_VAR_IF
 0, or 1 if there is any object%2%
 
