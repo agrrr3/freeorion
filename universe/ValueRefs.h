@@ -394,7 +394,7 @@ struct FO_COMMON_API ReduceVector final : public Variable<T>
 	       StatisticType stat_type):
         Variable<T>(CalcRTSI(value_ref), stat_type,
                     CheckSums::GetCheckSum("ValueRef::ReduceVector", stat_type, value_ref)),
-        m_value_ref(std::move(value_ref))
+        m_v_value_ref(std::move(value_ref))
     {}
 
 
@@ -407,22 +407,22 @@ struct FO_COMMON_API ReduceVector final : public Variable<T>
 
     [[nodiscard]] StatisticType GetStatisticType() const noexcept { return this->m_stat_type; }
 
-    [[nodiscard]] const auto* GetValueRef() const noexcept { return m_value_ref.get(); }
+    [[nodiscard]] const auto* GetValueRef() const noexcept { return m_v_value_ref.get(); }
 
-    [[nodiscard]] std::unique_ptr<ValueRef<std::vector<T>>> Clone() const override {
-        return std::make_unique<ReduceVector<T, V>>(CloneUnique(m_value_ref),
-                                                 this->m_stat_type);
+    // [[nodiscard]] std::unique_ptr<ValueRef<std::vector<T>>> Clone() const override {
+    [[nodiscard]] std::unique_ptr<ValueRef<T>> Clone() const override {
+        return std::make_unique<ReduceVector<T, V>>(CloneUnique(m_v_value_ref), this->m_stat_type);
     }
 
 private:
-    static constexpr std::array<bool, 3> CalcRTSI(const std::unique_ptr<ValueRef<V>>& value_ref,
-                                                  const std::unique_ptr<Condition::Condition>& condition)
+    static constexpr std::array<bool, 3> CalcRTSI(const std::unique_ptr<ValueRef<std::vector<V>>>& value_ref)
     {
-        const auto ref_rtslice = RefsRTSLICE(value_ref);
-        return {ref_rtslice[0], ref_rtslice[1], ref_rtslice[2]}; //FIXME
+      //        const auto ref_rtslice = RefsRTSLICE(value_ref);
+      //  return {ref_rtslice[0], ref_rtslice[1], ref_rtslice[2]}; //FIXME
+      return {false, false, false};
     }
 
-    const std::unique_ptr<ValueRef<V>>          m_value_ref;
+    const std::unique_ptr<ValueRef<std::vector<V>>>          m_v_value_ref;
 };
 
 /** The variable statistic class.   The value returned by this node is
@@ -885,6 +885,9 @@ private:
     const ValueRef<std::string>* string_ref1,
     const ValueRef<std::string>* string_ref2);
 
+[[nodiscard]] FO_COMMON_API std::string ReduceVectorDescription(
+    StatisticType stat_type, std::string_view value_desc);
+
 [[nodiscard]] FO_COMMON_API std::string StatisticDescription(
     StatisticType stat_type, std::string_view value_desc, std::string_view condition_desc);
 
@@ -998,11 +1001,11 @@ bool ReduceVector<T, V>::operator==(const ValueRef<T>& rhs) const
     if (this->m_stat_type != rhs_.m_stat_type)
         return false;
 
-    if (m_value_ref == rhs_.m_value_ref) { // both unique_ptr could be nullptr
+    if (m_v_value_ref == rhs_.m_v_value_ref) { // both unique_ptr could be nullptr
         // check next member
-    } else if (!m_value_ref || !rhs_.m_value_ref) {
+    } else if (!m_v_value_ref || !rhs_.m_v_value_ref) {
         return false;
-    } else if (*m_value_ref != *(rhs_.m_value_ref)) {
+    } else if (*m_v_value_ref != *(rhs_.m_v_value_ref)) {
         return false;
     }
 
@@ -1012,8 +1015,9 @@ bool ReduceVector<T, V>::operator==(const ValueRef<T>& rhs) const
 template <typename T, typename V>
 std::string ReduceVector<T, V>::Description() const
 {
-    if (m_value_ref)
-        return ReduceVectorDescription(this->m_stat_type, m_value_ref->Description());
+    if (m_v_value_ref) {// FIXME VECTOR
+        return ReduceVectorDescription(this->m_stat_type, /*m_v_value_ref->Description()*/ "");
+    }
 
     auto temp = Variable<T>::Description();
     if (!temp.empty())
@@ -1044,16 +1048,17 @@ std::string ReduceVector<T, V>::Dump(uint8_t ntabs) const
         case StatisticType::PRODUCT:        retval += "Product";           break;
         default:                            retval += "???";               break;
     }
-    if (m_value_ref)
-        retval += " value = " + m_value_ref->Dump();
+    // const std::unique_ptr<ValueRef<std::vector<V>>> 
+    if (m_v_value_ref)
+      retval += " value = " + m_v_value_ref->Dump();
     return retval;
 }
 
 template <typename T, typename V>
 void ReduceVector<T, V>::SetTopLevelContent(const std::string& content_name)
 {
-    if (m_value_ref)
-        m_value_ref->SetTopLevelContent(content_name);
+    if (m_v_value_ref)
+        m_v_value_ref->SetTopLevelContent(content_name);
 }
 
 
@@ -1547,6 +1552,37 @@ T Statistic<T, V>::Eval(const ScriptingContext& context) const
 
 template <>
 FO_COMMON_API std::string Statistic<std::string, std::string>::Eval(const ScriptingContext& context) const;
+
+///////////////////////////////////////////////////////////
+// ReduceVector (part 2)                                 //
+///////////////////////////////////////////////////////////
+
+template <typename T, typename V>
+T ReduceVector<T, V>::Eval(const ScriptingContext& context) const
+{
+    // this statistic type doesn't depend on the object property values,
+    // so can be evaluated without getting those values.
+
+    if (this->m_stat_type == StatisticType::COUNT) {
+        //  ReduceVector T = std::__cxx11::basic_string<char>; V = std::__cxx11::basic_string<char>
+        //     [[nodiscard]] T           Eval(const ScriptingContext& context) const override;
+        // const std::unique_ptr<ValueRef<std::vector<V>>>->Eval() -->
+      // Variable<std::vector<std::string>> is already declared
+      
+        return static_cast<T>(this->m_v_value_ref->Eval(context).size());
+    }
+
+    // TODO
+    //    if (this->m_stat_type == StatisticType::IF)
+    //    return (m_sampling_condition && m_sampling_condition->EvalAny(context)) ? T{1} : T{0};
+
+
+    // evaluate property for each condition-matched object
+    return ReduceData<T>(this->m_stat_type, this->m_v_value_ref->Eval(context));
+}
+
+template <>
+FO_COMMON_API int ReduceVector<int, std::string>::Eval(const ScriptingContext& context) const;
 
 ///////////////////////////////////////////////////////////
 // TotalFighterShots (of a carrier during one battle)    //
