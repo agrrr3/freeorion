@@ -101,6 +101,7 @@ debug_empire_adopted_policies = EffectsGroup(
 
 # Important, the following line "effectsgroups = [" is functional and important, do not change it
 effectsgroups = [
+    debug_empire_adopted_policies,
     # normally, for a custom sitrep the player will write their own message here, and label, and not look them up in the Stringtable.  For this first custom sitrep,
     # however, since it is the primary way we introduce the custom sitrep capability to players, we use stringtable references so that the message and label may be more
     # readily translated into multiple languages as part of our standard distribution.
