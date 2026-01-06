@@ -708,11 +708,13 @@ namespace {
     boost::python::object insert_reduce_vector_(const PythonParser& parser, const ValueRef::StatisticType type, const boost::python::tuple& args, const boost::python::dict& kw) {
         // XXX argument checks
         auto vector = boost::python::extract<value_ref_wrapper<std::vector<std::string>>>(args[1]);
+        ErrorLogger() << "ValueRefPythonParser::insert_reduce_vector_ ReduceVector";
         if (args[0] == parser.type_int) {
-          auto fixme = std::make_shared<ValueRef::ReduceVector<int,std::string>>(vector(), type);
-            return boost::python::object(value_ref_wrapper<int>(fixme));
-        } else if (args[0] == parser.type_float) {
-          return boost::python::object(value_ref_wrapper<double>(std::make_shared<ValueRef::ReduceVector<double>>(nullptr, type))); // FIXME
+          ErrorLogger() << "ValueRefPythonParser::insert_reduce_vector_ ReduceVector<int,..>";
+          auto fixme = std::make_shared<ValueRef::ReduceVector<int,std::string>>(ValueRef::CloneUnique(vector().value_ref), type);
+          return boost::python::object(value_ref_wrapper<int>(std::move(fixme)));
+          //        } else if (args[0] == parser.type_float) {
+          //          return boost::python::object(value_ref_wrapper<double>(std::make_shared<ValueRef::ReduceVector<double>>(nullptr, type))); // FIXME
           //        } else if (args[0] == parser.type_str) {
           //return boost::python::object(value_ref_wrapper<std::string>(std::make_shared<ValueRef::ReduceVector<int,std::string>>(nullptr, type)));
         } else {
