@@ -35,6 +35,7 @@ from focs._effects import (
     TurnTechResearched,
     Unowned,
     UserString,
+    VectorCount,
     VisibleToEmpire,
 )
 from macros.priorities import END_CLEANUP_PRIORITY
@@ -67,11 +68,19 @@ debug_empire_adopted_policies = EffectsGroup(
     stackinggroup="DEBUG_EMPIRE_ADOPTED_POLICIES",
     effects=[
         GenerateSitRepMessage(
-            message="debug_empire_adopted_policies(num): Number of currently adopted policies %policies%",
+            message="debug_empire_adopted_policies(num): Number of currently adopted policies %rawtext:policies%",
             label="SITREP_WELCOME_LABEL",
             NoStringtableLookup=True,
             icon="icons/tech/categories/spy.png",
-            parameters={"policies": NumPoliciesAdopted(empire=Source.Owner)},
+            parameters={"policies": NumPoliciesAdopted(empire=Source.Owner),},
+            empire=Source.Owner,
+        ),
+        GenerateSitRepMessage(
+            message="debug_empire_adopted_policies(vec_count): currently adopted policies %rawtext:policies%",
+            label="SITREP_WELCOME_LABEL",
+            NoStringtableLookup=True,
+            icon="icons/tech/categories/spy.png",
+            parameters={"policies": VectorCount(EmpireAdoptedPolicies(empire=Source.Owner)),},
             empire=Source.Owner,
         ),
         #GenerateSitRepMessage(
