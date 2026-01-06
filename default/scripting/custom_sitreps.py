@@ -80,7 +80,7 @@ debug_empire_adopted_policies = EffectsGroup(
             label="SITREP_WELCOME_LABEL",
             NoStringtableLookup=True,
             icon="icons/tech/categories/spy.png",
-            parameters={"policies": VectorCount(EmpireAdoptedPolicies(empire=Source.Owner)),},
+            parameters={"policies": VectorCount(int, EmpireAdoptedPolicies(empire=Source.Owner)),},
             empire=Source.Owner,
         ),
         #GenerateSitRepMessage(
