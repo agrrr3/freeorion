@@ -2794,7 +2794,7 @@ std::vector<std::string> ComplexVariable<std::vector<std::string>>::Eval(
     const ScriptingContext& context) const
 {
     // unindexed empire properties
-    if (m_property_name == "EmpireAdoptedPolices") {
+    if (m_property_name == "EmpireAdoptedPolicies") {
         const int empire_id = m_int_ref1 ? m_int_ref1->Eval(context) : ALL_EMPIRES;
         if (empire_id == ALL_EMPIRES)
             return {};
@@ -2809,7 +2809,7 @@ std::vector<std::string> ComplexVariable<std::vector<std::string>>::Eval(
                        [](const std::string_view sv) -> std::string { return std::string{sv}; });
         return retval;
 
-    } else if (m_property_name == "EmpireAvailablePolices") {
+    } else if (m_property_name == "EmpireAvailablePolicies") {
         const int empire_id = m_int_ref1 ? m_int_ref1->Eval(context) : ALL_EMPIRES;
         if (empire_id == ALL_EMPIRES)
             return {};
