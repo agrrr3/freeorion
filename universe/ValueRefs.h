@@ -1582,9 +1582,6 @@ T ReduceVector<T, V>::Eval(const ScriptingContext& context) const
     return ReduceData<T>(this->m_stat_type, this->m_v_value_ref->Eval(context));
 }
 
-template <>
-FO_COMMON_API int ReduceVector<int, std::string>::Eval(const ScriptingContext& context) const;
-
 ///////////////////////////////////////////////////////////
 // TotalFighterShots (of a carrier during one battle)    //
 ///////////////////////////////////////////////////////////
