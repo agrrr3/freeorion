@@ -1015,8 +1015,8 @@ bool ReduceVector<T, V>::operator==(const ValueRef<T>& rhs) const
 template <typename T, typename V>
 std::string ReduceVector<T, V>::Description() const
 {
-    if (m_v_value_ref) {// FIXME VECTOR
-        return ReduceVectorDescription(this->m_stat_type, /*m_v_value_ref->Description()*/ "");
+    if (m_v_value_ref) {
+        return ReduceVectorDescription(this->m_stat_type, m_v_value_ref->Description());
     }
 
     auto temp = Variable<T>::Description();
