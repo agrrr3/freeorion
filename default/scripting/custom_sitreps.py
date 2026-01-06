@@ -74,14 +74,14 @@ debug_empire_adopted_policies = EffectsGroup(
             parameters={"policies": NumPoliciesAdopted(empire=Source.Owner)},
             empire=Source.Owner,
         ),
-        GenerateSitRepMessage(
-            message="debug_empire_adopted_policies(names): currently adopted policies %policies%",
-            label="SITREP_WELCOME_LABEL",
-            NoStringtableLookup=True,
-            icon="icons/tech/categories/spy.png",
-            parameters={"policies": EmpireAdoptedPolicies(empire=Source.Owner)},
-            empire=Source.Owner,
-        ),
+        #GenerateSitRepMessage(
+        #    message="debug_empire_adopted_policies(names): currently adopted policies %policies%",
+        #    label="SITREP_WELCOME_LABEL",
+        #    NoStringtableLookup=True,
+        #    icon="icons/tech/categories/spy.png",
+        #    parameters={"policies": EmpireAdoptedPolicies(empire=Source.Owner)},
+        #    empire=Source.Owner,
+        #),
     ],
 )
 
