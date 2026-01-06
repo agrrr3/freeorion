@@ -1563,6 +1563,7 @@ T ReduceVector<T, V>::Eval(const ScriptingContext& context) const
     // this statistic type doesn't depend on the object property values,
     // so can be evaluated without getting those values.
 
+    // TODO UNIQUE_COUNT (and others maybe)
     if (this->m_stat_type == StatisticType::COUNT) {
         //  ReduceVector T = std::__cxx11::basic_string<char>; V = std::__cxx11::basic_string<char>
         //     [[nodiscard]] T           Eval(const ScriptingContext& context) const override;
