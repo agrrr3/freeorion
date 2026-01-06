@@ -2826,7 +2826,7 @@ std::vector<std::string> ComplexVariable<std::vector<std::string>>::Eval(
             if (m_int_ref1) {
                 design_id = m_int_ref1->Eval(context);
                 if (design_id == INVALID_DESIGN_ID)
-		  return {};
+                    return {};
             }
             else {
               return {};
@@ -2834,7 +2834,7 @@ std::vector<std::string> ComplexVariable<std::vector<std::string>>::Eval(
 
             const ShipDesign* design = context.ContextUniverse().GetShipDesign(design_id);
             if (!design)
-	      return {};
+                return {};
             std::vector<std::string> partClasses;
             // reusing already counted part classes
             partClasses.reserve(design->PartClassCount().size());
