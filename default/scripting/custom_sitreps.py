@@ -7,6 +7,7 @@ from focs._effects import (
     ContentFocus,
     CurrentTurn,
     EffectsGroup,
+    EmpireAdoptedPolicies,
     EmpireMeterValue,
     EnemyOf,
     Enqueued,
@@ -19,6 +20,7 @@ from focs._effects import (
     LocalCandidate,
     Location,
     Number,
+    NumPoliciesAdopted,
     OneOf,
     OwnedBy,
     OwnerHasTech,
@@ -56,6 +58,31 @@ debug_starlane_travel = EffectsGroup(
         parameters={"ship": Target.ID, "prev": Target.Fleet.PreviousSystemID, "next": Target.Fleet.NextSystemID},
         empire=Source.Owner,
     ),
+)
+
+# This is for exemplifying vector / list types
+debug_empire_adopted_policies = EffectsGroup(
+    scope=IsSource,
+    activation=IsSource,
+    stackinggroup="DEBUG_EMPIRE_ADOPTED_POLICIES",
+    effects=[
+        GenerateSitRepMessage(
+            message="debug_empire_adopted_policies(num): Number of currently adopted policies %policies%",
+            label="SITREP_WELCOME_LABEL",
+            NoStringtableLookup=True,
+            icon="icons/tech/categories/spy.png",
+            parameters={"policies": NumPoliciesAdopted(empire=Source.Owner)},
+            empire=Source.Owner,
+        ),
+        GenerateSitRepMessage(
+            message="debug_empire_adopted_policies(names): currently adopted policies %policies%",
+            label="SITREP_WELCOME_LABEL",
+            NoStringtableLookup=True,
+            icon="icons/tech/categories/spy.png",
+            parameters={"policies": EmpireAdoptedPolicies(empire=Source.Owner)},
+            empire=Source.Owner,
+        ),
+    ],
 )
 
 
