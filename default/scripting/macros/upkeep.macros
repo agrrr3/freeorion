@@ -51,7 +51,7 @@ DESIGN_SIMPLICITY_POLICY_MULTIPLIER
 '''
 
 // Note: colony part class increases complexity by 2; every other classe by 1
-DESIGN_SIMPLICITY_SOURCE_COMPLEXITY_COUNT_VREF
+DESIGN_SIMPLICITY_SOURCE_COMPLEXITY_COUNT_VREF_ZZZ
 '''( Statistic        If condition = And [ Source  DesignHasPartClass low = 1 class = ShortRange ]
           + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = FighterBay ]
           + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = FighterHangar ]
@@ -70,6 +70,10 @@ DESIGN_SIMPLICITY_SOURCE_COMPLEXITY_COUNT_VREF
           + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = ProductionLocation ]
           + (4 * Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = Colony ])
 )
+'''
+
+DESIGN_SIMPLICITY_SOURCE_COMPLEXITY_COUNT_VREF
+'''NamedInteger name="DESIGN_SIMPLICITY_SOURCE_COMPLEXITY_COUNT_VREF" value=1
 '''
 
 // The formula defining the cost factor depending on the complexity

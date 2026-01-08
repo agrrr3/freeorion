@@ -1,7 +1,6 @@
 from focs._effects import (
     EmpireHasAdoptedPolicy,
     IsSource,
-    NumPartClassesInShipDesign,
     Source,
     SpeciesColoniesOwned,
     StatisticIf,
@@ -19,4 +18,5 @@ COLONIZATION_POLICY_MULTIPLIER = (
 )
 
 # TODO needs to add 3 if Colony class type is used
-DESIGN_SIMPLICITY_SOURCE_COMPLEXITY_COUNT_VREF = NumPartClassesInShipDesign(design=UsedInDesignID)
+#DESIGN_SIMPLICITY_SOURCE_COMPLEXITY_COUNT_VREF = NumPartClassesInShipDesign(design=UsedInDesignID)
+DESIGN_SIMPLICITY_SOURCE_COMPLEXITY_COUNT_VREF = 100
