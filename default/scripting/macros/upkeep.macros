@@ -40,6 +40,8 @@ MARINE_RECRUITMENT_POLICY_MULTIPLIER
 '''(1 - 0.5*(Statistic If condition = And [Source EmpireHasAdoptedPolicy empire = Source.Owner name = "PLC_MARINE_RECRUITMENT"]))
 '''
 
+///////////////////////////
+// PLC_DESIGN_SIMPLICITY //
 DESIGN_SIMPLICITY_POLICY_MULTIPLIER
 '''(1.0 - (
    Statistic If condition = And [
@@ -50,30 +52,9 @@ DESIGN_SIMPLICITY_POLICY_MULTIPLIER
 )
 '''
 
-// Note: colony part class increases complexity by 2; every other classe by 1
-DESIGN_SIMPLICITY_SOURCE_COMPLEXITY_COUNT_VREF_ZZZ
-'''( Statistic        If condition = And [ Source  DesignHasPartClass low = 1 class = ShortRange ]
-          + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = FighterBay ]
-          + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = FighterHangar ]
-          + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = Shield ]
-          + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = Armour ]
-          + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = Troops ]
-          + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = Fuel ]
-          + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = Speed ]
-          + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = Stealth ]
-          + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = Detection ]
-          + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = General ]
-          + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = Bombard ]
-          + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = Research ]
-          + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = Industry ]
-          + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = Influence ]
-          + Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = ProductionLocation ]
-          + (4 * Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = Colony ])
-)
-'''
-
+// gets registered in named_values.py as necessary vrefs are not implemented for the legacy focs.txt parser
 DESIGN_SIMPLICITY_SOURCE_COMPLEXITY_COUNT_VREF
-'''NamedInteger name="DESIGN_SIMPLICITY_SOURCE_COMPLEXITY_COUNT_VREF" value=1
+'''NamedIntegerLookup name="DESIGN_SIMPLICITY_SOURCE_COMPLEXITY_COUNT_VREF"
 '''
 
 // The formula defining the cost factor depending on the complexity
@@ -93,3 +74,4 @@ DESIGN_SIMPLICITY_COMPLEXITY_MAX_COUNT_AA
 '''3'''
 DESIGN_SIMPLICITY_COMPLEXITY_MAX_COUNT_A
 '''4'''
+///////////////////////////
