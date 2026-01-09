@@ -1033,6 +1033,25 @@ namespace {
         ));
     }
 
+    value_ref_wrapper<int> insert_num_part_classes_in_ship_design_(const boost::python::tuple& args, const boost::python::dict& kw) {
+        std::unique_ptr<ValueRef::ValueRef<int>> design;
+        auto design_args = boost::python::extract<value_ref_wrapper<int>>(kw["design"]);
+        if (design_args.check()) {
+            design = ValueRef::CloneUnique(design_args().value_ref);
+        } else {
+            design = std::make_unique<ValueRef::Constant<int>>(boost::python::extract<int>(kw["design"])());
+        }
+
+        return value_ref_wrapper<int>(std::make_shared<ValueRef::ComplexVariable<int>>(
+            "NumPartClassesInShipDesign",
+            std::move(design),
+            nullptr,
+            nullptr,
+            nullptr,
+            nullptr
+        ));
+    }
+
     value_ref_wrapper<int> insert_parts_in_ship_design_(const boost::python::tuple& args, const boost::python::dict& kw) {
         std::unique_ptr<ValueRef::ValueRef<std::string>> name;
         if (kw.has_key("name")) {
@@ -1328,6 +1347,7 @@ void RegisterGlobalsValueRefs(boost::python::dict& globals, const PythonParser& 
     globals["ShortestPath"] = insert_shortest_path_;
     globals["JumpsBetween"] = insert_jumps_between_;
     globals["UserString"] = insert_user_string;
+    globals["NumPartClassesInShipDesign"] = boost::python::raw_function(insert_num_part_classes_in_ship_design_);
     globals["PartOfClassInShipDesign"] = boost::python::raw_function(insert_part_of_class_in_ship_design_);
     globals["PartsInShipDesign"] = boost::python::raw_function(insert_parts_in_ship_design_);
     globals["ShipPartMeter"] = boost::python::raw_function(insert_ship_part_meter_);
