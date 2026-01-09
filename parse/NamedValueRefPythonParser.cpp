@@ -56,6 +56,9 @@ namespace parse {
 
     ScopedTimer timer("NamedValue Python Parsing");
 
+    // Importing dependencies
+    parser.LoadValueRefsModule();
+
     bool file_success = true;
     py_grammar p = py_grammar(parser, named_value_definitions);
     for (const auto& file : ListDir(path, IsFOCPyScript))
