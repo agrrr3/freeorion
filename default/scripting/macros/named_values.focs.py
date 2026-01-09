@@ -3,6 +3,7 @@ from focs._effects import (
     NamedInteger,
     NamedReal,
     NumPartClassesInShipDesign,
+    PartOfClassInShipDesign,
     UsedInDesignID,
 )
 
@@ -24,9 +25,10 @@ NamedReal(name="BLD_NEST_RESERVE_WILD_SPAWN_FACTOR", value=0.3)
 # For reduced/increased ship cost
 # value is used in upkeep.focs.txt, can be migrated to upkeep.focs.py as soon as that gets used when parsing ships
 # Note: colony part class increases complexity by 4; every other classe by 1
-# TODO needs to add 3 if Colony class type is used
-#           + (3 * Statistic If condition = And [ Source  DesignHasPartClass low = 1 class = Colony ])
-NamedInteger(name="DESIGN_SIMPLICITY_SOURCE_COMPLEXITY_PC_COLONY", value=1)
+colony_extra_complexity = 3
+NamedInteger(name="DESIGN_SIMPLICITY_SOURCE_COMPLEXITY_PC_COLONY", value=1 + colony_extra_complexity)
 NamedInteger(
-    name="DESIGN_SIMPLICITY_SOURCE_COMPLEXITY_COUNT_VREF", value=NumPartClassesInShipDesign(design=UsedInDesignID)
+    name="DESIGN_SIMPLICITY_SOURCE_COMPLEXITY_COUNT_VREF",
+    value=NumPartClassesInShipDesign(design=UsedInDesignID)
+    + PartOfClassInShipDesign(name="PC_COLONY", design=UsedInDesignID),
 )
