@@ -4,7 +4,7 @@ from focs._effects import (
     NamedReal,
     UsedInDesignID,
 )
-from focs._value_refs import NumPartClassesInShipDesign,PartOfClassInShipDesign
+from focs._value_refs import NumPartClassesInShipDesign, PartOfClassInShipDesign
 
 # Proposed naming convention: <EFFECT_NAME> _ <METER_NAME> _ FLAT/PERPOP/<others>
 # Examples:
