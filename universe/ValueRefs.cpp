@@ -2833,18 +2833,18 @@ std::vector<std::string> ComplexVariable<std::vector<std::string>>::Eval(
             const ShipDesign* design = context.ContextUniverse().GetShipDesign(design_id);
             if (!design)
                 return {};
-            std::vector<std::string> partClasses;
+            std::vector<std::string> part_classes;
             // reusing already counted part classes
-            partClasses.reserve(design->PartClassCount().size());
-            for (auto const& [partClass, count] : design->PartClassCount()) {
+            part_classes.reserve(design->PartClassCount().size());
+            for (auto const& [part_class, count] : design->PartClassCount()) {
                 if (count > 0) {
-                    DebugLogger() << "Adding part class entry for " << partClass << " - has count " << count << " in design "  << design_id;
-                    partClasses.push_back(std::string(to_string(partClass)));
+                    DebugLogger() << "Adding part class entry for " << part_class << " - has count " << count << " in design "  << design_id;
+                    part_classes.push_back(std::string(to_string(part_class)));
                 } else {
-                    ErrorLogger() << "Unexpected part class entry for " << partClass << " - has zero count in design "  << design_id;
+                    ErrorLogger() << "Unexpected part class entry for " << part_class << " - has zero count in design "  << design_id;
                 }
             }
-            return partClasses;
+            return part_classes;
         }
 
         LOG_UNKNOWN_VARIABLE_PROPERTY_TRACE(std::vector<std::string>)
