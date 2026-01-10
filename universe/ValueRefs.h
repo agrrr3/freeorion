@@ -413,8 +413,9 @@ struct FO_COMMON_API ReduceVector final : public Variable<T>
 private:
     static constexpr std::array<bool, 3> CalcRTSI(const std::unique_ptr<ValueRef<std::vector<V>>>& value_ref)
     {
-        //        const auto ref_rtslice = RefsRTSLICE(value_ref);
-        //  return {ref_rtslice[0], ref_rtslice[1], ref_rtslice[2]}; //FIXME
+        // const auto ref_rtslice = RefsRTSLICE(value_ref);
+        // return {ref_rtslice[0], ref_rtslice[1], ref_rtslice[2]};
+        // FIXME: need to check vector entries or not?
         return {false, false, false};
     }
 
