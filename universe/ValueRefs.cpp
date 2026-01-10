@@ -2758,9 +2758,6 @@ std::vector<ShipPartClass> ComplexVariable<std::vector<ShipPartClass>>::Eval(
         std::vector<ShipPartClass> part_classes;
         // reusing already counted part classes
         part_classes.reserve(design->PartClassCount().size());
-        // XXX range_keys
-        //auto ks = range_keys(design->PartClassCount());
-        //std::vector<ShipPart> part_classes_from_r{ ks.begin(), ks.end() };
 
         for (auto const& [part_class, count] : design->PartClassCount()) {
             if (count > 0) {
