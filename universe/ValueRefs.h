@@ -636,8 +636,7 @@ protected:
 template <typename T, typename V = T>
 struct FO_COMMON_API ReduceVector final : public Variable<T>
 {
-  ReduceVector(std::unique_ptr<ValueRef<std::vector<V>>>&& value_ref,
-	       StatisticType stat_type):
+  ReduceVector(std::unique_ptr<ValueRef<std::vector<V>>>&& value_ref, StatisticType stat_type) :
         Variable<T>(CalcRTSI(value_ref), stat_type,
                     CheckSums::GetCheckSum("ValueRef::ReduceVector", stat_type, value_ref)),
         m_v_value_ref(std::move(value_ref))
@@ -655,20 +654,17 @@ struct FO_COMMON_API ReduceVector final : public Variable<T>
 
     [[nodiscard]] const auto* GetValueRef() const noexcept { return m_v_value_ref.get(); }
 
-    // [[nodiscard]] std::unique_ptr<ValueRef<std::vector<T>>> Clone() const override {
-    [[nodiscard]] std::unique_ptr<ValueRef<T>> Clone() const override {
-        return std::make_unique<ReduceVector<T, V>>(CloneUnique(m_v_value_ref), this->m_stat_type);
-    }
+    [[nodiscard]] std::unique_ptr<ValueRef<T>> Clone() const override { return std::make_unique<ReduceVector<T, V>>(CloneUnique(m_v_value_ref), this->m_stat_type); }
 
 private:
     static constexpr std::array<bool, 3> CalcRTSI(const std::unique_ptr<ValueRef<std::vector<V>>>& value_ref)
     {
-      //        const auto ref_rtslice = RefsRTSLICE(value_ref);
-      //  return {ref_rtslice[0], ref_rtslice[1], ref_rtslice[2]}; //FIXME
-      return {false, false, false};
+        //        const auto ref_rtslice = RefsRTSLICE(value_ref);
+        //  return {ref_rtslice[0], ref_rtslice[1], ref_rtslice[2]}; //FIXME
+        return {false, false, false};
     }
 
-    const std::unique_ptr<ValueRef<std::vector<V>>>          m_v_value_ref;
+    const std::unique_ptr<ValueRef<std::vector<V>>> m_v_value_ref;
 };
 
 /** The variable statistic class.   The value returned by this node is
@@ -1260,9 +1256,8 @@ bool ReduceVector<T, V>::operator==(const ValueRef<T>& rhs) const
 template <typename T, typename V>
 std::string ReduceVector<T, V>::Description() const
 {
-    if (m_v_value_ref) {
+    if (m_v_value_ref)
         return ReduceVectorDescription(this->m_stat_type, m_v_value_ref->Description());
-    }
 
     auto temp = Variable<T>::Description();
     if (!temp.empty())
@@ -1270,31 +1265,37 @@ std::string ReduceVector<T, V>::Description() const
 
     return ReduceVectorDescription(this->m_stat_type, "");
 }
+
+static inline std::string DumpToString(const StatisticType stat_type)
+{
+    switch (stat_type) {
+        case StatisticType::IF:             return "If";
+        case StatisticType::COUNT:          return "Count";
+        case StatisticType::UNIQUE_COUNT:   return "CountUnique";
+        case StatisticType::HISTO_MAX:      return "HistogramMax";
+        case StatisticType::HISTO_MIN:      return "HistogramMin";
+        case StatisticType::HISTO_SPREAD:   return "HistogramSpread";
+        case StatisticType::SUM:            return "Sum";
+        case StatisticType::MEAN:           return "Mean";
+        case StatisticType::RMS:            return "RMS";
+        case StatisticType::MODE:           return "Mode";
+        case StatisticType::MAX:            return "Max";
+        case StatisticType::MIN:            return "Min";
+        case StatisticType::SPREAD:         return "Spread";
+        case StatisticType::STDEV:          return "StDev";
+        case StatisticType::PRODUCT:        return "Product";
+        default:                            return "???";
+    }
+}
+
 template <typename T, typename V>
 std::string ReduceVector<T, V>::Dump(uint8_t ntabs) const
 {
     std::string retval = "ReduceVector ";
 
-    switch (this->m_stat_type) {
-        case StatisticType::IF:             retval += "If";                break;
-        case StatisticType::COUNT:          retval += "Count";             break;
-        case StatisticType::UNIQUE_COUNT:   retval += "CountUnique";       break;
-        case StatisticType::HISTO_MAX:      retval += "HistogramMax";      break;
-        case StatisticType::HISTO_MIN:      retval += "HistogramMin";      break;
-        case StatisticType::HISTO_SPREAD:   retval += "HistogramSpread";   break;
-        case StatisticType::SUM:            retval += "Sum";               break;
-        case StatisticType::MEAN:           retval += "Mean";              break;
-        case StatisticType::RMS:            retval += "RMS";               break;
-        case StatisticType::MODE:           retval += "Mode";              break;
-        case StatisticType::MAX:            retval += "Max";               break;
-        case StatisticType::MIN:            retval += "Min";               break;
-        case StatisticType::SPREAD:         retval += "Spread";            break;
-        case StatisticType::STDEV:          retval += "StDev";             break;
-        case StatisticType::PRODUCT:        retval += "Product";           break;
-        default:                            retval += "???";               break;
-    }
+    retval += DumpToString(this->m_stat_type);
     if (m_v_value_ref)
-      retval += " value = " + m_v_value_ref->Dump();
+        retval += " value = " + m_v_value_ref->Dump();
     return retval;
 }
 
@@ -1374,24 +1375,7 @@ std::string Statistic<T, V>::Dump(uint8_t) const
 {
     std::string retval = "Statistic ";
 
-    switch (this->m_stat_type) {
-        case StatisticType::IF:             retval += "If";                break;
-        case StatisticType::COUNT:          retval += "Count";             break;
-        case StatisticType::UNIQUE_COUNT:   retval += "CountUnique";       break;
-        case StatisticType::HISTO_MAX:      retval += "HistogramMax";      break;
-        case StatisticType::HISTO_MIN:      retval += "HistogramMin";      break;
-        case StatisticType::HISTO_SPREAD:   retval += "HistogramSpread";   break;
-        case StatisticType::SUM:            retval += "Sum";               break;
-        case StatisticType::MEAN:           retval += "Mean";              break;
-        case StatisticType::RMS:            retval += "RMS";               break;
-        case StatisticType::MODE:           retval += "Mode";              break;
-        case StatisticType::MAX:            retval += "Max";               break;
-        case StatisticType::MIN:            retval += "Min";               break;
-        case StatisticType::SPREAD:         retval += "Spread";            break;
-        case StatisticType::STDEV:          retval += "StDev";             break;
-        case StatisticType::PRODUCT:        retval += "Product";           break;
-        default:                            retval += "???";               break;
-    }
+    retval += DumpToString(this->m_stat_type);
     if (m_value_ref)
         retval += " value = " + m_value_ref->Dump();
     if (m_sampling_condition)
@@ -1805,7 +1789,7 @@ FO_COMMON_API std::string Statistic<std::string, std::string>::Eval(const Script
 template <typename T, typename V>
 T ReduceVector<T, V>::Eval(const ScriptingContext& context) const
 {
-    // this statistic type doesn't depend on the object property values,
+    // this statistic type doesn't depend on the values,
     // so can be evaluated without getting those values.
 
     // TODO UNIQUE_COUNT (and others maybe)
@@ -1816,7 +1800,7 @@ T ReduceVector<T, V>::Eval(const ScriptingContext& context) const
     //if (this->m_stat_type == StatisticType::IF)
     //    return (m_sampling_condition && m_sampling_condition->EvalAny(context)) ? T{1} : T{0};
 
-    // evaluate property for each condition-matched object
+    // evaluate property for each value in the vector
     return ReduceData<T>(this->m_stat_type, this->m_v_value_ref->Eval(context));
 }
 
