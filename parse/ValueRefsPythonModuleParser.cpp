@@ -12,48 +12,6 @@
 namespace py = boost::python;
 
 namespace {
-    value_ref_wrapper<int> insert_empire_ships_destroyed(const boost::python::tuple& args, const boost::python::dict& kw) {
-        std::unique_ptr<ValueRef::ValueRef<int>> empire;
-        if (kw.has_key("empire")) {
-            auto empire_args = boost::python::extract<value_ref_wrapper<int>>(kw["empire"]);
-            if (empire_args.check()) {
-                empire = ValueRef::CloneUnique(empire_args().value_ref);
-            } else {
-                empire = std::make_unique<ValueRef::Constant<int>>(boost::python::extract<int>(kw["empire"])());
-            }
-        }
-
-        return value_ref_wrapper<int>(std::make_shared<ValueRef::ComplexVariable<int>>(
-            "EmpireShipsDestroyed",
-            std::move(empire),
-            nullptr,
-            nullptr,
-            nullptr,
-            nullptr
-        )); 
-    }
-
-    value_ref_wrapper<int> insert_ship_designs(std::string_view name, const boost::python::tuple& args, const boost::python::dict& kw) {
-        std::unique_ptr<ValueRef::ValueRef<int>> empire;
-        if (kw.has_key("empire")) {
-            empire = pyobject_to_vref<int>(kw["empire"]);
-        }
-
-        std::unique_ptr<ValueRef::ValueRef<std::string>> design;
-        if (kw.has_key("design")) {
-            design = pyobject_to_vref<std::string>(kw["design"]);
-        }
-
-        return value_ref_wrapper<int>(std::make_shared<ValueRef::ComplexVariable<int>>(
-            name.data(),
-            std::move(empire),
-            nullptr,
-            nullptr,
-            std::move(design),
-            nullptr
-        )); 
-    }
-
   value_ref_wrapper<int> insert_complex_i1(std::string&& vname, const boost::python::tuple& args, const boost::python::dict& kw, const std::string&& keyint1) {
         std::unique_ptr<ValueRef::ValueRef<int>> int1;
         auto int1_args = boost::python::extract<value_ref_wrapper<int>>(kw[keyint1]);
@@ -75,21 +33,13 @@ namespace {
 
     value_ref_wrapper<int> insert_complex_i1_s1(std::string&& vname, const boost::python::tuple& args, const boost::python::dict& kw, const std::string&& keyint1, const std::string&& keystr1) {
         std::unique_ptr<ValueRef::ValueRef<int>> int1;
-        auto int1_args = boost::python::extract<value_ref_wrapper<int>>(kw[keyint1]);
-        if (int1_args.check()) {
-            int1 = ValueRef::CloneUnique(int1_args().value_ref);
-        } else {
-            int1 = std::make_unique<ValueRef::Constant<int>>(boost::python::extract<int>(kw["keyint1"])());
+        if (kw.has_key(keyint1)) {
+            int1 = pyobject_to_vref<int>(kw[keyint1]);
         }
 
         std::unique_ptr<ValueRef::ValueRef<std::string>> str1;
         if (kw.has_key(keystr1)) {
-            auto str1_args = boost::python::extract<value_ref_wrapper<std::string>>(kw[keystr1]);
-            if (str1_args.check()) {
-                str1 = ValueRef::CloneUnique(str1_args().value_ref);
-            } else {
-                str1 = std::make_unique<ValueRef::Constant<std::string>>(boost::python::extract<std::string>(kw[keystr1])());
-            }
+            str1 = pyobject_to_vref<std::string>(kw[keystr1]);
         }
 
         return value_ref_wrapper<int>(std::make_shared<ValueRef::ComplexVariable<int>>(
@@ -125,7 +75,8 @@ namespace {
 BOOST_PYTHON_MODULE(_value_refs) {
     boost::python::docstring_options doc_options(true, true, false);
 
-    boost::python::def("EmpireShipsDestroyed", boost::python::raw_function(insert_empire_ships_destroyed));
+    const auto f_insert_empire_ships_destroyed_ = [](const boost::python::tuple& args, const boost::python::dict& kw) { return insert_complex_i1("EmpireShipsDestroyed", args, kw, "empire"); };
+    boost::python::def("EmpireShipsDestroyed", boost::python::raw_function(f_insert_empire_ships_destroyed_));
 
     for (std::string_view name : {"ShipDesignsDestroyed",
                                   "ShipDesignsLost",
@@ -134,7 +85,7 @@ BOOST_PYTHON_MODULE(_value_refs) {
                                   "ShipDesignsProduced",
                                   "ShipDesignsScrapped"})
     {
-            const auto f_insert_ship_designs = [name](const boost::python::tuple& args, const boost::python::dict& kw) { return insert_ship_designs(name, args, kw); };
+            const auto f_insert_ship_designs = [name](const boost::python::tuple& args, const boost::python::dict& kw) { return insert_complex_i1_s1(name.data(),args,kw,"empire","design"); };
             boost::python::def(name.data(), boost::python::raw_function(f_insert_ship_designs));
     }
 
