@@ -1934,6 +1934,9 @@ template <>
 FO_COMMON_API std::vector<std::string> ComplexVariable<std::vector<std::string>>::Eval(const ScriptingContext& context) const;
 
 template <>
+FO_COMMON_API std::vector<ShipPartClass> ComplexVariable<std::vector<ShipPartClass>>::Eval(const ScriptingContext& context) const;
+
+template <>
 FO_COMMON_API Visibility ComplexVariable<Visibility>::Eval(const ScriptingContext& context) const;
 
 template <>
