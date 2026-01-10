@@ -2740,6 +2740,46 @@ std::string ComplexVariable<std::string>::Eval(const ScriptingContext& context) 
 }
 
 template <>
+std::vector<ShipPartClass> ComplexVariable<std::vector<ShipPartClass>>::Eval(
+    const ScriptingContext& context) const
+{
+    if (m_property_name == "PartClassesInShipDesign") {
+        int design_id = INVALID_DESIGN_ID;
+        if (m_int_ref1) {
+            design_id = m_int_ref1->Eval(context);
+            if (design_id == INVALID_DESIGN_ID)
+                return {};
+            }
+        else {
+            return {};
+        }
+
+        const ShipDesign* design = context.ContextUniverse().GetShipDesign(design_id);
+        if (!design)
+            return {};
+        std::vector<ShipPartClass> part_classes;
+        // reusing already counted part classes
+        part_classes.reserve(design->PartClassCount().size());
+        // XXX range_keys
+        //auto ks = range_keys(design->PartClassCount());
+        //std::vector<ShipPart> part_classes_from_r{ ks.begin(), ks.end() };
+
+        for (auto const& [part_class, count] : design->PartClassCount()) {
+            if (count > 0) {
+                DebugLogger() << "Adding part class entry for " << part_class << " - has count " << count << " in design "  << design_id;
+                part_classes.push_back(part_class);
+            } else {
+                ErrorLogger() << "Unexpected part class entry for " << part_class << " - has zero count in design "  << design_id;
+            }
+        }
+        return part_classes;
+    }
+    LOG_UNKNOWN_VARIABLE_PROPERTY_TRACE(std::vector<ShipPartClass>);
+
+    return {};
+}
+
+template <>
 std::vector<std::string> ComplexVariable<std::vector<std::string>>::Eval(
     const ScriptingContext& context) const
 {
@@ -2769,35 +2809,8 @@ std::vector<std::string> ComplexVariable<std::vector<std::string>>::Eval(
 
         const auto& pols = empire->AvailablePolicies();
         return std::vector<std::string>{pols.begin(), pols.end()};
-    } else if (m_property_name == "PartClassesInShipDesign") {
-            int design_id = INVALID_DESIGN_ID;
-            if (m_int_ref1) {
-                design_id = m_int_ref1->Eval(context);
-                if (design_id == INVALID_DESIGN_ID)
-                    return {};
-            }
-            else {
-              return {};
-            }
-
-            const ShipDesign* design = context.ContextUniverse().GetShipDesign(design_id);
-            if (!design)
-                return {};
-            std::vector<std::string> part_classes;
-            // reusing already counted part classes
-            part_classes.reserve(design->PartClassCount().size());
-            for (auto const& [part_class, count] : design->PartClassCount()) {
-                if (count > 0) {
-                    DebugLogger() << "Adding part class entry for " << part_class << " - has count " << count << " in design "  << design_id;
-                    part_classes.push_back(std::string(to_string(part_class)));
-                } else {
-                    ErrorLogger() << "Unexpected part class entry for " << part_class << " - has zero count in design "  << design_id;
-                }
-            }
-            return part_classes;
-        }
-
-        LOG_UNKNOWN_VARIABLE_PROPERTY_TRACE(std::vector<std::string>)
+    }
+    LOG_UNKNOWN_VARIABLE_PROPERTY_TRACE(std::vector<std::string>)
 
     return {};
 }
