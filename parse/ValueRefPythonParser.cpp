@@ -731,20 +731,17 @@ namespace {
         return boost::python::object();
     }
 
-    // struct FO_COMMON_API ReduceVector final : public Variable<T>
-    // ReduceVector(std::unique_ptr<ValueRef<std::vector<V>>>&& value_ref, StatisticType stat_type)
+    template <typename T>
     boost::python::object insert_reduce_vector_(const PythonParser& parser, const ValueRef::StatisticType type, const boost::python::tuple& args, const boost::python::dict& kw) {
         // XXX argument checks
-        auto vector = boost::python::extract<value_ref_wrapper<std::vector<std::string>>>(args[1]);
-        ErrorLogger() << "ValueRefPythonParser::insert_reduce_vector_ ReduceVector";
+        auto vector = boost::python::extract<value_ref_wrapper<std::vector<T>>>(args[1]);
         if (args[0] == parser.type_int) {
-          ErrorLogger() << "ValueRefPythonParser::insert_reduce_vector_ ReduceVector<int,..>";
-          auto fixme = std::make_shared<ValueRef::ReduceVector<int,std::string>>(ValueRef::CloneUnique(vector().value_ref), type);
-          return boost::python::object(value_ref_wrapper<int>(std::move(fixme)));
-          //        } else if (args[0] == parser.type_float) {
-          //          return boost::python::object(value_ref_wrapper<double>(std::make_shared<ValueRef::ReduceVector<double>>(nullptr, type))); // FIXME
-          //        } else if (args[0] == parser.type_str) {
-          //return boost::python::object(value_ref_wrapper<std::string>(std::make_shared<ValueRef::ReduceVector<int,std::string>>(nullptr, type)));
+            return boost::python::object(value_ref_wrapper<int>(std::make_shared<ValueRef::ReduceVector<int,T>>(ValueRef::CloneUnique(vector().value_ref), type)));
+        } else if (args[0] == parser.type_float) {
+            ErrorLogger() << "insert_reduce_vector_(parser.type_float) using untested functionality - remove this log entry after test";
+            return boost::python::object(value_ref_wrapper<double>(std::make_shared<ValueRef::ReduceVector<double,T>>(ValueRef::CloneUnique(vector().value_ref), type)));
+        //} else if (args[0] == parser.type_str) { // only supporting arithmetic T currently
+        //    return boost::python::object(value_ref_wrapper<std::string>(std::make_shared<ValueRef::ReduceVector<std::string,T>>(nullptr, type)));
         } else {
             ErrorLogger() << "Unsupported type for ReduceVector : " << boost::python::extract<std::string>(boost::python::str(args[0]))();
 
@@ -1357,7 +1354,7 @@ void RegisterGlobalsValueRefs(boost::python::dict& globals, const PythonParser& 
     const auto noop = ValueRef::OpType::NOOP;
     const auto xf = [&parser](const boost::python::tuple& args, const boost::python::dict& kw) { return insert_1arg_(parser, noop, args, kw); };
     globals["NoOpValue"] = boost::python::raw_function(xf, 2); // needs type and value like NoOpValue(int, 1)
-    const auto f_insert_vector_count = [&parser](const boost::python::tuple& args, const boost::python::dict& kw) { return insert_reduce_vector_(parser, ValueRef::StatisticType::COUNT, args, kw); };
+    const auto f_insert_vector_count = [&parser](const boost::python::tuple& args, const boost::python::dict& kw) { return insert_reduce_vector_<std::string>(parser, ValueRef::StatisticType::COUNT, args, kw); };
     globals["VectorCount"] = boost::python::raw_function(f_insert_vector_count, 1);
 
     const auto f_insert_statistic_if = [&parser](const boost::python::tuple& args, const boost::python::dict& kw) { return insert_statistic_(parser, ValueRef::StatisticType::IF, args, kw); };
