@@ -12,7 +12,7 @@
 namespace py = boost::python;
 
 namespace {
-  value_ref_wrapper<int> insert_complex_i1(std::string&& vname, const boost::python::tuple& args, const boost::python::dict& kw, const std::string&& keyint1) {
+  value_ref_wrapper<int> insert_complex_i1(std::string&& vname, const boost::python::tuple& args, const boost::python::dict& kw, const std::string& keyint1) {
         std::unique_ptr<ValueRef::ValueRef<int>> int1;
         auto int1_args = boost::python::extract<value_ref_wrapper<int>>(kw[keyint1]);
         if (int1_args.check()) {
@@ -31,7 +31,7 @@ namespace {
         ));
     }
 
-    value_ref_wrapper<int> insert_complex_i1_s1(std::string&& vname, const boost::python::tuple& args, const boost::python::dict& kw, const std::string&& keyint1, const std::string&& keystr1) {
+    value_ref_wrapper<int> insert_complex_i1_s1(std::string&& vname, const boost::python::tuple& args, const boost::python::dict& kw, const std::string& keyint1, const std::string& keystr1) {
         std::unique_ptr<ValueRef::ValueRef<int>> int1;
         if (kw.has_key(keyint1)) {
             int1 = pyobject_to_vref<int>(kw[keyint1]);
