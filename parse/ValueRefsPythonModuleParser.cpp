@@ -105,5 +105,10 @@ BOOST_PYTHON_MODULE(_value_refs) {
 
     const auto type_int = py::import("builtins").attr("int");
     const auto type_float = py::import("builtins").attr("float");
+
+    py::def("RandomNumber", py::make_function(
+        [type_int, type_float](const py::object& type, const py::object& min, const py::object& max) { return insert_random_number_operation(type_int, type_float, type, min, max); },
+        py::default_call_policies(),
+        boost::mpl::vector<py::object, const py::object&, const py::object&, const py::object&>()));
 }
 
