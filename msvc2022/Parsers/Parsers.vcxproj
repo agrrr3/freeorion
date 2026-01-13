@@ -279,6 +279,7 @@
       <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4180;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4180</DisableSpecificWarnings>
     </ClCompile>
+    <ClCompile Include="..\..\parse\NamedValueRefPythonParser.cpp" />
     <ClCompile Include="..\..\parse\ConditionsPythonModuleParser.cpp" />
     <ClCompile Include="..\..\parse\ValueRefsPythonModuleParser.cpp" />
     <ClCompile Include="..\..\parse\EffectsPythonModuleParser.cpp" />
