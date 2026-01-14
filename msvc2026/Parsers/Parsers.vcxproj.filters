@@ -77,6 +77,9 @@
     <ClCompile Include="..\..\parse\NamedValueRefParser.cpp">
       <Filter>Source Files\parse</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\parse\NamedValueRefPythonParser.cpp">
+      <Filter>Source Files\parse</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\parse\ReportParseError.cpp">
       <Filter>Source Files\parse</Filter>
     </ClCompile>
@@ -181,6 +184,9 @@
       <Filter>Source Files\parse</Filter>
     </ClCompile>
     <ClCompile Include="..\..\parse\ValueRefPythonParser.cpp">
+      <Filter>Source Files\parse</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parse\ConditionsPythonModuleParser.cpp">
       <Filter>Source Files\parse</Filter>
     </ClCompile>
     <ClCompile Include="..\..\parse\ValueRefsPythonModuleParser.cpp">
