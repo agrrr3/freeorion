@@ -275,6 +275,7 @@
     </ClCompile>
     <ClCompile Include="..\..\parse\UniverseObjectTypeValueRefParser.cpp" />
     <ClCompile Include="..\..\parse\ValueRefParser.cpp" />
+    <ClCompile Include="..\..\parse\NamedValueRefPythonParser.cpp" />
     <ClCompile Include="..\..\parse\ValueRefsPythonModuleParser.cpp" />
     <ClCompile Include="..\..\parse\EffectsPythonModuleParser.cpp" />
     <ClCompile Include="..\..\parse\VisibilityValueRefParser.cpp" />
