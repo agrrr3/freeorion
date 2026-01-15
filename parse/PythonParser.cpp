@@ -478,6 +478,9 @@ void PythonParser::UnloadModule(py::object module) const {
 void PythonParser::LoadValueRefsModule() const
 { (void)LoadModule(&PyInit__value_refs); } // marked [[nodiscard]] but result not needed in this case
 
+void PythonParser::LoadNamedValuesModule() const
+{ (void)LoadModule(&PyInit__named_values); } // marked [[nodiscard]] but result not needed in this case
+
 void PythonParser::LoadEffectsModule() const
 { (void)LoadModule(&PyInit__effects_new); } // marked [[nodiscard]] but result not needed in this case
 
