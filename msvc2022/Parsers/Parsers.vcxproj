@@ -325,6 +325,7 @@
     <ClInclude Include="..\..\parse\PythonParser.h" />
     <ClInclude Include="..\..\parse\ValueRefPythonParser.h" />
     <ClInclude Include="..\..\parse\ValueRefsPythonModuleParser.h" />
+    <ClInclude Include="..\..\parse\NamedValueRefPythonParser.h" />
     <ClInclude Include="..\..\parse\EffectsPythonModuleParser.h" />
     <ClInclude Include="..\..\parse\ConditionPythonParser.h" />
     <ClInclude Include="..\..\parse\EffectPythonParser.h" />
