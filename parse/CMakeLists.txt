@@ -87,6 +87,7 @@ if(BUILD_PARSERS)
             ${CMAKE_CURRENT_LIST_DIR}/PythonParser.cpp
             ${CMAKE_CURRENT_LIST_DIR}/SourcePythonParser.cpp
             ${CMAKE_CURRENT_LIST_DIR}/ConditionPythonParser.cpp
+            ${CMAKE_CURRENT_LIST_DIR}/ConditionsPythonModuleParser.cpp
             ${CMAKE_CURRENT_LIST_DIR}/ValueRefsPythonModuleParser.cpp
             ${CMAKE_CURRENT_LIST_DIR}/EffectsPythonModuleParser.cpp
             ${CMAKE_CURRENT_LIST_DIR}/ConditionPythonParser.h
@@ -94,6 +95,7 @@ if(BUILD_PARSERS)
             ${CMAKE_CURRENT_LIST_DIR}/EnumPythonParser.h
             ${CMAKE_CURRENT_LIST_DIR}/SourcePythonParser.h
             ${CMAKE_CURRENT_LIST_DIR}/ValueRefPythonParser.h
+            ${CMAKE_CURRENT_LIST_DIR}/ConditionsPythonModuleParser.h
             ${CMAKE_CURRENT_LIST_DIR}/ValueRefsPythonModuleParser.h
             ${CMAKE_CURRENT_LIST_DIR}/EffectsPythonModuleParser.h
     )
