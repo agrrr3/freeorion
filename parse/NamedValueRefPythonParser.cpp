@@ -1,4 +1,5 @@
 #include "Parse.h"
+#include "NamedValueRefPythonParser.h"
 
 #include "PythonParserImpl.h"
 #include "ValueRefPythonParser.h"
@@ -19,8 +20,6 @@
 #include <boost/python/module.hpp>
 #include <boost/python/raw_function.hpp>
 #include <boost/python/scope.hpp>
-
-extern "C" BOOST_SYMBOL_EXPORT PyObject* PyInit__named_values();
 
 namespace {
     DeclareThreadSafeLogger(parsing);

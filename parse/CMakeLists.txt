@@ -96,6 +96,7 @@ if(BUILD_PARSERS)
             ${CMAKE_CURRENT_LIST_DIR}/SourcePythonParser.h
             ${CMAKE_CURRENT_LIST_DIR}/ValueRefPythonParser.h
             ${CMAKE_CURRENT_LIST_DIR}/ValueRefsPythonModuleParser.h
+            ${CMAKE_CURRENT_LIST_DIR}/NamedValueRefPythonParser.h
             ${CMAKE_CURRENT_LIST_DIR}/EffectsPythonModuleParser.h
     )
     if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
