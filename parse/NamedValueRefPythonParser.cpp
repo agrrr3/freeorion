@@ -12,15 +12,22 @@
 #include "../universe/ValueRef.h"
 #include "../util/Directories.h"
 
+#include <boost/python/class.hpp>
+#include <boost/python/def.hpp>
+#include <boost/python/docstring_options.hpp>
 #include <boost/python/import.hpp>
+#include <boost/python/module.hpp>
 #include <boost/python/raw_function.hpp>
+#include <boost/python/scope.hpp>
+
+extern "C" BOOST_SYMBOL_EXPORT PyObject* PyInit__named_values();
 
 namespace {
     DeclareThreadSafeLogger(parsing);
 
     using start_rule_payload = std::map<std::string, std::unique_ptr<ValueRef::ValueRefBase>, std::less<>>;
 
-    boost::python::object py_insert_named_value_definitions_(start_rule_payload& we_dont_care_and_ignore_, const boost::python::tuple& args,
+    boost::python::object py_insert_named_value_definitions_(boost::python::object scope, const boost::python::tuple& args,
                                              const boost::python::dict& kw)
     {
         // actually there is no payload, calling NamedInteger, NamedReal... registers the named values
@@ -31,35 +38,60 @@ namespace {
 
     struct py_grammar {
         boost::python::dict globals;
+        const PythonParser& parser;
+        boost::python::object module;
+        start_rule_payload& named_value_definitions;
 
-        py_grammar(const PythonParser& parser, start_rule_payload& named_value_definitions_) :
-            globals(boost::python::import("builtins").attr("__dict__"))
-        {
+        py_grammar(const PythonParser& parser_, start_rule_payload& named_value_definitions_) :
+            globals(boost::python::import("builtins").attr("__dict__")),
+            parser(parser_),
+            module(parser_.LoadModule(&PyInit__named_values)),
+          named_value_definitions(named_value_definitions_)
+      {
             RegisterGlobalsEffects(globals);
             RegisterGlobalsConditions(globals);
-            RegisterGlobalsValueRefs(globals, parser);
+            RegisterGlobalsValueRefs(globals, parser_);
             RegisterGlobalsSources(globals);
             RegisterGlobalsEnums(globals);
 
-            globals["NamedValuesPyFile"] = boost::python::raw_function(
-                [&named_value_definitions_](const boost::python::tuple& args, const boost::python::dict& kw)
-                { return py_insert_named_value_definitions_(named_value_definitions_, args, kw); });
+            parser.LoadValueRefsModule();
+            parser.LoadEffectsModule();
+
+            module.attr("__grammar") = boost::cref(*this);
+        }
+
+        ~py_grammar() {
+            parser.UnloadModule(module);
         }
 
         boost::python::dict operator()() const { return globals; }
     };
 }
 
+
+BOOST_PYTHON_MODULE(_named_values) {
+    boost::python::docstring_options doc_options(true, true, false);
+
+    boost::python::class_<py_grammar, boost::python::bases<>, py_grammar, boost::noncopyable>("__Grammar", boost::python::no_init);
+
+    boost::python::object current_module = boost::python::scope();
+
+    boost::python::def("NamedValuesPyFile", boost::python::raw_function(
+        [current_module](const boost::python::tuple& args, const boost::python::dict& kw)
+        { return py_insert_named_value_definitions_(current_module, args, kw); }));
+}
+
+
 namespace parse {
     start_rule_payload named_value_refs_py(const PythonParser& parser, const std::filesystem::path& path, bool& success) {
-    start_rule_payload named_value_definitions;
+        start_rule_payload named_value_definitions;
 
-    ScopedTimer timer("NamedValue Python Parsing");
+        ScopedTimer timer("NamedValue Python Parsing");
 
-    bool file_success = true;
-    py_grammar p = py_grammar(parser, named_value_definitions);
-    for (const auto& file : ListDir(path, IsFOCPyScript))
-        file_success = py_parse::detail::parse_file<py_grammar>(parser, file, p) && file_success;
+        bool file_success = true;
+        py_grammar p = py_grammar(parser, named_value_definitions);
+        for (const auto& file : ListDir(path, IsFOCPyScript))
+            file_success = py_parse::detail::parse_file<py_grammar>(parser, file, p) && file_success;
 
         TraceLogger(parsing) << "Start parsing FOCS for NamedValue definitions: " << named_value_definitions.size();
         for (auto& [name, def] : named_value_definitions)
