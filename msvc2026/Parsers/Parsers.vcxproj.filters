@@ -294,6 +294,9 @@
     <ClInclude Include="..\..\parse\ValueRefsPythonModuleParser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\parse\NamedValueRefPythonParser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\parse\EffectsPythonModuleParser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
