@@ -7,7 +7,6 @@ from focs._effects import (
     ContentFocus,
     CurrentTurn,
     EffectsGroup,
-    EmpireAdoptedPolicies,
     EmpireMeterValue,
     EnemyOf,
     Enqueued,
@@ -38,6 +37,7 @@ from focs._effects import (
     VectorCount,
     VisibleToEmpire,
 )
+from focs._value_refs import EmpireAdoptedPolicies
 from macros.priorities import END_CLEANUP_PRIORITY
 
 ETA_NEXT_TURN = CurrentTurn + LocalCandidate.ETA - 1
