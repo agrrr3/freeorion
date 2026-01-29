@@ -12,6 +12,26 @@
 namespace py = boost::python;
 
 namespace {
+    value_ref_wrapper<std::vector<std::string>> insert_empire_adopted_policies_(const boost::python::tuple& args, const boost::python::dict& kw) {
+        std::unique_ptr<ValueRef::ValueRef<int>> empire;
+        if (kw.has_key("empire")) {
+            auto empire_args = boost::python::extract<value_ref_wrapper<int>>(kw["empire"]);
+            if (empire_args.check()) {
+                empire = ValueRef::CloneUnique(empire_args().value_ref);
+            } else {
+                empire = std::make_unique<ValueRef::Constant<int>>(boost::python::extract<int>(kw["empire"])());
+            }
+        }
+        return value_ref_wrapper<std::vector<std::string>>(std::make_shared<ValueRef::ComplexVariable<std::vector<std::string>>>(
+            "EmpireAdoptedPolicies",
+            std::move(empire),
+            nullptr,
+            nullptr,
+            nullptr,
+            nullptr
+        ));
+    }
+
   value_ref_wrapper<int> insert_complex_i1(std::string&& vname, const boost::python::tuple& args, const boost::python::dict& kw, const std::string& keyint1) {
         std::unique_ptr<ValueRef::ValueRef<int>> int1;
         auto int1_args = boost::python::extract<value_ref_wrapper<int>>(kw[keyint1]);
@@ -105,6 +125,8 @@ BOOST_PYTHON_MODULE(_value_refs) {
 
     const auto type_int = py::import("builtins").attr("int");
     const auto type_float = py::import("builtins").attr("float");
+
+    py::def("EmpireAdoptedPolicies", boost::python::raw_function(insert_empire_adopted_policies_));
 
     py::def("RandomNumber", py::make_function(
         [type_int, type_float](const py::object& type, const py::object& min, const py::object& max) { return insert_random_number_operation(type_int, type_float, type, min, max); },
