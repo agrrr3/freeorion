@@ -1134,26 +1134,6 @@ namespace {
         ));
     }
 
-    value_ref_wrapper<std::vector<std::string>> insert_empire_adopted_policies_(const boost::python::tuple& args, const boost::python::dict& kw) {
-        std::unique_ptr<ValueRef::ValueRef<int>> empire;
-        if (kw.has_key("empire")) {
-            auto empire_args = boost::python::extract<value_ref_wrapper<int>>(kw["empire"]);
-            if (empire_args.check()) {
-                empire = ValueRef::CloneUnique(empire_args().value_ref);
-            } else {
-                empire = std::make_unique<ValueRef::Constant<int>>(boost::python::extract<int>(kw["empire"])());
-            }
-        }
-        return value_ref_wrapper<std::vector<std::string>>(std::make_shared<ValueRef::ComplexVariable<std::vector<std::string>>>(
-            "EmpireAdoptedPolicies",
-            std::move(empire),
-            nullptr,
-            nullptr,
-            nullptr,
-            nullptr
-        ));
-    }
-
     value_ref_wrapper<double> insert_empire_stockpile_(const boost::python::tuple& args, const boost::python::dict& kw) {
         std::unique_ptr<ValueRef::ValueRef<int>> empire;
         auto empire_args = boost::python::extract<value_ref_wrapper<int>>(kw["empire"]);
@@ -1373,7 +1353,6 @@ void RegisterGlobalsValueRefs(boost::python::dict& globals, const PythonParser& 
     globals["PartsInShipDesign"] = boost::python::raw_function(insert_parts_in_ship_design_);
     globals["ShipPartMeter"] = boost::python::raw_function(insert_ship_part_meter_);
     globals["EmpireMeterValue"] = boost::python::raw_function(insert_empire_meter_value_);
-    globals["EmpireAdoptedPolicies"] = boost::python::raw_function(insert_empire_adopted_policies_);
     globals["EmpireStockpile"] = boost::python::raw_function(insert_empire_stockpile_);
     globals["PlanetTypeDifference"] = boost::python::raw_function(insert_planet_type_difference_);
     globals["Const"] = boost::python::make_function([&parser](const boost::python::object& type, const boost::python::object& value) { return insert_const_(parser, type, value); },
