@@ -2741,7 +2741,7 @@ template <>
 std::vector<ShipPartClass> ComplexVariable<std::vector<ShipPartClass>>::Eval(
     const ScriptingContext& context) const
 {
-    if (m_property_name == "PartClassesInShipDesign") {
+    if (m_property == Property::PartClassesInShipDesign) {
         int design_id = INVALID_DESIGN_ID;
         if (m_int_ref1) {
             design_id = m_int_ref1->Eval(context);
@@ -2779,7 +2779,7 @@ std::vector<std::string> ComplexVariable<std::vector<std::string>>::Eval(
     const ScriptingContext& context) const
 {
     // unindexed empire properties
-    if (m_property == Property::EmpireAdoptedPolices) {
+    if (m_property == Property::EmpireAdoptedPolicies) {
         const int empire_id = m_int_ref1 ? m_int_ref1->Eval(context) : ALL_EMPIRES;
         if (empire_id == ALL_EMPIRES)
             return {};
