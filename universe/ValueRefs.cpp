@@ -2805,6 +2805,7 @@ std::vector<std::string> ComplexVariable<std::vector<std::string>>::Eval(
         const auto& pols = empire->AvailablePolicies();
         return std::vector<std::string>{pols.begin(), pols.end()};
     }
+    ErrorLogger() << "Unexpected property of type '" << m_property << "'";
     LOG_UNKNOWN_VARIABLE_PROPERTY_TRACE(std::vector<std::string>)
 
     return {};
