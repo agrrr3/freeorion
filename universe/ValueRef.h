@@ -243,6 +243,7 @@ decltype(auto) FlexibleToString(T&& t)
 [[nodiscard]] FO_COMMON_API std::string FlexibleToString(PlanetEnvironment t);
 [[nodiscard]] FO_COMMON_API std::string FlexibleToString(PlanetType t);
 [[nodiscard]] FO_COMMON_API std::string FlexibleToString(PlanetSize t);
+[[nodiscard]] FO_COMMON_API std::string FlexibleToString(ShipPartClass t);
 [[nodiscard]] FO_COMMON_API std::string FlexibleToString(Visibility t);
 [[nodiscard]] FO_COMMON_API std::string FlexibleToString(UniverseObjectType t);
 
