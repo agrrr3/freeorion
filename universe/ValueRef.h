@@ -243,9 +243,46 @@ decltype(auto) FlexibleToString(T&& t)
 [[nodiscard]] FO_COMMON_API std::string FlexibleToString(PlanetEnvironment t);
 [[nodiscard]] FO_COMMON_API std::string FlexibleToString(PlanetType t);
 [[nodiscard]] FO_COMMON_API std::string FlexibleToString(PlanetSize t);
+[[nodiscard]] FO_COMMON_API std::string FlexibleToString(ShipPartClass t);
 [[nodiscard]] FO_COMMON_API std::string FlexibleToString(Visibility t);
 [[nodiscard]] FO_COMMON_API std::string FlexibleToString(UniverseObjectType t);
 
+template <typename EnumT>
+std::string EnumToString(EnumT t);
+
+// after declarations of specialization of FlexibleToString for enums
+template<typename T>
+decltype(auto) FlexibleToString(std::vector<T>&& tv)
+{
+    if constexpr (std::is_same_v<T, int> || std::is_same_v<T, double>) {
+        std::string retval;
+        for (auto& ts: tv)
+            retval.append(std::to_string(ts));
+        return retval;
+
+    } else if constexpr (std::is_same_v<T, std::string>) {
+        std::size_t total_size = 0;
+        for (auto& ts : tv)
+            total_size += ts.size();
+        std::string retval;
+        retval.reserve(total_size);
+        for (auto& ts: tv)
+            retval.append(ts);
+        return retval;
+
+    } else if constexpr (std::is_enum_v<T>) { //XXX
+        std::string retval;
+        for (auto& ts: tv)
+            retval.append(EnumToString(ts));
+        return retval;
+
+    } else {
+        std::string retval;
+        for (auto& ts: tv)
+          retval.append(FlexibleToString<T>(std::move(ts)));
+        return retval;
+    }
+}
 
 //! The base class for all ValueRef classes returning type T. This class
 //! provides the public interface for a ValueRef expression tree.
