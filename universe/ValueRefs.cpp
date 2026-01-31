@@ -320,6 +320,7 @@ std::string FlexibleToString(StarType t) { return EnumToString(t); }
 std::string FlexibleToString(PlanetEnvironment t) { return EnumToString(t); }
 std::string FlexibleToString(PlanetType t) { return EnumToString(t); }
 std::string FlexibleToString(PlanetSize t) { return EnumToString(t); }
+std::string FlexibleToString(ShipPartClass t) { return EnumToString(t); }
 std::string FlexibleToString(Visibility t) { return EnumToString(t); }
 std::string FlexibleToString(UniverseObjectType t) { return EnumToString(t); }
 
