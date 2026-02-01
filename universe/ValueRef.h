@@ -261,8 +261,7 @@ decltype(auto) FlexibleToString(std::vector<T>&& tv)
     } else {
         std::string retval;
         for (auto& ts: tv)
-//            retval.append("bla");
-            retval.append(FlexibleToString<T>(ts));
+          retval.append(FlexibleToString<T>(std::move(ts)));
         return retval;
     }
 }
