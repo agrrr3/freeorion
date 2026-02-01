@@ -239,10 +239,39 @@ decltype(auto) FlexibleToString(T&& t)
     }
 }
 
+template<typename T>
+decltype(auto) FlexibleToString(std::vector<T>&& tv)
+{
+    if constexpr (std::is_same_v<T, int> || std::is_same_v<T, double>) {
+        std::string retval;
+        for (auto& ts: tv)
+            retval.append(std::to_string(ts));
+        return retval;
+
+    } else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
+        std::size_t total_size = 0;
+        for (auto& ts : tv)
+            total_size += ts.size();
+        std::string retval;
+        retval.reserve(total_size);
+        for (auto& ts: tv)
+            retval.append(ts);
+        return retval;
+
+    } else {
+        std::string retval;
+        for (auto& ts: tv)
+//            retval.append("bla");
+            retval.append(FlexibleToString<T>(ts));
+        return retval;
+    }
+}
+    
 [[nodiscard]] FO_COMMON_API std::string FlexibleToString(StarType t);
 [[nodiscard]] FO_COMMON_API std::string FlexibleToString(PlanetEnvironment t);
 [[nodiscard]] FO_COMMON_API std::string FlexibleToString(PlanetType t);
 [[nodiscard]] FO_COMMON_API std::string FlexibleToString(PlanetSize t);
+[[nodiscard]] FO_COMMON_API std::string FlexibleToString(ShipPartClass t);
 [[nodiscard]] FO_COMMON_API std::string FlexibleToString(ShipPartClass t);
 [[nodiscard]] FO_COMMON_API std::string FlexibleToString(Visibility t);
 [[nodiscard]] FO_COMMON_API std::string FlexibleToString(UniverseObjectType t);
