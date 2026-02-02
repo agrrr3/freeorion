@@ -239,6 +239,16 @@ decltype(auto) FlexibleToString(T&& t)
     }
 }
 
+[[nodiscard]] FO_COMMON_API std::string FlexibleToString(StarType t);
+[[nodiscard]] FO_COMMON_API std::string FlexibleToString(PlanetEnvironment t);
+[[nodiscard]] FO_COMMON_API std::string FlexibleToString(PlanetType t);
+[[nodiscard]] FO_COMMON_API std::string FlexibleToString(PlanetSize t);
+[[nodiscard]] FO_COMMON_API std::string FlexibleToString(ShipPartClass t);
+[[nodiscard]] FO_COMMON_API std::string FlexibleToString(ShipPartClass t);
+[[nodiscard]] FO_COMMON_API std::string FlexibleToString(Visibility t);
+[[nodiscard]] FO_COMMON_API std::string FlexibleToString(UniverseObjectType t);
+
+// after declarations of specialization of FlexibleToString for enums
 template<typename T>
 decltype(auto) FlexibleToString(std::vector<T>&& tv)
 {
@@ -266,14 +276,6 @@ decltype(auto) FlexibleToString(std::vector<T>&& tv)
     }
 }
     
-[[nodiscard]] FO_COMMON_API std::string FlexibleToString(StarType t);
-[[nodiscard]] FO_COMMON_API std::string FlexibleToString(PlanetEnvironment t);
-[[nodiscard]] FO_COMMON_API std::string FlexibleToString(PlanetType t);
-[[nodiscard]] FO_COMMON_API std::string FlexibleToString(PlanetSize t);
-[[nodiscard]] FO_COMMON_API std::string FlexibleToString(ShipPartClass t);
-[[nodiscard]] FO_COMMON_API std::string FlexibleToString(ShipPartClass t);
-[[nodiscard]] FO_COMMON_API std::string FlexibleToString(Visibility t);
-[[nodiscard]] FO_COMMON_API std::string FlexibleToString(UniverseObjectType t);
 
 
 //! The base class for all ValueRef classes returning type T. This class
