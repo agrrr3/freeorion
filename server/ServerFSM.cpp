@@ -750,7 +750,7 @@ sc::result Idle::react(const Hostless&) {
     } else {
         DebugLogger(FSM) << "Loading file " << autostart_load_filename;
         try {
-            server.Networking().SendMessageAll(TurnProgressMessage(Message::TurnProgressPhase::LOADING_GAME));
+            // expect no players to send error message to
 
             bool load_success = LoadGame(autostart_load_filename,   *server_save_game_data,
                                          player_save_game_data,     server.GetUniverse(),
@@ -785,7 +785,7 @@ sc::result Idle::react(const Hostless&) {
                 lobby_data->players.emplace_back(Networking::INVALID_PLAYER_ID, std::move(player_setup_data));
             }
         } catch (const std::exception& e) {
-            SendMessageToHost(ErrorMessage(UserStringNop("UNABLE_TO_READ_SAVE_FILE"), true));
+            // expect no players to send error message to
             ErrorLogger(FSM) << "Failed to load save file: " << e.what();
             throw e;
         }
@@ -795,9 +795,9 @@ sc::result Idle::react(const Hostless&) {
 
     // copy locally stored data to common server fsm context so it can be
     // retreived in WaitingForMPGameJoiners
-    context<ServerFSM>().m_lobby_data = lobby_data;
-    context<ServerFSM>().m_player_save_game_data = player_save_game_data;
-    context<ServerFSM>().m_server_save_game_data = server_save_game_data;
+    context<ServerFSM>().m_lobby_data = std::move(lobby_data);
+    context<ServerFSM>().m_player_save_game_data = std::move(player_save_game_data);
+    context<ServerFSM>().m_server_save_game_data = std::move(server_save_game_data);
 
     return transit<WaitingForMPGameJoiners>();
 }
