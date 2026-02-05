@@ -204,10 +204,18 @@ protected:
     uint32_t m_return_immediate_value : 1 = false;
 };
 
+
+template <class N>
+struct is_vector { static const int value = 0; };
+
+template <class N, class A>
+struct is_vector<std::vector<N, A> > { static const int value = 1; };
+
 template<typename T>
 decltype(auto) FlexibleToString(T&& t)
 {
     static_assert(!std::is_enum_v<T>);
+    static_assert(!is_vector<T>::value);
 
     if constexpr (std::is_floating_point_v<std::decay_t<T>>) {
         return DoubleToString(t, 3, false);
@@ -217,22 +225,6 @@ decltype(auto) FlexibleToString(T&& t)
 
     } else if constexpr (std::is_same_v<std::decay_t<T>, std::string_view>) {
         return std::string{t};
-
-    } else if constexpr (std::is_same_v<T, std::vector<int>> || std::is_same_v<T, std::vector<double>>) {
-        std::string retval;
-        for (auto& ts: t)
-            retval.append(std::to_string(ts));
-        return retval;
-
-    } else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
-        std::size_t total_size = 0;
-        for (auto& ts : t)
-            total_size += ts.size();
-        std::string retval;
-        retval.reserve(total_size);
-        for (auto& ts: t)
-            retval.append(ts);
-        return retval;
 
     } else {
         return std::to_string(t);
@@ -270,7 +262,7 @@ decltype(auto) FlexibleToString(std::vector<T>&& tv)
             retval.append(ts);
         return retval;
 
-    } else if constexpr (std::is_enum_v<T>) { //XXX
+    } else if constexpr (std::is_enum_v<T>) {
         std::string retval;
         for (auto& ts: tv)
             retval.append(EnumToString(ts));
