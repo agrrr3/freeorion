@@ -93,8 +93,10 @@ namespace {
 
     template <typename T>
     boost::python::object insert_reduce_vector_(const py::object& type_int, const py::object& type_float, const ValueRef::StatisticType type, const boost::python::tuple& args, const boost::python::dict& kw) {
-        // XXX argument checks
         auto vector = boost::python::extract<value_ref_wrapper<std::vector<T>>>(args[1]);
+        if (!vector.check()) {
+            ErrorLogger() << "No vector vref in ReduceVector";
+        }
         if (args[0] == type_int) {
             return boost::python::object(value_ref_wrapper<int>(std::make_shared<ValueRef::ReduceVector<int,T>>(ValueRef::CloneUnique(vector().value_ref), type)));
         } else if (args[0] == type_float) {
