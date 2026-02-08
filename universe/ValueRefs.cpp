@@ -2748,8 +2748,7 @@ std::vector<ShipPartClass> ComplexVariable<std::vector<ShipPartClass>>::Eval(
             design_id = m_int_ref1->Eval(context);
             if (design_id == INVALID_DESIGN_ID)
                 return {};
-            }
-        else {
+        } else {
             return {};
         }
 
