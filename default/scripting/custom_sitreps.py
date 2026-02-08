@@ -7,7 +7,6 @@ from focs._effects import (
     ContentFocus,
     CurrentTurn,
     EffectsGroup,
-    EmpireAdoptedPolicies,
     EmpireMeterValue,
     EnemyOf,
     Enqueued,
@@ -35,7 +34,6 @@ from focs._effects import (
     TurnTechResearched,
     Unowned,
     UserString,
-    VectorCount,
     VisibleToEmpire,
 )
 from focs._value_refs import (
