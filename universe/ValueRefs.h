@@ -1791,17 +1791,21 @@ T ReduceVector<T, V>::Eval(const ScriptingContext& context) const
 {
     // this statistic type doesn't depend on the values,
     // so can be evaluated without getting those values.
+    if (!this->m_v_value_ref) {
+        ErrorLogger() << "ReduceVector is missing vector reference";
+        return -1;
+    }
 
     // TODO UNIQUE_COUNT (and others maybe)
     if (this->m_stat_type == StatisticType::COUNT)
-        return static_cast<T>(this->m_v_value_ref->Eval(context).size());
+        return static_cast<T>(m_v_value_ref->Eval(context).size());
 
     // TODO
     //if (this->m_stat_type == StatisticType::IF)
     //    return (m_sampling_condition && m_sampling_condition->EvalAny(context)) ? T{1} : T{0};
 
     // evaluate property for each value in the vector
-    return ReduceData<T>(this->m_stat_type, this->m_v_value_ref->Eval(context));
+    return ReduceData<T>(this->m_stat_type, m_v_value_ref->Eval(context));
 }
 
 ///////////////////////////////////////////////////////////
