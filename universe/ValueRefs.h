@@ -1789,13 +1789,13 @@ FO_COMMON_API std::string Statistic<std::string, std::string>::Eval(const Script
 template <typename T, typename V>
 T ReduceVector<T, V>::Eval(const ScriptingContext& context) const
 {
-    // this statistic type doesn't depend on the values,
-    // so can be evaluated without getting those values.
     if (!this->m_v_value_ref) {
         ErrorLogger() << "ReduceVector is missing vector reference";
         return -1;
     }
 
+    // count does not depend on the values,
+    // so can be evaluated without getting those values.
     // TODO UNIQUE_COUNT (and others maybe)
     if (this->m_stat_type == StatisticType::COUNT)
         return static_cast<T>(m_v_value_ref->Eval(context).size());
