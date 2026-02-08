@@ -1266,7 +1266,7 @@ std::string ReduceVector<T, V>::Description() const
     return ReduceVectorDescription(this->m_stat_type, "");
 }
 
-static inline std::string DumpToString(const StatisticType stat_type)
+[[nodiscard]] constexpr std::string_view DumpToString(const StatisticType stat_type) noexcept
 {
     switch (stat_type) {
         case StatisticType::IF:             return "If";
