@@ -212,7 +212,7 @@ template <class N, class A>
 struct is_vector<std::vector<N, A> > { static const int value = 1; };
 
 template<typename T>
-decltype(auto) FlexibleToString(T&& t)
+decltype(auto) FlexibleToString(const T& t)
 {
     static_assert(!std::is_enum_v<T>);
     static_assert(!is_vector<T>::value);
@@ -231,20 +231,20 @@ decltype(auto) FlexibleToString(T&& t)
     }
 }
 
-[[nodiscard]] FO_COMMON_API std::string FlexibleToString(StarType t);
-[[nodiscard]] FO_COMMON_API std::string FlexibleToString(PlanetEnvironment t);
-[[nodiscard]] FO_COMMON_API std::string FlexibleToString(PlanetType t);
-[[nodiscard]] FO_COMMON_API std::string FlexibleToString(PlanetSize t);
-[[nodiscard]] FO_COMMON_API std::string FlexibleToString(ShipPartClass t);
-[[nodiscard]] FO_COMMON_API std::string FlexibleToString(Visibility t);
-[[nodiscard]] FO_COMMON_API std::string FlexibleToString(UniverseObjectType t);
+[[nodiscard]] FO_COMMON_API std::string FlexibleToString(const StarType& t);
+[[nodiscard]] FO_COMMON_API std::string FlexibleToString(const PlanetEnvironment& t);
+[[nodiscard]] FO_COMMON_API std::string FlexibleToString(const PlanetType& t);
+[[nodiscard]] FO_COMMON_API std::string FlexibleToString(const PlanetSize& t);
+[[nodiscard]] FO_COMMON_API std::string FlexibleToString(const ShipPartClass& t);
+[[nodiscard]] FO_COMMON_API std::string FlexibleToString(const Visibility& t);
+[[nodiscard]] FO_COMMON_API std::string FlexibleToString(const UniverseObjectType& t);
 
 template <typename EnumT>
 std::string EnumToString(EnumT t);
 
 // after declarations of specialization of FlexibleToString for enums
 template<typename T>
-decltype(auto) FlexibleToString(std::vector<T>&& tv)
+decltype(auto) FlexibleToString(const std::vector<T>& tv)
 {
     if constexpr (std::is_same_v<T, int> || std::is_same_v<T, double>) {
         std::string retval;
@@ -271,7 +271,7 @@ decltype(auto) FlexibleToString(std::vector<T>&& tv)
     } else {
         std::string retval;
         for (auto& ts: tv)
-          retval.append(FlexibleToString<T>(std::move(ts)));
+          retval.append(FlexibleToString<T>(ts));
         return retval;
     }
 }

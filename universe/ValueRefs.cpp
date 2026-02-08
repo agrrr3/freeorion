@@ -316,13 +316,13 @@ std::string EnumToString(EnumT t)
         return std::string{maybe_retval};
 }
 
-std::string FlexibleToString(StarType t) { return EnumToString(t); }
-std::string FlexibleToString(PlanetEnvironment t) { return EnumToString(t); }
-std::string FlexibleToString(PlanetType t) { return EnumToString(t); }
-std::string FlexibleToString(PlanetSize t) { return EnumToString(t); }
-std::string FlexibleToString(ShipPartClass t) { return EnumToString(t); }
-std::string FlexibleToString(Visibility t) { return EnumToString(t); }
-std::string FlexibleToString(UniverseObjectType t) { return EnumToString(t); }
+std::string FlexibleToString(const StarType& t) { return EnumToString(t); }
+std::string FlexibleToString(const PlanetEnvironment& t) { return EnumToString(t); }
+std::string FlexibleToString(const PlanetType& t) { return EnumToString(t); }
+std::string FlexibleToString(const PlanetSize& t) { return EnumToString(t); }
+std::string FlexibleToString(const ShipPartClass& t) { return EnumToString(t); }
+std::string FlexibleToString(const Visibility& t) { return EnumToString(t); }
+std::string FlexibleToString(const UniverseObjectType& t) { return EnumToString(t); }
 
 std::string ValueRefBase::InvariancePattern() const {
     return std::string{RootCandidateInvariant() ? "R" : "r"}
