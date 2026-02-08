@@ -2761,7 +2761,6 @@ std::vector<ShipPartClass> ComplexVariable<std::vector<ShipPartClass>>::Eval(
 
         for (auto const& [part_class, count] : design->PartClassCount()) {
             if (count > 0) {
-                DebugLogger() << "Adding part class entry for " << part_class << " - has count " << count << " in design "  << design_id;
                 part_classes.push_back(part_class);
             } else {
                 ErrorLogger() << "Unexpected part class entry for " << part_class << " - has zero count in design "  << design_id;
