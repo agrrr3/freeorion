@@ -11,6 +11,7 @@ from focs._effects import (
     Fleet,
     Focus,
     GenerateSitRepMessage,
+    HasSpecial,
     InSystem,
     IsBuilding,
     IsSource,
@@ -29,6 +30,7 @@ from focs._effects import (
     SetTargetPopulation,
     Ship,
     Source,
+    SpecialCapacity,
     Stationary,
     System,
     Target,
@@ -47,6 +49,11 @@ from macros.priorities import (
 PLANETARY_DRIVE_ACTIVATION = (
     Planet()
     & Focus(type=["FOCUS_PLANET_DRIVE"])
+    # TODO: add low / high to has special parsing
+    & (
+        ~HasSpecial(name="STARLANE_DRIVE_INSTABILITY")
+        | (SpecialCapacity(name="STARLANE_DRIVE_INSTABILITY", object=Source.ID) <= 3.0)
+    )
     & WithinStarlaneJumps(
         jumps=1,
         condition=System
