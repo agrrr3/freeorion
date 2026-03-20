@@ -51,8 +51,8 @@ PLANETARY_DRIVE_ACTIVATION = (
     & Focus(type=["FOCUS_PLANET_DRIVE"])
     # TODO: add low / high to has special parsing
     & (
-        ~HasSpecial(name="STARLANE_DRIVE_INSTABILITY")
-        | (SpecialCapacity(name="STARLANE_DRIVE_INSTABILITY", object=Source.ID) <= 3.0)
+        ~HasSpecial(name="STARLANE_DRIVE_INSTABILITY_SPECIAL")
+        | (SpecialCapacity(name="STARLANE_DRIVE_INSTABILITY_SPECIAL", object=Source.ID) <= 3.0)
     )
     & WithinStarlaneJumps(
         jumps=1,
@@ -123,7 +123,7 @@ ADVANCED_FOCUS_EFFECTS = [
                 )
                 & ~Contains(IsSource)
             ),
-            SetSpecialCapacity(name="STARLANE_DRIVE_INSTABILITY_SPECIAL", value=Value + 1),
+            SetSpecialCapacity(name="STARLANE_DRIVE_INSTABILITY_SPECIAL", capacity=Value + 1),
             GenerateSitRepMessage(
                 message="EFFECT_PLANET_DRIVE",
                 label="EFFECT_PLANET_DRIVE_LABEL",
