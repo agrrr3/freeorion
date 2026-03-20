@@ -21,7 +21,7 @@ Special
 
 Special
     name = "STARLANE_DRIVE_INSTABILITY_SPECIAL"
-    description =  "STARLANE_DRIVE_INSTABILITY_SPECIAL_DESCRIPTION"
+    description =  "STARLANE_DRIVE_INSTABILITY_SPECIAL_DESC"
     stealth = 0
     graphic = "icons/building/planetary_stardrive.png"
 
