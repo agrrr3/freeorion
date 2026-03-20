@@ -10380,6 +10380,13 @@ LUXURY_SPECIAL
 '''Increases [[metertype METER_TARGET_INFLUENCE]] on this planet by [[value SPECIAL_INFLUENCE_FOCUS_BONUS]] when Focus is set to [[encyclopedia INFLUENCE_FOCUS_TITLE]].
 Provides additional bonuses when empire has adopted [[policy PLC_CAPITAL_MARKETS]] or [[policy PLC_BLACK_MARKET]].'''
 
+STARLANE_DRIVE_INSTABILITY_SPECIAL
+Planet Instability
+
+STARLANE_DRIVE_INSTABILITY_SPECIAL_DESC
+'''Indicates how many times this planet successfully jumped using the starlane drive.
+A planet may jump up to [[value STARLANE_DRIVE_MAX_JUMPS]] times.'''
+
 STARLANE_DRIVE_ACTIVATED_SPECIAL
 Scripting auxiliary
 
