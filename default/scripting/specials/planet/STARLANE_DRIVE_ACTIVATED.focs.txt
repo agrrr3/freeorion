@@ -33,7 +33,7 @@ PLANETARY_DRIVE_ACTIVATION
         Focus type = "FOCUS_PLANET_DRIVE"
         Or [
             Not HasSpecial name = "STARLANE_DRIVE_INSTABILITY_SPECIAL"
-            HasSpecialCapacity name = "STARLANE_DRIVE_INSTABILITY_SPECIAL" high = 2.0
+            HasSpecialCapacity name = "STARLANE_DRIVE_INSTABILITY_SPECIAL" high = (NamedIntegerLookup name="STARLANE_DRIVE_MAX_JUMPS" - 1)
         ]
         WithinStarlaneJumps jumps = 1 condition = And [
             System

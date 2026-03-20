@@ -18,6 +18,7 @@ from focs._effects import (
     LocalCandidate,
     MoveTo,
     MoveTowards,
+    NamedIntegerLookup,
     Number,
     Object,
     OwnedBy,
@@ -52,7 +53,7 @@ PLANETARY_DRIVE_ACTIVATION = (
     # TODO: add low / high to has special parsing
     & (
         ~HasSpecial(name="STARLANE_DRIVE_INSTABILITY_SPECIAL")
-        | (SpecialCapacity(name="STARLANE_DRIVE_INSTABILITY_SPECIAL", object=Source.ID) <= 2.0)
+        | (SpecialCapacity(name="STARLANE_DRIVE_INSTABILITY_SPECIAL", object=Source.ID) < NamedIntegerLookup(name="STARLANE_DRIVE_MAX_JUMPS"))
     )
     & WithinStarlaneJumps(
         jumps=1,

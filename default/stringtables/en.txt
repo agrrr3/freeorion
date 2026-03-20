@@ -10385,7 +10385,7 @@ Planet Instability
 
 STARLANE_DRIVE_INSTABILITY_SPECIAL_DESC
 '''Indicates how many times this planet successfully jumped using the starlane drive.
-A planet may jump up to three XXX times.'''
+A planet may jump up to [[value STARLANE_DRIVE_MAX_JUMPS]] times.'''
 
 STARLANE_DRIVE_ACTIVATED_SPECIAL
 Scripting auxiliary
