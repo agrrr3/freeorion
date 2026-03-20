@@ -123,6 +123,7 @@ ADVANCED_FOCUS_EFFECTS = [
                 )
                 & ~Contains(IsSource)
             ),
+            SetSpecialCapacity(name="STARLANE_DRIVE_INSTABILITY_SPECIAL", value=Value + 1),
             GenerateSitRepMessage(
                 message="EFFECT_PLANET_DRIVE",
                 label="EFFECT_PLANET_DRIVE_LABEL",
