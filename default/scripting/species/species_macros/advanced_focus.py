@@ -53,7 +53,7 @@ PLANETARY_DRIVE_ACTIVATION = (
     # TODO: add low / high to has special parsing
     & (
         ~HasSpecial(name="STARLANE_DRIVE_INSTABILITY_SPECIAL")
-        | (SpecialCapacity(name="STARLANE_DRIVE_INSTABILITY_SPECIAL", object=Source.ID) < NamedIntegerLookup(name="STARLANE_DRIVE_MAX_JUMPS"))
+        | (SpecialCapacity(name="STARLANE_DRIVE_INSTABILITY_SPECIAL", object=Source.ID) < 1.0 * NamedIntegerLookup(name="STARLANE_DRIVE_MAX_JUMPS"))
     )
     & WithinStarlaneJumps(
         jumps=1,
