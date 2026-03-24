@@ -227,8 +227,12 @@ void MeterBrowseWnd::UpdateImpl(std::size_t mode, const Wnd* target) {
     // MeterBrowseWnd, and it can be just reshown.without being altered. To
     // refresh a MeterBrowseWnd, recreate it by assigning a new one as the
     // moused-over object's BrowseWnd in this Wnd's place
-    if (!m_initialized)
-        Initialize(GetApp().GetContext());
+  if (!m_initialized) {
+    ScriptingContext context{GetApp().GetContext()};
+       context.current_turn--;
+    ErrorLogger() << "Faking prrevious turn " << context.current_turn;
+       Initialize(context);
+  }
 }
 
 namespace {
