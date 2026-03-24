@@ -1,10 +1,38 @@
 SPATIAL_FLUX_STEALTH_EFFECTS
-'''EffectsGroup
+'''// SPATIAL_FLUX_STEALTH_EFFECTS 1a  record the effect current turn; in the GUI Current is one higher
+EffectsGroup
     scope = Source
-    activation = (Source.ArrivedOnTurn >= CurrentTurn - 1) 
-    accountinglabel = "SPATIAL_FLUX_MALUS"
-    effects = SetStealth value = Value - NamedRealLookup name = "SPATIAL_FLUX_STEALTH_ARRIVAL_MALUS"
+    activation = Source
+    effects = SetSpecialCapacity name = "EFFECTS_CURRENT_TURN_SPECIAL" capacity = NoOp(CurrentTurn)
 
+// SPATIAL_FLUX_STEALTH_EFFECTS 1b  APPLY based on the recorded current turn apply interference malus
+EffectsGroup
+    scope = Source
+    activation = And [
+          (CurrentTurn == (1 + SpecialCapacity name = "EFFECTS_CURRENT_TURN_SPECIAL" object = Source.ID))
+          (Source.ArrivedOnTurn >= (CurrentTurn - 1))
+    ]
+    accountinglabel = "SPATIAL_FLUX_MALUS_EFFECT"
+    effects = [
+        SetStealth value = Value - NamedRealLookup name = "SPATIAL_FLUX_STEALTH_ARRIVAL_MALUS"
+GenerateSitRepMessage message = "triggered  turn special: %rawtext:special%  current: %rawtext:turn%" label = "Custom_1" NoStringtableLookup icon = "icons/tech/categories/spy.png"
+parameters = [ tag = "special" data = SpecialCapacity name = "EFFECTS_CURRENT_TURN_SPECIAL" object = Source.ID  tag = "turn" data = CurrentTurn ] empire = Source.Owner
+    ]
+// SPATIAL_FLUX_STEALTH_EFFECTS 1c  GUI based on the recorded current turn apply interference malus
+EffectsGroup
+    scope = Source
+    activation = And [
+       // GUI (e.g. Fleet Window)
+       (CurrentTurn == (2 + SpecialCapacity name = "EFFECTS_CURRENT_TURN_SPECIAL" object = Source.ID))
+       (Source.ArrivedOnTurn >= (CurrentTurn - 2))
+    ]
+    accountinglabel = "SPATIAL_FLUX_MALUS_GUI"
+    effects = [ SetStealth value = Value - NamedRealLookup name = "SPATIAL_FLUX_STEALTH_ARRIVAL_MALUS"
+GenerateSitRepMessage message = "triggered GUI turn special: %rawtext:special%  current: %rawtext:turn%" label = "Custom_1" NoStringtableLookup icon = "icons/tech/categories/spy.png"
+parameters = [ tag = "special" data = SpecialCapacity name = "EFFECTS_CURRENT_TURN_SPECIAL" object = Source.ID  tag = "turn" data = CurrentTurn ] empire = Source.Owner
+]
+
+// SPATIAL_FLUX_STEALTH_EFFECTS 2  apply spatial flux bonus
 EffectsGroup
     scope = Source
     activation = Not Aggressive
