@@ -3,7 +3,7 @@ SPATIAL_FLUX_STEALTH_EFFECTS
     scope = Source
     activation = (Source.ArrivedOnTurn >= CurrentTurn - 1) 
     accountinglabel = "SPATIAL_FLUX_MALUS"
-    effects = SetStealth value = Value - NamedRealLookup name = "SPATIAL_FLUX_STEALTH_ARRIVAL_MALUS"
+    effects = SetSpecialCapacity name = "SPATIAL_FLUX_DECOHERENCE_SPECIAL" value = 2
 
 EffectsGroup
     scope = Source

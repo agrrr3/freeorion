@@ -1,0 +1,24 @@
+Special
+    name = "SPATIAL_FLUX_DECOHERENCE_SPECIAL"
+    description = "SPATIAL_FLUX_DECOHERENCE_SPECIAL_DESC"
+    stealth = 0
+    spawnrate = 0.0
+    spawnlimit = 0
+    effectsgroups = [
+       EffectsGroup
+          scope = Source
+          activation = (0 >= SpecialCapacity name = ThisSpecial object = Source.ID)
+          accountinglabel = "SPATIAL_FLUX_MALUSSSS"
+          effects = RemoveSpecial name = ThisSpecial
+
+       EffectsGroup
+          scope = Source
+          activation = (0 < SpecialCapacity name = ThisSpecial object = Source.ID)
+          accountinglabel = "SPATIAL_FLUX_MALUS"
+          effects = [
+             SetStealth value = Value - NamedRealLookup name = "SPATIAL_FLUX_STEALTH_ARRIVAL_MALUS"
+             SetSpecialCapacity name = "SPATIAL_FLUX_DECOHERENCE_SPECIAL" value=Value - 1
+          ]
+    ]
+    graphic = "icons/ship_hulls/spatial_flux_hull_small.png"
+
