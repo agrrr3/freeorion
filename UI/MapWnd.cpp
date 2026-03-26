@@ -2790,12 +2790,15 @@ void MapWnd::EnableOrderIssuing(bool enable) {
     FleetUIManager::GetFleetUIManager().EnableOrderIssuing(enable);
 }
 
-void MapWnd::InitTurn(ScriptingContext& context) {
-    DebugLogger() << "Initializing turn " << context.current_turn;
+void MapWnd::InitTurn(ScriptingContext& orig_context) {
+    DebugLogger() << "Initializing turn " << orig_context.current_turn;
     SectionedScopedTimer timer("MapWnd::InitTurn");
     timer.EnterSection("init");
 
     //DebugLogger() << GetSupplyManager().Dump();
+    ScriptingContext context{orig_context};
+       context.current_turn--;
+    ErrorLogger() << "Faking prrevious turn in (HumanClientFSM) PlayingTurn::PlayingTurn MapWnd::InitTurn" << context.current_turn;
 
     auto& app = GetApp();
     const auto client_empire_id = app.EmpireID();
