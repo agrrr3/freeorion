@@ -500,7 +500,11 @@ bool FleetUIManager::CloseAll() {
     return retval;
 }
 
-void FleetUIManager::RefreshAll(int this_client_empire_id, const ScriptingContext& context) {
+void FleetUIManager::RefreshAll(int this_client_empire_id, const ScriptingContext& orig_context) {
+    ScriptingContext context{orig_context};
+       context.current_turn--;
+    ErrorLogger() << "Faking prrevious turn in FleetUIManager::RefreshAll" << context.current_turn;
+
     auto refresh_fleetwnd = [this_client_empire_id, &context](auto& wnd)
     { wnd->Refresh(this_client_empire_id, context); };
 
