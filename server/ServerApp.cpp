@@ -2474,7 +2474,10 @@ namespace {
 
                 // check each visible planet if it is a target
                 for (const auto& visible_planet : bombarding_empire_visible_planets) {
-                    const auto& targets = empires_targets.at(bombarding_empire_id); //XXX will xplode on strangeness
+                    auto it = empires_targets.find(bombarding_empire_id);
+                    if (it == empires_targets.end()) continue;
+                    const auto& targets = it->second;
+
                     if (std::binary_search(targets.begin(), targets.end(), visible_planet->ID())) {
                         DebugLogger(combat) << "   bombarding fleet empire " << bombarding_empire_id
                                             << " sees a target planet";
