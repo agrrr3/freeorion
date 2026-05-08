@@ -29,7 +29,12 @@ Hull
                 SetMaxSecondaryStat partname = "SR_ARC_DISRUPTOR" value = 5
                 SetSecondaryStat    partname = "SR_ARC_DISRUPTOR" value = 5
             ]
-
+        EffectsGroup
+            scope = And [
+                Object id = Source.FleetID
+                Fleet
+            ]
+            effects = SetObstructive
     ]
     icon = ""
     graphic = "icons/monsters/maintenance_ship.png"

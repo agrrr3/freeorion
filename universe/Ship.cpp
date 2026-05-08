@@ -648,7 +648,10 @@ void Ship::ClearInvadePlanet()
 { SetInvadePlanet(INVALID_OBJECT_ID); }
 
 void Ship::SetBombardPlanet(int planet_id) {
+    //ErrorLogger() << "Ship(" << m_id << ")::SetBombardPlanet("
+    //              << planet_id << ")";
     if (planet_id == m_ordered_bombard_planet_id) return;
+    //ErrorLogger() << " instead of planet(" << m_ordered_bombard_planet_id << ")";
     m_ordered_bombard_planet_id = planet_id;
     StateChangedSignal();
 }

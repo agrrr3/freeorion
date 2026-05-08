@@ -658,7 +658,12 @@ bool Fleet::HasTroopShips(const Universe& u) const {
 }
 
 bool Fleet::HasShipsOrderedBombard(const Universe& u) const {
-    auto isX = [&u](const Ship* ship){ return ship->CanBombard(u) && (ship->OrderedBombardPlanet() != INVALID_OBJECT_ID); };
+    auto isX = [&u](const Ship* ship){
+      ErrorLogger() << "AXEL (" << ship->ID();
+      if (ship->CanBombard(u)) ErrorLogger() << "CanBombard ";
+      ErrorLogger() << ship->OrderedBombardPlanet() << ")";
+      return ship->CanBombard(u) && (ship->OrderedBombardPlanet() != INVALID_OBJECT_ID);
+    };
     return HasXShips(isX, m_ships, u.Objects());
 }
 

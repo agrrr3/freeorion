@@ -75,13 +75,6 @@ Species(
         *AVERAGE_PLANETARY_DEFENSE,
         *STANDARD_SHIP_SHIELDS,
         # huge bonus to planetary shields
-        EffectsGroup(
-            description="ANCIENT_PLANETARY_SHIELD_DESC",
-            scope=IsSource & Planet(),
-            effects=SetMaxShield(
-                value=Value + NamedReal(name="ANCIENT_PLANETARY_SHIELD", value=250 * PLANET_SHIELD_FACTOR)
-            ),
-        ),
         # huge bonus to ground troops
         EffectsGroup(
             description="ANCIENT_DEFENSE_TROOPS_DESC",

@@ -21,7 +21,11 @@ Part
                 ]
                 VisibleToEmpire empire = Source.Owner
                 /// @content_tag{ROBOTIC} When bombarding in-system enemy with this part, reduces population on visible populated Planet with tag
-                HasTag name = "ROBOTIC"
+//                HasTag name = "ROBOTIC"
+            ]
+            activation = And [
+                OwnedBy affiliation = AnyEmpire
+                InSystem
             ]
             priority = [[POPULATION_DEFAULT_PRIORITY]]
             effects = [
