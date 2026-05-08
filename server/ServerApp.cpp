@@ -2230,11 +2230,9 @@ namespace {
                 std::string retval;
                 for (auto& f : fleets) {
                     auto hasOrderedBombard = f->HasShipsOrderedBombard(context.ContextUniverse());
-                    if (hasOrderedBombard) ErrorLogger() << "AXEL hasOrderedBombard";
                     retval.append(f->Name()).append(" ( id: ").append(std::to_string(f->ID()))
                           .append("  owner: ").append(std::to_string(f->Owner()))
                           .append("  aggression: ").append(to_string(f->Aggression()))
-                      //.append("  bombard: ").append(to_string(f->HasShipsOrderedBombard(context.ContextUniverse())))
                           .append(" )   ");
                 }
                 return retval;
@@ -2251,7 +2249,6 @@ namespace {
             range_copy(fleets | range_filter(not_null) | range_filter(is_bombarding) | range_transform(to_owner),
                        std::back_inserter(retval_bombarding));
             Uniquify(retval_bombarding);
-            ErrorLogger() << "AXEL(" <<  to_string(retval_bombarding) <<")";
 
             std::vector<int> retval_obstructive;
             retval_obstructive.reserve(fleets.size());
@@ -2423,7 +2420,6 @@ namespace {
             return false;
         if (empires_with_aggressive_armed_fleets_here.empty() && empires_with_bombarding_fleets_here.empty())
             return false;
-        ErrorLogger() << "AXEL___";
 
         // what empires have planets or fleets here?
         // Unowned planets are included for ALL_EMPIRES if they have population > 0
@@ -2454,7 +2450,6 @@ namespace {
         }
 
         if (empires_here_at_war.empty()) {
-          ErrorLogger(combat) << "AXEL   No warring combatants present: no combat.";
             DebugLogger(combat) << "   No warring combatants present: no combat.";
             //return false;
         }
