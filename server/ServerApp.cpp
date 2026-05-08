@@ -2228,12 +2228,15 @@ namespace {
             DebugLogger(combat) << "CombatConditionsInSystem() for system (" << system_id << ") " << system->Name();
             DebugLogger(combat) << "   fleets here: " << [&context,&fleets]() {
                 std::string retval;
-                for (auto& f : fleets)
+                for (auto& f : fleets) {
+                    auto hasOrderedBombard = f->HasShipsOrderedBombard(context.ContextUniverse());
+                    if (hasOrderedBombard) ErrorLogger() << "AXEL hasOrderedBombard";
                     retval.append(f->Name()).append(" ( id: ").append(std::to_string(f->ID()))
                           .append("  owner: ").append(std::to_string(f->Owner()))
                           .append("  aggression: ").append(to_string(f->Aggression()))
                       //.append("  bombard: ").append(to_string(f->HasShipsOrderedBombard(context.ContextUniverse())))
                           .append(" )   ");
+                }
                 return retval;
             }();
 
@@ -2248,6 +2251,7 @@ namespace {
             range_copy(fleets | range_filter(not_null) | range_filter(is_bombarding) | range_transform(to_owner),
                        std::back_inserter(retval_bombarding));
             Uniquify(retval_bombarding);
+            ErrorLogger() << "AXEL(" <<  to_string(retval_bombarding) <<")";
 
             std::vector<int> retval_obstructive;
             retval_obstructive.reserve(fleets.size());
@@ -2287,9 +2291,9 @@ namespace {
                         continue;
                     }
                     if (!empire_targets.contains(fleet->Owner())) {
-                        empire_targets.insert({fleet->Owner(), {system_id}});
+                        empire_targets.insert({fleet->Owner(), {ship->OrderedBombardPlanet()}});
                     } else {
-                        empire_targets[fleet->Owner()].insert(system_id);
+                        empire_targets[fleet->Owner()].insert(ship->OrderedBombardPlanet());
                     }
                 }
             }
@@ -2407,8 +2411,6 @@ namespace {
             GetEmpiresWithFleetsAtSystem(system_id, context);
         const auto& [empires_with_aggressive_armed_fleets_here, empires_with_bombarding_fleets_here, empires_with_obstructive_armed_fleets_here] =
             aggressive_bombarding_obstructive_fleets_here;
-        if (empires_with_fleets_here.empty() || empires_with_aggressive_armed_fleets_here.empty())
-            return false;
         DebugLogger(combat) << "   Empires with at least one armed aggressive fleet present:  "
                             << to_string(empires_with_aggressive_armed_fleets_here);
         DebugLogger(combat) << "   Empires with at least one armed obstructive fleet present: "
@@ -2417,6 +2419,11 @@ namespace {
                             << to_string(empires_with_bombarding_fleets_here);
         DebugLogger(combat) << "   Empires with any fleet present: "
                             << to_string(empires_with_fleets_here);
+        if (empires_with_fleets_here.empty())
+            return false;
+        if (empires_with_aggressive_armed_fleets_here.empty() && empires_with_bombarding_fleets_here.empty())
+            return false;
+        ErrorLogger() << "AXEL___";
 
         // what empires have planets or fleets here?
         // Unowned planets are included for ALL_EMPIRES if they have population > 0
@@ -2445,9 +2452,11 @@ namespace {
                 }
             }
         }
+
         if (empires_here_at_war.empty()) {
+          ErrorLogger(combat) << "AXEL   No warring combatants present: no combat.";
             DebugLogger(combat) << "   No warring combatants present: no combat.";
-            return false;
+            //return false;
         }
 
         // ships blockading this empire from GetBlockadingFleetsForEmpires
@@ -2457,37 +2466,44 @@ namespace {
                 auto it = empire_vis_overrides.find(override_empire_id);
                 return it == empire_vis_overrides.end() ? EMPTY_VEC : it->second;
             };
-
+        ErrorLogger(combat) << "AXEL   bomb check at " << system_id;
         if (!empires_with_bombarding_fleets_here.empty()) {
+          ErrorLogger(combat) << "AXEL   BOMB YA";
             const auto& empires_targets = GetBombardingTargetsAtSystem(system_id, context);
 
             // is an empire with a bombarding fleet here able to see the target planet
             for (int bombarding_empire_id : empires_with_bombarding_fleets_here) {
+              ErrorLogger(combat) << "AXEL   empire " << bombarding_empire_id;
                 // what planets can the aggressive empire see?
                 const auto bombarding_empire_visible_planets =
                   GetObjsVisibleToEmpireOrNeutralsAtSystem<Planet>(
                     bombarding_empire_id, system_id, overrides_for_empire(bombarding_empire_id), context);
-
+                ErrorLogger(combat) << "AXEL   visible planets " << to_string(bombarding_empire_visible_planets);
                 // nothing to see, means nothing to bombard
-                if (!bombarding_empire_visible_planets.empty())
+                if (bombarding_empire_visible_planets.empty())
                     continue;
-
+            ErrorLogger(combat) << "AXEL   something visible";
                 // check each visible planet if it is a target
                 for (const auto& visible_planet : bombarding_empire_visible_planets) {
+                  ErrorLogger() << " empires_targets(..";
+                  for (auto it = empires_targets.begin(); it != empires_targets.end(); ++it) {
+                    ErrorLogger() << to_string(it->second) << ", ";
+                  }
                     auto it = empires_targets.find(bombarding_empire_id);
                     if (it == empires_targets.end()) continue;
                     const auto& targets = it->second;
 
                     if (std::binary_search(targets.begin(), targets.end(), visible_planet->ID())) {
-                        DebugLogger(combat) << "   bombarding fleet empire " << bombarding_empire_id
+                        ErrorLogger(combat) << "   bombarding fleet empire " << bombarding_empire_id
                                             << " sees a target planet";
                         return true;  // an aggressive empire can see a fleet owned by an empire it is at war with                
                     }
                 }
             }
+            ErrorLogger(combat) << "AXEL   almost";
             WarnLogger(combat) << "No bombarding fleet sees a target planet";
         }
-
+          ErrorLogger(combat) << "AXEL   done";
 
         // is an empire with an aggressive fleet here able to see a planet of an
         // empire it is at war with here?
@@ -2567,6 +2583,7 @@ namespace {
         // for each system, find if a combat will occur in it, and if so, assemble
         // necessary information about that combat in combats
         for (const auto* sys : context.ContextObjects().allRaw<System>()) {
+          ErrorLogger() << "AXEL AssembleSystemCombatInfo " << sys->SystemID();
             if (CombatConditionsInSystem(sys->ID(), context, empire_vis_overrides))
                 combats.emplace_back(sys->ID(), context.current_turn, context.ContextUniverse(),
                                      context.Empires(), context.diplo_statuses,
