@@ -2408,6 +2408,10 @@ namespace {
             GetEmpiresWithFleetsAtSystem(system_id, context);
         const auto& [empires_with_aggressive_armed_fleets_here, empires_with_bombarding_fleets_here, empires_with_obstructive_armed_fleets_here] =
             aggressive_bombarding_obstructive_fleets_here;
+        if (empires_with_fleets_here.empty())
+            return false;
+        if (empires_with_aggressive_armed_fleets_here.empty() && empires_with_bombarding_fleets_here.empty())
+            return false;
         DebugLogger(combat) << "   Empires with at least one armed aggressive fleet present:  "
                             << to_string(empires_with_aggressive_armed_fleets_here);
         DebugLogger(combat) << "   Empires with at least one armed obstructive fleet present: "
@@ -2416,10 +2420,6 @@ namespace {
                             << to_string(empires_with_bombarding_fleets_here);
         DebugLogger(combat) << "   Empires with any fleet present: "
                             << to_string(empires_with_fleets_here);
-        if (empires_with_fleets_here.empty())
-            return false;
-        if (empires_with_aggressive_armed_fleets_here.empty() && empires_with_bombarding_fleets_here.empty())
-            return false;
 
         // what empires have planets or fleets here?
         // Unowned planets are included for ALL_EMPIRES if they have population > 0
@@ -2451,7 +2451,7 @@ namespace {
 
         if (empires_here_at_war.empty()) {
             DebugLogger(combat) << "   No warring combatants present: no combat.";
-            //return false;
+            return false;
         }
 
         // ships blockading this empire from GetBlockadingFleetsForEmpires
