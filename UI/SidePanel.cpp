@@ -1758,6 +1758,28 @@ namespace {
 
         return retval;
     }
+
+    /** Returns Ships ordered to bombard a given Planet.
+      * @param target_planet_id ID of Planet to potentially bombard */
+    auto BombardingShips(int target_planet_id, const ScriptingContext& context) {
+        std::vector<const Ship*> retval;
+
+        const int empire_id = GetApp().EmpireID(); // TODO pass in app / empire_id
+        if (empire_id == ALL_EMPIRES)
+            return retval;
+
+        const ObjectMap& o = context.ContextObjects();
+
+        retval.reserve(10); // guesstimate
+        for (const auto* ship : o.allRaw<Ship>()) {
+            //ErrorLogger() << " Ship(" << ship->ID() << ") "
+            //              << (ship->OrderedBombardPlanet() == target_planet_id?"":" not") <<" bombarding " << target_planet_id;
+            if (ship->OrderedBombardPlanet() == target_planet_id)
+                retval.push_back(ship);
+        }
+
+        return retval;
+    }
 }
 
 void SidePanel::PlanetPanel::Clear() {
@@ -1958,8 +1980,17 @@ void SidePanel::PlanetPanel::Refresh(ScriptingContext& context_in, int empire_id
     const bool show_annex_button = !mine && (being_annexed || annexable || (populated && !being_invaded && species));
 
 
-    const bool being_bombarded =  planet->IsAboutToBeBombarded();
-    const bool bombardable =      at_war_with_me && visible && !being_bombarded && !bombard_ships.empty();
+    const bool maybe_being_bombarded = planet->IsAboutToBeBombarded();
+    bool being_bombarded = false;
+    if (maybe_being_bombarded) {
+        ErrorLogger() << "Checking if " << planet->ID() << " is already really being bombarded";
+        auto bombarding_ships = BombardingShips(planet->ID(), source_context);
+        if (!bombarding_ships.empty()) {
+            being_bombarded = true;
+        }
+    }
+    ErrorLogger() << "SidePanel::PlanetPanel::Refresh " << planet->ID() << " is " << (being_bombarded?"":"not") << "being bombarded";
+    const bool bombardable = at_war_with_me && visible && !being_bombarded && !bombard_ships.empty();
 
 
     if (populated || SHOW_ALL_PLANET_PANELS) {
@@ -2858,8 +2889,8 @@ void SidePanel::PlanetPanel::ClickInvade() {
 }
 
 void SidePanel::PlanetPanel::ClickBombard() {
+    // need to be able to know what the intention is..
     // order or cancel bombard, depending on whether it has previously
-    // been ordered
 
     auto& app = GetApp();
     ScriptingContext& context = app.GetContext();
@@ -2879,37 +2910,67 @@ void SidePanel::PlanetPanel::ClickBombard() {
     const auto pending_bombard_orders = PendingBombardOrders();
     const auto it = pending_bombard_orders.find(m_planet_id);
 
+    bool being_bombarded = false;
     if (it != pending_bombard_orders.end()) {
+        being_bombarded = true;
         ErrorLogger() << "SidePanel::ClickBombard with PendingBombardOrders";
         // Cancelling a current turn order
         const auto planet_bombard_orders{it->second}; // copy to preserve iterators while rescinding
         // cancel previous bombard orders for this planet
-        for (int order_id : planet_bombard_orders)
+        for (int order_id : planet_bombard_orders) {
+            ErrorLogger() << "SidePanel::ClickBombard " << order_id;
             orders.RescindOrder(order_id, context);
+        }
+    }
+    // Clean up ships bombarding
+    if (planet->IsAboutToBeBombarded()) {
+        ErrorLogger() << "SidePanel::ClickBombard preparing to clear all bombarding of " << planet->ID() << "";
+        auto bombarding_ships = BombardingShips(planet->ID(), context);
+        if (!bombarding_ships.empty()) {
+            being_bombarded = true;
+            for (auto* ship : bombarding_ships) {
+                 if(!ship) continue;
+                //ship->ClearBombardPlanet(); // needs non-const context
+                 orders.IssueOrder<StopBombardOrder>(context, empire_id, ship->ID(), m_planet_id);
+            }
+        }
+    }
 
-    } else {
+    if (!being_bombarded) {
         ErrorLogger() << "SidePanel::ClickBombard without PendingBombardOrders";
+        // if the planet is set
         // Setting or overriding bombard targets
-        // unset all bombard targets of ships
+        auto bombard_ships = ValidSelectedBombardShips(planet->SystemID(), context);
+        if (bombard_ships.empty())
+            bombard_ships = AutomaticallyChosenBombardShips(m_planet_id, context);
+        sort(bombard_ships.begin(), bombard_ships.end());
+
+        // order unselected ship to not 
         const int system_id = planet->SystemID();
         auto* system = objects.getRaw<System>(system_id);
         for (auto* ship : objects.findRaw<Ship>(system->ShipIDs())) {
             if (ship &&
                 ship->OrderedBombardPlanet() == planet->ID() &&
-                ship->OwnedBy(empire_id)) {
+                ship->OwnedBy(empire_id) &&
+                FlexibleContains(bombard_ships, planet->ID())
+                // XXX why the hell not working
+                // && (std::find(bombard_ships.begin(), bombard_ships.end(), planet->ID()) == bombard_ships.end())
+                ) {
+                //ErrorLogger() << "SidePanel::ClickBombard " << bombard_ships.begin() << " .. " << bombard_ships.end();
+                //if (it != bombard_ships.end()) { continue; }
                 //ship->ClearBombardPlanet();
-                Ship* mship = objects.getRaw<Ship>(ship->ID());
-                mship->ClearBombardPlanet();
-                ErrorLogger() << "SidePanel::ClickBombard ClearBombardPlanet for " << ship->ID()
+                //Ship* mship = objects.getRaw<Ship>(ship->ID());
+                //mship->ClearBombardPlanet(); // TODO check if necessary
+                orders.IssueOrder<BombardOrder>(context, empire_id, ship->ID(), INVALID_OBJECT_ID);
+                ErrorLogger() << "SidePanel::ClickBombard ClearBombardPlanet for unselected " << ship->ID()
                               << " on " << planet->ID() << "  -  now "  << ship->OrderedBombardPlanet();
-                // FIXME this does not seem to stick ... as the server does not know about it
             }
         }
-        // order selected bombard ships to bombard planet
-        auto bombard_ships = ValidSelectedBombardShips(planet->SystemID(), context);
-        if (bombard_ships.empty())
-            bombard_ships = AutomaticallyChosenBombardShips(m_planet_id, context);
 
+        for (auto* ship : bombard_ships) {
+            ErrorLogger() << "SidePanel::ClickBombard selected " << ship;
+        }
+        // order selected bombard ships to bombard planet
         for (const auto* ship : bombard_ships | range_filter([](auto s) { return !!s; })) {
             CancelColonizeInvadeBombardScrapShipOrders(*ship, context, orders);
             orders.IssueOrder<BombardOrder>(context, empire_id, ship->ID(), m_planet_id);
