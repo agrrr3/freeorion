@@ -2461,29 +2461,20 @@ namespace {
                 auto it = empire_vis_overrides.find(override_empire_id);
                 return it == empire_vis_overrides.end() ? EMPTY_VEC : it->second;
             };
-        ErrorLogger(combat) << "AXEL   bomb check at " << system_id;
         if (!empires_with_bombarding_fleets_here.empty()) {
-          ErrorLogger(combat) << "AXEL   BOMB YA";
             const auto& empires_targets = GetBombardingTargetsAtSystem(system_id, context);
 
             // is an empire with a bombarding fleet here able to see the target planet
             for (int bombarding_empire_id : empires_with_bombarding_fleets_here) {
-              ErrorLogger(combat) << "AXEL   empire " << bombarding_empire_id;
                 // what planets can the aggressive empire see?
                 const auto bombarding_empire_visible_planets =
                   GetObjsVisibleToEmpireOrNeutralsAtSystem<Planet>(
                     bombarding_empire_id, system_id, overrides_for_empire(bombarding_empire_id), context);
-                ErrorLogger(combat) << "AXEL   visible planets " << to_string(bombarding_empire_visible_planets);
                 // nothing to see, means nothing to bombard
                 if (bombarding_empire_visible_planets.empty())
                     continue;
-            ErrorLogger(combat) << "AXEL   something visible";
                 // check each visible planet if it is a target
                 for (const auto& visible_planet : bombarding_empire_visible_planets) {
-                  ErrorLogger() << " empires_targets(..";
-                  for (auto it = empires_targets.begin(); it != empires_targets.end(); ++it) {
-                    ErrorLogger() << to_string(it->second) << ", ";
-                  }
                     auto it = empires_targets.find(bombarding_empire_id);
                     if (it == empires_targets.end()) continue;
                     const auto& targets = it->second;
@@ -2495,10 +2486,8 @@ namespace {
                     }
                 }
             }
-            ErrorLogger(combat) << "AXEL   almost";
             WarnLogger(combat) << "No bombarding fleet sees a target planet";
         }
-          ErrorLogger(combat) << "AXEL   done";
 
         // is an empire with an aggressive fleet here able to see a planet of an
         // empire it is at war with here?
