@@ -21,7 +21,7 @@ Part
                 ]
                 VisibleToEmpire empire = Source.Owner
                 /// @content_tag{LITHIC} When bombarding in-system enemy with this part, reduces population on visible populated Planet with tag
-//                HasTag name = "LITHIC"
+                HasTag name = "LITHIC"
             ]
             priority = [[POPULATION_DEFAULT_PRIORITY]]
             effects = [

@@ -29,15 +29,6 @@ Hull
                 SetSecondaryStat partname = "SR_WEAPON_0_1" value = Value + 2
                 SetDamage partname = "SR_WEAPON_4_1" value = Value + ( 5 * [[SHIP_WEAPON_DAMAGE_FACTOR]] )
             ]
-    
-
-        EffectsGroup
-            scope = And [
-                Object id = Source.FleetID
-                Fleet
-            ]
-            effects = SetObstructive
-
     ]
     icon = ""
     graphic = "icons/monsters/sentinel.png"

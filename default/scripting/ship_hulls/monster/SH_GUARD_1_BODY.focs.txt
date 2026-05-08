@@ -19,12 +19,6 @@ Hull
     effectsgroups = [
         [[MONSTER_SHIELD_REGENERATION]]
         [[UNOWNED_OWNED_VISION_BONUS(POOR,20,20)]]
-        EffectsGroup
-            scope = And [
-                Object id = Source.FleetID
-                Fleet
-            ]
-            effects = SetObstructive
     ]
     icon = ""
     graphic = "icons/monsters/sentry.png"

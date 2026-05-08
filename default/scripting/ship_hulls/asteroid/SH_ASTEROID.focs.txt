@@ -40,13 +40,6 @@ Hull
         [[SCAVANGE_FUEL_UNOWNED]]
         [[UNOWNED_GOOD_VISION]]
         [[UNOWNED_MOVE]]
-            EffectsGroup
-            scope = And [
-                Object id = Source.FleetID
-                Fleet
-            ]
-            effects = SetObstructive
-
     ]
     icon = "icons/ship_hulls/asteroid_hull_small.png"
     graphic = "hulls_design/asteroid_hull.png"
