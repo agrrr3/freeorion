@@ -2229,7 +2229,6 @@ namespace {
             DebugLogger(combat) << "   fleets here: " << [&context,&fleets]() {
                 std::string retval;
                 for (auto& f : fleets) {
-                    auto hasOrderedBombard = f->HasShipsOrderedBombard(context.ContextUniverse());
                     retval.append(f->Name()).append(" ( id: ").append(std::to_string(f->ID()))
                           .append("  owner: ").append(std::to_string(f->Owner()))
                           .append("  aggression: ").append(to_string(f->Aggression()))
@@ -2482,7 +2481,7 @@ namespace {
                     if (std::binary_search(targets.begin(), targets.end(), visible_planet->ID())) {
                         ErrorLogger(combat) << "   bombarding fleet empire " << bombarding_empire_id
                                             << " sees a target planet";
-                        return true;  // an aggressive empire can see a fleet owned by an empire it is at war with                
+                        return true; // an aggressive empire can see a fleet owned by an empire it is at war with
                     }
                 }
             }
