@@ -2566,7 +2566,6 @@ namespace {
         // for each system, find if a combat will occur in it, and if so, assemble
         // necessary information about that combat in combats
         for (const auto* sys : context.ContextObjects().allRaw<System>()) {
-          ErrorLogger() << "AXEL AssembleSystemCombatInfo " << sys->SystemID();
             if (CombatConditionsInSystem(sys->ID(), context, empire_vis_overrides))
                 combats.emplace_back(sys->ID(), context.current_turn, context.ContextUniverse(),
                                      context.Empires(), context.diplo_statuses,
