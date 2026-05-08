@@ -1983,13 +1983,11 @@ void SidePanel::PlanetPanel::Refresh(ScriptingContext& context_in, int empire_id
     const bool maybe_being_bombarded = planet->IsAboutToBeBombarded();
     bool being_bombarded = false;
     if (maybe_being_bombarded) {
-        ErrorLogger() << "Checking if " << planet->ID() << " is already really being bombarded";
         auto bombarding_ships = BombardingShips(planet->ID(), source_context);
         if (!bombarding_ships.empty()) {
             being_bombarded = true;
         }
     }
-    ErrorLogger() << "SidePanel::PlanetPanel::Refresh " << planet->ID() << " is " << (being_bombarded?"":"not") << "being bombarded";
     const bool bombardable = at_war_with_me && visible && !being_bombarded && !bombard_ships.empty();
 
 
@@ -2910,7 +2908,6 @@ void SidePanel::PlanetPanel::ClickBombard() {
     bool being_bombarded = false;
     if (it != pending_bombard_orders.end()) {
         being_bombarded = true;
-        ErrorLogger() << "SidePanel::ClickBombard with PendingBombardOrders";
         // Cancelling a current turn order
         const auto planet_bombard_orders{it->second}; // copy to preserve iterators while rescinding
         // cancel previous bombard orders for this planet
@@ -2921,7 +2918,6 @@ void SidePanel::PlanetPanel::ClickBombard() {
     }
     // Clean up ships bombarding
     if (planet->IsAboutToBeBombarded()) {
-        ErrorLogger() << "SidePanel::ClickBombard preparing to clear all bombarding of " << planet->ID() << "";
         auto bombarding_ships = BombardingShips(planet->ID(), context);
         if (!bombarding_ships.empty()) {
             being_bombarded = true;
@@ -2933,15 +2929,11 @@ void SidePanel::PlanetPanel::ClickBombard() {
     }
 
     if (!being_bombarded) {
-        ErrorLogger() << "SidePanel::ClickBombard without PendingBombardOrders";
         // Setting or overriding bombard targets
         auto bombard_ships = ValidSelectedBombardShips(planet->SystemID(), context);
         if (bombard_ships.empty())
             bombard_ships = AutomaticallyChosenBombardShips(m_planet_id, context);
 
-        for (auto* ship : bombard_ships) {
-            ErrorLogger() << "SidePanel::ClickBombard selected " << ship;
-        }
         // order selected bombard ships to bombard planet
         for (const auto* ship : bombard_ships | range_filter([](auto s) { return !!s; })) {
             CancelColonizeInvadeBombardScrapShipOrders(*ship, context, orders);
