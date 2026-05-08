@@ -2939,22 +2939,6 @@ void SidePanel::PlanetPanel::ClickBombard() {
         if (bombard_ships.empty())
             bombard_ships = AutomaticallyChosenBombardShips(m_planet_id, context);
 
-        // order unselected ship to not 
-        const int system_id = planet->SystemID();
-        auto* system = objects.getRaw<System>(system_id);
-        for (auto* ship : objects.findRaw<Ship>(system->ShipIDs())) {
-            if (ship &&
-                ship->OrderedBombardPlanet() == planet->ID() &&
-                ship->OwnedBy(empire_id) &&
-                FlexibleContains(bombard_ships, planet->ID())
-                ) {
-                //ErrorLogger() << "SidePanel::ClickBombard " << bombard_ships.begin() << " .. " << bombard_ships.end();
-                orders.IssueOrder<BombardOrder>(context, empire_id, ship->ID(), INVALID_OBJECT_ID);
-                ErrorLogger() << "SidePanel::ClickBombard ClearBombardPlanet for unselected " << ship->ID()
-                              << " on " << planet->ID() << "  -  now "  << ship->OrderedBombardPlanet();
-            }
-        }
-
         for (auto* ship : bombard_ships) {
             ErrorLogger() << "SidePanel::ClickBombard selected " << ship;
         }
