@@ -4250,10 +4250,6 @@ void ServerApp::PreCombatProcessTurns() {
     // inform players of order execution
     m_networking.SendMessageAll(TurnProgressMessage(Message::TurnProgressPhase::PROCESSING_ORDERS));
 
-    // clear bombardment state before executing orders, so result after is only
-    // determined by what orders set.
-    CleanUpBombardmentStateInfo(m_universe.Objects());
-
 
     // execute orders
     for (auto& pd : m_player_data) {
