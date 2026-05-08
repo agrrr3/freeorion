@@ -1426,8 +1426,7 @@ namespace {
         const ObjectMap& o = context.ContextObjects();
         return o.getRaw<Fleet>(ship->FleetID()) &&
             IsAvailable(ship, system_id, empire_id, context) &&
-            ship->CanBombard(u) &&
-            ship->OrderedBombardPlanet() == INVALID_OBJECT_ID;
+            ship->CanBombard(u);
     };
 
     /** Content tags that note if a Ship should be auto-selected for bombarding a Planet.
