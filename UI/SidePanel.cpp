@@ -2714,10 +2714,12 @@ namespace {
 
         // is selected ship order to bombard?  If so, recind that order
         if (ship.OrderedBombardPlanet() != INVALID_OBJECT_ID) {
+            int rescindedBombardOrder = 0;
             for (const auto& [order_id, order] : orders_const) {
-               if (auto bombard_order = std::dynamic_pointer_cast<BombardOrder>(order)) {
+                if (auto bombard_order = std::dynamic_pointer_cast<BombardOrder>(order)) {
                     if (bombard_order->ShipID() == ship.ID()) {
                         mutable_orders.RescindOrder(order_id, context);
+                        rescindedBombardOrder++;
                         // could break here, but won't to ensure there are no problems with doubled orders
                     }
                 }
@@ -2861,7 +2863,7 @@ void SidePanel::PlanetPanel::ClickBombard() {
 
     auto& app = GetApp();
     ScriptingContext& context = app.GetContext();
-    const ObjectMap& objects{context.ContextObjects()};
+    ObjectMap& objects{context.ContextObjects()};
     auto planet = objects.getRaw<Planet>(m_planet_id);
     if (!planet ||
         !m_order_issuing_enabled ||
@@ -2878,12 +2880,31 @@ void SidePanel::PlanetPanel::ClickBombard() {
     const auto it = pending_bombard_orders.find(m_planet_id);
 
     if (it != pending_bombard_orders.end()) {
+        ErrorLogger() << "SidePanel::ClickBombard with PendingBombardOrders";
+        // Cancelling a current turn order
         const auto planet_bombard_orders{it->second}; // copy to preserve iterators while rescinding
         // cancel previous bombard orders for this planet
         for (int order_id : planet_bombard_orders)
             orders.RescindOrder(order_id, context);
 
     } else {
+        ErrorLogger() << "SidePanel::ClickBombard without PendingBombardOrders";
+        // Setting or overriding bombard targets
+        // unset all bombard targets of ships
+        const int system_id = planet->SystemID();
+        auto* system = objects.getRaw<System>(system_id);
+        for (auto* ship : objects.findRaw<Ship>(system->ShipIDs())) {
+            if (ship &&
+                ship->OrderedBombardPlanet() == planet->ID() &&
+                ship->OwnedBy(empire_id)) {
+                //ship->ClearBombardPlanet();
+                Ship* mship = objects.getRaw<Ship>(ship->ID());
+                mship->ClearBombardPlanet();
+                ErrorLogger() << "SidePanel::ClickBombard ClearBombardPlanet for " << ship->ID()
+                              << " on " << planet->ID() << "  -  now "  << ship->OrderedBombardPlanet();
+                // FIXME this does not seem to stick ... as the server does not know about it
+            }
+        }
         // order selected bombard ships to bombard planet
         auto bombard_ships = ValidSelectedBombardShips(planet->SystemID(), context);
         if (bombard_ships.empty())
