@@ -17433,6 +17433,12 @@ SH_COLONY_BASE_DESC
 
 [[metertype METER_STEALTH]] is medium and [[metertype METER_DETECTION]] is medium.'''
 
+SH_RAUMSTATION
+Raumstation
+
+SH_RAUMSTATION_DESC
+'''Eine Raumstation'''
+
 SH_FLOATER_BODY
 Floater Body
 
