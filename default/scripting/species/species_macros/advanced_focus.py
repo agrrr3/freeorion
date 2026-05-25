@@ -142,20 +142,7 @@ ADVANCED_FOCUS_EFFECTS = [
     EffectsGroup(
         scope=IsSource,
         activation=Random(probability=0.5)
-        & Planet()
-        & Focus(type=["FOCUS_PLANET_DRIVE"])
-        & WithinStarlaneJumps(
-            jumps=1,
-            condition=System
-            & Contains(
-                (
-                    IsBuilding(name=["BLD_PLANET_BEACON"])
-                    | (Ship & DesignHasPart(name="SP_PLANET_BEACON") & Turn(low=LocalCandidate.ArrivedOnTurn + 1))
-                )
-                & OwnedBy(empire=Source.Owner)
-            )
-            & ~Contains(IsSource),
-        )
+        & PLANETARY_DRIVE_ACTIVATION
         & ~WithinDistance(distance=200, condition=IsBuilding(name=["BLD_LIGHTHOUSE"])),
         effects=[
             GenerateSitRepMessage(
