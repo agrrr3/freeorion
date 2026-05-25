@@ -111,49 +111,51 @@ ADVANCED_FOCUS_EFFECTS = [
         priority=POPULATION_FIRST_PRIORITY,
         effects=AddSpecial(name="STARLANE_DRIVE_ACTIVATED_SPECIAL"),
     ),
+    # if drive is actually activated, either move or destroy planet
     EffectsGroup(
         scope=IsSource,
         activation=PLANETARY_DRIVE_ACTIVATION,
         priority=POPULATION_DEFAULT_PRIORITY,
-        effects=[
-            MoveTo(
-                destination=System
-                & WithinStarlaneJumps(jumps=1, condition=IsSource)
-                & Contains(
-                    (
-                        IsBuilding(name=["BLD_PLANET_BEACON"])
-                        | (Ship & DesignHasPart(name="SP_PLANET_BEACON") & Turn(low=LocalCandidate.ArrivedOnTurn + 1))
+        effects=Conditional(
+            condition=IsSource
+                & (
+                    Random(probability=0.5)
+                    | WithinDistance(distance=200, condition=IsBuilding(name=["BLD_LIGHTHOUSE"]))
+                ),
+            effects=[
+                MoveTo(
+                    destination=System
+                    & WithinStarlaneJumps(jumps=1, condition=IsSource)
+                    & Contains(
+                        (
+                            IsBuilding(name=["BLD_PLANET_BEACON"])
+                            | (Ship & DesignHasPart(name="SP_PLANET_BEACON") & Turn(low=LocalCandidate.ArrivedOnTurn + 1))
+                        )
+                        & OwnedBy(empire=Source.Owner)
                     )
-                    & OwnedBy(empire=Source.Owner)
-                )
-                & ~Contains(IsSource)
-            ),
-            SetSpecialCapacity(name="STARLANE_DRIVE_INSTABILITY_SPECIAL", capacity=Value + 1),
-            GenerateSitRepMessage(
-                message="EFFECT_PLANET_DRIVE",
-                label="EFFECT_PLANET_DRIVE_LABEL",
-                icon="icons/building/planetary_stardrive.png",
-                parameters={"planet": Source.ID, "system": Source.SystemID},
-                empire=Source.Owner,
-            ),
-            SetPopulation(value=Value / 2),
-        ],
-    ),
-    EffectsGroup(
-        scope=IsSource,
-        activation=Random(probability=0.5)
-        & PLANETARY_DRIVE_ACTIVATION
-        & ~WithinDistance(distance=200, condition=IsBuilding(name=["BLD_LIGHTHOUSE"])),
-        effects=[
-            GenerateSitRepMessage(
-                message="SITREP_PLANET_DRIVE_FAILURE",
-                label="SITREP_PLANET_DRIVE_FAILURE_LABEL",
-                icon="icons/sitrep/colony_destroyed.png",
-                parameters={"planet": Source.ID, "system": Source.SystemID},
-                empire=Source.Owner,
-            ),
-            Destroy,
-        ],
+                    & ~Contains(IsSource)
+                ),
+                SetSpecialCapacity(name="STARLANE_DRIVE_INSTABILITY_SPECIAL", capacity=Value + 1),
+                GenerateSitRepMessage(
+                    message="EFFECT_PLANET_DRIVE",
+                    label="EFFECT_PLANET_DRIVE_LABEL",
+                    icon="icons/building/planetary_stardrive.png",
+                    parameters={"planet": Source.ID, "system": Source.SystemID},
+                    empire=Source.Owner,
+                ),
+                SetPopulation(value=Value / 2),
+            ],
+            else_=[
+                GenerateSitRepMessage(
+                    message="SITREP_PLANET_DRIVE_FAILURE",
+                    label="SITREP_PLANET_DRIVE_FAILURE_LABEL",
+                    icon="icons/sitrep/colony_destroyed.png",
+                    parameters={"planet": Source.ID, "system": Source.SystemID},
+                    empire=Source.Owner,
+                ),
+                Destroy,
+            ],
+        ),
     ),
     EffectsGroup(
         scope=Fleet
