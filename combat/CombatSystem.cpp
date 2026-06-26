@@ -234,9 +234,25 @@ namespace {
                         ValueRef::ReferenceType::SOURCE_REFERENCE, "Owner"),
                         EmpireAffiliationType::AFFIL_ENEMY),
 
-                std::make_unique<Condition::VisibleToEmpire>(     // when source empire can detect the candidate object
-                    std::make_unique<ValueRef::Variable<int>>(    // source's owner empire id
-                        ValueRef::ReferenceType::SOURCE_REFERENCE, "Owner"))
+                std::make_unique<Condition::Or>(
+                    std::make_unique<Condition::VisibleToEmpire>(     // when source empire can detect the candidate object
+                        std::make_unique<ValueRef::Variable<int>>(    // source's owner empire id
+                            ValueRef::ReferenceType::SOURCE_REFERENCE, "Owner")),
+
+                    std::make_unique<Condition::And>(                 // TODO remove after FIXME VisibleToEmpire with unowned source
+                        std::make_unique<Condition::ValueTest>(       // source is ALL_EMPIRES / Unowned
+                            std::make_unique<ValueRef::Variable<int>>(
+                                ValueRef::ReferenceType::SOURCE_REFERENCE, "Owner"),
+                                Condition::ComparisonType::EQUAL,
+                                std::make_unique<ValueRef::Constant<int>>(ALL_EMPIRES)),
+
+                        std::make_unique<Condition::MeterValue>(      // when detection meter is higher than stealth meter
+                            MeterType::METER_STEALTH,
+                            nullptr,                                  // no restriction on how low candidate stealth
+                            std::make_unique<ValueRef::Variable<double>>(
+                                ValueRef::ReferenceType::SOURCE_REFERENCE, "Detection"))
+                    )
+                ) // Visibility Or-Block
             ))
         ;
     }
@@ -504,7 +520,6 @@ namespace {
             power = attacker_damage->Current();   // planet "Defense" meter is actually its attack power
 
         auto& damaged_object_ids = combat_info.damaged_object_ids;
-
         Meter* target_structure = target->UniverseObject::GetMeter(MeterType::METER_STRUCTURE);
         if (!target_structure) {
             ErrorLogger() << "couldn't get target structure or shield meter";
