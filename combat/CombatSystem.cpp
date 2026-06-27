@@ -543,6 +543,7 @@ namespace {
                                 << target->ID() << ")";
         }
 
+        ErrorLogger() << "OPHI OPHI combat_event.AddEvent (" << target->ID() << ") " << weapon.ship_part_name;
         combat_event.AddEvent(target->ID(), target->Owner(), weapon.ship_part_name,
                               power, shield, damage);
 
@@ -1720,6 +1721,7 @@ namespace {
         // Process planets attacks first so that they still have full power,
         // despite their attack power depending on something (their defence meter)
         // that processing shots at them may reduce.
+  ErrorLogger() << "OPHI handle all planet weapon-attacks for bout";
         for (auto* planet : combat_info.objects.findRaw<Planet>(shuffled_attackers)) {
             if (!planet)
                 continue;
@@ -1734,13 +1736,20 @@ namespace {
                 ErrorLogger() << "unable to create WeaponPlatformEvent!";
                 continue;
             }
-            bout_event->weapons_platform_firings.AddEvent(platform_event);
 
             ShootAllWeapons(planet, combat_state, bout_event->weapon_firings,
                             *platform_event, bout_event->fighters_attack_fighters);
+
+            if (!platform_event->IsEmpty()) {
+              ErrorLogger() << "OPHI OPHI adding events to bout_event->weapons_platform_firings";
+                bout_event->weapons_platform_firings.AddEvent(std::move(platform_event));
+            } else {
+              ErrorLogger() << "OPHI OPHI planet platform_event->IsEmpty";
+                ErrorLogger(combat) << "Planet: " << planet->Name() << " should have created an attack event";
+            }
         }
 
-
+  ErrorLogger() << "OPHI handle all ship and fighter weapon-attacks for bout";
         // Process ship and fighter attacks
         for (auto* attacker : combat_info.objects.findRaw(shuffled_attackers)) {
             if (!attacker)
@@ -1765,12 +1774,14 @@ namespace {
             ShootAllWeapons(attacker, combat_state, bout_event->weapon_firings,
                             *platform_event, bout_event->fighters_attack_fighters);
 
-            if (!platform_event->IsEmpty())
-                bout_event->weapons_platform_firings.AddEvent(std::move(platform_event));
+            if (!platform_event->IsEmpty()) {
+              ErrorLogger() << "OPHI OPHI adding fighter/ship weapon events to bout_event->weapons_platform_firings";
+              bout_event->weapons_platform_firings.AddEvent(std::move(platform_event));
+            }
         }
 
         auto stealth_change_event = std::make_shared<StealthChangeEvent>();
-
+  ErrorLogger() << "OPHI launch all fighters ";
         // Launch fighters (which can attack in any subsequent combat bouts).
         // There is no point to launching fighters during the last bout, since
         // they won't get any chance to attack during this combat
@@ -1811,8 +1822,9 @@ namespace {
             }
         }
 
-
+    ErrorLogger() << "OPHI handle events propagation for bout";
         const auto handle_attack_event = [&combat_info, &stealth_change_event](const auto& attack_event) {
+          ErrorLogger() << "OPHI handle_attack_event ";
             if (!attack_event) return; 
 
             // Set attacker as at least basically visible to other empires.
@@ -1835,20 +1847,25 @@ namespace {
         };
 
 
+                  ErrorLogger() << "OPHI -attack attacks_this_bout should handle_attack_event ";
+                  ErrorLogger() << "OPHI OPHI " << bout_event->DebugString(context);
         // Create weapon fire events and mark attackers as visible to other battle participants
         const auto attacks_this_bout = bout_event->weapon_firings.SubEvents(ALL_EMPIRES);
         for (const auto* this_event : attacks_this_bout) {
             if (const auto* naked_fire_event = dynamic_cast<const WeaponFireEvent*>(this_event)) {
+                                              ErrorLogger() << "OPHI -attack attacks_this_bout single ";
                 handle_attack_event(naked_fire_event);
 
             } else if (const auto* weapons_platform = dynamic_cast<const WeaponsPlatformEvent*>(this_event)) {
+                                ErrorLogger() << "OPHI -attack attacks_this_bout multiple ";
                 for (const auto* more_event : weapons_platform->SubEvents(ALL_EMPIRES)) {
                     if (auto nested_fire_event = dynamic_cast<const WeaponFireEvent*>(more_event))
                         handle_attack_event(nested_fire_event);
                 }
             }
         }
-
+        ErrorLogger() << "OPHI -attack done.";
+                  
         if (!stealth_change_event->IsEmpty())
             combat_info.combat_events.push_back(std::move(stealth_change_event));
 
