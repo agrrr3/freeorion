@@ -7481,7 +7481,7 @@ namespace {
                                    const ScriptingContext& context) :
             m_empire_id(empire_id),
             m_since_turn(since_turn),
-            m_vis(vis == Visibility::INVALID_VISIBILITY ? Visibility::VIS_BASIC_VISIBILITY : vis),
+            m_vis(vis == Visibility::INVALID_VISIBILITY ? Visibility::VIS_PARTIAL_VISIBILITY : vis),
             m_context{context}
         {}
 
@@ -7540,8 +7540,7 @@ void VisibleToEmpire::Eval(const ScriptingContext& parent_context, ObjectSet& ma
         // evaluate empire id once, and use to check all candidate objects
         int empire_id = m_empire_id ? m_empire_id->Eval(parent_context) : ALL_EMPIRES;
         int since_turn = m_since_turn ? m_since_turn->Eval(parent_context) : INVALID_GAME_TURN;  // indicates current turn
-        Visibility vis = m_vis ? m_vis->Eval(parent_context) : Visibility::VIS_BASIC_VISIBILITY;
-
+        Visibility vis = m_vis ? m_vis->Eval(parent_context) : Visibility::VIS_PARTIAL_VISIBILITY;
         // need to check visibility of each candidate object separately
         EvalImpl(matches, non_matches, search_domain,
                  VisibleToEmpireSimpleMatch(empire_id, since_turn, vis, parent_context));
