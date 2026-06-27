@@ -1234,6 +1234,7 @@ namespace {
                 break;
 
             case EmpireAffiliationType::AFFIL_ENEMY: {
+              ErrorLogger() << "OPHI EmpireAffiliation  EmpireAffiliationType::AFFIL_ENEMY " << m_empire_id << " -> true";
                 if (m_empire_id == ALL_EMPIRES)
                     return true;
                 if (m_empire_id == candidate->Owner())
@@ -1309,9 +1310,12 @@ void EmpireAffiliation::Eval(const ScriptingContext& parent_context, ObjectSet& 
     if (simple_eval_safe) {
         // evaluate empire id once, and use to check all candidate objects
         int empire_id = m_empire_id ? m_empire_id->Eval(parent_context) : ALL_EMPIRES;
+        ErrorLogger() << "OPHI EmpireAffiliation::Eval simple_eval_safe empire_id " << m_empire_id << " -> " << empire_id;
         EvalImpl(matches, non_matches, search_domain,
                  EmpireAffiliationSimpleMatch(empire_id, m_affiliation, parent_context));
     } else {
+      ErrorLogger() << "OPHI EmpireAffiliation::Eval empire_id " << m_empire_id;
+
         // re-evaluate empire id for each candidate object
         Condition::Eval(parent_context, matches, non_matches, search_domain);
     }
@@ -7541,10 +7545,12 @@ void VisibleToEmpire::Eval(const ScriptingContext& parent_context, ObjectSet& ma
         int empire_id = m_empire_id ? m_empire_id->Eval(parent_context) : ALL_EMPIRES;
         int since_turn = m_since_turn ? m_since_turn->Eval(parent_context) : INVALID_GAME_TURN;  // indicates current turn
         Visibility vis = m_vis ? m_vis->Eval(parent_context) : Visibility::VIS_PARTIAL_VISIBILITY;
+        ErrorLogger() << "OPHI OPHI VisibleToEmpire::Eval simple_eval_safe empire_id " << empire_id << "  vis " << vis;
         // need to check visibility of each candidate object separately
         EvalImpl(matches, non_matches, search_domain,
                  VisibleToEmpireSimpleMatch(empire_id, since_turn, vis, parent_context));
     } else {
+      ErrorLogger() << "OPHI OPHI VisibleToEmpire::Eval not simple_eval_safe";
         // re-evaluate empire id for each candidate object
         Condition::Eval(parent_context, matches, non_matches, search_domain);
     }
