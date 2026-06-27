@@ -38,7 +38,7 @@
 
 BOOST_CLASS_EXPORT(Field)
 BOOST_CLASS_EXPORT(Universe)
-BOOST_CLASS_VERSION(Universe, 5)
+BOOST_CLASS_VERSION(Universe, 6)
 
 namespace {
 #if defined(__cpp_lib_to_chars) && defined(__cpp_lib_constexpr_charconv)
@@ -148,6 +148,7 @@ namespace {
         for (const auto& ovt : data) {
             retval.append("  ").append(std::to_string(ovt.obj_id));
             append_turn_or_x(ovt.basic);
+            append_turn_or_x(ovt.targetable);
             append_turn_or_x(ovt.partial);
             append_turn_or_x(ovt.full);
         }
@@ -212,6 +213,7 @@ namespace {
         for (std::size_t idx = 0; idx < static_cast<std::size_t>(count) && next != buffer_end; ++idx) {
             int obj_id = INVALID_OBJECT_ID;
             int basic_turn = INVALID_GAME_TURN;
+            int targetable_turn = INVALID_GAME_TURN;
             int partial_turn = INVALID_GAME_TURN;
             int full_turn = INVALID_GAME_TURN;
 
@@ -221,6 +223,9 @@ namespace {
             std::tie(basic_turn, success, next) = get_int_from_chars(next, INVALID_GAME_TURN);
             if (!success)
                 break;
+            std::tie(targetable_turn, success, next) = get_int_from_chars(next, INVALID_GAME_TURN);
+            if (!success)
+                break;
             std::tie(partial_turn, success, next) = get_int_from_chars(next, INVALID_GAME_TURN);
             if (!success)
                 break;
@@ -228,7 +233,7 @@ namespace {
             if (!success)
                 break;
 
-            retval.emplace_back(obj_id, basic_turn, partial_turn, full_turn);
+            retval.emplace_back(obj_id, basic_turn, targetable_turn, partial_turn, full_turn);
         }
 
         return retval;
@@ -248,10 +253,10 @@ namespace {
     static_assert(ToObjVisTurnsVec("99999  -1 2 3 4  99 98 97 96").back() == ObjVisTurns{99, 0, 0, 0}); // only first param (id) is checked
     static_assert([]() {
         const auto vec = ToObjVisTurnsVec("  3  x x x 4  x x x x  x 10 11 x  ");
-        return vec.size() == 3 &&
-               vec.front()[Visibility::VIS_FULL_VISIBILITY] == 4 &&
-               vec.back()[Visibility::INVALID_VISIBILITY] == 10 &&
-               vec.back().partial == 11 &&
+        return vec.size() == 3 &&  // FIXME ??
+               vec.front()[Visibility::VIS_FULL_VISIBILITY] == 5 &&  // FIXME
+               vec.back()[Visibility::INVALID_VISIBILITY] == 10 && // FIXME
+               vec.back().partial == 11 && // FIXME
                vec.back().obj_id == INVALID_OBJECT_ID;
     }());
 #endif
@@ -286,6 +291,8 @@ namespace {
             OldEmpireObjectVisibilityTurnMap scratch;
             ar & boost::serialization::make_nvp("empire_object_visibility_turns", scratch);
 
+            //FIXME update VIS_TARGETABLE_VISIBILITY got inserted at index 3, so everything higher needs a +1
+            ErrorLogger() << "FIXME fix import of visibility for old games  (addition of VIS_TARGETABLE_VISIBILITY)";
             // copy to eovtm
             for (auto& [eid, old_ovtm] : scratch) {
                 auto& ovt_vec = eovtm[eid];
@@ -295,6 +302,11 @@ namespace {
                         ovtm.SetVisTurnsCascade(vis, turn);
                 }
             }
+        } else if (Archive::is_loading::value && universe_version <= 5) {
+            // FIXME update VIS_TARGETABLE_VISIBILITY got inserted at index 3, so everything higher needs a +1
+            // FIXME  eovtm / empire_object_visibility_turns - not sure how to do this
+            ErrorLogger() << "FIXME fix import of visibility for old games (addition of VIS_TARGETABLE_VISIBILITY)";
+            Serialize(ar, eovtm);
         } else {
             Serialize(ar, eovtm);
         }
