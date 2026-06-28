@@ -156,6 +156,9 @@ namespace {
         return retval;
     }
 
+    /* returns a vector which contains the turn for each visibility,
+       created from a string with object id and the turn numbers.
+       garbage in may return garbage. */
     CONSTEXPR_VEC_AND_FROMCHARS auto ToObjVisTurnsVec(std::string_view buffer) {
         std::vector<ObjVisTurns> retval;
 
@@ -245,18 +248,18 @@ namespace {
     static_assert(ToObjVisTurnsVec("0  ").empty());
     static_assert(ToObjVisTurnsVec("0 1 2 3 4").empty());
     static_assert(ToObjVisTurnsVec("1 -1  ").empty());
-    static_assert(ToObjVisTurnsVec("1 -1 2 x 4").size() == 1);
-    static_assert(ToObjVisTurnsVec("3 x x x x x x x x x x x x").size() == 3);
-    static_assert(ToObjVisTurnsVec("1  x   x  x xxx").size() == 1);
-    static_assert(ToObjVisTurnsVec("1 -1 2 3 4  ").size() == 1);
+    static_assert(ToObjVisTurnsVec("1 -1 2 x 4 5").size() == 1);
+    static_assert(ToObjVisTurnsVec("3 x x x x x x x x x x x x x x x").size() == 3);
+    static_assert(ToObjVisTurnsVec("1  x   x  x x xxx").size() == 1);
+    static_assert(ToObjVisTurnsVec("1 -1 2 3 4 5  ").size() == 1);
     static_assert(ToObjVisTurnsVec("  9999 -1 2 3 4 5").size() == 1);
-    static_assert(ToObjVisTurnsVec("99999  -1 2 3 4  99 98 97 96").back() == ObjVisTurns{99, 0, 0, 0}); // only first param (id) is checked
+    static_assert(ToObjVisTurnsVec("99999  -1 2 3 4 5  99 98 97 96 95").back() == ObjVisTurns{99, 0, 0, 0, 0}); // only first param (id) is checked
     static_assert([]() {
-        const auto vec = ToObjVisTurnsVec("  3  x x x 4  x x x x  x 10 11 x  ");
-        return vec.size() == 3 &&  // FIXME ??
-               vec.front()[Visibility::VIS_FULL_VISIBILITY] == 5 &&  // FIXME
-               vec.back()[Visibility::INVALID_VISIBILITY] == 10 && // FIXME
-               vec.back().partial == 11 && // FIXME
+        const auto vec = ToObjVisTurnsVec("  3  x x x x 5  x x x x x  x 10 11 12 x  ");
+        return vec.size() == 3 &&
+               vec.front()[Visibility::VIS_FULL_VISIBILITY] == 5 &&
+               vec.back()[Visibility::INVALID_VISIBILITY] == 10 &&
+               vec.back().partial == 12 &&
                vec.back().obj_id == INVALID_OBJECT_ID;
     }());
 #endif
@@ -284,15 +287,15 @@ namespace {
     template <typename Archive>
     void Serialize(Archive& ar, EmpireObjectVisibilityTurnsVecMap& eovtm, unsigned int const universe_version)
     {
+        bool do_serialize = true;
         if (Archive::is_loading::value && universe_version < 4) {
             using OldVisibilityTurnMap = std::map<Visibility, int>;
             using OldObjectVisibilityTurnMap = std::map<int, OldVisibilityTurnMap>;
             using OldEmpireObjectVisibilityTurnMap = std::map<int, OldObjectVisibilityTurnMap>;
             OldEmpireObjectVisibilityTurnMap scratch;
             ar & boost::serialization::make_nvp("empire_object_visibility_turns", scratch);
+            do_serialize = false;
 
-            //FIXME update VIS_TARGETABLE_VISIBILITY got inserted at index 3, so everything higher needs a +1
-            ErrorLogger() << "FIXME fix import of visibility for old games  (addition of VIS_TARGETABLE_VISIBILITY)";
             // copy to eovtm
             for (auto& [eid, old_ovtm] : scratch) {
                 auto& ovt_vec = eovtm[eid];
@@ -302,14 +305,21 @@ namespace {
                         ovtm.SetVisTurnsCascade(vis, turn);
                 }
             }
-        } else if (Archive::is_loading::value && universe_version <= 5) {
-            // FIXME update VIS_TARGETABLE_VISIBILITY got inserted at index 3, so everything higher needs a +1
-            // FIXME  eovtm / empire_object_visibility_turns - not sure how to do this
-            ErrorLogger() << "FIXME fix import of visibility for old games (addition of VIS_TARGETABLE_VISIBILITY)";
-            Serialize(ar, eovtm);
-        } else {
-            Serialize(ar, eovtm);
         }
+        if (Archive::is_loading::value && universe_version <= 5) {
+            // VIS_TARGETABLE_VISIBILITY got inserted as third int into the struct
+            for (auto& [eid, ovt_vec] : eovtm) {
+                for (auto& ovtm : ovt_vec) {
+                  ovtm.full = ovtm.partial;
+                  ovtm.partial = ovtm.targetable;
+                  // combat unstealth meant basic visibility; use it for targetable
+                  ovtm.targetable = ovtm.basic;
+                  // ovtm.basic // no change
+                }
+            }
+        }
+        if (do_serialize)
+            Serialize(ar, eovtm);
     }
 }
 
@@ -377,6 +387,7 @@ void serialize(Archive& ar, ObjVisTurns& ovtm, unsigned int const)
 {
     ar  & boost::serialization::make_nvp("obj_id", ovtm.obj_id)
         & boost::serialization::make_nvp("basic", ovtm.basic)
+        & boost::serialization::make_nvp("targetable", ovtm.partial)
         & boost::serialization::make_nvp("partial", ovtm.partial)
         & boost::serialization::make_nvp("full", ovtm.full);
 }
