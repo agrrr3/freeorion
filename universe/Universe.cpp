@@ -2697,6 +2697,7 @@ namespace {
         // determine neutral / monster detection strengths at each system, which is
         // the highest detection strength of unowned ships or planets at that system
 
+
         static constexpr auto is_unowned_actor_in_system = [](const UniverseObject* ship) noexcept
         { return ship && ship->Unowned() && ship->SystemID() != INVALID_OBJECT_ID; };
 
@@ -2745,9 +2746,12 @@ namespace {
                 const auto obj_stealth = stealth_meter->Initial();
 
                 const auto det_it = best_neutral_detection_strengths_at_systems.find(obj_sys_id);
+                ErrorLogger() << "OPHI OPHI best_neutral_detection_strengths_at_systems " << obj_sys_id << ") size "
+                              << best_neutral_detection_strengths_at_systems.size();
                 if (det_it == best_neutral_detection_strengths_at_systems.end())
                     return false;
-
+                ErrorLogger() << "OPHI OPHI best_neutral_detection_strengths_at_systems " << obj_sys_id << ") det "
+                              << det_it->second << " vs stealth " << obj_stealth;
                 return det_it->second >= obj_stealth;
             };
 
