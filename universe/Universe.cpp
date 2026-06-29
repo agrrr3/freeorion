@@ -2743,7 +2743,9 @@ namespace {
                 return det_it->second >= obj_stealth;
             };
 
-        static constexpr auto to_obj_id = [](const auto* obj) noexcept { return obj->ID(); };
+        static constexpr auto to_obj_id = [](const auto* obj) noexcept {
+          ErrorLogger() << "OPHI OPHI upgrading Neutral visibility to PARTIAL for " << obj->Name() << "(" << obj->ID() << ")";
+          return obj->ID(); };
 
         auto process_objects = [is_neutral_detectable, &universe](const auto&& range) {
             for (const auto obj_id : range | range_filter(is_neutral_detectable) | range_transform(to_obj_id))
