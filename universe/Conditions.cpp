@@ -1234,7 +1234,6 @@ namespace {
                 break;
 
             case EmpireAffiliationType::AFFIL_ENEMY: {
-              ErrorLogger() << "OPHI EmpireAffiliation  EmpireAffiliationType::AFFIL_ENEMY " << m_empire_id << " -> true";
                 if (m_empire_id == ALL_EMPIRES)
                     return true;
                 if (m_empire_id == candidate->Owner())
@@ -1310,11 +1309,9 @@ void EmpireAffiliation::Eval(const ScriptingContext& parent_context, ObjectSet& 
     if (simple_eval_safe) {
         // evaluate empire id once, and use to check all candidate objects
         int empire_id = m_empire_id ? m_empire_id->Eval(parent_context) : ALL_EMPIRES;
-        ErrorLogger() << "OPHI EmpireAffiliation::Eval simple_eval_safe empire_id " << m_empire_id << " -> " << empire_id;
         EvalImpl(matches, non_matches, search_domain,
                  EmpireAffiliationSimpleMatch(empire_id, m_affiliation, parent_context));
     } else {
-      ErrorLogger() << "OPHI EmpireAffiliation::Eval empire_id " << m_empire_id;
 
         // re-evaluate empire id for each candidate object
         Condition::Eval(parent_context, matches, non_matches, search_domain);
