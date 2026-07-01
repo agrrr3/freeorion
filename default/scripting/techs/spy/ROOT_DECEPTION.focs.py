@@ -51,7 +51,9 @@ def target_has_less_stealth_cond(base_cond):
 
 
 own_ships_in_targetz_system = Ship & InSystem(id=Target.SystemID) & OwnedBy(empire=Source.Owner)
-other_own_ships_in_targetz_system = Ship & InSystem(id=Target.SystemID) & ~IsTarget & OwnedBy(empire=Source.Owner)
+other_own_ships_in_targetz_system = (
+    Ship & InSystem() & InSystem(id=Target.SystemID) & ~IsTarget & OwnedBy(empire=Source.Owner)
+)
 own_ships_on_targetz_starlane = (
     Ship
     & ~InSystem()
