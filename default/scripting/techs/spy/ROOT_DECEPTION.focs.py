@@ -1,3 +1,5 @@
+import traceback, copy;
+from collections.abc import Callable
 from focs._conditions import HasSpecial, InSystem, IsTarget, OwnedBy, Ship, Star
 from focs._effects import AddSpecial, Conditional, EffectsGroup, SetSpecialCapacity, SetStealth
 from focs._enums import BlackHole, Min, Neutron, NoStar, Red
@@ -44,6 +46,15 @@ def count_lower_stealth_ships_statistic_valref(base_cond):
 
 
 def target_has_less_stealth_cond(base_cond):
+    try:
+        print("skipping explosion")
+        #base_cond.deep_clone()
+        #copy.deepcopy(base_cond)
+    except Exception as e:
+        # this will print in starting process, but still break everything
+        print("OPHI OPHI deep_clone Exception: _");
+        traceback.print_exc();
+        print("OPHI OPHI deep_clone Exception: " + e);
     return base_cond & (
         SpecialCapacity(name=base_stealth_special, object=Target.ID)
         < SpecialCapacity(name=base_stealth_special, object=LocalCandidate.ID)
@@ -51,7 +62,9 @@ def target_has_less_stealth_cond(base_cond):
 
 
 own_ships_in_targetz_system = Ship & InSystem(id=Target.SystemID) & OwnedBy(empire=Source.Owner)
-other_own_ships_in_targetz_system = Ship & InSystem(id=Target.SystemID) & ~IsTarget & OwnedBy(empire=Source.Owner)
+def other_own_ships_in_targetz_system():
+    return Ship & InSystem(id=Target.SystemID) & ~IsTarget & OwnedBy(empire=Source.Owner)
+
 own_ships_on_targetz_starlane = (
     Ship
     & ~InSystem()
@@ -115,11 +128,11 @@ def min_effective_stealth_of_more_stealthy_ships_valref_for_not_max_stealth_ship
 #            so we add the target stealth_result in that case
 #         will return the target stealth if that is negative
 #            so we skip adding the target stealth_result
-def min_effective_stealth_of_more_stealthy_ships_valref(base_cond):
+def min_effective_stealth_of_more_stealthy_ships_valref(base_cond: Callable):
     return (0.0 < SpecialCapacity(name=base_stealth_special, object=Target.ID)) * StatisticElse(
-        float, condition=candidate_has_less_stealth_cond(base_cond)
+        float, condition=candidate_has_less_stealth_cond(base_cond())
     ) * stealth_result(Target.ID) + min_effective_stealth_of_more_stealthy_ships_valref_for_not_max_stealth_ships(
-        base_cond
+        base_cond()
     )
 
 
@@ -216,7 +229,7 @@ Tech(
             priority=LATE_AFTER_ALL_TARGET_MAX_METERS_PRIORITY,
             effects=[
                 SetStealth(
-                    value=min_effective_stealth_of_more_stealthy_ships_valref(own_ships_on_targetz_starlane & ~IsTarget)
+                    value=min_effective_stealth_of_more_stealthy_ships_valref(lambda: (own_ships_on_targetz_starlane & ~IsTarget))
                 ),
             ],
         ),
