@@ -37,7 +37,7 @@ Special
                     Contains And [
                         Ship
                         Armed
-                        OwnedBy affiliation = EnemyOf empire = Source.Owner
+                        OwnedBy affiliation = EnemyOf empire = Target.Owner
                     ]
                 ]
 
