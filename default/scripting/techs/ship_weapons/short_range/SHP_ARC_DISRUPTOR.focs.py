@@ -23,10 +23,7 @@ Tech(
     researchturns=4,
     tags=["PEDIA_SR_WEAPON_TECHS"],
     prerequisites=["SHP_ROOT_AGGRESSION"],
-    unlock=[
-        Item(type=UnlockShipPart, name="SR_ARC_DISRUPTOR"),
-        Item(type=UnlockShipPart, name="SR_ARC_CONCENTRATOR"),
-    ],
+    unlock=Item(type=UnlockShipPart, name="SR_ARC_DISRUPTOR"),
     effectsgroups=[*WEAPON_BASE_EFFECTS("SR_ARC_DISRUPTOR"), *WEAPON_BASE_EFFECTS("SR_ARC_CONCENTRATOR")],
     graphic="icons/ship_parts/pulse-laser-1.png",
 )
@@ -40,6 +37,7 @@ Tech(
     researchturns=8,
     tags=["PEDIA_SR_WEAPON_TECHS"],
     prerequisites=["SHP_WEAPON_ARC_DISRUPTOR_1"],
+    unlock=Item(type=UnlockShipPart, name="SR_ARC_CONCENTRATOR"),
     effectsgroups=[
         *WEAPON_UPGRADE_CAPACITY_EFFECTS("SHP_WEAPON_ARC_DISRUPTOR_2", "SR_ARC_DISRUPTOR", AD_2_upgrade),
         *WEAPON_UPGRADE_CAPACITY_EFFECTS(
