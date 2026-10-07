@@ -6,15 +6,14 @@ Special
     spawnlimit = 9999
     location = And [
         Planet
-        Not Planet type = [Asteroids GasGiant]
-        Not WithinStarlaneJumps jumps = 7 condition = And [
+            Not WithinStarlaneJumps jumps = 7 condition = And [
             System
             Contains And [
                 Planet
                 OwnedBy affiliation = AnyEmpire
             ]
         ]
-        Not WithinStarlaneJumps jumps = 3 condition = And [
+        Not WithinStarlaneJumps jumps = 4 condition = And [
             System
             Contains Planet HasSpecial name = "GLYPHS_SPECIAL"
 
@@ -36,13 +35,9 @@ Special
                             Armed
                             OwnedBy affiliation = EnemyOf empire = Target.Owner
                         ]
-
-
                     ]
                     Not (Source.System.SupplyingEmpire > 0)
-                    // The Special works only outside of any player's Supply : it's meant to provoke skirmishes in the No Alien's Land, not to bring a bonus inside one's territory
-
-
+                      // The Special works only outside of any player's Supply : it's meant to provoke skirmishes in the No Alien's Land, not to bring a bonus inside one's territory
             ]
 
             stackinggroup = "GLYPHS_STACK"

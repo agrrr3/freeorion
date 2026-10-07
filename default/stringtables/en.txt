@@ -10017,10 +10017,11 @@ GLYPHS_SPECIAL
 Planet-wide glyphs
 
 GLYPHS_SPECIAL_DESC
-'''This planet shows mysterious patterns in its structure, visible only from space.
-Studying it will bring valuable scientific information about the Precursors.
-A ship will need to be undisturbed to be able to study it from different angles, so any armed enemy ship up to two starlanes away will reduce the Research bonus to zero.
-Also, the patterns need to be protected from any outside interference, so the research can only be done outside of Supply.
+'''This planet shows mysterious huge patterns on its surface, visible only from space.
+Either appearing as medium-sized canyons on the surface of rocky planets, as broken lines on Asteroids, or as faint infrared signatures below the clouds of Gas Giants.
+Studying thes patterns will bring valuable scientific information about the Precursors.
+A ship will need to be undisturbed to be able to study them from different angles, so any armed enemy ship up to two starlanes away will reduce the Research bonus to zero.
+Also, the patterns are fragile and need to be protected from any outside interference, so the research can only be done  if the planet is outside of Supply.
 '''
 
 
