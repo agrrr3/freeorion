@@ -23,22 +23,24 @@ Special
             scope = NumberOf number = 1 condition = And [
                 Ship
                 InSystem id = Source.SystemID
+                Not WithinStarlaneJumps jumps = 2 condition = And [
+                    System
+                    Contains And [
+                        Ship
+                        Armed
+                        OwnedBy affiliation = EnemyOf empire = RootCandidate.Owner
+                   ]
+                ]
             ]
 
             activation = And [
                     Unowned
-                    Not WithinStarlaneJumps jumps = 2 condition = And [
-                        System
-                        Contains And [
-                            Ship
-                            Armed
-                            OwnedBy affiliation = EnemyOf empire = Target.Owner
-                        ]
-                    ]
                     // The Special works only outside of any player's Supply:
                     Not (Source.System.SupplyingEmpire > 0)
                     // it's meant to provoke skirmishes in the No Alien's Land,
                     // not to bring a bonus inside one's territory
+
+                    ContainedBy Contains Ship
             ]
 
             stackinggroup = "GLYPHS_STACK"
