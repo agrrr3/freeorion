@@ -52,5 +52,5 @@ Special
 
 #include "/scripting/macros/priorities.macros"
 #include "/scripting/specials/specials.macros.txt"
-#include "/scripting/species/species_macros/general" //this is needed for the Research meter to rise towards Target Research
+
 
