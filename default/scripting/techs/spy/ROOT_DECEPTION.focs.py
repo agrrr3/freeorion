@@ -168,7 +168,7 @@ Tech(
                     & (
                         0.01
                         < Abs(
-                            float, SpecialCapacity(name=base_stealth_special, object=Target.ID) - Value(Target.Stealth)
+                            float, SpecialCapacity(name=base_stealth_special, object=LocalCandidate.ID) - Value(LocalCandidate.Stealth)
                         )
                     ),
                     effects=[
