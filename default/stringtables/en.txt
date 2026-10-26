@@ -6911,7 +6911,7 @@ PLANETDRIVE_FOCUS_TITLE
 Planet Drive Focus
 
 PLANETDRIVE_FOCUS_TEXT
-After a [[buildingtype BLD_PLANET_DRIVE]] has been constructed, and a [[buildingtype BLD_PLANET_BEACON]] or [[shippart SP_PLANET_BEACON]] is in an adjacent system, selecting the [[PLANETDRIVE_FOCUS_TITLE]] will move the planet between star systems. A planet may jump up to [[value STARLANE_DRIVE_MAX_JUMPS]] times.
+After a [[buildingtype BLD_PLANET_DRIVE]] has been constructed, and a [[buildingtype BLD_PLANET_BEACON]] or [[shippart SP_PLANET_BEACON]] is in an adjacent system, selecting the [[PLANETDRIVE_FOCUS_TITLE]] will move the planet between star systems. Each hop to another system destabilizes the planet. After [[value STARLANE_DRIVE_MAX_JUMPS]] hops a planet is too destabilized to even attempt another jump.
 
 PROTECTION_FOCUS_TITLE
 Protection Focus
